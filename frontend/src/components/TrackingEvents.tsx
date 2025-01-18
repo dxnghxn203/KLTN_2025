@@ -31,7 +31,7 @@ export function TrackingEvents() {
     <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow">
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Event </label>
+          <label className="block text-sm font-medium mb-2">Event  </label>
           <input
             type="text"
             value={eventType}

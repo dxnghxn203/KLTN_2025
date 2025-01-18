@@ -1,10 +1,20 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-buster as builder
 
 WORKDIR /app
-
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install uvicorn[standard] watchdog[watchmedo]
+
+RUN pip install --user --no-cache-dir -r requirements.txt \
+    && pip install --user --no-cache-dir watchdog[watchmedo] python-dotenv
+
+FROM python:3.11-slim-buster
+
+WORKDIR /app
+COPY --from=builder /root/.local /root/.local
+COPY . .
+
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
+CMD ["watchmedo", "auto-restart", "--directory=./", "--pattern=*.py", "--recursive", "--", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]

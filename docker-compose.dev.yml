@@ -1,5 +1,14 @@
 version: '3.8'
 
+x-logging: &default-logging
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+      tag: "{{.Name}}"
+      mode: "non-blocking"
+
 services:
   vault:
     image: vault:1.13.3
@@ -16,6 +25,7 @@ services:
       - ./vault/config:/vault/config:ro
       - ./vault/data:/vault/data
     command: server -config=/vault/config/vault.json
+    <<: *default-logging
 
   vault-init:
     image: vault:1.13.3
@@ -27,6 +37,7 @@ services:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=myroot
     command: sh /scripts/init.sh
+    <<: *default-logging
 
   frontend:
     build: 
@@ -35,7 +46,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      ${FRONTEND_ENV}
+      - NEXT_PUBLIC_API_URL=http://tracking-api:8000
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
+      - NEXT_WEBPACK_USEPOLLING=1
     volumes:
       - ./frontend:/app:delegated
       - frontend_node_modules:/app/node_modules
@@ -43,6 +58,13 @@ services:
     depends_on:
       - vault-init
       - tracking-api
+    <<: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   tracking-api:
     build: 
@@ -51,7 +73,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      ${API_ENV}
+      - MONGODB_URI=mongodb://mongodb:27017/
+      - REDIS_HOST=redis
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - RELOAD=true
+      - DEBUG=1
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app
     volumes:
       - ./tracking-api:/app:delegated
       - tracking_api_cache:/app/__pycache__
@@ -60,13 +89,23 @@ services:
       - mongodb
       - redis
       - rabbitmq
+    <<: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   consumer:
     build: 
       context: ./consumer
       dockerfile: Dockerfile.dev
     environment:
-      ${CONSUMER_ENV}
+      - MONGODB_URI=mongodb://mongodb:27017/
+      - REDIS_HOST=redis
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - AIR_FORCE_BUILD=true
     volumes:
       - ./consumer:/app:delegated
       - consumer_go_cache:/go/pkg/mod
@@ -76,6 +115,13 @@ services:
       - mongodb
       - redis
       - rabbitmq
+    <<: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   mongodb:
     image: mongo:latest
@@ -83,21 +129,38 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    <<: *default-logging
+    command: ["mongod", "--wiredTigerCacheSizeGB", "1"]
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   redis:
-    image: redis:latest
+    image: redis:alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    <<: *default-logging
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   rabbitmq:
-    image: rabbitmq:management
+    image: rabbitmq:3-management-alpine
     ports:
       - "5672:5672"
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    <<: *default-logging
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 volumes:
   mongodb_data:

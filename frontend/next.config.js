@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
   webpack: (config) => {
     config.watchOptions = {
       poll: 1000,
@@ -7,7 +8,6 @@ const nextConfig = {
     }
     return config
   },
-  reactStrictMode: true,
 }
 
 module.exports = nextConfig
