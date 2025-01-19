@@ -10,7 +10,12 @@ from app.routers import (
     metrics_router,
     health_router
 )
+from app.core import database
 import uvicorn
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 

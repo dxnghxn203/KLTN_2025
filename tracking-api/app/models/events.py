@@ -1,6 +1,8 @@
 from datetime import datetime
 from bson import ObjectId
 
+collection_name = ""
+
 @staticmethod
 async def create(event_data: dict):
     return {
