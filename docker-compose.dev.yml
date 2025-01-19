@@ -56,8 +56,6 @@ services:
       - ./tracking-api:/app:delegated
       - tracking_api_cache:/app/__pycache__
     depends_on:
-      redis:
-        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     extra_hosts:
@@ -84,7 +82,6 @@ services:
       - consumer_go_cache:/go/pkg/mod
       - consumer_air_tmp:/app/tmp
     depends_on:
-      - redis
       - rabbitmq
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -95,47 +92,6 @@ services:
           memory: 512M
         reservations:
           memory: 256M
-
-  # Remove or comment out mongodb service since we're using local MongoDB
-  # mongodb:
-  #   image: mongo:latest
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongodb_data:/data/db
-  #     - ./mongodb/mongod.conf:/etc/mongod.conf
-  #   command: ["mongod", "--config", "/etc/mongod.conf"]
-  #   environment:
-  #     - MONGODB_INITDB_ROOT_USERNAME=admin
-  #     - MONGODB_INITDB_ROOT_PASSWORD=password
-  #   healthcheck:
-  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   <<: *default-logging
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 1G
-
-  redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    <<: *default-logging
-    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
-    deploy:
-      resources:
-        limits:
-          memory: 512M
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -156,7 +112,6 @@ services:
           memory: 512M
 
 volumes:
-  redis_data:
   rabbitmq_data:
   frontend_node_modules:
   frontend_next:

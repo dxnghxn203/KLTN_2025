@@ -10,7 +10,7 @@ from app.routers import (
     metrics_router,
     health_router
 )
-from app.core import database
+from app.core import database, redis_client
 import uvicorn
 import logging
 
