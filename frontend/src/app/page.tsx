@@ -1,5 +1,4 @@
 'use client'
-import { TrackingEvents } from '@/components/TrackingEvents'
 import { useProduct } from '@/store/product/productHooks';
 import { useEffect } from 'react';
 
@@ -11,16 +10,9 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen p-8">
-      {
-        listProduct.map((values: any) => 
-          <h1 className="text-3xl font-bold mb-8" key={values?.key}>
-            {values?.name}
-          </h1>
-        )
-      }
-
-      <TrackingEvents />
-    </main>
-  )
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Trang chủ</h1>
+      {loading ? (
+        <p>Đang tải...</p>
+      ) : (<div>          {/* Add your home page content here */}        </div>)}    </div>);
 }
