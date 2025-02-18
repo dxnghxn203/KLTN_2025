@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+    
+    tools {
+        nodejs 'Node18'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'hxn203',
+                    url: 'git@github.com:dxnghxn203/KLTN_2025.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('frontend') {
+                    sh 'yarn install'
+                }
+            }
+        }
+
+        stage('Lint & Format') {
+            steps {
+                dir('frontend') {
+                    sh '''
+                        yarn lint
+                        yarn format:check
+                    '''
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('frontend') {
+                    sh 'yarn test --ci --coverage --passWithNoTests'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('frontend') {
+                    sh 'yarn build'
+                    script {
+                        docker.build("frontend:${BUILD_NUMBER}")
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when { branch 'main' }
+            steps {
+                sshagent(['ec2-ssh-key']) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ec2-user@46.137.203.192 '\
+                            cd ~/app && \
+                            docker-compose stop frontend && \
+                            docker-compose rm -f frontend && \
+                            echo "FRONTEND_IMAGE=frontend:${BUILD_NUMBER}" > .env && \
+                            docker-compose up -d frontend'
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
