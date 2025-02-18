@@ -26,3 +26,12 @@ async def generate_sepay_qr(request: GeneratePaymentQr):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/payment/callback")
+async def payment_callback(request: str):
+    """Payment callback"""
+    try:
+        return BaseResponse(status_code=200, message="callback success")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
