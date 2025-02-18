@@ -21,11 +21,14 @@ pipeline {
     stages {
         stage('SCM Checkout') {
             steps {
-                sshagent(['jenkins-github-ssh']) {
-                    git branch: 'main',
-                        credentialsId: 'hxn203',
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        credentialsId: 'jenkins-github-ssh',
                         url: 'git@github.com:dxnghxn203/KLTN_2025.git'
-                }
+                    ]]
+                ])
             }
         }
 
