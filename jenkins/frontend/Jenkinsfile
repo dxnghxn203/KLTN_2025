@@ -5,7 +5,24 @@ pipeline {
         nodejs 'Node18'
     }
 
+    environment {
+        NODE_VERSION = '18.17.0'
+        PATH = "$PATH:/usr/local/bin"
+    }
+
     stages {
+        stage('Setup Node') {
+            steps {
+                sh '''
+                    curl -sL https://deb.nodesource.com/setup_18.x | bash -
+                    apt-get install -y nodejs
+                    npm install -g yarn
+                    node --version
+                    yarn --version
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -17,7 +34,10 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('frontend') {
-                    sh 'yarn install'
+                    sh '''
+                        yarn config set cache-folder ~/.cache/yarn
+                        yarn install --frozen-lockfile
+                    '''
                 }
             }
         }
