@@ -21,14 +21,9 @@ pipeline {
     stages {
         stage('SCM Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[
-                        credentialsId: 'jenkins-github-ssh',
-                        url: 'git@github.com:dxnghxn203/KLTN_2025.git'
-                    ]]
-                ])
+                git branch: 'main',
+                    credentialsId: 'hxn203',
+                    url: 'git@github.com:dxnghxn203/KLTN_2025.git'
             }
         }
 
