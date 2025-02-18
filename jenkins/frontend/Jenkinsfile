@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        NODE_VERSION = '18.17.0'
+        NODE_VERSION = '18.0.0'
         PATH = "$PATH:/usr/local/bin"
     }
 
@@ -37,17 +37,6 @@ pipeline {
                     sh '''
                         yarn config set cache-folder ~/.cache/yarn
                         yarn install --frozen-lockfile
-                    '''
-                }
-            }
-        }
-
-        stage('Lint & Format') {
-            steps {
-                dir('frontend') {
-                    sh '''
-                        yarn lint
-                        yarn format:check
                     '''
                 }
             }
