@@ -1,28 +1,11 @@
 pipeline {
     agent any
-    
+
     tools {
         nodejs 'Node18'
     }
 
-    environment {
-        NODE_VERSION = '18.0.0'
-        PATH = "$PATH:/usr/local/bin"
-    }
-
     stages {
-        stage('Setup Node') {
-            steps {
-                sh '''
-                    curl -sL https://deb.nodesource.com/setup_18.x | bash -
-                    apt-get install -y nodejs
-                    npm install -g yarn
-                    node --version
-                    yarn --version
-                '''
-            }
-        }
-
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -34,10 +17,15 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('frontend') {
-                    sh '''
-                        yarn config set cache-folder ~/.cache/yarn
-                        yarn install --frozen-lockfile
-                    '''
+                    script {
+                        def packageChanged = sh(script: 'git diff --name-only HEAD~1 HEAD | grep "frontend/package.json" || true', returnStatus: true) == 0
+                        def yarnLockChanged = sh(script: 'git diff --name-only HEAD~1 HEAD | grep "frontend/yarn.lock" || true', returnStatus: true) == 0
+                        if (packageChanged || yarnLockChanged) {
+                            sh 'yarn install --frozen-lockfile'
+                        } else {
+                            echo 'No changes in package.json or yarn.lock, skipping yarn install'
+                        }
+                    }
                 }
             }
         }
@@ -54,9 +42,6 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh 'yarn build'
-                    script {
-                        docker.build("frontend:${BUILD_NUMBER}")
-                    }
                 }
             }
         }
