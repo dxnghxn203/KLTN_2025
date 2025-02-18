@@ -21,9 +21,11 @@ pipeline {
     stages {
         stage('SCM Checkout') {
             steps {
-                git branch: 'main',
-                    credentialsId: 'jenkins-github-ssh',
-                    url: 'git@github.com:dxnghxn203/KLTN_2025.git'
+                sshagent(['jenkins-github-ssh']) {
+                    git branch: 'main',
+                        credentialsId: 'hxn203',
+                        url: 'git@github.com:dxnghxn203/KLTN_2025.git'
+                }
             }
         }
 
