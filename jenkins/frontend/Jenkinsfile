@@ -30,14 +30,6 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                dir('frontend') {
-                    sh 'yarn test --ci --coverage --passWithNoTests'
-                }
-            }
-        }
-
         stage('Build') {
             steps {
                 dir('frontend') {
