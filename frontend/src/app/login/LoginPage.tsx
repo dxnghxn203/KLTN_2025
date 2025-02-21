@@ -1,0 +1,20 @@
+"use client";
+import Footer from "@/components/Footer/Footer";
+import Header from "@/components/Header/Header";
+import LoginForm from "./LoginForm";
+
+export default function LoginPage() {
+  return (
+    <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
+      <Header />
+      <main
+        className="flex flex-col items-center space-y-8"
+        style={{ paddingTop: "4rem" }}
+      >
+        <h1 className="text-3xl font-extrabold text-black ">Đăng nhập </h1>
+        <LoginForm />
+      </main>
+      <Footer />
+    </div>
+  );
+}

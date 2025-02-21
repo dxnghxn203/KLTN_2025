@@ -1,6 +1,7 @@
-'use client'
-import { useProduct } from '@/store/product/productHooks';
-import { useEffect } from 'react';
+"use client";
+import { useProduct } from "@/store/product/productHooks";
+import { useEffect } from "react";
+import LoginPage from "./login/LoginPage";
 
 export default function Home() {
   const { listProduct, loading, fetchListProduct } = useProduct();
@@ -10,9 +11,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Trang chủ</h1>
-      {loading ? (
-        <p>Đang tải...</p>
-      ) : (<div>          {/* Add your home page content here */}        </div>)}    </div>);
+    <div>
+      <LoginPage />
+    </div>
+  );
 }
