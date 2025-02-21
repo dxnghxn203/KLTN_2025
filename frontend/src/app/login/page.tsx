@@ -1,7 +1,7 @@
 "use client";
 import Footer from "@/components/Footer/Footer";
 import Header from "@/components/Header/Header";
-import LoginForm from "./LoginForm";
+import LoginForm from "./loginForm";
 
 export default function LoginPage() {
   return (

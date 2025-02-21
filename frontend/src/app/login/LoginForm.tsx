@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import google from "../../../images/google.png";
-import { X } from "lucide-react";
 
 const LoginForm: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
   return (
     <div className="w-[393px] mx-auto">
       {/* Nút đăng nhập với Google */}
@@ -27,7 +24,7 @@ const LoginForm: React.FC = () => {
       {/* Form đăng nhập */}
       <form className="space-y-4 mt-4">
         {/* Tên đăng nhập */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <label htmlFor="username" className="text-sm font-medium">
             Tên đăng nhập hoặc email
           </label>
@@ -35,24 +32,13 @@ const LoginForm: React.FC = () => {
             <input
               id="username"
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none pr-10 transition-all"
             />
-            {username && (
-              <button
-                type="button"
-                onClick={() => setUsername("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            )}
           </div>
         </div>
 
         {/* Mật khẩu */}
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <label htmlFor="password" className="text-sm font-medium">
             Mật khẩu
           </label>
@@ -60,19 +46,8 @@ const LoginForm: React.FC = () => {
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none pr-10 transition-all"
             />
-            {password && (
-              <button
-                type="button"
-                onClick={() => setPassword("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            )}
           </div>
         </div>
 
@@ -98,12 +73,11 @@ const LoginForm: React.FC = () => {
       {/* Đăng ký */}
       <div className="flex gap-2 text-sm justify-center mt-4">
         <span className="font-medium">Bạn chưa có tài khoản?</span>
-        <a
-          href="#"
-          className="font-bold text-[#0053E2] hover:text-[#0042b4] transition-colors"
-        >
-          Đăng ký ngay
-        </a>
+        <Link href="/register" legacyBehavior>
+          <a className="font-bold text-[#0053E2] hover:text-[#0042b4] transition-colors">
+            Đăng ký ngay
+          </a>
+        </Link>
       </div>
     </div>
   );

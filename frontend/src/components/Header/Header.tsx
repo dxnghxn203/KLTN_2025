@@ -45,9 +45,12 @@ export default function Header() {
             <AiOutlineShoppingCart className="text-2xl" />
             <span className="ml-2 text-[14px] ">Giỏ hàng</span>
           </div>
-          <div className="flex items-center cursor-pointer">
+          <div
+            className="flex items-center cursor-pointer "
+            onClick={() => (window.location.href = "/login")}
+          >
             <HiOutlineUserCircle className="text-2xl" />
-            <span className="ml-2 text-[14px]">Đăng nhập</span>
+            <span className="ml-2 text-[14px] ">Đăng nhập</span>
           </div>
         </div>
       </header>
