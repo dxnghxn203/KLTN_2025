@@ -1,6 +1,12 @@
 pipeline {
     agent any
     
+    environment {
+        DOCKER_REGISTRY = "medicare_tracking-api"  // Replace with your Docker registry
+        DOCKER_IMAGE = "tracking-api"
+        IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}"
+    }
+    
     stages {
         stage('Checkout') {
             steps {
@@ -36,7 +42,17 @@ pipeline {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
                     script {
-                        sh "docker build -t tracking-api:${BUILD_NUMBER} ."
+                        sh "docker build -t ${IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                script {
+                    docker.withRegistry("", "dockerhub-id") {
+                        sh "docker push ${IMAGE_TAG}"
                     }
                 }
             }
@@ -51,7 +67,7 @@ pipeline {
                             cd ~/app && \
                             docker-compose stop tracking-api && \
                             docker-compose rm -f tracking-api && \
-                            echo "TRACKING_API_IMAGE=tracking-api:${BUILD_NUMBER}" > .env && \
+                            echo "TRACKING_API_IMAGE=${IMAGE_TAG}" > .env && \
                             docker-compose up -d tracking-api'
                     """
                 }

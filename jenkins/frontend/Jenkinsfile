@@ -5,6 +5,12 @@ pipeline {
         nodejs 'Node20'
     }
 
+    environment {
+        DOCKER_REGISTRY = "medicare_frontend"  // Replace with your Docker registry
+        DOCKER_IMAGE = "frontend"
+        IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -34,6 +40,19 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh 'yarn build'
+                    script {
+                        sh "docker build -t ${IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                script {
+                    docker.withRegistry("", "dockerhub-id") {
+                        sh "docker push ${IMAGE_TAG}"
+                    }
                 }
             }
         }
@@ -47,7 +66,7 @@ pipeline {
                             cd ~/app && \
                             docker-compose stop frontend && \
                             docker-compose rm -f frontend && \
-                            echo "FRONTEND_IMAGE=frontend:${BUILD_NUMBER}" > .env && \
+                            echo "FRONTEND_IMAGE=${IMAGE_TAG}" > .env && \
                             docker-compose up -d frontend'
                     """
                 }
