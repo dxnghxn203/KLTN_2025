@@ -10,11 +10,8 @@ export default function RegisterWithEmail() {
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
-      <main
-        className="flex flex-col items-center space-y-8"
-        style={{ paddingTop: "4rem" }}
-      >
-        <div className=" text-3xl font-extrabold text-black">Đăng ký</div>
+      <main className="flex flex-col items-center space-y-8 pt-14">
+        <div className=" mt-5 text-3xl font-extrabold text-black">Đăng ký</div>
         <RegisterForm />
       </main>
       <Footer />

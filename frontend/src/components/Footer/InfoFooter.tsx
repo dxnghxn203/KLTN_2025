@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
-import textlogo from "../../../images/medicare.png";
-import logoyellow from "../../../images/Mvang.png";
+import textlogo from "@/images/medicare.png";
+import logoyellow from "@/images/Mvang.png";
 
 const InfoFooter: React.FC = () => {
   return (

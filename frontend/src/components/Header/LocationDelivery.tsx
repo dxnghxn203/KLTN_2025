@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import delivery from "../../../images/c.png";
+import delivery from "@/images/c.png";
 
 export default function LocationDelivery() {
   return (

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { LuSearch } from "react-icons/lu";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { HiOutlineUserCircle } from "react-icons/hi2";
@@ -13,14 +14,16 @@ export default function Header() {
       <header className="bg-[#0053E2] h-[72px] w-full flex items-center justify-between px-10">
         {/* Giảm khoảng cách giữa LocationDelivery và Search */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center">
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/fc51114a36c58b35df723052a4789e3d3165c5e63dfdeb9c5ad43c09f3cb03e6?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-              alt="Company logo"
-              className="object-contain shrink-0 max-w-full aspect-[2.16] w-[149px]"
-            />
-          </div>
+          <Link href="/home">
+            <div className="flex items-center cursor-pointer">
+              <img
+                loading="lazy"
+                src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/fc51114a36c58b35df723052a4789e3d3165c5e63dfdeb9c5ad43c09f3cb03e6?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
+                alt="Company logo"
+                className="object-contain shrink-0 max-w-full aspect-[2.16] w-[149px]"
+              />
+            </div>
+          </Link>
           <LocationDelivery />
 
           {/* Ô tìm kiếm */}
@@ -45,13 +48,12 @@ export default function Header() {
             <AiOutlineShoppingCart className="text-2xl" />
             <span className="ml-2 text-[14px] ">Giỏ hàng</span>
           </div>
-          <div
-            className="flex items-center cursor-pointer "
-            onClick={() => (window.location.href = "/login")}
-          >
-            <HiOutlineUserCircle className="text-2xl" />
-            <span className="ml-2 text-[14px] ">Đăng nhập</span>
-          </div>
+          <Link href="/login">
+            <div className="flex items-center cursor-pointer">
+              <HiOutlineUserCircle className="text-2xl" />
+              <span className="ml-2 text-[14px]">Đăng nhập</span>
+            </div>
+          </Link>
         </div>
       </header>
 

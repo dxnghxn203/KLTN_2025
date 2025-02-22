@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer/Footer";
 import Header from "@/components/Header/Header";
-import google from "../../../images/google.png";
+import google from "@/images/google.png";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,10 +12,7 @@ export default function RegisterPage() {
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
-      <main
-        className="flex flex-col items-center space-y-8"
-        style={{ paddingTop: "4rem" }}
-      >
+      <main className="flex flex-col items-center space-y-8 pt-14">
         <div className="mt-5 text-3xl font-extrabold text-black">Đăng ký</div>
 
         {/* Button đăng ký với Google */}
@@ -32,12 +29,11 @@ export default function RegisterPage() {
           <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
         </div>
 
-        <button
-          className="px-16 py-5 mt-8 h-[55px] text-sm font-semibold text-black border border-solid border-black border-opacity-10 rounded-[30px] w-[400px] max-md:px-5"
-          onClick={() => (window.location.href = "/register/email")}
-        >
-          Tiếp tục với email
-        </button>
+        <Link href="/register/email" passHref>
+          <button className="px-16 py-5 mt-8 h-[55px] text-sm font-semibold text-black border border-solid border-black border-opacity-10 rounded-[30px] w-[400px] max-md:px-5">
+            Tiếp tục với email
+          </button>
+        </Link>
 
         <div className="mt-10 text-xs text-center text-black/70 w-[410px] max-md:mt-10">
           Bằng cách tạo một tài khoản, bạn đồng ý với các Điều khoản dịch vụ,
