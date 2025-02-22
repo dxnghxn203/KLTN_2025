@@ -13,11 +13,21 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        python3 -m venv venv
-                        . venv/bin/activate
-                        pip install --no-cache-dir -r requirements.txt
-                    '''
+                    script {
+                        def requirementsChanged = sh(script: 'git diff --name-only HEAD~1 HEAD | grep "tracking-manager/packages/tracking-api/requirements.txt" || true', returnStatus: true) == 0
+                        if (requirementsChanged) {
+                            echo 'No changes in requirements.txt, skipping pip install'
+                        } else {
+                            echo 'requirements.txt has changed, running pip install'
+                            sh '''
+                                sudo apt-get update
+                                sudo apt-get install -y python3.11-venv
+                                python3 -m venv venv
+                                . venv/bin/activate
+                                pip install --no-cache-dir -r requirements.txt
+                            '''
+                        }
+                    }
                 }
             }
         }
