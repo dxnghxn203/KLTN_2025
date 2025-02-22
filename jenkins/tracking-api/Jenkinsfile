@@ -1,8 +1,11 @@
 pipeline {
     agent any
     
-    tools {
-        python 'Python3.11'
+    options {
+        timestamps()
+        ansiColor('xterm')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
     }
 
     stages {
@@ -18,9 +21,9 @@ pipeline {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
                     sh '''
-                        python -m venv venv
+                        python3 -m venv venv
                         . venv/bin/activate
-                        pip install -r requirements.txt
+                        pip install --no-cache-dir -r requirements.txt
                     '''
                 }
             }
