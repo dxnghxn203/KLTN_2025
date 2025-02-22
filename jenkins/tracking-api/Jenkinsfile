@@ -32,11 +32,23 @@ pipeline {
             }
         }
 
+        stage('Test') {
+            steps {
+                dir('tracking-manager/packages/tracking-api') {
+                    sh '''
+                        . venv/bin/activate
+                        mkdir -p test-results
+                        python -m pytest --junitxml=test-results/junit.xml
+                    '''
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
                     script {
-                        docker.build("tracking-api:${BUILD_NUMBER}")
+                        docker.build("tracking-api:${BUILD_NUMBER}", ".")
                     }
                 }
             }
@@ -61,7 +73,7 @@ pipeline {
 
     post {
         always {
-            junit '**/test-results/junit.xml'
+            junit 'tracking-manager/packages/tracking-api/test-results/junit.xml'
             cleanWs()
         }
     }
