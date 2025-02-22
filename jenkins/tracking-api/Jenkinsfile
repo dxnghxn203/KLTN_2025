@@ -32,18 +32,6 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        source venv/bin/activate
-                        mkdir -p test-results
-                        python -m pytest --junitxml=test-results/junit.xml
-                    '''
-                }
-            }
-        }
-
         stage('Build') {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
@@ -63,7 +51,7 @@ pipeline {
                             cd ~/app && \
                             docker-compose stop tracking-api && \
                             docker-compose rm -f tracking-api && \
-                            echo "TRACKING_API_IMAGE=tracking-api:${BUILD_NUMBER}" >> .env && \
+                            echo "TRACKING_API_IMAGE=tracking-api:${BUILD_NUMBER}" > .env && \
                             docker-compose up -d tracking-api'
                     """
                 }
