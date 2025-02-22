@@ -36,7 +36,7 @@ pipeline {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
                     script {
-                        docker.build("tracking-api:${BUILD_NUMBER}", ".")
+                        sh "docker build -t tracking-api:${BUILD_NUMBER} ."
                     }
                 }
             }
