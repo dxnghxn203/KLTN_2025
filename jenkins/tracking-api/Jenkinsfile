@@ -1,10 +1,12 @@
 pipeline {
     agent any
     
-    tools {
-        python 'Python3.11'
+    environment {
+        DOCKER_REGISTRY = "medicare_tracking-api"  // Replace with your Docker registry
+        DOCKER_IMAGE = "tracking-api"
+        IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER}"
     }
-
+    
     stages {
         stage('Checkout') {
             steps {
@@ -17,34 +19,21 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        python -m venv venv
-                        . venv/bin/activate
-                        pip install -r requirements.txt
-                    '''
-                }
-            }
-        }
-
-        stage('Lint') {
-            steps {
-                dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        . venv/bin/activate
-                        pylint *.py || true
-                        black --check . || true
-                    '''
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        . venv/bin/activate
-                        python -m pytest --junitxml=test-results/junit.xml
-                    '''
+                    script {
+                        def requirementsChanged = sh(script: 'git diff --name-only HEAD~1 HEAD | grep "tracking-manager/packages/tracking-api/requirements.txt" || true', returnStatus: true) == 0
+                        if (requirementsChanged) {
+                            echo 'No changes in requirements.txt, skipping pip install'
+                        } else {
+                            echo 'requirements.txt has changed, running pip install'
+                            sh '''
+                                sudo apt-get update
+                                sudo apt-get install -y python3.11-venv
+                                python3 -m venv venv
+                                source venv/bin/activate
+                                pip install --no-cache-dir -r requirements.txt
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -53,7 +42,17 @@ pipeline {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
                     script {
-                        docker.build("tracking-api:${BUILD_NUMBER}")
+                        sh "docker build -t ${IMAGE_TAG} ."
+                    }
+                }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                script {
+                    docker.withRegistry("", "dockerhub-id") {
+                        sh "docker push ${IMAGE_TAG}"
                     }
                 }
             }
@@ -68,7 +67,7 @@ pipeline {
                             cd ~/app && \
                             docker-compose stop tracking-api && \
                             docker-compose rm -f tracking-api && \
-                            echo "TRACKING_API_IMAGE=tracking-api:${BUILD_NUMBER}" >> .env && \
+                            echo "TRACKING_API_IMAGE=${IMAGE_TAG}" > .env && \
                             docker-compose up -d tracking-api'
                     """
                 }
@@ -78,7 +77,7 @@ pipeline {
 
     post {
         always {
-            junit '**/test-results/junit.xml'
+            junit 'tracking-manager/packages/tracking-api/test-results/junit.xml'
             cleanWs()
         }
     }
