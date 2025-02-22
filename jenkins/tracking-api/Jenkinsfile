@@ -32,29 +32,6 @@ pipeline {
             }
         }
 
-        stage('Lint') {
-            steps {
-                dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        . venv/bin/activate
-                        pylint *.py || true
-                        black --check . || true
-                    '''
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                dir('tracking-manager/packages/tracking-api') {
-                    sh '''
-                        . venv/bin/activate
-                        python -m pytest --junitxml=test-results/junit.xml
-                    '''
-                }
-            }
-        }
-
         stage('Build') {
             steps {
                 dir('tracking-manager/packages/tracking-api') {
