@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/Footer/Footer";
-import Header from "@/components/Header/Header";
+import Footer from "@/components/footer/footer";
+import Header from "@/components/header/header";
 import google from "@/images/google.png";
 import Image from "next/image";
 import Link from "next/link";
@@ -45,7 +45,7 @@ export default function RegisterPage() {
             Bạn đã có tài khoản?
           </div>
           <Link href="/login" legacyBehavior>
-            <a className="font-bold text-[#0053E2] hover:text-[#0042b4] transition-colors">
+            <a className="font-bold text-[#0053E2] hover:text-[#002E99] transition-colors">
               Đăng nhập
             </a>
           </Link>

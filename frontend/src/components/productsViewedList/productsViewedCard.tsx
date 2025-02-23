@@ -4,7 +4,7 @@ import ProductDialog from "@/components/dialog/productDialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
 
-const ProductCard: React.FC<ProductData> = ({
+const productsViewedCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -101,4 +101,4 @@ const ProductCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductCard;
+export default productsViewedCard;

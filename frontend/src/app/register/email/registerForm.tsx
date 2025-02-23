@@ -7,7 +7,7 @@ const RegisterForm: React.FC = () => {
     <div className="w-[393px] mx-auto h-full">
       <Link
         href="/register"
-        className="absolute left-4 top-[130px] inline-flex items-center text-blue-700 hover:text-blue-800 transition-colors"
+        className="absolute left-4 top-[130px] inline-flex items-center text-blue-700 hover:text-[#002E99] transition-colors"
       >
         <ChevronLeft size={20} />
         <span>Quay lại</span>

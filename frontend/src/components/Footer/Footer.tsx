@@ -1,8 +1,7 @@
 "use client";
 
-import InfoFooter from "./InfoFooter";
-import SubscribeNewsletter from "./SubscribeNewsletter";
-
+import InfoFooter from "./infoFooter";
+import SubscribeNewsletter from "./subscribeNewsletter";
 
 export default function Footer() {
   return (

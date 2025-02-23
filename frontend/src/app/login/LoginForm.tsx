@@ -55,7 +55,7 @@ const LoginForm: React.FC = () => {
         <div className="flex justify-end">
           <a
             href="#"
-            className="text-sm font-bold text-[#0053E2] hover:text-[#0042b4] transition-colors"
+            className="text-sm font-bold text-[#0053E2] hover:text-[#002E99] transition-colors"
           >
             Quên mật khẩu?
           </a>
@@ -74,7 +74,7 @@ const LoginForm: React.FC = () => {
       <div className="flex gap-2 text-sm justify-center mt-4">
         <span className="font-medium">Bạn chưa có tài khoản?</span>
         <Link href="/register" legacyBehavior>
-          <a className="font-bold text-[#0053E2] hover:text-[#0042b4] transition-colors">
+          <a className="font-bold text-[#0053E2] hover:text-[#002E99] transition-colors">
             Đăng ký ngay
           </a>
         </Link>

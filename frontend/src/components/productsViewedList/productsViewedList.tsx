@@ -1,5 +1,5 @@
 import React from "react";
-import ProductCard from "./productDealsCard";
+import ProductCard from "./productsViewedCard";
 import { ProductData } from "./types";
 import medicine1 from "@/images/medicinee.png";
 
@@ -9,7 +9,7 @@ const productData: ProductData[] = [
     imageSrc: medicine1,
     category: "Dinh dưỡng",
     rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile. Salon World Safety Blue Nitrile.",
+    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
     price: "150.000đ/Chai",
     originalPrice: "180.000đ",
   },
@@ -18,43 +18,7 @@ const productData: ProductData[] = [
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
-    price: "150.000đ/Chai",
-  },
-  {
-    discount: "-20%",
-    imageSrc: medicine1,
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
-    price: "150.000đ/Chai",
-    originalPrice: "180.000đ",
-  },
-  {
-    discount: "-20%",
-    imageSrc: medicine1,
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
-    price: "150.000đ/Chai",
-    originalPrice: "180.000đ",
-  },
-  {
-    discount: "-20%",
-    imageSrc: medicine1,
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
-    price: "150.000đ/Chai",
-    originalPrice: "180.000đ",
-  },
-  {
-    discount: "-20%",
-    imageSrc: medicine1,
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
-    price: "150.000đ/Chai",
-    originalPrice: "180.000đ",
+    price: "190.000đ/Chai",
   },
   {
     discount: "-20%",
@@ -76,7 +40,7 @@ const productData: ProductData[] = [
   },
 ];
 
-const ProductDealsList: React.FC = () => {
+const productsViewedList: React.FC = () => {
   return (
     <div className="px-6 w-full max-md:px-5 max-md:max-w-full">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black max-md:max-w-full mt-[-30px]">
@@ -101,4 +65,4 @@ const ProductDealsList: React.FC = () => {
   );
 };
 
-export default ProductDealsList;
+export default productsViewedList;

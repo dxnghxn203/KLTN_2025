@@ -1,5 +1,5 @@
 import React from "react";
-import ProductCard from "./ProductCard";
+import ProductCard from "./productCard";
 import { ProductData } from "./types";
 import medicine1 from "@/images/medicinee.png";
 
@@ -18,7 +18,7 @@ const productData: ProductData[] = [
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
-    price: "150.000đ/Chai",
+    price: "190.000đ/Chai",
   },
   {
     discount: "-20%",

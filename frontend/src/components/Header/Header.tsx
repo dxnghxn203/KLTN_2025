@@ -1,18 +1,23 @@
-"use client";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { LuSearch } from "react-icons/lu";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 
-import LocationDelivery from "./LocationDelivery";
-import MenuHeader from "./MenuHeader";
+import LocationDelivery from "./locationDelivery";
+import MenuHeader from "./menuHeader";
+import LocationDialog from "@/components/dialog/locationDialog/locationDialog";
 
 export default function Header() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const pathname = usePathname(); // Lấy đường dẫn hiện tại
+
+  const cartItemCount = 3; // Thay bằng dữ liệu thực tế
+
   return (
     <div className="fixed top-0 left-0 w-full z-50">
-      {/* Header chính */}
-      <header className="bg-[#0053E2] h-[72px] w-full flex items-center justify-between px-10">
-        {/* Giảm khoảng cách giữa LocationDelivery và Search */}
+      <header className="bg-[#0053E2] h-[72px] w-full flex items-center justify-between px-8">
         <div className="flex items-center gap-4">
           <Link href="/home">
             <div className="flex items-center cursor-pointer">
@@ -24,7 +29,11 @@ export default function Header() {
               />
             </div>
           </Link>
-          <LocationDelivery />
+
+          {/* Bấm vào LocationDelivery để mở Dialog */}
+          <div onClick={() => setIsDialogOpen(true)} className="cursor-pointer">
+            <LocationDelivery />
+          </div>
 
           {/* Ô tìm kiếm */}
           <div className="flex items-center bg-white rounded-full px-4 py-2 w-[480px] h-[48px]">
@@ -43,13 +52,36 @@ export default function Header() {
         </div>
 
         {/* Giỏ hàng & Đăng nhập */}
-        <div className="flex items-center gap-6 text-white">
-          <div className="flex items-center cursor-pointer">
-            <AiOutlineShoppingCart className="text-2xl" />
-            <span className="ml-2 text-[14px] ">Giỏ hàng</span>
-          </div>
-          <Link href="/login">
-            <div className="flex items-center cursor-pointer">
+        <div className="flex items-center gap-2 text-white">
+          <Link href="/cartEmpty" className="focus:outline-none">
+            <div
+              className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full w-[120px] h-[48px] transition ${
+                pathname === "/cartEmpty"
+                  ? "bg-[#002E99]"
+                  : "hover:bg-[#004BB7]"
+              }`}
+            >
+              {/* Icon Giỏ hàng */}
+              <div className="relative">
+                <AiOutlineShoppingCart className="text-2xl" />
+
+                {/* Badge số lượng sản phẩm */}
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
+              </div>
+
+              <span className="ml-2 text-[14px]">Giỏ hàng</span>
+            </div>
+          </Link>
+          <Link href="/login" className="focus:outline-none">
+            <div
+              className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
+                pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+              }`}
+            >
               <HiOutlineUserCircle className="text-2xl" />
               <span className="ml-2 text-[14px]">Đăng nhập</span>
             </div>
@@ -59,6 +91,12 @@ export default function Header() {
 
       {/* Menu cố định dưới header */}
       <MenuHeader />
+
+      {/* Dialog chọn vị trí */}
+      <LocationDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
     </div>
   );
 }

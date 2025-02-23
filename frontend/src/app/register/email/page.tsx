@@ -1,8 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import RegisterForm from "./registerForm";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
+import Header from "@/components/header/header";
+import Footer from "@/components/footer/footer";
 
 export default function RegisterWithEmail() {
   const router = useRouter(); // Khởi tạo router
