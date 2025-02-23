@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import cartempty from "@/images/empty-cart.png";
+import ProductsViewedList from "@/components/productsViewedList/productsViewedList";
 
 const CartEmpty: React.FC = () => {
   return (

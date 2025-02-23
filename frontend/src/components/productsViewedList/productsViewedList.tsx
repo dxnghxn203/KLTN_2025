@@ -40,7 +40,7 @@ const productData: ProductData[] = [
   },
 ];
 
-const productsViewedList: React.FC = () => {
+const ProductsViewedList: React.FC = () => {
   return (
     <div className="px-6 w-full max-md:px-5 max-md:max-w-full">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black max-md:max-w-full mt-[-30px]">
@@ -65,4 +65,4 @@ const productsViewedList: React.FC = () => {
   );
 };
 
-export default productsViewedList;
+export default ProductsViewedList;
