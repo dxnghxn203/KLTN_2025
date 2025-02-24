@@ -5,10 +5,11 @@ import Image from "next/image";
 
 interface ProductDialogProps {
   name: string;
-  price: string;
+  price: number;
   discount: string;
-  originalPrice: string;
+  originalPrice: number;
   imageSrc: string | StaticImageData;
+  unit: string;
   onClose: () => void;
 }
 
@@ -18,6 +19,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
   discount,
   originalPrice,
   imageSrc,
+  unit,
   onClose,
 }) => {
   const [quantity, setQuantity] = useState(1);
@@ -68,14 +70,16 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
                   {discount}
                 </span>
               )}
-              {originalPrice && (
+              {originalPrice != null && originalPrice !== 0 && (
                 <span className="text-xl font-bold text-zinc-400 line-through flex items-center justify-center">
-                  {originalPrice}
+                  {Number(originalPrice).toLocaleString("vi-VN")}đ
                 </span>
               )}
             </div>
 
-            <div className="mt-2 text-4xl font-bold text-blue-700">{price}</div>
+            <div className="mt-2 text-4xl font-bold text-blue-700">
+              {price.toLocaleString("vi-VN")}đ/{unit}
+            </div>
 
             <div className="mt-6 flex items-center gap-4">
               <span className="font-semibold">Số lượng:</span>

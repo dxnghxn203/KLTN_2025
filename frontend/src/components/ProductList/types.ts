@@ -6,6 +6,7 @@ export interface ProductData {
   category: string;
   rating: number;
   name: string;
-  price: string;
-  originalPrice?: string;
+  price: number;
+  originalPrice?: number;
+  unit: string;
 }

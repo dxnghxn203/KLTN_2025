@@ -1,10 +1,29 @@
-import React from "react";
+import VoucherDialog from "@/components/dialog/voucherDialog/voucherDialog";
+import React, { useState } from "react";
 
-const OrderSummary: React.FC = () => {
+interface OrderSummaryProps {
+  totalAmount: number;
+  totalOriginPrice: number;
+  totalDiscount: number;
+  totalSave: number;
+}
+
+const OrderSummary: React.FC<OrderSummaryProps> = ({
+  totalAmount,
+  totalOriginPrice,
+  totalDiscount,
+  totalSave,
+}) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   return (
     <div className="flex flex-col ml-5 w-[33%] max-md:ml-0 max-md:w-full">
-      <div className="flex flex-col items-start pt-4 pr-7 pb-8 pl-3.5 mx-auto w-full font-medium rounded-xl bg-slate-100 max-md:pr-5 max-md:mt-8">
-        <div className="flex gap-5 justify-between self-stretch px-4 py-3.5 text-sm text-blue-700 bg-indigo-50 rounded-xl max-md:mr-0.5 max-md:ml-2">
+      <div className="flex flex-col items-start pt-4 pr-7 pb-8 pl-3.5 mx-auto w-full font-medium rounded-xl bg-[#F5F7F9] max-md:pr-5 max-md:mt-8">
+        <div
+          className="flex gap-5 justify-between self-stretch px-4 py-3.5 text-sm text-[#0053E2] bg-indigo-50 rounded-xl max-md:mr-0.5 max-md:ml-2
+        "
+          onClick={() => setIsDialogOpen(true)}
+        >
           <div className="self-start">Áp dụng ưu đãi để được giảm giá</div>
           <img
             loading="lazy"
@@ -13,43 +32,55 @@ const OrderSummary: React.FC = () => {
             alt=""
           />
         </div>
-        <div className="flex gap-5 justify-between items-start mt-4 ml-2.5 max-w-full text-sm w-[337px]">
-          <div className="flex flex-col text-black">
-            <div className="self-start">Tổng tiền</div>
-            <div className="mt-5">Giảm giá trực tiếp</div>
-            <div className="mt-5 max-md:mr-1">Giảm giá voucher</div>
-            <div className="self-start mt-5">Tiết kiệm được</div>
+
+        <div className="flex flex-col mt-4 ml-2.5 max-w-full text-sm w-[337px]">
+          <div className="flex justify-between text-black">
+            <div>Tổng tiền</div>
+            <div>{totalOriginPrice.toLocaleString("vi-VN")}đ</div>
           </div>
-          <div className="flex flex-col whitespace-nowrap">
-            <div className="text-black">479.000đ</div>
-            <div className="flex flex-col pl-1.5 mt-5 text-amber-300">
-              <div>-81.080đ</div>
-              <div className="self-end mt-5">0đ</div>
-              <div className="self-start mt-5 max-md:ml-1.5">81.080đ</div>
+          <div className="flex justify-between text-black mt-5">
+            <div>Giảm giá trực tiếp</div>
+            <div className="text-amber-300">
+              - {totalDiscount.toLocaleString("vi-VN")}đ
+            </div>
+          </div>
+          <div className="flex justify-between text-black mt-5">
+            <div>Giảm giá voucher</div>
+            <div className="text-amber-300">0đ</div>
+          </div>
+          <div className="flex justify-between text-black mt-5">
+            <div>Tiết kiệm được</div>
+            <div className="text-amber-300">
+              {totalSave.toLocaleString("vi-VN")}đ
             </div>
           </div>
         </div>
-        <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-solid border-black border-opacity-10 w-[337px]" />
-        <div className="flex gap-5 justify-between items-start mt-3 ml-2.5 max-w-full w-[337px]">
-          <div className="mt-2.5 text-xl text-black">Thành tiền</div>
-          <div className="flex gap-1 whitespace-nowrap">
-            <div className="grow self-start mt-4 text-sm text-black">
-              479.000đ
+
+        <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]" />
+
+        <div className="flex gap-5 justify-between items-center mt-3 ml-2.5 max-w-full w-[337px]">
+          <div className="text-xl text-black">Thành tiền</div>
+          <div className="flex gap-2 whitespace-nowrap">
+            <div className="text-[16px] pt-1 text-gray-500 line-through">
+              {totalOriginPrice.toLocaleString("vi-VN")}đ
             </div>
-            <div className="text-xl text-blue-700">397.920đ</div>
+            <div className="text-xl font-semisemibold text-blue-700">
+              {" "}
+              {totalAmount.toLocaleString("vi-VN")}đ
+            </div>
           </div>
         </div>
+
         <button className="px-16 py-4 mt-7 ml-2.5 max-w-full text-base font-bold text-white bg-blue-700 rounded-3xl w-[337px] max-md:px-5">
           Mua hàng
         </button>
-        <div className="self-stretch mt-7 text-sm text-center text-black">
-          Bằng việc tiến hành đặt mua hàng, bạn đồng ý với
-          <br />
-          Điều khoản dịch vụ và Chính sách xử lý dữ liệu cá nhân
-          <br />
-          của Nhà thuốc FPT Long Châu
+
+        <div className="mt-7 text-sm text-center font-normal">
+          Bằng việc tiến hành đặt mua hàng, bạn đồng ý với Điều khoản dịch vụ và
+          Chính sách xử lý dữ liệu cá nhân của Nhà thuốc Medicare
         </div>
       </div>
+      {isDialogOpen && <VoucherDialog onClose={() => setIsDialogOpen(false)} />}
     </div>
   );
 };

@@ -12,16 +12,17 @@ const ProductsViewedCard: React.FC<ProductData> = ({
   name,
   price,
   originalPrice,
+  unit,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <>
-      <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[180px] w-[275px] relative ">
+      <div className="flex text-xs font-bold whitespace-normal ">
+        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[180px] w-[275px] overflow-visible">
           {/* Ảnh sản phẩm */}
           <Link href="/detailProduct" legacyBehavior>
-            <div className="relative p-6">
+            <div className="relative p-6 z-0">
               <Image
                 src={imageSrc}
                 alt={name}
@@ -31,7 +32,7 @@ const ProductsViewedCard: React.FC<ProductData> = ({
                 priority
               />
               <div
-                className={`absolute top-8 right-0 bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md cursor-pointer ${
+                className={`absolute top-0 right-0 bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md cursor-pointer ${
                   discount ? "" : "invisible"
                 }`}
               >
@@ -64,13 +65,15 @@ const ProductsViewedCard: React.FC<ProductData> = ({
             {/* Giá sản phẩm */}
             <div className="mt-2">
               <div
-                className={`text-sm text-neutral-300 line-through ${
+                className={`text-sm text-zinc-400 line-through ${
                   originalPrice ? "" : "invisible"
                 }`}
               >
-                {originalPrice || "Giá gốc"}
+                {(originalPrice || 0).toLocaleString("vi-VN")}đ
               </div>
-              <div className="text-lg font-bold text-[#0053E2]">{price}</div>
+              <div className="text-lg font-bold text-[#0053E2]">
+                {price.toLocaleString("vi-VN")}đ/{unit}
+              </div>
             </div>
 
             {/* Nút chọn sản phẩm */}
@@ -92,8 +95,9 @@ const ProductsViewedCard: React.FC<ProductData> = ({
           name={name}
           price={price}
           discount={discount ?? ""}
-          originalPrice={originalPrice ?? ""}
+          originalPrice={originalPrice ?? 0}
           imageSrc={imageSrc}
+          unit={unit}
           onClose={() => setIsDialogOpen(false)}
         />
       )}

@@ -17,7 +17,7 @@ const InfoFooter: React.FC = () => {
               width={95}
               height={95}
               priority
-              className="object-contain shrink-0 aspect-square w-[90px] z-0"
+              className="object-contain aspect-square w-[90px] z-0"
             />
             <Image
               src={textlogo}

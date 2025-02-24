@@ -11,6 +11,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
   name,
   price,
   originalPrice,
+  unit,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -61,13 +62,15 @@ const ProductDealsCard: React.FC<ProductData> = ({
             {/* Giá sản phẩm */}
             <div className="mt-2">
               <div
-                className={`text-sm text-neutral-300 line-through ${
+                className={`text-sm text-zinc-400 line-through ${
                   originalPrice ? "" : "invisible"
                 }`}
               >
-                {originalPrice || "Giá gốc"}
+                {(originalPrice || 0).toLocaleString("vi-VN")}đ
               </div>
-              <div className="text-lg font-bold text-[#0053E2]">{price}</div>
+              <div className="text-lg font-bold text-[#0053E2]">
+                {price.toLocaleString("vi-VN")}đ/{unit}
+              </div>
             </div>
 
             {/* Nút chọn sản phẩm */}
@@ -89,8 +92,9 @@ const ProductDealsCard: React.FC<ProductData> = ({
           name={name}
           price={price}
           discount={discount ?? ""}
-          originalPrice={originalPrice ?? ""}
+          originalPrice={originalPrice ?? 0}
           imageSrc={imageSrc}
+          unit={unit}
           onClose={() => setIsDialogOpen(false)}
         />
       )}
