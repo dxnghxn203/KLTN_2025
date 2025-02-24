@@ -29,9 +29,7 @@ export default function Home() {
         <ProductDealsList />
       </main>
       <IntroMedicare />
-
       <HealthCorner />
-
       <Footer />
     </div>
   );
