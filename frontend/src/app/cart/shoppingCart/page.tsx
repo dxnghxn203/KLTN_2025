@@ -22,7 +22,7 @@ const unitOptions = ["Cái", "Hộp", "Chai", "Gói"];
 const productsData: Product[] = [
   {
     id: 1,
-    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo",
+    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo ",
     image: medicine,
     price: 100000,
     originPrice: 300000,
@@ -31,11 +31,29 @@ const productsData: Product[] = [
   },
   {
     id: 2,
-    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo",
+    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo ",
     image: medicine,
     price: 100000,
     originPrice: 300000,
-    quantity: 2,
+    quantity: 1,
+    unit: "Cái",
+  },
+  {
+    id: 3,
+    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo ",
+    image: medicine,
+    price: 100000,
+    originPrice: 300000,
+    quantity: 1,
+    unit: "Cái",
+  },
+  {
+    id: 4,
+    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo ",
+    image: medicine,
+    price: 100000,
+    originPrice: 300000,
+    quantity: 1,
     unit: "Cái",
   },
 ];
@@ -104,9 +122,9 @@ const ShoppingCart: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col px-5 ">
+    <div className="flex flex-col px-5">
       {/* Đặt div chứa link riêng biệt */}
-      <div className=" pt-14 left-5">
+      <div className="pt-14">
         <Link
           href="/home"
           className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
@@ -117,9 +135,12 @@ const ShoppingCart: React.FC = () => {
       </div>
 
       <div className="flex pt-4 flex-col lg:flex-row gap-6">
-        <div className="flex-1 bg-[#F5F7F9] rounded-xl">
-          <div className="flex items-center justify-between border-b border-black border-opacity-10 pb-2 px-4 text-sm text-black font-medium">
-            <div className="w-[40%] p-5 flex items-center">
+        <div
+          className="flex-col bg-[#F5F7F9] rounded-xl "
+          style={{ height: `${products.length * 20}%` }}
+        >
+          <div className="flex items-center justify-between border-b px-4 border-black border-opacity-10 text-sm text-black font-medium">
+            <div className="w-[55%] p-5 flex items-center">
               <input
                 type="checkbox"
                 id="select-all"
@@ -144,13 +165,17 @@ const ShoppingCart: React.FC = () => {
             <div className="w-[15%] text-center">Xóa</div>
           </div>
 
-          {products.map((product) => (
+          {products.map((product, index) => (
             <div
               key={product.id}
               className="sticky flex items-center justify-between py-4 px-4 text-sm "
             >
-              <div className="absolute bottom-0 left-5 right-5 border-b border-black border-opacity-10"></div>
-              <div className="w-[40%] flex items-center px-5 py-2">
+              <div
+                className={`absolute bottom-0 left-5 right-5 border-b border-black border-opacity-10 ${
+                  index === products.length - 1 ? "hidden" : ""
+                }`}
+              ></div>
+              <div className="w-[55%] flex items-center px-5 py-2">
                 <input
                   checked={selectedProducts.includes(product.id)}
                   onChange={() => handleSelectProduct(product.id)}
@@ -181,7 +206,7 @@ const ShoppingCart: React.FC = () => {
                   height={55}
                   className="ml-4 rounded-lg border border-stone-300"
                 />
-                <span className="ml-4 line-clamp-3 overflow-hidden text-ellipsis">
+                <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis">
                   {product.name}
                 </span>
               </div>

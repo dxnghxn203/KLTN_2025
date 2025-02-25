@@ -22,7 +22,7 @@ const ProductsViewedCard: React.FC<ProductData> = ({
         <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[180px] w-[275px] overflow-visible">
           {/* Ảnh sản phẩm */}
           <Link href="/detailProduct" legacyBehavior>
-            <div className="relative p-6 z-0">
+            <div className="relative p-6">
               <Image
                 src={imageSrc}
                 alt={name}
@@ -32,7 +32,7 @@ const ProductsViewedCard: React.FC<ProductData> = ({
                 priority
               />
               <div
-                className={`absolute top-0 right-0 bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md cursor-pointer ${
+                className={`absolute top-8 right-0 bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md cursor-pointer ${
                   discount ? "" : "invisible"
                 }`}
               >

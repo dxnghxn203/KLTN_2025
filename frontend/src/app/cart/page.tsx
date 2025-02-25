@@ -1,9 +1,9 @@
 "use client";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-import CartEmpty from "./cartEmpty";
+import CartEmpty from "./cartEmpty/page";
 import ProductsViewedList from "@/components/productsViewedList/productsViewedList";
-import ShoppingCart from "../shoppingCart/page";
+import ShoppingCart from "./shoppingCart/page";
 
 export default function Home() {
   return (

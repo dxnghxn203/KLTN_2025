@@ -53,12 +53,10 @@ export default function Header() {
 
         {/* Giỏ hàng & Đăng nhập */}
         <div className="flex items-center gap-2 text-white">
-          <Link href="/cartEmpty" className="focus:outline-none">
+          <Link href="/cart" className="focus:outline-none">
             <div
               className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full w-[120px] h-[48px] transition ${
-                pathname === "/cartEmpty"
-                  ? "bg-[#002E99]"
-                  : "hover:bg-[#004BB7]"
+                pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
               }`}
             >
               {/* Icon Giỏ hàng */}

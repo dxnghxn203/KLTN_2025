@@ -1,5 +1,6 @@
 import VoucherDialog from "@/components/dialog/voucherDialog/voucherDialog";
 import React, { useState } from "react";
+import Link from "next/link";
 
 interface OrderSummaryProps {
   totalAmount: number;
@@ -20,8 +21,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     <div className="flex flex-col ml-5 w-[33%] max-md:ml-0 max-md:w-full">
       <div className="flex flex-col items-start pt-4 pr-7 pb-8 pl-3.5 mx-auto w-full font-medium rounded-xl bg-[#F5F7F9] max-md:pr-5 max-md:mt-8">
         <div
-          className="flex gap-5 justify-between self-stretch px-4 py-3.5 text-sm text-[#0053E2] bg-indigo-50 rounded-xl max-md:mr-0.5 max-md:ml-2
-        "
+          className="flex gap-5 justify-between self-stretch px-4 py-3.5 text-sm text-[#0053E2] bg-indigo-50 rounded-xl max-md:mr-0.5 max-md:ml-2 cursor-pointer"
           onClick={() => setIsDialogOpen(true)}
         >
           <div className="self-start">Áp dụng ưu đãi để được giảm giá</div>
@@ -64,16 +64,19 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             <div className="text-[16px] pt-1 text-gray-500 line-through">
               {totalOriginPrice.toLocaleString("vi-VN")}đ
             </div>
-            <div className="text-xl font-semisemibold text-blue-700">
+            <div className="text-xl font-bold text-blue-700">
               {" "}
               {totalAmount.toLocaleString("vi-VN")}đ
             </div>
           </div>
         </div>
-
-        <button className="px-16 py-4 mt-7 ml-2.5 max-w-full text-base font-bold text-white bg-blue-700 rounded-3xl w-[337px] max-md:px-5">
-          Mua hàng
-        </button>
+        <div className="flex justify-center w-full">
+          <Link href="/checkout">
+            <button className="w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white bg-blue-700 rounded-3xl hover:bg-[#002E99]">
+              Mua hàng
+            </button>
+          </Link>
+        </div>
 
         <div className="mt-7 text-sm text-center font-normal">
           Bằng việc tiến hành đặt mua hàng, bạn đồng ý với Điều khoản dịch vụ và
