@@ -1,4 +1,24 @@
+/* Import Google Fonts using preconnect for better performance */
+@import url('https://fonts.googleapis.com/css2?family=Oleo+Script&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased;
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-oleo {
+    font-family: 'Oleo Script', cursive;
+  }
+}
