@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { OrdererInfo as OrdererInfoType } from "./types";
+import { OrdererInfoPickup as OrdererInfoType } from "../../productInfo/types";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 
 interface OrdererInfoProps {
@@ -8,7 +8,10 @@ interface OrdererInfoProps {
   onChange: (info: OrdererInfoType) => void;
 }
 
-export const OrdererInfo: React.FC<OrdererInfoProps> = ({ info, onChange }) => {
+export const OrdererInfoPickup: React.FC<OrdererInfoProps> = ({
+  info,
+  onChange,
+}) => {
   return (
     <section className="flex flex-col gap-4">
       <header className="flex gap-2 self-start text-sm text-black">

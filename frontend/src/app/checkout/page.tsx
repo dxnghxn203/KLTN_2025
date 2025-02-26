@@ -2,13 +2,13 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import medicine from "@/images/medicinee.png";
-import Image, { StaticImageData } from "next/image";
-import OrderSummary from "@/app/checkout/orderSumary";
+import OrderSummary from "@/app/checkout/productInfo/orderSumary";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-
-import Delivery from "./delivery";
+import Image, { StaticImageData } from "next/image";
+import medicine from "@/images/medicinee.png";
+import Delivery from "./checkoutInfo/page";
+import ProductList from "./productInfo/productList";
 
 interface Product {
   id: number;
@@ -19,7 +19,6 @@ interface Product {
   quantity: number;
   unit: string;
 }
-
 const productsData: Product[] = [
   {
     id: 1,
@@ -80,53 +79,8 @@ const ShoppingCart: React.FC = () => {
           <h3 className="font-semibold mt-2 mb-3 ml-4">Sản phẩm đã chọn</h3>
         </div>
         <div className="flex flex-col lg:flex-row">
-          {/* Cột chứa sản phẩm và thông tin giao hàng */}
           <div className="flex-1 rounded-xl">
-            <div className="px-8">
-              {/* Danh sách sản phẩm */}
-              <div
-                className="flex-1 bg-[#F5F7F9] rounded-xl"
-                style={{ height: `${products.length * 20}%` }}
-              >
-                {products.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className="sticky flex items-center justify-between py-4 px-4 text-sm "
-                  >
-                    <div
-                      className={`absolute bottom-0 left-5 right-5 border-b border-black border-opacity-10 ${
-                        index === products.length - 1 ? "hidden" : ""
-                      }`}
-                    ></div>
-                    <div className="w-[40%] flex items-center px-5 py-2">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        width={55}
-                        height={55}
-                        className="ml-4 rounded-lg border border-stone-300"
-                      />
-                      <span className="ml-4 line-clamp-3 overflow-hidden text-ellipsis">
-                        {product.name}
-                      </span>
-                    </div>
-                    <div className="w-[15%] text-center flex flex-col items-center">
-                      <span className="text-lg font-semibold text-[#0053E2]">
-                        {product.price.toLocaleString("vi-VN")}đ
-                      </span>
-                      {product.originPrice > 0 && (
-                        <span className="text-sm text-gray-500 line-through">
-                          {product.originPrice.toLocaleString("vi-VN")}đ
-                        </span>
-                      )}
-                    </div>
-                    <div className="w-[15%] text-center">x1 Chai</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Phần Thông tin giao hàng */}
+            <ProductList products={products} />
             <Delivery />
           </div>
           <OrderSummary

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { AddressFormData } from "./types";
+import { AddressFormData } from "../../productInfo/types";
 import { PiFireTruck } from "react-icons/pi";
 
 interface ShippingAddressProps {
@@ -21,7 +21,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
   return (
     <section className="flex flex-col gap-4 mt-6">
       <header className="flex gap-2 self-start text-sm text-black">
-        <PiFireTruck className="text-2xl text-[#0053E2] mt-[-1px]" />
+        <PiFireTruck className="text-2xl text-[#0053E2] mt-[-2px]" />
         <h3>Địa chỉ nhận hàng</h3>
       </header>
 

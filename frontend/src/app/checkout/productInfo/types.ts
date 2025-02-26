@@ -14,4 +14,9 @@ export interface AddressFormData {
     phone: string;
     email?: string;
   }
+  export interface OrdererInfoPickup {
+    fullName: string;
+    phone: string;
+    email?: string;
+  }
   
