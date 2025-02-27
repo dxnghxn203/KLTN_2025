@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -169,13 +169,10 @@ const ShoppingCart: React.FC = () => {
           {products.map((product, index) => (
             <div
               key={product.id}
-              className="sticky flex items-center justify-between py-4 px-4 text-sm "
+              className={`flex items-center justify-between py-4 mx-4 text-sm ${
+                index !== products.length - 1 ? "border-b border-gray-300" : ""
+              }`}
             >
-              <div
-                className={`absolute bottom-0 left-5 right-5 border-b border-black border-opacity-10 ${
-                  index === products.length - 1 ? "hidden" : ""
-                }`}
-              ></div>
               <div className="w-[55%] flex items-center px-5 py-2">
                 <input
                   checked={selectedProducts.includes(product.id)}
@@ -186,7 +183,7 @@ const ShoppingCart: React.FC = () => {
                 />
                 <label
                   htmlFor={`product-${product.id}`}
-                  className=" flex items-center justify-center w-5 h-5 cursor-pointer"
+                  className="flex items-center justify-center w-5 h-5 cursor-pointer"
                 >
                   <input
                     type="checkbox"

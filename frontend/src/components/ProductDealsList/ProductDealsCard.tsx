@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ProductData } from "./types";
 import ProductDialog from "@/components/dialog/productDialog/productDialog";
 import Image from "next/image";
+import Link from "next/link";
 
 const ProductDealsCard: React.FC<ProductData> = ({
   discount,
@@ -10,33 +11,39 @@ const ProductDealsCard: React.FC<ProductData> = ({
   rating,
   name,
   price,
-  originalPrice,
   unit,
+  originalPrice,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[180px] w-[275px] relative">
+        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] ">
           {/* Ảnh sản phẩm */}
-          <div className="relative p-6">
-            <Image
-              src={imageSrc}
-              alt={name}
-              width={204}
-              height={204}
-              className="object-contain"
-              priority
-            />
-            <div
-              className={`absolute top-8 right-0 bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md ${
-                discount ? "" : "invisible"
-              }`}
-            >
-              {discount || "Ưu đãi"}
+          <Link href="/detailProduct" legacyBehavior>
+            <div className="py-6 flex flex-col items-center">
+              <div className="flex justify-end w-full">
+                {discount !== undefined ? (
+                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md transition-opacity">
+                    {discount}
+                  </div>
+                ) : (
+                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md opacity-0">
+                    Ưu đãi
+                  </div>
+                )}
+              </div>
+              <Image
+                src={imageSrc}
+                alt={name}
+                width={204}
+                height={204}
+                className="object-contain cursor-pointer"
+                priority
+              />
             </div>
-          </div>
+          </Link>
 
           {/* Thông tin sản phẩm */}
           <div className="px-5 py-4 bg-white rounded-3xl border border-neutral-100">

@@ -13,15 +13,16 @@ interface ArticleProps {
 const Article: React.FC<ArticleProps> = ({ imageUrl, title, description }) => {
   return (
     <div className="flex flex-col grow text-black max-md:mt-7">
-      <div className="relative w-full aspect-[1.68] rounded-2xl overflow-hidden">
+      <div className="w-full rounded-2xl overflow-hidden">
         <Image
           src={imageUrl}
           alt={title}
-          layout="fill"
-          objectFit="cover"
-          className="rounded-2xl"
+          width={300} // Tuỳ chỉnh theo kích thước mong muốn
+          height={180} // Tuỳ chỉnh theo kích thước mong muốn
+          className="w-full h-auto rounded-2xl object-cover"
         />
       </div>
+
       <div className="self-start mt-5 text-sm font-semibold line-clamp-1">
         {title}
       </div>
@@ -62,7 +63,7 @@ const HealthCorner: React.FC = () => {
       <div className="self-start text-2xl font-extrabold text-black">
         Góc sức khỏe
       </div>
-      <div className="px-6 grid grid-cols-3 gap-8 mt-6 w-full max-md:grid-cols-1 max-md:gap-7">
+      <div className="grid grid-cols-3 gap-8 mt-6 w-full max-md:grid-cols-1 max-md:gap-7">
         {articles.map((article, index) => (
           <div key={index} className="flex flex-col">
             <Article {...article} />

@@ -31,7 +31,7 @@ export const PaymentMethod: React.FC<PaymentMethodProps> = ({
   ];
 
   return (
-    <section className="flex flex-col items-start mx-4 rounded-xl bg-[#F5F7F9]">
+    <section className="flex flex-col items-start rounded-xl bg-[#F5F7F9]">
       {methods.map((method, index) => (
         <React.Fragment key={method.type}>
           <button

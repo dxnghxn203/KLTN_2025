@@ -19,10 +19,21 @@ const ProductCard: React.FC<ProductData> = ({
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[180px] w-[275px] relative ">
+        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] ">
           {/* Ảnh sản phẩm */}
           <Link href="/detailProduct" legacyBehavior>
-            <div className="relative p-6">
+            <div className="py-6 flex flex-col items-center">
+              <div className="flex justify-end w-full">
+                {discount !== undefined ? (
+                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md transition-opacity">
+                    {discount}
+                  </div>
+                ) : (
+                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md opacity-0">
+                    Ưu đãi
+                  </div>
+                )}
+              </div>
               <Image
                 src={imageSrc}
                 alt={name}
@@ -31,13 +42,6 @@ const ProductCard: React.FC<ProductData> = ({
                 className="object-contain cursor-pointer"
                 priority
               />
-              <div
-                className={`absolute top-8 right-0 bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md cursor-pointer ${
-                  discount ? "" : "invisible"
-                }`}
-              >
-                {discount || "Ưu đãi"}
-              </div>
             </div>
           </Link>
 

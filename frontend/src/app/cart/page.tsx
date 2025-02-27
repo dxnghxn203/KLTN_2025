@@ -9,13 +9,13 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
-      <main className="flex flex-col space-y-8 px-5">
+      <main className="flex flex-col space-y-8">
         {/* <CartEmpty /> */}
         <ShoppingCart />
-        <div className="self-start text-2xl font-extrabold text-black">
+        <div className="self-start text-2xl font-extrabold text-black px-5">
           Sản phẩm vừa xem
+          <ProductsViewedList />
         </div>
-        <ProductsViewedList />
       </main>
       <Footer />
     </div>

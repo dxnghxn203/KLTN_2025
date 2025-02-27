@@ -1,7 +1,5 @@
 import React from "react";
 import Image, { StaticImageData } from "next/image";
-
-// Import hình ảnh
 import categories1 from "@/images/categories1.png";
 import categories2 from "@/images/categories2.png";
 import categories3 from "@/images/categories3.png";
@@ -105,28 +103,24 @@ const ProductCatalog: React.FC = () => {
   ];
 
   return (
-    <div className="pt-14">
-      <Image
-        loading="lazy"
-        src={imageslider1}
-        alt=""
-        width={1435}
-        height={480}
-        className="w-full r max-md:max-w-full rounded-[14px]"
-      />
-      <img
-        loading="lazy"
-        src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/40d3bd69b5c1319cd09b7fc8d171a2ce53237e3b1d6833c0c39c9bef6e710c81?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-        alt=""
-        className="object-contain self-end mt-0 w-0 rounded-2xl max-md:mt-0"
-      />
+    <div className="pt-14 items-center">
+      <div className="flex justify-center items-center">
+        <Image
+          loading="lazy"
+          src={imageslider1}
+          alt=""
+          width={1435}
+          height={480}
+          className="rounded-[14px]"
+        />
+      </div>
 
       <div className="mt-5 self-start text-2xl font-extrabold text-black">
         Danh mục sản phẩm
       </div>
-      <div className="px-6 w-full max-md:px-5 max-md:max-w-full">
-        <div className="self-center mt-5 w-full max-w-[1170px] max-md:max-w-full">
-          <div className="grid grid-cols-4 gap-6 max-md:grid-cols-1">
+      <div className="w-full max-md:px-5 max-md:max-w-full">
+        <div className="self-center mt-5 w-full ">
+          <div className="grid grid-cols-4 gap-6 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
             {categories.map((category, index) => (
               <CategoryItem key={index} {...category} />
             ))}

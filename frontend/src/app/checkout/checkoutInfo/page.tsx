@@ -40,13 +40,13 @@ const Delivery: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <main className="flex overflow-hidden px-4 flex-col pt-7">
+    <main className="flex overflow-hidden flex-col pt-7">
       <DeliveryMethod
         selectedMethod={deliveryMethod}
         onMethodChange={setDeliveryMethod}
       />
 
-      <div className="flex flex-col px-5 py-6 mx-4 mt-5 font-medium text-black rounded-xl bg-[#F5F7F9]">
+      <div className="flex flex-col px-5 py-6 mt-5 font-medium text-black rounded-xl bg-[#F5F7F9]">
         {deliveryMethod === "delivery" ? (
           <>
             <OrdererInfo info={ordererInfo} onChange={setOrdererInfo} />
@@ -60,7 +60,7 @@ const Delivery: React.FC = () => {
         )}
       </div>
       {deliveryMethod === "pickup" && (
-        <div className="flex items-center justify-between px-6 py-3 mt-1.5 mx-4 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
+        <div className="flex items-center justify-between px-6 py-3 mt-1.5 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
           <p className="text-sm font-medium text-black/50 whitespace-nowrap flex items-center gap-2 py-1">
             <FaTruckFast size={16} className="text-[#0053E2]" />
             Thời gian nhận hàng dự kiến
@@ -76,14 +76,14 @@ const Delivery: React.FC = () => {
           </p>
         </div>
       )}
-      <div className="flex items-center justify-between px-6 py-3 mt-1.5 mx-4 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
+      <div className="flex items-center justify-between px-6 py-3 mt-1.5 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
         <p className="text-sm font-medium text-black whitespace-nowrap">
           Yêu cầu xuất hóa đơn điện tử
         </p>
         <Toggle isActive={requireInvoice} onChange={setRequireInvoice} />
       </div>
 
-      <h2 className="my-6 text-sm font-medium text-black px-4">
+      <h2 className="my-6 text-sm font-medium text-black">
         Chọn phương thức thanh toán
       </h2>
       <PaymentMethod selected={paymentMethod} onSelect={setPaymentMethod} />

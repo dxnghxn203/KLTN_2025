@@ -18,21 +18,15 @@ interface ProductListProps {
 
 const ProductList: React.FC<ProductListProps> = ({ products }) => {
   return (
-    <div className="px-8">
-      <div
-        className="flex-1 bg-[#F5F7F9] rounded-xl"
-        style={{ height: `${products.length * 20}%` }}
-      >
+    <div className="">
+      <div className="flex-1 bg-[#F5F7F9] rounded-xl">
         {products.map((product, index) => (
           <div
             key={product.id}
-            className="sticky flex items-center justify-between py-4 px-4 text-sm "
+            className={`flex items-center justify-between py-4 mx-4 text-sm ${
+              index !== products.length - 1 ? "border-b border-gray-300" : ""
+            }`}
           >
-            <div
-              className={`absolute bottom-0 left-5 right-5 border-b border-black border-opacity-10 ${
-                index === products.length - 1 ? "hidden" : ""
-              }`}
-            ></div>
             <div className="w-[40%] flex items-center px-5 py-2">
               <Image
                 src={product.image}

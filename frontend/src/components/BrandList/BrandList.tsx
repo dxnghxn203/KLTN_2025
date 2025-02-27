@@ -56,7 +56,7 @@ const BrandItem: React.FC<BrandProps> = ({ name, imageSrc }) => (
 
 const BrandList: React.FC = () => {
   return (
-    <div className="flex flex-col w-full max-md:px-5 max-md:max-w-full px-6">
+    <div className="flex flex-col w-full max-md:px-5 max-md:max-w-full">
       <div className="px-6 flex flex-wrap gap-5 justify-between items-start w-full text-black max-md:max-w-full">
         {/* "Xem tất cả" nằm bên phải */}
         <div className="flex gap-2 text-sm font-semibold ml-auto items-center mt-[-30px]">

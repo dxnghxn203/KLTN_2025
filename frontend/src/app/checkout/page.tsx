@@ -65,7 +65,7 @@ const ShoppingCart: React.FC = () => {
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
       <main className="flex flex-col px-5">
-        <div className="flex flex-col px-5">
+        <div className="flex flex-col">
           {/* Đặt div chứa link riêng biệt */}
           <div className="pt-14">
             <Link
