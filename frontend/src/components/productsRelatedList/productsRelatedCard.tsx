@@ -3,9 +3,8 @@ import { ProductData } from "./types";
 import ProductDialog from "@/components/dialog/productDialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
-const ProductCard: React.FC<ProductData> = ({
+const ProductsRelatedCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -16,7 +15,6 @@ const ProductCard: React.FC<ProductData> = ({
   originalPrice,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
 
   return (
     <>
@@ -111,4 +109,4 @@ const ProductCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductCard;
+export default ProductsRelatedCard;

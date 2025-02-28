@@ -1,20 +1,24 @@
 "use client";
-
 import React, { useState } from "react";
 import { Plus, Minus } from "lucide-react";
+import Image from "next/image";
+import medicine1 from "@/images/medicinee.png";
 
 const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
 
   return (
-    <div className="mx-auto bg-[#F5F7F9] px-6 rounded-lg">
+    <div className="mx-auto bg-[#F5F7F9] px-5 rounded-lg">
       <div className="grid grid-cols-2 gap-6">
         {/* Hình ảnh sản phẩm */}
-        <div>
-          <img
-            src="/product-image.png"
-            alt="B Complex Vitamin"
-            className="w-full rounded-lg"
+        <div className="flex flex-col items-center mt-12">
+          <Image
+            src={medicine1}
+            alt=""
+            width={400}
+            height={400}
+            className="object-contain cursor-pointer"
+            priority
           />
           <div className="flex mt-3 space-x-2">
             <img src="/thumb1.png" alt="thumb" className="w-20 h-20 border" />
@@ -24,15 +28,26 @@ const ProductDetail = () => {
         </div>
 
         {/* Thông tin sản phẩm */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700">
-            Thương hiệu:{" "}
-            <span className="text-black font-bold">Royal Care</span>
+        <div className="space-y-4">
+          <h2 className="text-lg font-normal text-black/50 mt-4">
+            Thương hiệu:
+            <span className="text-[#0053E2] font-semibold"> Royal Care</span>
           </h2>
-          <h1 className="text-2xl font-bold mt-2">
+          <h1 className="text-3xl font-bold">
             Viên uống B Complex Vitamin Royal Care hỗ trợ giảm mệt mỏi, căng
             thẳng (60 viên)
           </h1>
+          <div className="flex items-center space-x-2 text-gray-600 text-sm">
+            <span>00032942</span>
+            <span>•</span>
+            <span>4.9</span>
+            <span>★</span>
+            <span>•</span>
+            <a className="text-blue-600 hover:underline">32 đánh giá</a>
+            <span>•</span>
+            <a className="text-blue-600 hover:underline">332 bình luận</a>
+          </div>
+
           <p className="text-red-600 text-2xl font-bold mt-3">160.000đ/ Hộp</p>
 
           <div className="mt-4">

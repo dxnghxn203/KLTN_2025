@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import google from "@/images/google.png";
@@ -28,11 +28,11 @@ const LoginForm: React.FC = () => {
           <label htmlFor="username" className="text-sm font-medium">
             Tên đăng nhập hoặc email
           </label>
-          <div className="relative">
+          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
             <input
               id="username"
               type="text"
-              className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none pr-10 transition-all"
+              className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
             />
           </div>
         </div>
@@ -42,11 +42,11 @@ const LoginForm: React.FC = () => {
           <label htmlFor="password" className="text-sm font-medium">
             Mật khẩu
           </label>
-          <div className="relative">
+          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
             <input
               id="password"
               type="password"
-              className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none pr-10 transition-all"
+              className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
             />
           </div>
         </div>

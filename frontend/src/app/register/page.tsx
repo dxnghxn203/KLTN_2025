@@ -15,7 +15,6 @@ export default function RegisterPage() {
       <main className="flex flex-col items-center space-y-8 pt-14">
         <div className="mt-5 text-3xl font-extrabold text-black">Đăng ký</div>
 
-        {/* Button đăng ký với Google */}
         <div className="flex justify-center items-center rounded-3xl bg-[#0053E2] text-white h-[55px] w-full text-sm font-semibold">
           <button className="flex items-center gap-2">
             <Image src={google} alt="" width={30} className="object-cover" />
@@ -29,9 +28,9 @@ export default function RegisterPage() {
           <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
         </div>
 
-        <Link href="/register/email" passHref>
-          <button className="px-16 py-5 mt-8 h-[55px] text-sm font-semibold text-black border border-solid border-black border-opacity-10 rounded-[30px] w-[400px] max-md:px-5">
-            Tiếp tục với email
+        <Link href="/register/phoneNumber" passHref>
+          <button className="px-5 h-[55px] text-sm font-semibold text-black border border-solid border-black border-opacity-10 rounded-3xl w-[400px] max-md:px-5">
+            Tiếp tục với số điện thoại
           </button>
         </Link>
 
