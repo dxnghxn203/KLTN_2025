@@ -16,7 +16,6 @@ const ProductCard: React.FC<ProductData> = ({
   originalPrice,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const router = useRouter();
 
   return (
     <>

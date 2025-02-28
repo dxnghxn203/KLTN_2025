@@ -14,24 +14,22 @@ const LoginForm: React.FC = () => {
         </button>
       </div>
 
-      {/* Hoặc đăng nhập với email */}
       <div className="flex gap-2 items-center mt-4 text-sm text-black">
         <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
-        <div className="text-black/40">hoặc đăng nhập với email</div>
+        <div className="text-black/40">hoặc đăng nhập với số điện thoại</div>
         <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
       </div>
 
       {/* Form đăng nhập */}
       <form className="space-y-4 mt-4">
-        {/* Tên đăng nhập */}
         <div className="space-y-2">
-          <label htmlFor="username" className="text-sm font-medium">
-            Tên đăng nhập hoặc email
+          <label htmlFor="phoneNumber" className="text-sm font-medium">
+            Số điện thoại đăng nhập
           </label>
           <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
             <input
-              id="username"
-              type="text"
+              id="phoneNumber"
+              type="tel"
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
             />
           </div>
