@@ -19,7 +19,6 @@ interface ProductDetailProps {
         imagesPrimary: string;
         images: ProductImage[];
         category: Category;
-        // Additional fields like manufacturer, formulation, etc.
     }
 }
 

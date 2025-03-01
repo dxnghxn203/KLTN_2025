@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import RegisterForm from "./registerForm";
+import RegisterForm from "../../../components/Register/registerForm";
 import Header from "@/components/header/header";
 import Footer from "@/components/footer/footer";
 import { ChevronLeft } from "lucide-react";

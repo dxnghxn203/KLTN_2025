@@ -14,9 +14,7 @@ const ShoppingCart: React.FC = () => {
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-    const [selectedProductId, setSelectedProductId] = useState<string | null>(
-        null
-    );
+    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
     const totalAmount = useMemo(() => {
         return cartLocal.filter((product) => selectedProducts.includes(product.id))
@@ -33,7 +31,7 @@ const ShoppingCart: React.FC = () => {
         }, 0);
     }, [selectedProducts, cartLocal]);
     const value = totalOriginPrice - totalAmount;
-    const totalDiscount = value  > 0 ? value: 0 ;
+    const totalDiscount = value > 0 ? value : 0;
     const totalSave = totalDiscount;
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +40,7 @@ const ShoppingCart: React.FC = () => {
 
     const handleSelectProduct = (id: string) => {
         setSelectedProducts((prev) =>
-            prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+            prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
         );
     };
     const handleDeleteClick = (id: string) => {
@@ -69,7 +67,7 @@ const ShoppingCart: React.FC = () => {
                 className="flex-col bg-[#F5F7F9] rounded-xl "
                 style={{ height: `${cartLocal?.length * 20}%` }}
             >
-                <div className="flex items-center justify-between border-b px-4 border-black border-opacity-10 text-sm text-black font-medium">
+                <div className="flex items-center justify-between border-b border-black border-opacity-10 text-sm text-black font-medium">
                     <div className="w-[55%] p-5 flex items-center">
                         <input
                             type="checkbox"
@@ -86,38 +84,37 @@ const ShoppingCart: React.FC = () => {
                         </label>
 
                         <label htmlFor="select-all" className="ml-4 cursor-pointer">
-                            Chọn tất cả
+                            Chọn tất cả ({selectedProducts.length}/{cartLocal?.length})
                         </label>
                     </div>
                     <div className="w-[15%] text-center">Giá thành</div>
                     <div className="w-[15%] text-center">Số lượng</div>
                     <div className="w-[15%] text-center">Đơn vị</div>
-                    <div className="w-[15%] text-center">Xóa</div>
+                    <div className="w-[15%] text-center"></div>
                 </div>
 
                 {cartLocal?.map((product, index) => (
                     <div
                         key={product.id}
-                        className={`flex items-center justify-between py-4 mx-4 text-sm ${index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
+                        className={`flex items-center justify-between py-4 mx-1 text-sm ${index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
                             }`}
                     >
-                        <div className="w-[55%] flex items-center px-5 py-2">
-                            <input
-                                checked={selectedProducts.includes(product.id)}
-                                onChange={() => handleSelectProduct(product.id)}
-                                type="checkbox"
-                                id={`product-${product.id}`}
-                                className="peer hidden"
-                            />
+                        <div className="w-[55%] flex items-center px-4 py-2" >
                             <label
                                 htmlFor={`product-${product.id}`}
                                 className="flex items-center justify-center w-5 h-5 cursor-pointer"
                             >
+                                <input
+                                    type="checkbox"
+                                    id={`product-${product.id}`}
+                                    className="peer hidden"
+                                    checked={selectedProducts.includes(product.id)}
+                                    onChange={() => handleSelectProduct(product.id)}
+                                />
                                 <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2] peer-checked:text-white">
                                     ✓
                                 </span>
                             </label>
-
                             <Image
                                 src={product.imageSrc}
                                 alt={product.name}
@@ -176,6 +173,7 @@ const ShoppingCart: React.FC = () => {
                     </div>
                 ))}
             </div>
+
             <OrderSummary
                 totalAmount={totalAmount}
                 totalOriginPrice={totalOriginPrice}
@@ -189,6 +187,7 @@ const ShoppingCart: React.FC = () => {
                     onClose={handleCloseDialog}
                     onConfirm={() => {
                         removeFromCart(selectedProductId)
+                        selectedProducts.splice(selectedProducts.indexOf(selectedProductId), 1);
                         handleCloseDialog();
                     }}
                 />

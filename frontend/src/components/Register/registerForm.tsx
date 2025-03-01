@@ -3,7 +3,6 @@ import React from "react";
 const RegisterForm: React.FC = () => {
   return (
     <div className="mt-8">
-      {/* Form đăng ký */}
       <div className="flex justify-center items-center">
         <form className="space-y-4 w-full ">
           <div className="space-y-2">
@@ -27,7 +26,6 @@ const RegisterForm: React.FC = () => {
             />
           </div>
 
-          {/* Email */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
               Email
@@ -39,7 +37,6 @@ const RegisterForm: React.FC = () => {
             />
           </div>
 
-          {/* Mật khẩu */}
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
               Mật khẩu
@@ -51,7 +48,6 @@ const RegisterForm: React.FC = () => {
             />
           </div>
 
-          {/* Nhập lại mật khẩu */}
           <div className="space-y-2">
             <label htmlFor="confirmPassword" className="text-sm font-medium">
               Nhập lại mật khẩu
@@ -63,7 +59,6 @@ const RegisterForm: React.FC = () => {
             />
           </div>
 
-          {/* Nút tạo tài khoản */}
           <div className="pt-6">
             <button
               type="submit"

@@ -71,12 +71,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     </div>
                 </div>
                 <div className="flex justify-center w-full">
-                    <Link href="/checkout">
-                        <button className="w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white bg-blue-700 rounded-3xl hover:bg-[#002E99]">
-                            Mua hàng
-                        </button>
-                    </Link>
+                    <button
+                        className={`w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white rounded-3xl ${
+                            totalAmount === 0 ? "bg-gray-400 cursor-not-allowed" : "bg-blue-700 hover:bg-[#002E99]"
+                        }`}
+                        disabled={totalAmount === 0}
+                    >
+                        Mua hàng
+                    </button>
                 </div>
+                {totalAmount === 0 && (
+                    <div className="mt-2 text-center text-red-500">
+                        Vui lòng chọn sản phẩm để mua hàng
+                    </div>
+                )}
 
                 <div className="mt-7 text-sm text-center font-normal">
                     Bằng việc tiến hành đặt mua hàng, bạn đồng ý với Điều khoản dịch vụ và
