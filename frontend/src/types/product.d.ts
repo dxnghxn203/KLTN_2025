@@ -21,3 +21,23 @@ interface Product {
     unit: string;
     quantity: number
 }
+
+interface Price {
+    id: string;
+    price: number;
+    originalPrice: number;
+    unitPrice: string;
+    discount: number;
+    unit: string;
+}
+
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+}
+
+interface ProductImage {
+    id: number;
+    url: string;
+}

@@ -1,12 +1,12 @@
 "use client";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-import ProductCatalog from "./home/productCatalog";
+import ProductCatalog from "../components/Home/productCatalog";
 import ProductList from "@/components/productList/productList";
 import BrandList from "@/components/brandList/brandList";
 import ProductDealsList from "@/components/productDealsList/productDealsList";
-import IntroMedicare from "./home/introMedicare";
-import HealthCorner from "./home/healthCorner";
+import IntroMedicare from "../components/Home/introMedicare";
+import HealthCorner from "../components/Home/healthCorner";
 
 export default function Home() {
   return (

@@ -1,12 +1,12 @@
 "use client";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-import ProductCatalog from "./productCatalog";
+import ProductCatalog from "../../components/Home/productCatalog";
 import ProductList from "@/components/productList/productList";
 import BrandList from "@/components/brandList/brandList";
 import ProductDealsList from "@/components/productDealsList/productDealsList";
-import IntroMedicare from "./introMedicare";
-import HealthCorner from "./healthCorner";
+import IntroMedicare from "../../components/Home/introMedicare";
+import HealthCorner from "../../components/Home/healthCorner";
 import { useAuth } from "@/store/auth";
 
 export default function Home() {
