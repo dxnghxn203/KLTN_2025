@@ -38,15 +38,11 @@ function* handleLogin(action: PayloadAction<LoginCredentials>): Generator<any, v
 
             yield put(
                 loginSuccess({
-                    user: response.user,
-                    token: response.token,
+                    user: response?.user || null,
+                    token: response?.token || null,
                 })
             );
 
-            // Redirect if needed
-            if (typeof window !== 'undefined') {
-                window.location.href = '/dashboard';
-            }
         } else {
             yield put(loginFailure(response.message || 'Đăng nhập thất bại'));
         }

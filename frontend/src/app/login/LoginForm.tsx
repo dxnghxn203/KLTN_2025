@@ -5,29 +5,56 @@ import Image from "next/image";
 import Link from "next/link";
 import google from "@/images/google.png";
 import { useAuth } from "@/store/auth/useAuth";
+import { useToast } from "@/providers/ToastProvider";
+import { ToastType } from "@/components/Toast/Toast";
 
 const LoginForm: React.FC = () => {
-  const { signInWithGoogle, logout, isLoading } = useAuth();
+  const { signInWithGoogle, login, isLoading } = useAuth();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleGoogleSignIn = async (e: React.MouseEvent) => {
     e.preventDefault();
-    await signInWithGoogle();
+    try {
+      await signInWithGoogle();
+      // Note: Success toast will be shown by the page component when isAuthenticated changes
+    } catch (error) {
+      showToast("Đăng nhập bằng Google thất bại", ToastType.ERROR);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!phoneNumber || !password) {
+      showToast("Vui lòng nhập đầy đủ thông tin", ToastType.WARNING);
+      return;
+    }
+    
     setLocalLoading(true);
-    setLocalLoading(false);
+    // For testing - show a toast directly
+    showToast("Đang xử lý đăng nhập...", ToastType.INFO);
+    
+    try {
+      const formData = {
+        phoneNumber,
+        password,
+      };
+      login(formData);
+    } catch (error) {
+      console.error("Login error:", error);
+      showToast("Đăng nhập thất bại", ToastType.ERROR);
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
   const loadingGG = () => {
     return (
       <>
-            <span>Đang xử lý...</span>
-            <div className="w-5 h-5 border border-t-[3px] border-[#0053E2] rounded-full animate-spin" />
+        <span>Đang xử lý...</span>
+        <div className="w-5 h-5 border border-t-[3px] border-[#0053E2] rounded-full animate-spin" />
       </>
     )
   }
@@ -51,7 +78,6 @@ const LoginForm: React.FC = () => {
         <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
       </div>
 
-      {/* Form đăng nhập */}
       <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label htmlFor="phoneNumber" className="text-sm font-medium">
@@ -61,14 +87,15 @@ const LoginForm: React.FC = () => {
             <input
               id="phoneNumber"
               type="tel"
+              placeholder="123-456-7890"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
+              required
             />
           </div>
         </div>
 
-        {/* Mật khẩu */}
         <div className="space-y-2">
           <label htmlFor="password" className="text-sm font-medium">
             Mật khẩu
@@ -80,11 +107,11 @@ const LoginForm: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
+              required
             />
           </div>
         </div>
 
-        {/* Quên mật khẩu */}
         <div className="flex justify-end">
           <a
             href="#"
@@ -94,7 +121,6 @@ const LoginForm: React.FC = () => {
           </a>
         </div>
 
-        {/* Nút đăng nhập */}
         <button
           type="submit"
           className="w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors"
@@ -104,7 +130,6 @@ const LoginForm: React.FC = () => {
         </button>
       </form>
 
-      {/* Đăng ký */}
       <div className="flex gap-2 text-sm justify-center mt-4">
         <span className="font-medium">Bạn chưa có tài khoản?</span>
         <Link href="/register" legacyBehavior>

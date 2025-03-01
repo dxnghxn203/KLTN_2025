@@ -41,7 +41,7 @@ export default function Header() {
 
 
   return (
-    <div className="fixed top-0 left-0 w-full">
+    <div className="fixed top-0 left-0 w-full z-[50]">
       <header className="bg-[#0053E2] h-[72px] w-full flex items-center justify-between px-8">
         <div className="flex items-center gap-4">
           <Link href="/">

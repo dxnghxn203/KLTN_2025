@@ -3,10 +3,15 @@ import { AuthResponse, GoogleSignInData, LoginData } from "@/types/auth";
 
 export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResponse> => {
     try {
-        const response = await axiosClient.post('/v1/authen/google-auth', data);
+        // const response = await axiosClient.post('/v1/authen/google-auth', data);
+        // return {
+        //     success: true,
+        //     message: response.data || 'Đăng nhập bằng Google thành công',
+        // };
+
         return {
             success: true,
-            message: response.data || 'Đăng nhập bằng Google thành công',
+            message: 'Đăng nhập bằng Google thành công',
         };
     } catch (error: any) {
         return {
@@ -18,12 +23,19 @@ export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResp
 
 export const login = async (data: LoginData): Promise<AuthResponse> => {
     try {
-        const response = await axiosClient.post('/v1/authen/login', data);
+        // const response = await axiosClient.post('/v1/authen/login', data);
+        // return {
+        //     success: true,
+        //     user: response.data.user,
+        //     token: response.data.token
+        // };
+
         return {
             success: true,
-            user: response.data.user,
-            token: response.data.token
+            user: null,
+            token: "null"
         };
+
     } catch (error: any) {
         return {
             success: false,
@@ -35,11 +47,11 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
 // Logout
 export const logout = async (token: string): Promise<boolean> => {
     try {
-        await axiosClient.post('/auth/logout', {}, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        // await axiosClient.post('/v1/authen/logout', {}, {
+        //     headers: {
+        //         Authorization: `Bearer ${token}`,
+        //     },
+        // });
         return true;
     } catch (error) {
         console.error('Logout error:', error);
