@@ -11,7 +11,8 @@ from app.routers import (
     health_router,
     upload_router,
     user_router,
-    authen_router
+    authen_router,
+    order_router
 )
 from app.core import database, redis_client
 import uvicorn
@@ -48,7 +49,7 @@ app.include_router(tracking_router, prefix="/v1", tags=["Tracking"])
 app.include_router(metrics_router, prefix="/v1", tags=["Metrics"])
 app.include_router(health_router, prefix="/v1", tags=["Health"])
 app.include_router(upload_router.router, prefix="/v1", tags=["Upload"])
-
+app.include_router(order_router, prefix="/v1", tags=["Order"])
 @app.get("/")
 def read_root():
     return {
