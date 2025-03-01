@@ -1,6 +1,6 @@
 /* Core */
+import { ProductSliceState } from "@/types/product";
 import { createSlice } from "@reduxjs/toolkit";
-import { ProductSliceState } from "@/store/types/product";
 
 const initialState: ProductSliceState = {
     listProduct: [],

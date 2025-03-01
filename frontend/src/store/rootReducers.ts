@@ -1,8 +1,10 @@
 import { combineReducers } from 'redux';
 import { productSlice } from './product';
+import { authSlice } from './auth';
 
 const reducer = combineReducers({
     product: productSlice.reducer,
+    auth: authSlice.reducer,
 });
 
 

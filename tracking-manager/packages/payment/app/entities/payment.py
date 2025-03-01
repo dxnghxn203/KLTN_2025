@@ -7,4 +7,6 @@ class GeneratePaymentQr(BaseModel):
     order_id: str = Field(..., description="Order ID for payment")
     amount: float = Field(..., description="Payment amount")
 
-    
+
+
+

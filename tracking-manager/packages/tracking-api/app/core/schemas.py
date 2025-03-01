@@ -9,6 +9,7 @@ class ErrorResponse(BaseModel):
 
 class SuccessResponse(BaseModel):
     status: str = Field("success", description="Success status")
+    message: str = Field("Success", description="Success message")
     data: Dict[str, Any] = Field(..., description="Response data")
 
 class HealthCheck(BaseModel):

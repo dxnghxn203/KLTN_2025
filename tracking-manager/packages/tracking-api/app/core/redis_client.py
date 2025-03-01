@@ -8,11 +8,11 @@ redis_host = os.getenv('REDIS_HOST')
 try:
     # Create a Redis connection
     redis = r.Redis(
-        host='redis-17271.c246.us-east-1-4.ec2.redns.redis-cloud.com',
-        port=17271,
+        host='redis-18988.c124.us-central1-1.gce.redns.redis-cloud.com',
+        port=18988,
         decode_responses=True,
         username="default",
-        password="2FizrCYPIFT4cK5TtPGNci2Kp34vLSqJ"
+        password="m3kR4XnG3rIGEaDu8Q9uabOdFpFsjaLT"
     )
 
     # Test the connection

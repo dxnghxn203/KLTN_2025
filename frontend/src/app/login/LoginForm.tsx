@@ -1,16 +1,47 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import google from "@/images/google.png";
+import { useAuth } from "@/store/auth/useAuth";
 
 const LoginForm: React.FC = () => {
+  const { signInWithGoogle, logout, isLoading } = useAuth();
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [localLoading, setLocalLoading] = useState(false);
+
+  const handleGoogleSignIn = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await signInWithGoogle();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLocalLoading(true);
+    setLocalLoading(false);
+  };
+
+  const loadingGG = () => {
+    return (
+      <>
+            <span>Đang xử lý...</span>
+            <div className="w-5 h-5 border border-t-[3px] border-[#0053E2] rounded-full animate-spin" />
+      </>
+    )
+  }
+
   return (
     <div className="w-[393px] mx-auto">
-      {/* Nút đăng nhập với Google */}
       <div className="flex justify-center items-center rounded-3xl border border-solid border-black border-opacity-10 h-[55px] w-full text-sm font-semibold text-black">
-        <button className="flex items-center gap-2">
+        <button 
+          className="flex items-center gap-2"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading || localLoading}
+        >
           <Image src={google} alt="" width={30} className="object-cover" />
-          <span>Đăng nhập với Google</span>
+          {isLoading ? loadingGG() :<span>Đăng nhập với Google</span> }
         </button>
       </div>
 
@@ -21,7 +52,7 @@ const LoginForm: React.FC = () => {
       </div>
 
       {/* Form đăng nhập */}
-      <form className="space-y-4 mt-4">
+      <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label htmlFor="phoneNumber" className="text-sm font-medium">
             Số điện thoại đăng nhập
@@ -30,6 +61,8 @@ const LoginForm: React.FC = () => {
             <input
               id="phoneNumber"
               type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
             />
           </div>
@@ -44,6 +77,8 @@ const LoginForm: React.FC = () => {
             <input
               id="password"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
             />
           </div>
@@ -63,8 +98,9 @@ const LoginForm: React.FC = () => {
         <button
           type="submit"
           className="w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors"
+          disabled={isLoading || localLoading}
         >
-          Đăng nhập
+          {localLoading ? 'Đang xử lý...' : 'Đăng nhập'}
         </button>
       </form>
 

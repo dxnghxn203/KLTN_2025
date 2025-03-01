@@ -9,7 +9,9 @@ from app.routers import (
     tracking_router,
     metrics_router,
     health_router,
-    upload_router
+    upload_router,
+    user_router,
+    authen_router
 )
 from app.core import database, redis_client
 import uvicorn
@@ -38,6 +40,8 @@ app.add_exception_handler(response.JsonException, exception.json_exception_handl
 app.add_exception_handler(RequestValidationError, exception.validation_exception_handler)
 
 # Routers
+app.include_router(authen_router, prefix="/v1", tags=["Authen"])
+app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(events_router, prefix="/v1", tags=["Events"])
 app.include_router(tracking_router, prefix="/v1", tags=["Tracking"])
 app.include_router(metrics_router, prefix="/v1", tags=["Metrics"])
