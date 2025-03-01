@@ -11,6 +11,7 @@ import LocationDelivery from "./locationDelivery";
 import MenuHeader from "./menuHeader";
 import LocationDialog from "@/components/dialog/locationDialog/locationDialog";
 import { useAuth } from "@/store/auth/useAuth";
+import { useCart } from "@/store/cart/useCart";  // Import from correct path
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -18,8 +19,7 @@ export default function Header() {
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, logout } = useAuth();
-
-  const cartItemCount = 3;
+  const { cartLocal } = useCart();  // Make sure you're using the correct property name
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -83,9 +83,9 @@ export default function Header() {
               <div className="relative">
                 <AiOutlineShoppingCart className="text-2xl" />
 
-                {cartItemCount > 0 && (
+                {cartLocal && cartLocal.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartItemCount}
+                    {cartLocal.length}
                   </span>
                 )}
               </div>

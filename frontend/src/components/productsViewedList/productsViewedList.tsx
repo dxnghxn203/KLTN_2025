@@ -2,9 +2,11 @@ import React from "react";
 import ProductsViewCard from "./productsViewedCard";
 import { ProductData } from "./types";
 import medicine1 from "@/images/medicinee.png";
+import { generateRandomId } from "@/utils/string";
 
 const productData: ProductData[] = [
   {
+    id: generateRandomId() ,
     discount: "-20%",
     imageSrc: medicine1,
     category: "Dinh dưỡng",
@@ -12,9 +14,10 @@ const productData: ProductData[] = [
     name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
     price: 150000,
     unit: "Chai",
-    originalPrice: 180000,
+    originPrice: 180000,
   },
   {
+    id: generateRandomId() ,
     imageSrc: medicine1,
     category: "Dinh dưỡng",
     rating: 4.5,
@@ -23,6 +26,7 @@ const productData: ProductData[] = [
     unit: "Chai",
   },
   {
+    id: generateRandomId() ,
     discount: "-20%",
     imageSrc: medicine1,
     category: "Dinh dưỡng",
@@ -30,9 +34,10 @@ const productData: ProductData[] = [
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
     price: 150000,
     unit: "Chai",
-    originalPrice: 180000,
+    originPrice: 180000,
   },
   {
+    id: generateRandomId() ,
     discount: "-20%",
     imageSrc: medicine1,
     category: "Dinh dưỡng",
@@ -40,7 +45,7 @@ const productData: ProductData[] = [
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
     price: 150000,
     unit: "Chai",
-    originalPrice: 180000,
+    originPrice: 180000,
   },
 ];
 

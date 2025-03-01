@@ -7,6 +7,6 @@ export interface ProductData {
   rating: number;
   name: string;
   price: number;
-  originalPrice?: number;
+  originPrice?: number;
   unit: string;
 }

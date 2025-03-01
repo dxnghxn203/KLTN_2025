@@ -1,17 +1,35 @@
 "use client";
+import CartEmpty from "@/components/Cart/EmptyCart";
+import ShoppingCart from "@/components/Cart/ShoppingCart";
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-import CartEmpty from "./cartEmpty/page";
 import ProductsViewedList from "@/components/productsViewedList/productsViewedList";
-import ShoppingCart from "./shoppingCart/page";
+import { useCart } from "@/store";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
-export default function Home() {
+export default function Cart() {
+  const { cartLocal } = useCart();
+
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
       <main className="flex flex-col space-y-8">
-        {/* <CartEmpty /> */}
-        <ShoppingCart />
+        <div className="flex flex-col px-5">
+          <div className="pt-14">
+            <Link
+              href="/home"
+              className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
+            >
+              <ChevronLeft size={20} />
+              <span>Tiếp tục mua sắm</span>
+            </Link>
+          </div>
+          {
+            cartLocal?.length ?<ShoppingCart />:<CartEmpty />
+          }
+        </div>
         <div className="self-start text-2xl font-extrabold text-black px-5">
           Sản phẩm vừa xem
           <ProductsViewedList />

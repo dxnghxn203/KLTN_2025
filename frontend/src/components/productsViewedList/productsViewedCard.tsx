@@ -3,8 +3,11 @@ import { ProductData } from "./types";
 import ProductDialog from "@/components/dialog/productDialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
+import { generateRandomId } from "@/utils/string";
+
 
 const ProductsViewCard: React.FC<ProductData> = ({
+  id,
   discount,
   imageSrc,
   category,
@@ -12,7 +15,7 @@ const ProductsViewCard: React.FC<ProductData> = ({
   name,
   price,
   unit,
-  originalPrice,
+  originPrice,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -69,11 +72,10 @@ const ProductsViewCard: React.FC<ProductData> = ({
             {/* Giá sản phẩm */}
             <div className="mt-2">
               <div
-                className={`text-sm text-zinc-400 line-through ${
-                  originalPrice ? "" : "invisible"
-                }`}
+                className={`text-sm text-zinc-400 line-through ${originPrice ? "" : "invisible"
+                  }`}
               >
-                {(originalPrice || 0).toLocaleString("vi-VN")}đ
+                {(originPrice || 0).toLocaleString("vi-VN")}đ
               </div>
               <div className="text-lg font-bold text-[#0053E2]">
                 {price.toLocaleString("vi-VN")}đ/{unit}
@@ -96,10 +98,11 @@ const ProductsViewCard: React.FC<ProductData> = ({
       {/* Dialog hiển thị khi isDialogOpen = true */}
       {isDialogOpen && (
         <ProductDialog
+          id={id} 
           name={name}
           price={price}
           discount={discount ?? ""}
-          originalPrice={originalPrice ?? 0}
+          originPrice={originPrice ?? 0}
           imageSrc={imageSrc}
           unit={unit}
           onClose={() => setIsDialogOpen(false)}

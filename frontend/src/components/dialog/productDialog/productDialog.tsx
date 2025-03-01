@@ -1,28 +1,33 @@
 import React, { useState } from "react";
-import { X } from "lucide-react"; // Import icon X
+import { X } from "lucide-react";
 import { StaticImageData } from "next/image";
 import Image from "next/image";
+import { useCart } from "@/store";
+import { Product } from "@/types/product";
 
 interface ProductDialogProps {
+  id: string;
   name: string;
   price: number;
   discount: string;
-  originalPrice: number;
+  originPrice: number;
   imageSrc: string | StaticImageData;
   unit: string;
   onClose: () => void;
 }
 
 const ProductDialog: React.FC<ProductDialogProps> = ({
+  id,
   name,
   price,
   discount,
-  originalPrice,
+  originPrice,
   imageSrc,
   unit,
   onClose,
 }) => {
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart()
 
   const increaseQuantity = () => {
     setQuantity((prev) => prev + 1);
@@ -34,10 +39,22 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
     }
   };
 
+  const handleAddToCart = () => {
+    addToCart({
+      id,
+      name,
+      price,
+      discount,
+      originPrice,
+      imageSrc,
+      unit,
+      quantity,
+    })
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-[800px] text-center relative">
-        {/* Nút đóng */}
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-black"
@@ -49,7 +66,6 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
         </div>
 
         <div className="flex gap-6 py-4">
-          {/* Cột 1: Hình ảnh sản phẩm */}
           <div className="w-1/2 flex justify-center items-center bg-[#F1F5F9] p-4 rounded-lg ">
             <Image
               src={imageSrc}
@@ -61,7 +77,6 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
             />
           </div>
 
-          {/* Cột 2: Thông tin sản phẩm */}
           <div className="w-1/2 text-left">
             <h1 className="text-2xl font-semibold text-black">{name}</h1>
             <div className="flex gap-2 mt-3">
@@ -70,9 +85,9 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
                   {discount}
                 </span>
               )}
-              {originalPrice != null && originalPrice !== 0 && (
+              {originPrice != null && originPrice !== 0 && (
                 <span className="text-xl font-bold text-zinc-400 line-through flex items-center justify-center">
-                  {Number(originalPrice).toLocaleString("vi-VN")}đ
+                  {Number(originPrice).toLocaleString("vi-VN")}đ
                 </span>
               )}
             </div>
@@ -86,11 +101,10 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
 
               <div className="flex items-center gap-2 border p-2 rounded-lg">
                 <button
-                  className={`px-3 py-1  rounded-md ${
-                    quantity === 1
+                  className={`px-3 py-1  rounded-md ${quantity === 1
                       ? "cursor-not-allowed opacity-50"
                       : "hover:bg-gray-300"
-                  }`}
+                    }`}
                   onClick={decreaseQuantity}
                   disabled={quantity === 1}
                 >
@@ -108,11 +122,12 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
               </div>
             </div>
 
-            {/* Nút thao tác */}
             <button className="mt-10 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full">
               Mua ngay
             </button>
-            <button className="mt-3 text-[#0053E2] font-semibold px-6 py-3 rounded-xl w-full border border-[#0053E2] hover:border-opacity-50 hover:text-opacity-50">
+            <button
+              onClick={handleAddToCart}
+              className="mt-3 text-[#0053E2] font-semibold px-6 py-3 rounded-xl w-full border border-[#0053E2] hover:border-opacity-50 hover:text-opacity-50">
               Thêm vào giỏ hàng
             </button>
           </div>

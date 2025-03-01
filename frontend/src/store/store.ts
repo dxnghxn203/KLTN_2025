@@ -14,7 +14,7 @@ import { persistReducer, persistStore } from "redux-persist";
 import createSagaMiddleware from "redux-saga";
 import storage from 'redux-persist/lib/storage';
 import rootSaga from "./rootSagas";
-import rootReducer from "./rootReducers";
+import rootReducer from "./rootReducer";
 
 const persistConfig = {
     key: "kltn.2025",

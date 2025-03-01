@@ -12,7 +12,7 @@ const productData: ProductData[] = [
     name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
     price: 150000,
     unit: "Chai",
-    originalPrice: 180000,
+    originPrice: 180000,
   },
   {
     imageSrc: medicine1,
@@ -30,7 +30,7 @@ const productData: ProductData[] = [
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
     price: 150000,
     unit: "Chai",
-    originalPrice: 180000,
+    originPrice: 180000,
   },
   {
     discount: "-20%",
@@ -40,7 +40,7 @@ const productData: ProductData[] = [
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
     price: 150000,
     unit: "Chai",
-    originalPrice: 180000,
+    originPrice: 180000,
   },
 ];
 

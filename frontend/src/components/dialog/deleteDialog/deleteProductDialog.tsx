@@ -4,7 +4,7 @@ import Image from "next/image";
 import bin from "@/images/delete.png";
 
 interface DeleteDialogProps {
-  productId: number | null;
+  productId: string | null;
   onClose: () => void;
   onConfirm: () => void;
 }
