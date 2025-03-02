@@ -1,8 +1,8 @@
 "use client";
 import Footer from "@/components/Footer/Footer";
 import Header from "@/components/Header/header";
-import ProductDetail from "@/components/Product/DetailProduct/DetailProduct";
-import ProductsRelatedList from "@/components/Product/ProductsRelatedList/ProductsRelatedList";
+import ProductDetail from "@/components/Product/DetailProduct";
+import ProductsRelatedList from "@/components/Product/ProductsRelatedList";
 import { useProduct } from "@/store";
 import React, { useEffect, useState } from "react";
 

@@ -3,7 +3,7 @@ import CartEmpty from "@/components/Cart/EmptyCart";
 import ShoppingCart from "@/components/Cart/ShoppingCart";
 import Footer from "@/components/Footer/Footer";
 import Header from "@/components/Header/header";
-import ProductsViewedList from "@/components/Product/ProductsViewedList/ProductsViewedList";
+import ProductsViewedList from "@/components/Product/ProductsViewedList";
 import { useCart } from "@/store";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";

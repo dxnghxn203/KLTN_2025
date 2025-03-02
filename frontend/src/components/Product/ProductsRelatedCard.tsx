@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import ProductDialog from "@/components/Dialog/ProductDialog/ProductDialog";
+import ProductDialog from "@/components/Dialog/ProductDialog";
 import Image from "next/image";
 import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
 import { ProductData } from "@/types/product";
 
-const ProductCard: React.FC<ProductData> = ({
+const ProductsRelatedCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -111,4 +111,4 @@ const ProductCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductCard;
+export default ProductsRelatedCard;

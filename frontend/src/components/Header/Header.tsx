@@ -115,9 +115,7 @@ export default function Header() {
             {showCartDropdown && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[60]">
                 <div className="p-4">
-                  <h3 className="text-black font-semibold border-b pb-2">
-                    Giỏ hàng của bạn
-                  </h3>
+                  <h3 className="text-black font-semibold">Giỏ hàng của bạn</h3>
 
                   {!cartLocal || cartLocal.length === 0 ? (
                     <div className="py-6 text-center text-gray-500">
@@ -131,7 +129,7 @@ export default function Header() {
                         }`}
                       >
                         {cartLocal.map((item) => (
-                          <div key={item.id} className="flex py-3 border-b">
+                          <div key={item.id} className="flex py-3">
                             <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
                               <Image
                                 src={item.imageSrc}
@@ -146,24 +144,26 @@ export default function Header() {
                                 <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
                                   {item.name}
                                 </h4>
-                                <span className="text-xs text-gray-500">
-                                  {item.quantity} x {item.unit}
-                                </span>
                               </div>
-                              <div className="text-[#0053E2] font-medium">
-                                {(item.price * item.quantity).toLocaleString(
-                                  "vi-VN"
-                                )}
-                                đ
+                              <div className="flex ml-auto items-center justify-between w-full">
+                                <div className="text-red font-medium">
+                                  {(item.price * item.quantity).toLocaleString(
+                                    "vi-VN"
+                                  )}{" "}
+                                  đ
+                                </div>
+                                <span className="text-xs text-gray-500">
+                                  x{item.quantity} {item.unit}
+                                </span>
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
 
-                      <div className="mt-3 pt-3 border-t">
+                      <div className="mt-3">
                         <Link href="/cart" legacyBehavior>
-                          <a className="mt-3 block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
+                          <a className="block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
                             Xem giỏ hàng
                           </a>
                         </Link>

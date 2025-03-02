@@ -2,9 +2,9 @@
 import Footer from "@/components/Footer/Footer";
 import Header from "@/components/Header/header";
 import ProductCatalog from "../../components/Home/ProductCatalog";
-import ProductList from "@/components/Product/ProductList/ProductList";
+import ProductList from "@/components/Product/ProductList";
 import BrandList from "@/components/BrandList/BrandList";
-import ProductDealsList from "@/components/Product/ProductDealsList/ProductDealsList";
+import ProductDealsList from "@/components/Product/ProductDealsList";
 import IntroMedicare from "../../components/Home/IntroMedicare";
 import HealthCorner from "../../components/Home/HealthCorner";
 

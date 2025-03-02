@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { ProductData } from "./types";
-import ProductDialog from "@/components/Dialog/ProductDialog/ProductDialog";
+import ProductDialog from "@/components/Dialog/ProductDialog";
 import Image from "next/image";
 import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
+import { ProductData } from "@/types/product";
 
-const ProductsViewCard: React.FC<ProductData> = ({
-  id,
+const ProductCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -98,7 +97,7 @@ const ProductsViewCard: React.FC<ProductData> = ({
       {/* Dialog hiển thị khi isDialogOpen = true */}
       {isDialogOpen && (
         <ProductDialog
-          id={id}
+          id={generateRandomId()}
           name={name}
           price={price}
           discount={discount ?? ""}
@@ -112,4 +111,4 @@ const ProductsViewCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductsViewCard;
+export default ProductCard;
