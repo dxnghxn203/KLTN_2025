@@ -1,10 +1,12 @@
 import React from "react";
 import ProductCard from "./productCard";
-import { ProductData } from "./types";
+import { ProductData } from "@/types/product";
 import medicine1 from "@/images/medicinee.png";
+import { generateRandomId } from "@/utils/string";
 
 const productData: ProductData[] = [
   {
+    id: generateRandomId(),
     discount: "-20%",
     imageSrc: medicine1,
     category: "Dinh dưỡng",
@@ -15,6 +17,7 @@ const productData: ProductData[] = [
     originPrice: 180000,
   },
   {
+    id: generateRandomId(),
     imageSrc: medicine1,
     category: "Dinh dưỡng",
     rating: 4.5,
@@ -23,6 +26,7 @@ const productData: ProductData[] = [
     unit: "Chai",
   },
   {
+    id: generateRandomId(),
     discount: "-20%",
     imageSrc: medicine1,
     category: "Dinh dưỡng",
@@ -33,6 +37,7 @@ const productData: ProductData[] = [
     originPrice: 180000,
   },
   {
+    id: generateRandomId(),
     discount: "-20%",
     imageSrc: medicine1,
     category: "Dinh dưỡng",

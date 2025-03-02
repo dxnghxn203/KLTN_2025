@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ProductData } from "./types";
-import ProductDialog from "@/components/dialog/productDialog/productDialog";
+import ProductDialog from "@/components/Dialog/ProductDialog/ProductDialog";
 import Image from "next/image";
 import Link from "next/link";
 import { randomUUID } from "crypto";
@@ -23,7 +23,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
       <div className="flex text-xs font-bold whitespace-normal">
         <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] ">
           {/* Ảnh sản phẩm */}
-          <Link href="/detailProduct" legacyBehavior>
+          <Link href="/detailproduct" legacyBehavior>
             <div className="py-6 flex flex-col items-center">
               <div className="flex justify-end w-full">
                 {discount !== undefined ? (
@@ -97,7 +97,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
 
       {isDialogOpen && (
         <ProductDialog
-          id ={generateRandomId()}
+          id={generateRandomId()}
           name={name}
           price={price}
           discount={discount ?? ""}

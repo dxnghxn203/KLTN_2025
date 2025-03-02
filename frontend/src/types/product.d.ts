@@ -21,6 +21,17 @@ interface Product {
     unit: string;
     quantity: number
 }
+interface ProductData {
+    id: string,
+  discount?: string;
+  imageSrc: string | StaticImageData; 
+  category: string;
+  rating: number;
+  name: string;
+  price: number;
+  originPrice?: number;
+  unit: string;
+}
 
 interface Price {
     id: string;
@@ -28,7 +39,7 @@ interface Price {
     originalPrice: number;
     unitPrice: string;
     discount: number;
-    unit: string;
+    unit: string[];
 }
 
 interface Category {

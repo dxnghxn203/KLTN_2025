@@ -1,18 +1,18 @@
 "use client";
 import React, { useState } from "react";
-import { DeliveryMethod } from "./deliveryMethod";
-import { OrdererInfo } from "@/app/checkout/checkoutInfo/delivery/orderInfo";
-import { OrdererInfoPickup } from "./pickupPharma/orderInfo";
-import { ShippingAddress } from "@/app/checkout/checkoutInfo/delivery/shippingAddress";
-import { PaymentMethod } from "./paymentMethod";
-import { Toggle } from "@/components/toggle/toggle";
+import { DeliveryMethod } from "./DeliveryMethod";
+import { OrdererInfo } from "@/components/Checkout/CheckoutInfo/InfoDelivery";
+import { OrdererInfoPickup } from "./OrderPickupPharma";
+import { ShippingAddress } from "@/components/Checkout/CheckoutInfo/ShippingAddress";
+import { PaymentMethod } from "./PaymentMethod";
+import { Toggle } from "@/components/Toggle/Toggle";
 import { FaTruckFast } from "react-icons/fa6";
 import {
   OrdererInfo as OrdererInfoType,
   AddressFormData,
-} from "../productInfo/types";
-import { PharmaInfo } from "./pickupPharma/pharmaInfo";
-import ReceiveDialog from "@/components/dialog/receiveDialog/receiveDialog";
+} from "../ProductInfo/types";
+import { PharmaInfo } from "./PharmaInfo";
+import ReceiveDialog from "@/components/Dialog/ReceiveDialog/ReceiveDialog";
 
 const Delivery: React.FC = () => {
   const [deliveryMethod, setDeliveryMethod] = useState<"delivery" | "pickup">(

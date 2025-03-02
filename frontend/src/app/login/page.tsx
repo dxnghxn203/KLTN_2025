@@ -1,9 +1,9 @@
 "use client";
 import { useEffect } from "react";
-import Header from "@/components/header/header";
-import LoginForm from "./LoginForm";
-import AlreadyLoggedIn from "./AlreadyLoggedIn";
-import Footer from "@/components/footer/footer";
+import Header from "@/components/Header/header";
+import LoginForm from "../../components/Login/LoginForm";
+import AlreadyLoggedIn from "../../components/Login/AlreadyLoggedIn";
+import Footer from "@/components/Footer/Footer";
 import { useAuth } from "@/store/auth/useAuth";
 import { useToast } from "@/providers/ToastProvider";
 import { ToastType } from "@/components/Toast/Toast";
@@ -11,7 +11,7 @@ import { ToastType } from "@/components/Toast/Toast";
 export default function LoginPage() {
   const { isAuthenticated, error } = useAuth();
   const { showToast } = useToast();
-  
+
   // Show success toast when user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -19,7 +19,7 @@ export default function LoginPage() {
       showToast("Đăng nhập thành công!", ToastType.SUCCESS);
     }
   }, [isAuthenticated, showToast]);
-  
+
   // Show error toast when there's an authentication error
   useEffect(() => {
     if (error) {
@@ -27,7 +27,7 @@ export default function LoginPage() {
       showToast(error, ToastType.ERROR);
     }
   }, [error, showToast]);
-  
+
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
@@ -35,7 +35,7 @@ export default function LoginPage() {
         <h1 className="mt-5 text-3xl font-extrabold text-black">
           {isAuthenticated ? "Bạn đã đăng nhập" : "Đăng nhập"}
         </h1>
-        
+
         {isAuthenticated ? <AlreadyLoggedIn /> : <LoginForm />}
       </main>
       <Footer />

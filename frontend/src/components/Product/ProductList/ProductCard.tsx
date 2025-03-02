@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { ProductData } from "./types";
-import ProductDialog from "@/components/dialog/productDialog/productDialog";
+import ProductDialog from "@/components/Dialog/ProductDialog/ProductDialog";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { randomUUID } from "crypto";
 import { generateRandomId } from "@/utils/string";
 
-const ProductsRelatedCard: React.FC<ProductData> = ({
+const ProductCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -23,7 +24,7 @@ const ProductsRelatedCard: React.FC<ProductData> = ({
       <div className="flex text-xs font-bold whitespace-normal">
         <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] ">
           {/* Ảnh sản phẩm */}
-          <Link href="/detailProduct" legacyBehavior>
+          <Link href="/detailproduct" legacyBehavior>
             <div className="py-6 flex flex-col items-center">
               <div className="flex justify-end w-full">
                 {discount !== undefined ? (
@@ -98,7 +99,8 @@ const ProductsRelatedCard: React.FC<ProductData> = ({
       {/* Dialog hiển thị khi isDialogOpen = true */}
       {isDialogOpen && (
         <ProductDialog
-         id ={generateRandomId() }  name={name}
+          id={generateRandomId()}
+          name={name}
           price={price}
           discount={discount ?? ""}
           originPrice={originPrice ?? 0}
@@ -111,4 +113,4 @@ const ProductsRelatedCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductsRelatedCard;
+export default ProductCard;

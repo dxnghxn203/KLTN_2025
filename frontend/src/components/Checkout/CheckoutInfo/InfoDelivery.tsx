@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { OrdererInfo as OrdererInfoType } from "../../productInfo/types";
+import { OrdererInfo as OrdererInfoType } from "../ProductInfo/types";
 import { HiOutlineUserCircle } from "react-icons/hi2";
 
 interface OrdererInfoProps {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import AddressItem from "@/components/dialog/locationDialog/adsressItem";
+import AddressItem from "@/components/Dialog/LocationDialog/AddressItem";
 
 interface LocationDialogProps {
   isOpen: boolean;

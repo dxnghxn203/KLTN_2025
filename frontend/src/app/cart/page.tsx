@@ -1,9 +1,9 @@
 "use client";
 import CartEmpty from "@/components/Cart/EmptyCart";
 import ShoppingCart from "@/components/Cart/ShoppingCart";
-import Footer from "@/components/footer/footer";
-import Header from "@/components/header/header";
-import ProductsViewedList from "@/components/productsViewedList/productsViewedList";
+import Footer from "@/components/Footer/Footer";
+import Header from "@/components/Header/header";
+import ProductsViewedList from "@/components/Product/ProductsViewedList/ProductsViewedList";
 import { useCart } from "@/store";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -26,12 +26,12 @@ export default function Cart() {
               <span>Tiếp tục mua sắm</span>
             </Link>
           </div>
-          {
-            cartLocal?.length ?<ShoppingCart />:<CartEmpty />
-          }
+          {cartLocal?.length ? <ShoppingCart /> : <CartEmpty />}
         </div>
         <div className="self-start text-2xl font-extrabold text-black px-5">
           Sản phẩm vừa xem
+        </div>
+        <div className="px-5">
           <ProductsViewedList />
         </div>
       </main>

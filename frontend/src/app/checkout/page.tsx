@@ -2,13 +2,13 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import OrderSummary from "@/app/checkout/productInfo/orderSumary";
-import Footer from "@/components/footer/footer";
-import Header from "@/components/header/header";
+import OrderSummary from "@/components/Checkout/ProductInfo/OrderSumary";
+import Footer from "@/components/Footer/Footer";
+import Header from "@/components/Header/header";
 import Image, { StaticImageData } from "next/image";
 import medicine from "@/images/medicinee.png";
-import Delivery from "./checkoutInfo/page";
-import ProductList from "./productInfo/productList";
+import Delivery from "../../components/Checkout/CheckoutInfo/PickupPharma";
+import ProductList from "../../components/Checkout/ProductInfo/productList";
 
 interface Product {
   id: number;

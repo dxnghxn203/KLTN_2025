@@ -1,17 +1,17 @@
 "use client";
-import Footer from "@/components/footer/footer";
-import Header from "@/components/header/header";
-import ProductCatalog from "../../components/Home/productCatalog";
-import ProductList from "@/components/productList/productList";
-import BrandList from "@/components/brandList/brandList";
-import ProductDealsList from "@/components/productDealsList/productDealsList";
-import IntroMedicare from "../../components/Home/introMedicare";
-import HealthCorner from "../../components/Home/healthCorner";
+import Footer from "@/components/Footer/Footer";
+import Header from "@/components/Header/header";
+import ProductCatalog from "../../components/Home/ProductCatalog";
+import ProductList from "@/components/Product/ProductList/ProductList";
+import BrandList from "@/components/BrandList/BrandList";
+import ProductDealsList from "@/components/Product/ProductDealsList/ProductDealsList";
+import IntroMedicare from "../../components/Home/IntroMedicare";
+import HealthCorner from "../../components/Home/HealthCorner";
 import { useAuth } from "@/store/auth";
 
 export default function Home() {
-  const {user, isAuthenticated, logout} = useAuth();
-  console.log( isAuthenticated);
+  const { user, isAuthenticated, logout } = useAuth();
+  console.log(isAuthenticated);
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">

@@ -8,11 +8,11 @@ import { FiLogOut } from "react-icons/fi";
 import { IoChevronDownOutline } from "react-icons/io5";
 import Image from "next/image";
 
-import LocationDelivery from "./locationDelivery";
-import MenuHeader from "./menuHeader";
-import LocationDialog from "@/components/dialog/locationDialog/locationDialog";
+import LocationDelivery from "./LocationDelivery";
+import MenuHeader from "./MenuHeader";
+import LocationDialog from "@/components/Dialog/LocationDialog/LocationDialog";
 import { useAuth } from "@/store/auth/useAuth";
-import { useCart } from "@/store/cart/useCart";  // Import from correct path
+import { useCart } from "@/store/cart/useCart"; // Import from correct path
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -22,14 +22,20 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, logout } = useAuth();
-  const { cartLocal } = useCart();  // Make sure you're using the correct property name
+  const { cartLocal } = useCart(); // Make sure you're using the correct property name
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
-      if (cartDropdownRef.current && !cartDropdownRef.current.contains(event.target as Node)) {
+      if (
+        cartDropdownRef.current &&
+        !cartDropdownRef.current.contains(event.target as Node)
+      ) {
         setShowCartDropdown(false);
       }
     };
@@ -50,7 +56,7 @@ export default function Header() {
     if (!cartLocal || !cartLocal.length) return 0;
 
     return cartLocal.reduce((total, item) => {
-      return total + (item.price * item.quantity);
+      return total + item.price * item.quantity;
     }, 0);
   };
 
@@ -98,7 +104,9 @@ export default function Header() {
           >
             <Link href="/cart" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full w-[120px] h-[48px] transition ${pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"}`}
+                className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full w-[120px] h-[48px] transition ${
+                  pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                }`}
               >
                 <div className="relative">
                   <AiOutlineShoppingCart className="text-2xl" />
@@ -116,15 +124,21 @@ export default function Header() {
             {showCartDropdown && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[60]">
                 <div className="p-4">
-                  <h3 className="text-black font-semibold border-b pb-2">Giỏ hàng của bạn</h3>
+                  <h3 className="text-black font-semibold border-b pb-2">
+                    Giỏ hàng của bạn
+                  </h3>
 
-                  {(!cartLocal || cartLocal.length === 0) ? (
+                  {!cartLocal || cartLocal.length === 0 ? (
                     <div className="py-6 text-center text-gray-500">
                       Giỏ hàng trống
                     </div>
                   ) : (
                     <>
-                      <div className={`max-h-[250px] overflow-y-auto ${cartLocal.length > 3 ? 'custom-scrollbar' : ''}`}>
+                      <div
+                        className={`max-h-[250px] overflow-y-auto ${
+                          cartLocal.length > 3 ? "custom-scrollbar" : ""
+                        }`}
+                      >
                         {cartLocal.map((item) => (
                           <div key={item.id} className="flex py-3 border-b">
                             <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
@@ -138,11 +152,18 @@ export default function Header() {
                             </div>
                             <div className="ml-3 flex-1 flex flex-col justify-between">
                               <div>
-                                <h4 className="text-sm font-medium text-gray-900 line-clamp-2">{item.name}</h4>
-                                <span className="text-xs text-gray-500">{item.quantity} x {item.unit}</span>
+                                <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                                  {item.name}
+                                </h4>
+                                <span className="text-xs text-gray-500">
+                                  {item.quantity} x {item.unit}
+                                </span>
                               </div>
                               <div className="text-[#0053E2] font-medium">
-                                {(item.price * item.quantity).toLocaleString('vi-VN')}đ
+                                {(item.price * item.quantity).toLocaleString(
+                                  "vi-VN"
+                                )}
+                                đ
                               </div>
                             </div>
                           </div>
@@ -167,8 +188,9 @@ export default function Header() {
             <>
               <div className="relative" ref={dropdownRef}>
                 <div
-                  className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                    }`}
+                  className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${
+                    showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                  }`}
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -177,14 +199,16 @@ export default function Header() {
 
                   <div className="ml-2 flex-1 overflow-hidden">
                     <p className="text-sm font-medium truncate">
-                      {user?.name || 'hxn203'}
+                      {user?.name || "hxn203"}
                     </p>
                     <p className="text-xs text-white/70 truncate">
-                      {user?.email || ''}
+                      {user?.email || ""}
                     </p>
                   </div>
                   <IoChevronDownOutline
-                    className={`ml-1 transition-transform duration-200 ${showDropdown ? "rotate-180" : ""}`}
+                    className={`ml-1 transition-transform duration-200 ${
+                      showDropdown ? "rotate-180" : ""
+                    }`}
                   />
                 </div>
 
@@ -216,8 +240,9 @@ export default function Header() {
           ) : (
             <Link href="/login" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                  }`}
+                className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
+                  pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                }`}
               >
                 <HiOutlineUserCircle className="text-2xl" />
                 <span className="ml-2 text-[14px]">Đăng nhập</span>
