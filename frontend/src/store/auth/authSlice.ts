@@ -18,7 +18,8 @@ export const authSlice = createSlice({
             state.loading = true;
             state.error = null;
         },
-        googleLoginSuccess: (state) => {
+        googleLoginSuccess: (state, action: any) => {
+            state.user = action.payload;
             state.loading = false;
             state.isAuthenticated = true;
             state.error = null;

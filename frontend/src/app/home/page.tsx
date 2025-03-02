@@ -7,12 +7,8 @@ import BrandList from "@/components/BrandList/BrandList";
 import ProductDealsList from "@/components/Product/ProductDealsList/ProductDealsList";
 import IntroMedicare from "../../components/Home/IntroMedicare";
 import HealthCorner from "../../components/Home/HealthCorner";
-import { useAuth } from "@/store/auth";
 
 export default function Home() {
-  const { user, isAuthenticated, logout } = useAuth();
-  console.log(isAuthenticated);
-
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />

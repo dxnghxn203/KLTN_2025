@@ -51,15 +51,6 @@ export default function Header() {
     setShowDropdown(false);
   };
 
-  // Calculate total amount of items in cart
-  const calculateTotal = () => {
-    if (!cartLocal || !cartLocal.length) return 0;
-
-    return cartLocal.reduce((total, item) => {
-      return total + item.price * item.quantity;
-    }, 0);
-  };
-
   return (
     <div className="fixed top-0 left-0 w-full z-[50]">
       <header className="bg-[#0053E2] h-[72px] w-full flex items-center justify-between px-8">

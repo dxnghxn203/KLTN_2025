@@ -14,7 +14,7 @@ import {
     checkAuthSuccess,
     checkAuthFailure,
 } from './authSlice';
-import { signIn } from 'next-auth/react';
+import { getSession, signIn } from 'next-auth/react';
 import { LoginCredentials } from '@/types/auth';
 import { PayloadAction } from '@reduxjs/toolkit';
 
@@ -22,7 +22,8 @@ import { PayloadAction } from '@reduxjs/toolkit';
 function* handleGoogleLogin(): Generator<any, void, any> {
     try {
         const signInGG = yield call(signIn, "google",{prompt: "select_account", callbackUrl: "/home"});
-        yield put(googleLoginSuccess());
+        const session = yield call(getSession);
+        yield put(googleLoginSuccess(session.user));
     } catch (error: any) {
         yield put(googleLoginFailure(error.message || 'Đăng nhập bằng Google thất bại'));
     }

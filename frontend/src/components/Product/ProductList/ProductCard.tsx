@@ -1,11 +1,9 @@
 import React, { useState } from "react";
-import { ProductData } from "./types";
 import ProductDialog from "@/components/Dialog/ProductDialog/ProductDialog";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { randomUUID } from "crypto";
 import { generateRandomId } from "@/utils/string";
+import { ProductData } from "@/types/product";
 
 const ProductCard: React.FC<ProductData> = ({
   discount,
