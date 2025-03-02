@@ -5,14 +5,10 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from app.core import response, exception
 from app.routers import (
-    events_router,
-    tracking_router,
-    metrics_router,
-    health_router,
-    upload_router,
     user_router,
     authen_router,
-    order_router
+    order_router,
+    product_router
 )
 from app.core import database, redis_client
 import uvicorn
@@ -44,12 +40,9 @@ app.add_exception_handler(RequestValidationError, exception.validation_exception
 # Routers
 app.include_router(authen_router, prefix="/v1", tags=["Authen"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
-app.include_router(events_router, prefix="/v1", tags=["Events"])
-app.include_router(tracking_router, prefix="/v1", tags=["Tracking"])
-app.include_router(metrics_router, prefix="/v1", tags=["Metrics"])
-app.include_router(health_router, prefix="/v1", tags=["Health"])
-app.include_router(upload_router.router, prefix="/v1", tags=["Upload"])
+app.include_router(product_router, prefix="/v1", tags=["Product"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])
+
 @app.get("/")
 def read_root():
     return {
