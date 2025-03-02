@@ -1,45 +1,42 @@
 import { useSelector, useDispatch } from 'react-redux';
+import { useSession } from 'next-auth/react';
 import {
     googleLoginStart,
     loginStart,
     logoutStart,
-    checkAuthStart,
+    googleLoginSuccess
 } from './authSlice';
 import { selectAuth } from './authSelector';
+import { useEffect } from 'react';
 
-interface UseAuthReturn {
-    isAuthenticated: boolean;
-    isLoading: boolean;
-    user: any | null;
-    signInWithGoogle: () => void;
-    login: (credentials: any) => void;
-    logout: () => void;
-    error: any;
-}
-
-export function useAuth(): UseAuthReturn {
+export function useAuth() {
     const dispatch = useDispatch();
+    const { data: session } = useSession();
     const { user, isAuthenticated, loading, error } = useSelector(selectAuth);
-
-    // useEffect(() => {
-    //     dispatch(checkAuthStart());
-    // }, [dispatch]);
-
+    
+    // Sync NextAuth session with Redux whenever session changes
+    useEffect(() => {
+        if (session?.user && !isAuthenticated) {
+            dispatch(googleLoginSuccess(session.user));
+        }
+    }, [session, dispatch, isAuthenticated]);
+    
     const signInWithGoogle = async () => {
         dispatch(googleLoginStart());
     };
-
+    
     const login = (credentials: any) => {
         dispatch(loginStart(credentials));
     };
-
+    
     const logout = () => {
         dispatch(logoutStart());
     };
-
+    
     return {
-        user,
-        isAuthenticated,
+        // If we have session data but Redux hasn't updated yet, use session data
+        user: user || session?.user || null,
+        isAuthenticated: isAuthenticated || !!session?.user,
         isLoading: loading,
         error,
         signInWithGoogle,

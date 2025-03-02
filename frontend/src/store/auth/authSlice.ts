@@ -18,7 +18,7 @@ export const authSlice = createSlice({
             state.loading = true;
             state.error = null;
         },
-        googleLoginSuccess: (state, action: any) => {
+        googleLoginSuccess: (state, action) => {
             state.user = action.payload;
             state.loading = false;
             state.isAuthenticated = true;
@@ -60,23 +60,6 @@ export const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
-
-        // Check auth status action
-        checkAuthStart: (state) => {
-            state.loading = true;
-        },
-        checkAuthSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
-            state.loading = false;
-            state.isAuthenticated = true;
-            state.user = action.payload.user;
-            state.token = action.payload.token;
-        },
-        checkAuthFailure: (state) => {
-            state.loading = false;
-            state.isAuthenticated = false;
-            state.user = null;
-            state.token = null;
-        },
     },
 });
 
@@ -89,10 +72,7 @@ export const {
     loginFailure,
     logoutStart,
     logoutSuccess,
-    logoutFailure,
-    checkAuthStart,
-    checkAuthSuccess,
-    checkAuthFailure,
+    logoutFailure
 } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -15,7 +15,6 @@ export default function LoginPage() {
   // Show success toast when user is authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      console.log("User is authenticated, showing success toast");
       showToast("Đăng nhập thành công!", ToastType.SUCCESS);
     }
   }, [isAuthenticated, showToast]);

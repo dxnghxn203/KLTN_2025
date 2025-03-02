@@ -19,7 +19,6 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     try {
       await signInWithGoogle();
-      // Note: Success toast will be shown by the page component when isAuthenticated changes
     } catch (error) {
       showToast("Đăng nhập bằng Google thất bại", ToastType.ERROR);
     }

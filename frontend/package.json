@@ -1,12 +1,15 @@
 {
-    "name": "tracking-frontend",
+    "name": "frontend-medicare",
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "npx cross-env NODE_ENV=development next dev",
+        "stag": "npx cross-env NODE_ENV=staging next build",
+        "prod": "npx cross-env NODE_ENV=production next build",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "clean": "rm -rf node_modules && yarn"
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.5.1",

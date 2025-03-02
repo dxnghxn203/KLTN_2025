@@ -10,20 +10,24 @@ import {
     logoutStart,
     logoutSuccess,
     logoutFailure,
-    checkAuthStart,
-    checkAuthSuccess,
-    checkAuthFailure,
 } from './authSlice';
-import { getSession, signIn } from 'next-auth/react';
+import { getSession, signIn, signOut } from 'next-auth/react';
 import { LoginCredentials } from '@/types/auth';
 import { PayloadAction } from '@reduxjs/toolkit';
 
 // Google Login
 function* handleGoogleLogin(): Generator<any, void, any> {
     try {
-        const signInGG = yield call(signIn, "google",{prompt: "select_account", callbackUrl: "/home"});
+        const signInGG = yield call(signIn, "google", {
+            callbackUrl: "/",
+            prompt: "select_account"
+        });
         const session = yield call(getSession);
-        yield put(googleLoginSuccess(session.user));
+        if (!session) {
+            yield put(googleLoginFailure('Đăng nhập bằng Google thất bại'));
+        } else {
+            yield put(googleLoginSuccess(session.user));
+        }
     } catch (error: any) {
         yield put(googleLoginFailure(error.message || 'Đăng nhập bằng Google thất bại'));
     }
@@ -53,23 +57,20 @@ function* handleLogin(action: PayloadAction<LoginCredentials>): Generator<any, v
 }
 
 // Logout
-function* handleLogout() {
+function* handleLogout(): Generator<any, void, any> {
     try {
         const token = localStorage.getItem('token');
+        const response = yield call(signOut, { redirect: false });
 
         if (token) {
             yield call(authService.logout, token);
         }
-
-        // Clear local storage
         localStorage.removeItem('token');
-
         yield put(logoutSuccess());
 
-        // Redirect to home page
-        // if (typeof window !== 'undefined') {
-        //     window.location.href = '/login';
-        // }
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
     } catch (error: any) {
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
         // Still remove token and redirect even if server request fails
@@ -81,36 +82,8 @@ function* handleLogout() {
 }
 
 // Check auth status
-function* checkAuth(): Generator<any, void, any> {
-    try {
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-            yield put(checkAuthFailure());
-            return;
-        }
-
-        const response = yield call(authService.verifyToken, token);
-
-        if (response.isValid) {
-            yield put(checkAuthSuccess({
-                user: response.userData,
-                token,
-            }));
-        } else {
-            // Token is invalid
-            localStorage.removeItem('token');
-            yield put(checkAuthFailure());
-        }
-    } catch (error) {
-        localStorage.removeItem('token');
-        yield put(checkAuthFailure());
-    }
-}
-
 export function* authSaga() {
     yield takeLatest(googleLoginStart.type, handleGoogleLogin);
     yield takeLatest(loginStart.type, handleLogin);
     yield takeLatest(logoutStart.type, handleLogout);
-    yield takeLatest(checkAuthStart.type, checkAuth);
 }
