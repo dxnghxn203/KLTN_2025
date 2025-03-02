@@ -2,9 +2,9 @@
 import React, { useState, useMemo } from "react";
 import { ImBin } from "react-icons/im";
 import Image, { StaticImageData } from "next/image";
-import DeleteProductDialog from "@/components/Dialog/DeleteDialog/DeleteProductDialog";
+import DeleteProductDialog from "@/components/Dialog/deleteProductDialog";
 import { useCart } from "@/store";
-import OrderSummary from "@/components/Cart/OrderSumary";
+import OrderSummary from "@/components/Cart/orderSumary";
 
 const unitOptions = ["Cái", "Hộp", "Chai", "Gói"];
 

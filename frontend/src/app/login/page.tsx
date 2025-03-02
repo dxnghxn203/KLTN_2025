@@ -1,12 +1,12 @@
 "use client";
 import { useEffect } from "react";
 import Header from "@/components/Header/header";
-import LoginForm from "../../components/Login/LoginForm";
-import AlreadyLoggedIn from "../../components/Login/AlreadyLoggedIn";
-import Footer from "@/components/Footer/Footer";
+import LoginForm from "../../components/Login/loginForm";
+import AlreadyLoggedIn from "../../components/Login/alreadyLoggedIn";
+import Footer from "@/components/Footer/footer";
 import { useAuth } from "@/store/auth/useAuth";
 import { useToast } from "@/providers/ToastProvider";
-import { ToastType } from "@/components/Toast/Toast";
+import { ToastType } from "@/components/Toast/toast";
 
 export default function LoginPage() {
   const { isAuthenticated, error } = useAuth();

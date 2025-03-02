@@ -16,10 +16,10 @@ export default function LocationDelivery() {
         />
       </div>
       {/* Nội dung */}
-      <div className="flex flex-col ml-2">
+      <div className="flex flex-col ml-2 w-[200px] overflow-hidden">
         <span className="text-sm text-white">Giao đến</span>
-        <span className="text-sm text-white">
-          1234 đường số 11, phường Bình ...
+        <span className="text-sm text-white truncate">
+          1234 đường số 11, phường Bình Thọ, Thủ Đức, TP.HCM
         </span>
       </div>
     </div>

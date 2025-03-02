@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { ProductData } from "./types";
-import ProductDialog from "@/components/Dialog/ProductDialog";
+import { ProductData } from "@/types/product";
+import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
 import { generateRandomId } from "@/utils/string";

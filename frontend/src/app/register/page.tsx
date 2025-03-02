@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import Footer from "@/components/Footer/Footer";
+import Footer from "@/components/Footer/footer";
 import Header from "@/components/Header/header";
 import google from "@/images/google.png";
 import Image from "next/image";

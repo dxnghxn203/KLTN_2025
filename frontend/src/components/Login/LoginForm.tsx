@@ -6,7 +6,7 @@ import Link from "next/link";
 import google from "@/images/google.png";
 import { useAuth } from "@/store/auth/useAuth";
 import { useToast } from "@/providers/ToastProvider";
-import { ToastType } from "@/components/Toast/Toast";
+import { ToastType } from "@/components/Toast/toast";
 
 const LoginForm: React.FC = () => {
   const { signInWithGoogle, login, isLoading } = useAuth();
@@ -30,11 +30,11 @@ const LoginForm: React.FC = () => {
       showToast("Vui lòng nhập đầy đủ thông tin", ToastType.WARNING);
       return;
     }
-    
+
     setLocalLoading(true);
     // For testing - show a toast directly
     showToast("Đang xử lý đăng nhập...", ToastType.INFO);
-    
+
     try {
       const formData = {
         phoneNumber,
@@ -55,19 +55,19 @@ const LoginForm: React.FC = () => {
         <span>Đang xử lý...</span>
         <div className="w-5 h-5 border border-t-[3px] border-[#0053E2] rounded-full animate-spin" />
       </>
-    )
-  }
+    );
+  };
 
   return (
     <div className="w-[393px] mx-auto">
       <div className="flex justify-center items-center rounded-3xl border border-solid border-black border-opacity-10 h-[55px] w-full text-sm font-semibold text-black">
-        <button 
+        <button
           className="flex items-center gap-2"
           onClick={handleGoogleSignIn}
           disabled={isLoading || localLoading}
         >
           <Image src={google} alt="" width={30} className="object-cover" />
-          {isLoading ? loadingGG() :<span>Đăng nhập với Google</span> }
+          {isLoading ? loadingGG() : <span>Đăng nhập với Google</span>}
         </button>
       </div>
 
@@ -86,7 +86,7 @@ const LoginForm: React.FC = () => {
             <input
               id="phoneNumber"
               type="tel"
-              placeholder="123-456-7890"
+              placeholder=""
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
@@ -125,7 +125,7 @@ const LoginForm: React.FC = () => {
           className="w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors"
           disabled={isLoading || localLoading}
         >
-          {localLoading ? 'Đang xử lý...' : 'Đăng nhập'}
+          {localLoading ? "Đang xử lý..." : "Đăng nhập"}
         </button>
       </form>
 

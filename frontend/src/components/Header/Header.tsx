@@ -7,10 +7,11 @@ import { HiOutlineUserCircle } from "react-icons/hi2";
 import { FiLogOut } from "react-icons/fi";
 import { IoChevronDownOutline } from "react-icons/io5";
 import Image from "next/image";
+import { ImBin } from "react-icons/im";
 
-import LocationDelivery from "./LocationDelivery";
-import MenuHeader from "./MenuHeader";
-import LocationDialog from "@/components/Dialog/LocationDialog/LocationDialog";
+import LocationDelivery from "./locationDelivery";
+import MenuHeader from "./menuHeader";
+import LocationDialog from "@/components/Dialog/LocationDialog";
 import { useAuth } from "@/store/auth/useAuth";
 import { useCart } from "@/store/cart/useCart"; // Import from correct path
 
@@ -22,7 +23,7 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, logout } = useAuth();
-  const { cartLocal } = useCart(); // Make sure you're using the correct property name
+  const { cartLocal, removeFromCart } = useCart();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -95,7 +96,7 @@ export default function Header() {
           >
             <Link href="/cart" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full w-[120px] h-[48px] transition ${
+                className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${
                   pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
                 }`}
               >
@@ -129,7 +130,7 @@ export default function Header() {
                         }`}
                       >
                         {cartLocal.map((item) => (
-                          <div key={item.id} className="flex py-3">
+                          <div key={item.id} className="flex py-3 px-2">
                             <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
                               <Image
                                 src={item.imageSrc}
@@ -146,7 +147,7 @@ export default function Header() {
                                 </h4>
                               </div>
                               <div className="flex ml-auto items-center justify-between w-full">
-                                <div className="text-red font-medium">
+                                <div className="text-[#0053E2] font-medium">
                                   {(item.price * item.quantity).toLocaleString(
                                     "vi-VN"
                                   )}{" "}
@@ -157,15 +158,24 @@ export default function Header() {
                                 </span>
                               </div>
                             </div>
+                            <button
+                              className="ml-3 text-black/50 hover:text-red-800"
+                              onClick={() => removeFromCart(item.id)}
+                            >
+                              <ImBin className="text-lg hover:text-black/70" />
+                            </button>
                           </div>
                         ))}
                       </div>
-
-                      <div className="mt-3">
-                        <Link href="/cart" legacyBehavior>
-                          <a className="block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
-                            Xem giỏ hàng
-                          </a>
+                      <div className="ml-3 flex-1 flex items-center justify-between">
+                        <span className="text-black/50 text-[12px] font-bold ">
+                          {cartLocal.length} sản phẩm
+                        </span>
+                        <Link
+                          href="/cart"
+                          className="py-2 px-4 bg-[#0053E2] text-white text-[12px] text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors"
+                        >
+                          Xem giỏ hàng
                         </Link>
                       </div>
                     </>

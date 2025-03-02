@@ -1,5 +1,5 @@
 import React from "react";
-import ProductsViewCard from "./ProductsRelatedCard";
+import ProductsViewCard from "./productsRelatedCard";
 import { ProductData } from "@/types/product";
 import medicine1 from "@/images/medicinee.png";
 import { generateRandomId } from "@/utils/string";
