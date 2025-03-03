@@ -39,27 +39,27 @@ export const getProductBySlug = async (slug: string) => {
                 ],
                 slug: "allerphast-180-mg",
                 description: "Allerphast 180 mg là một sản phẩm của công ty cổ phần dược phẩm và sinh học y tế Mebiphar, thành phần chính chứa fexofenadin hydroclorid, là thuốc dùng để điều trị triệu chứng trong viêm mũi dị ứng theo mùa, mày đay mạn tính vô căn ở người lớn và trẻ em trên 6 tuổi.Allerphast 180 mg được bào chế dưới dạng viên nén bao phim, hộp 1 vỉ, mỗi vỉ 10 viên.",
-                imagesPrimary: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4rOSGJQe6S1GAzUpack7oTQPQJB7zIy3C2mZ_fxGN6zJtsQxagPFEKVbEItsCnAewQlk&usqp=CAU',
+                imagesPrimary: 'https://cdn.nhathuoclongchau.com.vn/unsafe/375x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00009581_soki_tium_giup_tre_ngu_ngon_8995_62c3_large_9d0ee4c833.jpg',
                 images: [
                     {
                         id: 1,
-                        url: "https://bcp.cdnchinhphu.vn/334894974524682240/2023/12/18/thuoc2-17028933895421798906044.jpg",
+                        url: "https://cdn.nhathuoclongchau.com.vn/unsafe/768x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00009581_soki_tium_giup_tre_ngu_ngon_1656985945_ff663bc14d.jpg",
                     },
                     {
                         id: 2,
-                        url: "https://data-service.pharmacity.io/pmc-upload-media/production/pmc-ecm-asm/posts/luu-y-su-dung-thuoc-khang-sinh-1.webp",
+                        url: "https://cdn.nhathuoclongchau.com.vn/unsafe/768x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00009581_soki_tium_giup_tre_ngu_ngon_3056_62c3_large_a418eeb691.jpg",
                     },
                     {
                         id: 3,
-                        url: "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2023/8/14/thuoc-vien-1-16919846518291434355354.jpeg",
+                        url: "https://cdn.nhathuoclongchau.com.vn/unsafe/636x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00009581_soki_tium_giup_tre_ngu_ngon_8331_62c3_large_decc2051b9.jpg",
                     },
                     {
                         id: 4,
-                        url: "https://cdn.thegioididong.com/Products/Images/10039/131560/phosphalugel-0-1.jpg",
+                        url: "https://cdn.nhathuoclongchau.com.vn/unsafe/636x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00009581_soki_tium_giup_tre_ngu_ngon_1768_62c3_large_c73cd07223.png",
                     },
                     {
                         id: 5,
-                        url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt6bZsHxupuKhfopLLVuEAaIhDwm9-b61q6KeywOTDfn6oQVzpe_uQzrHEgZzIEvM9n-w&usqp=CAU",
+                        url: "https://cdn.nhathuoclongchau.com.vn/unsafe/636x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00009581_soki_tium_giup_tre_ngu_ngon_4678_62c3_large_76a0490e8d.jpg",
                     }
                 ],
                 category: {
