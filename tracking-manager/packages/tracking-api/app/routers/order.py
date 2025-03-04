@@ -6,10 +6,10 @@ from app.models import order
 
 router = APIRouter()
 
-@router.post("/order/", response_model=response.BaseResponse)
-async def add_order(item: ItemOrderInReq):
+@router.post("/order/check", response_model=response.BaseResponse)
+async def check_order(item: ItemOrderInReq):
     try:
-        return await order.add_order(item)
+        return await order.check_order(item)
     except Exception as e:
         logger.error("Error getting current", error=str(e))
         raise response.JsonException(

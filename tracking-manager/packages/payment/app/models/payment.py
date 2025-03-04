@@ -20,7 +20,7 @@ class PaymentModel:
             account=bank['account_number'],
             bank=bank_id,
             amount=amount,
-            description="description",
+            description=order_id,
             template="template",
             download=False
         )
