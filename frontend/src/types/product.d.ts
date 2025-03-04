@@ -31,6 +31,7 @@ interface ProductData {
   price: number;
   originPrice?: number;
   unit: string;
+   brand: string;
 }
 
 interface Price {
