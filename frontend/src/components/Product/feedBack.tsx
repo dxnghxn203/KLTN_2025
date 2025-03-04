@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 import { Check } from "lucide-react";
 import RatingBar from "./ratingBar";
 import RatingDialog from "../Dialog/ratingDialog";
+import CommentDialog from "../Dialog/commentDialog";
 
 const reviews = [
   {
@@ -106,7 +107,8 @@ const FeedBack = () => {
   const [visibleReviews, setVisibleReviews] = useState(2); // Hiển thị 2 bình luận mặc định
   const [visibleAQ, setVisibleAQ] = useState(2); // Hiển thị 2 bình luận mặc định
   const [selected, setSelected] = useState("newest");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogRatingOpen, setIsDialogRatingOpen] = useState(false);
+  const [isDialogCommentOpen, setIsDialogCommentOpen] = useState(false);
 
   return (
     <div className="">
@@ -131,7 +133,7 @@ const FeedBack = () => {
           <RatingBar />
           <button
             className="bg-[#0053E2] text-white px-4 rounded-full h-[50px] font-bold"
-            onClick={() => setIsDialogOpen(true)}
+            onClick={() => setIsDialogRatingOpen(true)}
           >
             Viết đánh giá
           </button>
@@ -220,7 +222,10 @@ const FeedBack = () => {
           <div className="text-xl font-bold">Hỏi và đáp</div>
           <div className="text-black/50">(127 bình luận)</div>
         </div>
-        <button className="bg-[#0053E2] text-white px-4 rounded-full h-[50px] font-bold">
+        <button
+          className="bg-[#0053E2] text-white px-4 rounded-full h-[50px] font-bold"
+          onClick={() => setIsDialogCommentOpen(true)}
+        >
           Gửi bình luận
         </button>
         <div className="mt-6 border-t border-gray-300"></div>
@@ -310,7 +315,12 @@ const FeedBack = () => {
           )}
         </div>
       </div>
-      {isDialogOpen && <RatingDialog onClose={() => setIsDialogOpen(false)} />}
+      {isDialogRatingOpen && (
+        <RatingDialog onClose={() => setIsDialogRatingOpen(false)} />
+      )}
+      {isDialogCommentOpen && (
+        <CommentDialog onClose={() => setIsDialogCommentOpen(false)} />
+      )}
     </div>
   );
 };
