@@ -6,8 +6,8 @@ from app.entities.product.request import ItemProductReq
 
 class ItemOrderReq(BaseModel):
     order_id: str
-    product: List[ItemProductReq]
+    products: List[ItemProductReq]
     created_by: str
 
 class ItemOrderInReq(BaseModel):
-    product: List[ItemProductReq]
+    products: List[ItemProductReq]
