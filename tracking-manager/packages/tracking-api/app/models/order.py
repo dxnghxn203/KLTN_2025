@@ -1,13 +1,15 @@
-import json
-import random
 import random
 import string
 from datetime import datetime
+
+import httpx
+from fastapi.responses import StreamingResponse
 
 from app.core import logger, response
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq
 from app.helpers import redis
 
+PAYMENT_API_URL = "http://127.0.0.1:8080/api/v1/payment/qr"
 
 def generate_random_string(length: int) -> str:
     charset = string.ascii_uppercase + string.digits
@@ -26,9 +28,11 @@ async def check_order(item: ItemOrderInReq):
                                  created_by=f"system{timestamp}")
         logger.info("item", json=item_data)
 
+        total_price = 0
         # Lấy dữ liệu từ Redis
 
         for product in item.products:
+            total_price += product.price * product.quantity
             data = redis.get_product_transaction(product_id=product.product_id)
             logger.info(f"Product data from Redis: {data}")
 
@@ -46,7 +50,32 @@ async def check_order(item: ItemOrderInReq):
                 return response.BaseResponse(status="failed", message="Hàng tồn không đủ")
 
         redis.save_order(item_data)
-        return response.BaseResponse(status="success", message="Có đủ hàng, tiếp tục xử lý")
+
+        qr_payload = {
+            "bank_id": "TPB",
+            "order_id": order_id,
+            "amount": total_price
+        }
+
+        async with httpx.AsyncClient() as client:
+            qr_response = await client.post(
+                f"{PAYMENT_API_URL}",
+                headers={"accept": "application/json", "Content-Type": "application/json"},
+                json=qr_payload
+            )
+
+        if qr_response.status_code != 200:
+            logger.error(f"Failed to generate QR: {qr_response.text}")
+            return response.BaseResponse(status="failed", message="Không thể tạo QR code")
+
+        return StreamingResponse(
+            status_code=200,
+            content=iter([qr_response.content]),
+            media_type="image/png",
+            headers={
+                "Content-Disposition": f'attachment; filename=sepay_qr_{order_id}.png'
+            }
+        )
 
     except Exception as e:
         logger.error("Failed [check_order]:", error=e)
