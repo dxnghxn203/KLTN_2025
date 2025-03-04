@@ -6,7 +6,6 @@ from fastapi.exceptions import RequestValidationError
 from app.core import response, exception
 from app.core.config import settings
 from app.routers import payment_router
-from app.middleware.logging import logging_middleware
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -16,9 +15,6 @@ app = FastAPI()
 app.add_exception_handler(response.JsonException, exception.json_exception_handler)
 app.add_exception_handler(RequestValidationError, exception.validation_exception_handler)
 
-
-# Middleware
-app.middleware("http")(logging_middleware)
 
 origins = [
     "http://localhost:8000"
