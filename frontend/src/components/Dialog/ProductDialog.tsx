@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { StaticImageData } from "next/image";
 import Image from "next/image";
-import { useCart } from "@/store";
-import { Product } from "@/types/product";
+import { useCart } from "@/hooks/useCart";
 
 interface ProductDialogProps {
   id: string;

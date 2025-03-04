@@ -1,4 +1,4 @@
-import axiosClient from "@/configs/axiosClient";
+import axiosClient from "@/utils/configs/axiosClient";
 import { AuthResponse, GoogleSignInData, LoginData } from "@/types/auth";
 
 export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResponse> => {

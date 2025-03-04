@@ -19,9 +19,10 @@ import { PayloadAction } from '@reduxjs/toolkit';
 function* handleGoogleLogin(): Generator<any, void, any> {
     try {
         const signInGG = yield call(signIn, "google", {
-            callbackUrl: "/",
+            redirect: false,
             prompt: "select_account"
         });
+
         const session = yield call(getSession);
         if (!session) {
             yield put(googleLoginFailure('Đăng nhập bằng Google thất bại'));

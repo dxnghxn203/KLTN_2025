@@ -1,6 +1,5 @@
+import { fetchProductBySlugStart, selectProductBySlug } from "@/store";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProductBySlugStart } from "./productSlice";
-import { selectProductBySlug } from "./productSelector";
 
 export function useProduct() {
     const dispatch = useDispatch();

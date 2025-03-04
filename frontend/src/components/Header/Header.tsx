@@ -11,9 +11,9 @@ import { ImBin } from "react-icons/im";
 
 import LocationDelivery from "./locationDelivery";
 import MenuHeader from "./menuHeader";
-import LocationDialog from "@/components/Dialog/LocationDialog";
-import { useAuth } from "@/store/auth/useAuth";
-import { useCart } from "@/store/cart/useCart"; // Import from correct path
+import LocationDialog from "@/components/Dialog/locationDialog"; // Import from correct path
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -96,9 +96,8 @@ export default function Header() {
           >
             <Link href="/cart" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${
-                  pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                }`}
+                className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                  }`}
               >
                 <div className="relative">
                   <AiOutlineShoppingCart className="text-2xl" />
@@ -125,9 +124,8 @@ export default function Header() {
                   ) : (
                     <>
                       <div
-                        className={`max-h-[250px] overflow-y-auto ${
-                          cartLocal.length > 3 ? "custom-scrollbar" : ""
-                        }`}
+                        className={`max-h-[250px] overflow-y-auto ${cartLocal.length > 3 ? "custom-scrollbar" : ""
+                          }`}
                       >
                         {cartLocal.map((item) => (
                           <div key={item.id} className="flex py-3 px-2">
@@ -189,13 +187,20 @@ export default function Header() {
             <>
               <div className="relative" ref={dropdownRef}>
                 <div
-                  className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${
-                    showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                  }`}
+                  className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                    }`}
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                    <HiOutlineUserCircle className="text-2xl" />
+                    {user?.image ? (
+                      <img
+                        src={user?.image}
+                        alt={user.name || "User"}
+                        className="text-2xl rounded-full object-cover"
+                      />
+                    ) : (
+                      <HiOutlineUserCircle className="text-2xl" />
+                    )}
                   </div>
 
                   <div className="ml-2 flex-1 overflow-hidden">
@@ -207,9 +212,8 @@ export default function Header() {
                     </p>
                   </div>
                   <IoChevronDownOutline
-                    className={`ml-1 transition-transform duration-200 ${
-                      showDropdown ? "rotate-180" : ""
-                    }`}
+                    className={`ml-1 transition-transform duration-200 ${showDropdown ? "rotate-180" : ""
+                      }`}
                   />
                 </div>
 
@@ -241,9 +245,8 @@ export default function Header() {
           ) : (
             <Link href="/login" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
-                  pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                }`}
+                className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                  }`}
               >
                 <HiOutlineUserCircle className="text-2xl" />
                 <span className="ml-2 text-[14px]">Đăng nhập</span>
