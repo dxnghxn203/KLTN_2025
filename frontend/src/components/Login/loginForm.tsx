@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import google from "@/images/google.png";
-import { useAuth } from "@/store/auth/useAuth";
-import { useToast } from "@/providers/ToastProvider";
+import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const LoginForm: React.FC = () => {
   const { signInWithGoogle, login, isLoading } = useAuth();

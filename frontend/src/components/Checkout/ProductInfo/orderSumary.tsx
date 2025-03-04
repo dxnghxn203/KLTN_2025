@@ -1,4 +1,4 @@
-import VoucherDialog from "@/components/Dialog/VoucherDialog";
+import VoucherDialog from "@/components/Dialog/voucherDialog";
 import React, { useState } from "react";
 import Link from "next/link";
 

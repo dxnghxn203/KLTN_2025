@@ -4,7 +4,7 @@ import ShoppingCart from "@/components/Cart/shoppingCart";
 import Footer from "@/components/Footer/footer";
 import Header from "@/components/Header/header";
 import ProductsViewedList from "@/components/Product/productsViewedList";
-import { useCart } from "@/store";
+import { useCart } from "@/hooks/useCart";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import React from "react";

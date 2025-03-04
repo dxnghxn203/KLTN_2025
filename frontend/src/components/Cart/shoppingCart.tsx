@@ -3,8 +3,8 @@ import React, { useState, useMemo } from "react";
 import { ImBin } from "react-icons/im";
 import Image, { StaticImageData } from "next/image";
 import DeleteProductDialog from "@/components/Dialog/deleteProductDialog";
-import { useCart } from "@/store";
 import OrderSummary from "@/components/Cart/orderSumary";
+import { useCart } from "@/hooks/useCart";
 
 const unitOptions = ["Cái", "Hộp", "Chai", "Gói"];
 
@@ -19,7 +19,7 @@ const ShoppingCart: React.FC = () => {
 
   const totalAmount = useMemo(() => {
     return cartLocal
-      .filter((product) => selectedProducts.includes(product.id))
+      .filter((product: { id: string; }) => selectedProducts.includes(product.id))
       .reduce((total, product) => total + product.price * product.quantity, 0);
   }, [cartLocal, selectedProducts]);
 

@@ -1,4 +1,4 @@
-import axiosClient from "@/configs/axiosClient";
+import axiosClient from "@/utils/configs/axiosClient";
 
 export const getProductBySlug = async (slug: string) => {
     try {

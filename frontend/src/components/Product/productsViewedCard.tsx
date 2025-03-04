@@ -3,7 +3,6 @@ import { ProductData } from "@/types/product";
 import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
-import { generateRandomId } from "@/utils/string";
 
 const ProductsViewCard: React.FC<ProductData> = ({
   id,

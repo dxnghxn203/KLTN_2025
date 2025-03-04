@@ -4,9 +4,9 @@ import Header from "@/components/Header/header";
 import LoginForm from "../../components/Login/loginForm";
 import AlreadyLoggedIn from "../../components/Login/alreadyLoggedIn";
 import Footer from "@/components/Footer/footer";
-import { useAuth } from "@/store/auth/useAuth";
-import { useToast } from "@/providers/ToastProvider";
+import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const { isAuthenticated, error } = useAuth();

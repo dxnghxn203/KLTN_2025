@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FiHome, FiLogOut, FiUser } from "react-icons/fi";
-import { useAuth } from "@/store/auth/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const AlreadyLoggedIn: React.FC = () => {
   const { user, logout } = useAuth();
@@ -21,13 +21,14 @@ const AlreadyLoggedIn: React.FC = () => {
     }
   }, [countdown, router]);
 
+  console.log(user);
   return (
     <div className="w-[393px] mx-auto p-6 bg-white rounded-xl shadow-md">
       <div className="text-center mb-6">
         <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-          {user?.avatar ? (
+          {user?.image  ? (
             <img
-              src={user.avatar}
+              src={user?.image}
               alt={user.name || "User"}
               className="w-16 h-16 rounded-full object-cover"
             />

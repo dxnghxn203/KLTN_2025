@@ -2,12 +2,12 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import OrderSummary from "@/components/Checkout/productInfo/orderSumary";
+import OrderSummary from "@/components/Checkout/ProductInfo/orderSumary";
 import Footer from "@/components/Footer/footer";
 import Header from "@/components/Header/header";
 import Image, { StaticImageData } from "next/image";
 import medicine from "@/images/medicinee.png";
-import Delivery from "../../components/Checkout/checkoutInfo/pickupPharma";
+import Delivery from "../../components/Checkout/CheckoutInfo/pickupPharma";
 import ProductList from "../../components/Checkout/productInfo/productList";
 
 interface Product {

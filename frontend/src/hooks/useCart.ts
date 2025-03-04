@@ -1,13 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
-import {
-    addCartLocal,
-    updateQuantityCartLocal,
-    removeCartLocal,
-    updateUnitCartLocal,
-    clearCartLocal
-} from './cartSlice';
-import { selectCartLocal, selectCartLoading, selectCartError } from './cartSelector';
+
 import { CartItem } from '@/types/cart';
+import { addCartLocal, clearCartLocal, removeCartLocal, selectCartError, selectCartLoading, selectCartLocal, updateQuantityCartLocal, updateUnitCartLocal } from '@/store';
 
 export function useCart() {
     const dispatch = useDispatch();
