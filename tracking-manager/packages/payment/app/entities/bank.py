@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from enum import Enum
 
 class BankQRRequest(BaseModel):
     order_id: str = Field(..., description="Order ID")
