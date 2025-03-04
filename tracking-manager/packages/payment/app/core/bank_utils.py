@@ -10,8 +10,9 @@ def load_banks() -> Dict:
     current_dir = os.path.dirname(os.path.dirname(__file__))
     json_path = os.path.join(current_dir, 'static', 'bank.json')
     try:
-        with open(json_path, 'r') as f:
+        with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+            print(data)
             # Fix: Use bank's code as key instead of the bank dict itself
             return {bank['code']: bank for bank in data['data']}
     except Exception as e:
