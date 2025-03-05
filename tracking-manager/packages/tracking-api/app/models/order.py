@@ -6,7 +6,7 @@ import httpx
 from fastapi.responses import StreamingResponse
 
 from app.core import logger, response
-from app.entities.order.request import ItemOrderInReq, ItemOrderReq
+from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.helpers import redis
 
 PAYMENT_API_URL = "http://127.0.0.1:8080/api/v1/payment/qr"
@@ -80,3 +80,16 @@ async def check_order(item: ItemOrderInReq):
     except Exception as e:
         logger.error("Failed [check_order]:", error=e)
         return response.BaseResponse(status="failed", message="Không thể check order")
+
+async def add_order(item: OrderRequest):
+    try:
+        order_data = redis.get_order(item.order_id)
+        if not order_data:
+            return response.BaseResponse(status="failed", message="Không tìm thấy order")
+
+        logger.info(order_data)
+
+        return response.BaseResponse(status="success", message=f"Order {item.order_id} is added to Queue")
+    except Exception as e:
+        logger.error("Failed [add_order]:", error=e)
+        return response.BaseResponse(status="failed", message="Không thể add order")
