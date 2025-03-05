@@ -26,7 +26,7 @@ const AlreadyLoggedIn: React.FC = () => {
     <div className="w-[393px] mx-auto p-6 bg-white rounded-xl shadow-md">
       <div className="text-center mb-6">
         <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-          {user?.image  ? (
+          {user?.image ? (
             <img
               src={user?.image}
               alt={user.name || "User"}
@@ -62,7 +62,7 @@ const AlreadyLoggedIn: React.FC = () => {
           </div>
         </Link>
 
-        <Link href="/profile">
+        <Link href="/personal">
           <div className="flex items-center justify-center gap-2 w-full h-[55px] rounded-3xl border border-[#0053E2] text-[#0053E2] font-medium hover:bg-blue-50 transition-colors">
             <FiUser className="text-lg" />
             <span>Xem thông tin cá nhân</span>

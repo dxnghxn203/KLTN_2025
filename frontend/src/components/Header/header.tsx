@@ -96,8 +96,9 @@ export default function Header() {
           >
             <Link href="/cart" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                  }`}
+                className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${
+                  pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                }`}
               >
                 <div className="relative">
                   <AiOutlineShoppingCart className="text-2xl" />
@@ -124,8 +125,9 @@ export default function Header() {
                   ) : (
                     <>
                       <div
-                        className={`max-h-[250px] overflow-y-auto ${cartLocal.length > 3 ? "custom-scrollbar" : ""
-                          }`}
+                        className={`max-h-[250px] overflow-y-auto ${
+                          cartLocal.length > 3 ? "custom-scrollbar" : ""
+                        }`}
                       >
                         {cartLocal.map((item) => (
                           <div key={item.id} className="flex py-3 px-2">
@@ -187,8 +189,9 @@ export default function Header() {
             <>
               <div className="relative" ref={dropdownRef}>
                 <div
-                  className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                    }`}
+                  className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${
+                    showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                  }`}
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
                   <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -212,15 +215,16 @@ export default function Header() {
                     </p>
                   </div>
                   <IoChevronDownOutline
-                    className={`ml-1 transition-transform duration-200 ${showDropdown ? "rotate-180" : ""
-                      }`}
+                    className={`ml-1 transition-transform duration-200 ${
+                      showDropdown ? "rotate-180" : ""
+                    }`}
                   />
                 </div>
 
                 {showDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
                     <div className="py-2 text-sm">
-                      <Link href="/profile">
+                      <Link href="/personal">
                         <div className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer">
                           Thông tin tài khoản
                         </div>
@@ -245,8 +249,9 @@ export default function Header() {
           ) : (
             <Link href="/login" className="focus:outline-none">
               <div
-                className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                  }`}
+                className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
+                  pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                }`}
               >
                 <HiOutlineUserCircle className="text-2xl" />
                 <span className="ml-2 text-[14px]">Đăng nhập</span>

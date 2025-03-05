@@ -1,5 +1,5 @@
 import React from "react";
-import { X } from "lucide-react"; // Import icon X
+import { X } from "lucide-react";
 import Image from "next/image";
 import bin from "@/images/delete.png";
 
