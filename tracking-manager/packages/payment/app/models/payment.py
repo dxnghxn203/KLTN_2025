@@ -1,6 +1,9 @@
 
 from typing import Optional
 
+import httpx
+
+from app.core import response
 from app.core.bank_utils import get_bank_by_code
 from app.core.sepay import SepayQR, logger
 
@@ -24,3 +27,27 @@ class PaymentModel:
             template="template",
             download=False
         )
+
+    @staticmethod
+    async def call_add_order_api(order_id: str):
+        qr_payload = {
+            "order_id": order_id,
+        }
+
+        async with httpx.AsyncClient() as client:
+            result = await client.post(
+                "http://127.0.0.1:8000/v1/order/add",
+                headers={"accept": "application/json", "Content-Type": "application/json"},
+                json=qr_payload
+            )
+
+        response_json = result.json()
+        logger.info(response_json)
+
+        message = response_json.get("message", "No message returned")
+
+        if result.status_code != 200:
+            logger.error(f"Failed to callback: {message}")
+            return response.BaseResponse(status_code=500, message=message)
+
+        return response.BaseResponse(status_code=200, message=message)

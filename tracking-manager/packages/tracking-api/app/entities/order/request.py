@@ -11,3 +11,6 @@ class ItemOrderReq(BaseModel):
 
 class ItemOrderInReq(BaseModel):
     products: List[ItemProductReq]
+
+class OrderRequest(BaseModel):
+    order_id: str

@@ -31,7 +31,10 @@ async def generate_sepay_qr(request: GeneratePaymentQr):
 async def payment_callback(request: str):
     """Payment callback"""
     try:
-        return BaseResponse(status_code=200, message="callback success")
+        result = await PaymentModel.call_add_order_api(request)
+        if result.status_code != 200:
+            return BaseResponse(status_code=500, message=result.message)
+        return BaseResponse(status_code=200, message=result.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

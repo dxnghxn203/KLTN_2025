@@ -80,13 +80,12 @@ def product_key(product_id: str) -> str:
 def get_product_transaction(product_id: str):
     key = product_key(product_id)
     data = redis.hgetall(key)
-    if not data:
-        return None
 
     return {
         "ton": int(data.get("ton", 0)),
         "ban": int(data.get("ban", 0)),
-    }
+    } if data else None
+
 def order_key(order_id: str) -> str:
     return f"order:{order_id}"
 
@@ -94,6 +93,11 @@ def save_order(order: ItemOrderReq):
     key = order_key(order.order_id)
     order_json = json.dumps(order.dict())
     redis.set(key, order_json, 86400)
+
+def get_order(order_id: str):
+    key = order_key(order_id)
+    data = redis.get(key)
+    return data if data else None
 
 def delete_otp_request(username: str):
     key = opt_key(username)
