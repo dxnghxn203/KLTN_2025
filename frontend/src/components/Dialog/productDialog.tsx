@@ -1,8 +1,10 @@
+"use client";
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { StaticImageData } from "next/image";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
+import Link from "next/link";
 
 interface ProductDialogProps {
   id: string;
@@ -26,7 +28,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
   onClose,
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart()
+  const { addToCart } = useCart();
 
   const increaseQuantity = () => {
     setQuantity((prev) => prev + 1);
@@ -48,7 +50,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
       imageSrc,
       unit,
       quantity,
-    })
+    });
   };
 
   return (
@@ -100,10 +102,11 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
 
               <div className="flex items-center gap-2 border p-2 rounded-lg">
                 <button
-                  className={`px-3 py-1  rounded-md ${quantity === 1
+                  className={`px-3 py-1  rounded-md ${
+                    quantity === 1
                       ? "cursor-not-allowed opacity-50"
                       : "hover:bg-gray-300"
-                    }`}
+                  }`}
                   onClick={decreaseQuantity}
                   disabled={quantity === 1}
                 >
@@ -120,13 +123,17 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
                 </button>
               </div>
             </div>
-
-            <button className="mt-10 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full">
+            <Link
+              href="/checkout"
+              className="block mt-10 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full text-center"
+            >
               Mua ngay
-            </button>
+            </Link>
+
             <button
               onClick={handleAddToCart}
-              className="mt-3 text-[#0053E2] font-semibold px-6 py-3 rounded-xl w-full border border-[#0053E2] hover:border-opacity-50 hover:text-opacity-50">
+              className="mt-3 text-[#0053E2] font-semibold px-6 py-3 rounded-xl w-full border border-[#0053E2] hover:border-opacity-50 hover:text-opacity-50"
+            >
               Thêm vào giỏ hàng
             </button>
           </div>

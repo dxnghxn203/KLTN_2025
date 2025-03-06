@@ -16,7 +16,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
     "w-full px-5 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none placeholder:text-[14px] placeholder:font-normal";
 
   const buttonClass =
-    "flex items-center justify-between flex-1 px-6 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] bg-white";
+    "flex items-center justify-between flex-1 px-6 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] bg-white focus:ring-1 focus:ring-[#0053E2] outline-none";
 
   return (
     <section className="flex flex-col gap-4 mt-6">
