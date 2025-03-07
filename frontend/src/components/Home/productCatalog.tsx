@@ -13,7 +13,8 @@ import slider2 from "@/images/slider2.png";
 import slider3 from "@/images/slider3.webp";
 import slider from "@/images/slider.png";
 
-const images = [slider1, slider2, slider];
+const images = [slider1, slider2, slider3, slider];
+console.log(images);
 
 const ProductCatalog: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -85,21 +86,24 @@ const ProductCatalog: React.FC = () => {
         <div className="relative w-full max-w-[940px] overflow-hidden rounded-[14px]">
           <div className="flex">
             <div
-              className="flex transition-transform duration-700 ease-in-out"
+              className="flex transition-transform duration-700 ease-in-out whitespace-nowrap"
               style={{ transform: `translateX(-${currentIndex * 100}%)` }}
             >
-              {images.map((image, index) => (
-                <div key={index} className="min-w-full">
-                  <Image
-                    src={image}
-                    alt={`Slide ${index + 1}`}
-                    width={940} // Đúng với max-width của slider
-                    height={300} // Hoặc phù hợp với tỷ lệ
-                    quality={100} // Tăng chất lượng
-                    className="rounded-[14px] h-full object-cover"
-                  />
-                </div>
-              ))}
+              {images.map((image, index) => {
+                // console.log(`Slide ${index}:`, image);
+                return (
+                  <div key={index} className="min-w-full">
+                    <Image
+                      src={image}
+                      alt={`Slide ${index + 1}`}
+                      width={940} // Đúng với max-width của slider
+                      height={300} // Hoặc phù hợp với tỷ lệ
+                      quality={100} // Tăng chất lượng
+                      className="rounded-[14px] h-full object-cover"
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
 

@@ -1,12 +1,12 @@
-import React, { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+"use client";
 import { FiUser } from "react-icons/fi";
-import EditProfileDialog from "../Dialog/editProfileDialog";
+import EditProfileDialog from "@/components/Dialog/editProfileDialog";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
-const PersonalInformation: React.FC = () => {
+const PersonalInfomation = () => {
   const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState(false); // Trạng thái mở dialog
-
+  const [isOpen, setIsOpen] = useState(false);
   const userInfo = [
     { label: "Họ và tên", value: user?.name ?? "" },
     { label: "Email", value: user?.email ?? "" },
@@ -14,10 +14,10 @@ const PersonalInformation: React.FC = () => {
     { label: "Giới tính", value: "" },
     { label: "Ngày sinh", value: "" },
   ];
-
   return (
-    <div>
-      <h2 className="font-semibold">Thông tin cá nhân</h2>
+    <div className="bg-[#F5F7F9] p-6 rounded-lg">
+      <h2 className="font-semibold text-lg">Thông tin cá nhân</h2>
+
       <div className="bg-[#F5F7F9] h-40 p-6 rounded-lg flex items-center justify-center">
         {user?.image ? (
           <img
@@ -29,6 +29,7 @@ const PersonalInformation: React.FC = () => {
           <FiUser className="w-8 h-8 text-[#0053E2]" />
         )}
       </div>
+
       <div className="space-y-6 px-[200px]">
         {userInfo.map((item, index) => (
           <div key={index} className="flex justify-between items-center">
@@ -44,12 +45,6 @@ const PersonalInformation: React.FC = () => {
               >
                 {item.value || "Thêm thông tin"}
               </p>
-              {(!item.value || item.value === "Thêm thông tin") && (
-                <span
-                  className="text-[#0053E2] cursor-pointer"
-                  onClick={() => setIsOpen(true)}
-                ></span>
-              )}
             </div>
           </div>
         ))}
@@ -64,7 +59,7 @@ const PersonalInformation: React.FC = () => {
         </button>
       </div>
 
-      {/* Gọi Dialog chỉnh sửa */}
+      {/* Dialog chỉnh sửa */}
       <EditProfileDialog
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -74,4 +69,4 @@ const PersonalInformation: React.FC = () => {
   );
 };
 
-export default PersonalInformation;
+export default PersonalInfomation;

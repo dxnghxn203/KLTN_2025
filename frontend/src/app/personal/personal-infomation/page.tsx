@@ -1,12 +1,21 @@
 "use client";
+import React, { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { FiUser } from "react-icons/fi";
+import EditProfileDialog from "@/components/Dialog/editProfileDialog";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
+
 import Sidebar from "@/components/Profile/sideBar";
 
-export default function Profile() {
+const PersonalInformation: React.FC = () => {
+  const { user } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  const [activeTab, setActiveTab] = useState("profile");
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -34,4 +43,6 @@ export default function Profile() {
       <Footer />
     </div>
   );
-}
+};
+
+export default PersonalInformation;

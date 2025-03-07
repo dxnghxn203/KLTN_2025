@@ -1,12 +1,16 @@
 "use client";
+import React, { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
+
 import Sidebar from "@/components/Profile/sideBar";
 
-export default function Profile() {
+const PersonalInformation: React.FC = () => {
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("profile");
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -21,10 +25,6 @@ export default function Profile() {
             Cá nhân
           </Link>
 
-          {pathname === "/personal/personal-infomation" && (
-            <span className="text-gray-500"> / Thông tin cá nhân</span>
-          )}
-
           {pathname === "/personal/order-history" && (
             <span className="text-gray-500"> / Lịch sử đơn hàng</span>
           )}
@@ -34,4 +34,6 @@ export default function Profile() {
       <Footer />
     </div>
   );
-}
+};
+
+export default PersonalInformation;
