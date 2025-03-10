@@ -1,3 +1,4 @@
+import json
 import random
 import string
 from datetime import datetime
@@ -5,11 +6,12 @@ from datetime import datetime
 import httpx
 from fastapi.responses import StreamingResponse
 
-from app.core import logger, response
+from app.core import logger, response, rabbitmq
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.helpers import redis
+from app.helpers.constant import get_create_queue
 
-PAYMENT_API_URL = "http://127.0.0.1:8080/api/v1/payment/qr"
+PAYMENT_API_URL = "http://127.0.0.1:8081/api/v1/payment/qr"
 
 def generate_random_string(length: int) -> str:
     charset = string.ascii_uppercase + string.digits
@@ -31,7 +33,7 @@ async def check_order(item: ItemOrderInReq):
         total_price = 0
         # Lấy dữ liệu từ Redis
 
-        for product in item.products:
+        for product in item.product:
             total_price += product.price * product.quantity
             data = redis.get_product_transaction(product_id=product.product_id)
             logger.info(f"Product data from Redis: {data}")
@@ -49,8 +51,6 @@ async def check_order(item: ItemOrderInReq):
             if total_requested > ton:
                 return response.BaseResponse(status="failed", message="Hàng tồn không đủ")
 
-        redis.save_order(item_data)
-
         qr_payload = {
             "bank_id": "TPB",
             "order_id": order_id,
@@ -67,6 +67,8 @@ async def check_order(item: ItemOrderInReq):
         if qr_response.status_code != 200:
             logger.error(f"Failed to generate QR: {qr_response.text}")
             return response.BaseResponse(status="failed", message="Không thể tạo QR code")
+
+        redis.save_order(item_data)
 
         return StreamingResponse(
             status_code=200,
@@ -87,7 +89,10 @@ async def add_order(item: OrderRequest):
         if not order_data:
             return response.BaseResponse(status="failed", message="Không tìm thấy order")
 
-        logger.info(order_data)
+        order_dict = json.loads(order_data)
+        logger.info(order_dict)
+
+        rabbitmq.send_message(get_create_queue(), json.dumps(order_dict))
 
         return response.BaseResponse(status="success", message=f"Order {item.order_id} is added to Queue")
     except Exception as e:
