@@ -41,6 +41,17 @@ const PersonalInformation: React.FC = () => {
           {pathname === "/personal/order-history" && (
             <span className="text-gray-500"> / Lịch sử đơn hàng</span>
           )}
+          {pathname === "/personal/personal-infomation" && (
+            <span className="text-gray-500"> / Thông tin cá nhân</span>
+          )}
+
+          {pathname === "/personal/order-history" && (
+            <span className="text-gray-500"> / Lịch sử đơn hàng</span>
+          )}
+
+          {pathname.startsWith("/personal/order-history/") && orderId && (
+            <span className="text-gray-500"> / Lịch sử đơn hàng</span>
+          )}
         </div>
 
         <div className="flex min-h-screen p-5">

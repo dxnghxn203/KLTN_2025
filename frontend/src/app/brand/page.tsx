@@ -1,12 +1,14 @@
+"use client";
 import React from "react";
+import Header from "@/components/Header/header";
+import Footer from "@/components/Footer/footer";
 import Link from "next/link";
-
+import { StaticImageData } from "next/image";
 interface BrandProps {
   name: string;
   imageSrc: string;
   description: string;
 }
-
 const brands: BrandProps[] = [
   {
     name: "GSK",
@@ -154,25 +156,29 @@ const BrandItem: React.FC<BrandProps> = ({ name, imageSrc }) => (
 
 const BrandList: React.FC = () => {
   return (
-    <div className="flex flex-col w-full max-md:px-5 max-md:max-w-full">
-      <div className="px-6 flex flex-wrap gap-5 justify-between items-start w-full text-black max-md:max-w-full">
-        {/* "Xem tất cả" nằm bên phải */}
-        <div className="flex gap-2 text-sm font-semibold ml-auto items-center mt-[-30px]">
-          <div>Xem tất cả</div>
-          <img
-            loading="lazy"
-            src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/4282386e8e10e4cd937088581f41e88c0447a42f0fbef58faf3983032326b5ce?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-            alt="Arrow right"
-            className="object-contain w-[17px] aspect-[1.42]"
-          />
-        </div>
-      </div>
+    <div className="flex flex-col pb-12 bg-white pt-[80px]">
+      <Header />
+      <main className="flex flex-col pt-14">
+        <div className="text-sm text-[#0053E2] px-5">
+          <Link href="/" className="hover:underline text-blue-600">
+            Trang chủ
+          </Link>
+          <span> / </span>
+          <Link href="/BrandList/products-selling" className="text-gray-800">
+            Thương hiệu
+          </Link>
+          <div className="self-start text-2xl font-extrabold text-black py-4">
+            Thương hiệu
+          </div>
 
-      <div className="flex gap-5 justify-around items-center py-0.5 mt-7 w-full max-md:flex-wrap">
-        {brands.slice(0, 6).map((brand, index) => (
-          <BrandItem key={index} {...brand} />
-        ))}
-      </div>
+          <div className="grid grid-cols-6 gap-5 justify-items-center py-0.5 w-full max-md:grid-cols-3 max-sm:grid-cols-2">
+            {brands.map((brand, index) => (
+              <BrandItem key={index} {...brand} />
+            ))}
+          </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 };

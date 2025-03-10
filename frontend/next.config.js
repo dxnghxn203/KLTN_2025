@@ -10,6 +10,7 @@ const nextConfig = {
       "cdn.thegioididong.com",
       "cdn.builder.io",
       "cdn.nhathuoclongchau.com.vn",
+      "prod-cdn.pharmacity.io",
     ],
     remotePatterns: [
       {

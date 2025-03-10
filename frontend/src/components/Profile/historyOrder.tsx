@@ -43,8 +43,7 @@ const HistoryOrder: React.FC = () => {
   const [activeTab, setActiveTab] = useState("all");
   const router = useRouter();
 
-  // Hàm chuyển hướng đến trang chi tiết đơn hàng
-  const goToOrderDetail = (orderId: number) => {
+  const goToOrderDetail = (orderId: string) => {
     router.push(`/personal/order-history/${orderId}`);
   };
 
@@ -74,7 +73,6 @@ const HistoryOrder: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Bar */}
       <div className="mt-4 flex space-x-4 border-b border-gray-300">
         {tabs.map((tab) => (
           <button

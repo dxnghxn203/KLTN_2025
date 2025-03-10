@@ -10,11 +10,10 @@ import PersonalInfomation from "./personalInfo";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
-  const pathname = usePathname(); // Lấy đường dẫn hiện tại
+  const pathname = usePathname();
 
   return (
     <div className="flex min-h-screen p-5">
-      {/* Sidebar */}
       <div className="w-1/4">
         <div className="bg-[#F5F7F9] h-40 p-6 rounded-lg flex flex-col items-center justify-center">
           {user?.image ? (

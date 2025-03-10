@@ -53,3 +53,8 @@ interface ProductImage {
     id: number;
     url: string;
 }
+interface Brand {
+    name: string;
+  imageSrc: string;
+  description: string;
+}
