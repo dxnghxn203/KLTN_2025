@@ -92,7 +92,8 @@ def order_key(order_id: str) -> str:
 def save_order(order: ItemOrderReq):
     key = order_key(order.order_id)
     order_json = json.dumps(order.dict())
-    redis.set(key, order_json, 86400)
+    redis.set(key, order_json)
+    redis.persist(key)
 
 def get_order(order_id: str):
     key = order_key(order_id)
