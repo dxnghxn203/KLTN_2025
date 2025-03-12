@@ -45,7 +45,8 @@ func main() {
 		ctx,
 		cancelF,
 		&wg,
-		queue.NewCreateQueue(),
+		queue.NewCreateOrderQueue(),
+		queue.NewCreateTrackingQueue(),
 	)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
