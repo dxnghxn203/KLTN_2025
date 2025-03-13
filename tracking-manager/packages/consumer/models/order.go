@@ -24,6 +24,8 @@ type TimeRange struct {
 type Orders struct {
 	// Id            primitive.ObjectID  `json:"_id" bson:"_id"`
 	OrderId     string        `json:"order_id" bson:"order_id"`
+	TrackingId  string        `json:"tracking_id" bson:"tracking_id"`
+	Status      string        `json:"status" bson:"status"`
 	Product     []ProductInfo `json:"product" bson:"product"`
 	CreatedDate time.Time     `json:"created_date" bson:"created_date"`
 	UpdatedDate time.Time     `json:"updated_date" bson:"updated_date"`
@@ -40,6 +42,8 @@ type ProductInfo struct {
 type OrderRes struct {
 	Id          primitive.ObjectID `json:"_id" bson:"_id"`
 	OrderId     string             `json:"order_id" bson:"order_id"`
+	TrackingId  string             `json:"tracking_id" bson:"tracking_id"`
+	Status      string             `json:"status" bson:"status"`
 	Product     []ProductInfo      `json:"product" bson:"product"`
 	CreatedDate time.Time          `json:"created_date" bson:"created_date"`
 	UpdatedDate time.Time          `json:"updated_date" bson:"updated_date"`
@@ -96,4 +100,23 @@ func GetOrderById(ctx context.Context, id string) (*OrderRes, error) {
 	}
 
 	return &res, nil
+}
+
+func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
+
+	err := database.DeleteOrder(ctx, order.OrderId)
+	if err != nil {
+		slog.Error("Không thể xóa order trong Redis", "order_id", order.OrderId, "err", err)
+		return true, err
+	}
+
+	for _, product := range order.Product {
+		err := database.IncreaseProductSales(ctx, product.ProductId, product.Quantity)
+		if err != nil {
+			slog.Error("Lỗi khi tăng số lượng bán của sản phẩm", "product_id", product.ProductId, "err", err)
+		}
+	}
+
+	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
+	return true, nil
 }

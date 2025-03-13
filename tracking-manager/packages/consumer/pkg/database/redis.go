@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -64,4 +65,59 @@ func CloseRedis() {
 			slog.Info("Đã đóng kết nối Redis.")
 		}
 	}
+}
+
+func GetOrderKey(orderID string) string {
+	return fmt.Sprintf("order:%s", orderID)
+}
+
+func DeleteOrder(ctx context.Context, orderID string) error {
+	key := GetOrderKey(orderID)
+	_, err := RedisClient.Del(ctx, key).Result()
+	return err
+}
+
+func GetProductKey(productID string) string {
+	return fmt.Sprintf("product:%s", productID)
+}
+
+func GetProductTransaction(ctx context.Context, productID string) (map[string]int, error) {
+	key := GetProductKey(productID)
+	data, err := RedisClient.HGetAll(ctx, key).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	result := map[string]int{
+		"ton": parseIntWithDefault(data["ton"], 0),
+		"ban": parseIntWithDefault(data["ban"], 0),
+	}
+	return result, nil
+}
+
+func parseInt(value string) (int, error) {
+	if value == "" {
+		return 0, nil
+	}
+	return strconv.Atoi(value)
+}
+
+func parseIntWithDefault(value string, defaultValue int) int {
+	result, err := parseInt(value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}
+
+func IncreaseProductSales(ctx context.Context, productID string, quantity int) error {
+	productKey := GetProductKey(productID)
+	_, err := RedisClient.HIncrBy(ctx, productKey, "ban", int64(quantity)).Result()
+	if err != nil {
+		slog.Error("Không thể cập nhật số lượng bán của sản phẩm", "product_id", productID, "err", err)
+		return err
+	}
+
+	slog.Info("Cập nhật số lượng bán thành công", "product_id", productID, "quantity", quantity)
+	return nil
 }

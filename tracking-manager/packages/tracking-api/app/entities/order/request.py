@@ -6,6 +6,8 @@ from app.entities.product.request import ItemProductReq
 
 class ItemOrderReq(BaseModel):
     order_id: str
+    tracking_id: str
+    status: str
     product: List[ItemProductReq]
     created_by: str
 
