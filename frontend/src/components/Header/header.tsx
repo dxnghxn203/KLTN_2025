@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -229,7 +230,7 @@ export default function Header() {
                           Thông tin tài khoản
                         </div>
                       </Link>
-                      <Link href="/orders">
+                      <Link href="/personal/order-history">
                         <div className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer">
                           Lịch sử đơn hàng
                         </div>

@@ -19,7 +19,6 @@ const AlreadyLoggedIn: React.FC = () => {
 
       return () => clearTimeout(timer);
     } else {
-      // router.push("/");
     }
   }, [countdown, router]);
 

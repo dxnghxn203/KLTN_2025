@@ -19,7 +19,9 @@ const ShoppingCart: React.FC = () => {
 
   const totalAmount = useMemo(() => {
     return cartLocal
-      .filter((product: { id: string; }) => selectedProducts.includes(product.id))
+      .filter((product: { id: string }) =>
+        selectedProducts.includes(product.id)
+      )
       .reduce((total, product) => total + product.price * product.quantity, 0);
   }, [cartLocal, selectedProducts]);
 
@@ -98,7 +100,7 @@ const ShoppingCart: React.FC = () => {
         {cartLocal?.map((product, index) => (
           <div
             key={product.id}
-            className={`flex items-center justify-between py-4 mx-4 text-sm ${
+            className={`flex items-center justify-between py-4 mx-5 text-sm ${
               index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
             }`}
           >
