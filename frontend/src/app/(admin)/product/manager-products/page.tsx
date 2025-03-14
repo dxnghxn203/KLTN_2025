@@ -2,10 +2,11 @@
 import { useState } from "react";
 import Sidebar from "@/components/Admin/Sidebar/sidebar";
 import Header from "@/components/Admin/Header/header";
+import ManagerProducts from "@/components/Admin/Product/ManagerProducts/managerProducts";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeItem, setActiveItem] = useState("Analytical");
+  const [activeItem, setActiveItem] = useState("Product");
 
   return (
     <div className="flex h-screen">
@@ -16,8 +17,8 @@ const Dashboard = () => {
       />
       <div className="flex-1">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="p-4">
-          <h2>Welcome to the Dashboard</h2>
+        <main className="bg-[#FAFBFB] h-full">
+          <ManagerProducts />
         </main>
       </div>
     </div>

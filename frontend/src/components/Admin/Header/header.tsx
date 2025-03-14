@@ -33,7 +33,13 @@ const Header = ({
           className="flex items-center cursor-pointer px-2 py-1 rounded-full hover:bg-gray-100 transition"
           onClick={() => setShowDropdown(!showDropdown)}
         >
-          <HiOutlineUserCircle className="text-2xl" />
+          <Image
+            src={avata}
+            alt=""
+            height={30}
+            width={30}
+            className="rounded-full"
+          />
           <span className="ml-2 text-sm">
             Hi, <strong>Thuy Duyen</strong>
           </span>

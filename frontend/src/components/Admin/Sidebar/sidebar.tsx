@@ -1,4 +1,5 @@
 import { FiPieChart, FiShoppingBag, FiServer } from "react-icons/fi";
+import { BsBox } from "react-icons/bs";
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
@@ -24,9 +25,9 @@ const menuItems = [
     id: "Order",
     icon: <FiShoppingBag />,
     label: "Order",
-    path: "/order-management",
+    path: "/order",
   },
-  { id: "Modern", icon: <FiServer />, label: "Modern", path: "/modern" },
+  { id: "Product", icon: <BsBox />, label: "Product", path: "/product" },
 ];
 
 // Sử dụng `memo` để tối ưu hiệu suất
@@ -34,7 +35,7 @@ const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
   return (
     <aside
       className={clsx(
-        "h-screen flex flex-col p-4  border-r border-gray-200 transition-all duration-500",
+        "flex flex-col p-4  border-r border-gray-200 transition-all duration-500 bg-[#FAFBFB]",
         isOpen ? "w-[270px]" : "w-[80px]"
       )}
     >
