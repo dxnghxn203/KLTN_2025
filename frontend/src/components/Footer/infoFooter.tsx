@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import textlogo from "@/images/medicare.png";
-import logoyellow from "@/images/Mvang.png";
+import logoyellow from "@/images/MM.png";
 
 const InfoFooter: React.FC = () => {
   return (
@@ -14,10 +14,10 @@ const InfoFooter: React.FC = () => {
             <Image
               src={logoyellow}
               alt=""
-              width={95}
-              height={95}
+              width={50}
+              height={50}
               priority
-              className="object-contain aspect-square w-[90px] z-0"
+              className="object-contain aspect-square z-0"
             />
             <Image
               src={textlogo}
@@ -25,7 +25,7 @@ const InfoFooter: React.FC = () => {
               width={95}
               height={95}
               priority
-              className="absolute top-1 left-20 z-10"
+              className="top-1 ml-2 z-10"
             />
           </div>
 

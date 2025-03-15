@@ -9,7 +9,8 @@ import { FiLogOut } from "react-icons/fi";
 import { IoChevronDownOutline } from "react-icons/io5";
 import Image from "next/image";
 import { ImBin } from "react-icons/im";
-
+import textlogo from "@/images/medicare.png";
+import logoyellow from "@/images/MM.png";
 import LocationDelivery from "./locationDelivery";
 import MenuHeader from "./menuHeader";
 import LocationDialog from "@/components/Dialog/locationDialog"; // Import from correct path
@@ -59,12 +60,24 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <Link href="/">
             <div className="flex items-center cursor-pointer">
-              <img
-                loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/fc51114a36c58b35df723052a4789e3d3165c5e63dfdeb9c5ad43c09f3cb03e6?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-                alt="Company logo"
-                className="object-contain shrink-0 max-w-full aspect-[2.16] w-[149px]"
-              />
+              <div className="flex self-start whitespace-nowrap">
+                <Image
+                  src={logoyellow}
+                  alt=""
+                  width={40}
+                  height={40}
+                  priority
+                  className="object-contain aspect-square z-0"
+                />
+                <Image
+                  src={textlogo}
+                  alt=""
+                  width={90}
+                  height={90}
+                  priority
+                  className="top-1 ml-2"
+                />
+              </div>
             </div>
           </Link>
 

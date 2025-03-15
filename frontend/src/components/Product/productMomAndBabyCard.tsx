@@ -5,7 +5,7 @@ import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
 import { ProductData } from "@/types/product";
 
-const ProductPortfolioCard: React.FC<ProductData> = ({
+const ProductMomAndBabyCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -84,7 +84,7 @@ const ProductPortfolioCard: React.FC<ProductData> = ({
             {/* Nút chọn sản phẩm */}
             <div className="mt-2 flex justify-center">
               <button
-                className="px-4 py-3.5 text-sm text-white bg-blue-700 rounded-3xl"
+                className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
                 onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
               >
                 + Chọn sản phẩm
@@ -111,4 +111,4 @@ const ProductPortfolioCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductPortfolioCard;
+export default ProductMomAndBabyCard;

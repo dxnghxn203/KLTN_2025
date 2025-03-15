@@ -20,10 +20,10 @@ const BulkCreateProduct = () => {
         </Link>
       </div>
       <div className="flex items-center justify-end gap-4 pb-4">
-        <button className="text-sm flex items-center gap-2 px-4 py-2 bg-[#1E4DB7] text-white rounded-xl shadow-md hover:bg-[#173F98] transition">
+        <button className="text-sm flex items-center gap-2 px-2 py-2 bg-[#1E4DB7] text-white rounded-xl shadow-md hover:bg-[#173F98] transition">
           <IoMdArrowDown /> Download sample
         </button>
-        <button className="text-sm flex items-center gap-2 px-4 py-2 bg-[#1E4DB7] text-white rounded-xl shadow-md hover:bg-[#173F98] transition">
+        <button className="text-sm flex items-center gap-2 px-2 py-2 bg-[#1E4DB7] text-white rounded-xl shadow-md hover:bg-[#173F98] transition">
           <IoMdArrowUp /> Import Excel
         </button>
       </div>

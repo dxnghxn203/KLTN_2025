@@ -4,7 +4,7 @@ import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
 import Link from "next/link";
 import Filter from "@/components/Category/filter";
-import ProductPortfolioList from "@/components/Product/productPortfolioList";
+import ProductPortfolioList from "@/components/Product/productFunctionalList";
 const BrandDetail = () => {
   const { brandName, brandImage, brandDescription } = useParams() as {
     brandName: string;

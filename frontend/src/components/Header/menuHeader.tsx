@@ -9,22 +9,22 @@ export default function MenuHeader() {
           <Link href="/functional-product">Thực phẩm chức năng</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
-          <Link href="/thuoc">Thuốc</Link>
+          <Link href="/medicine">Thuốc</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
-          <Link href="/duoc-my-pham">Dược mỹ phẩm</Link>
+          <Link href="/cosmetics">Dược mỹ phẩm</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
-          <Link href="/thiet-bi-y-te">Thiết bị y tế</Link>
+          <Link href="/medical-equipment">Thiết bị y tế</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
-          <Link href="/cham-soc-ca-nhan">Chăm sóc cá nhân</Link>
+          <Link href="/personal-care">Chăm sóc cá nhân</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
-          <Link href="/me-va-be">Mẹ và bé</Link>
+          <Link href="/mom-and-baby">Mẹ và bé</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
-          <Link href="/suc-khoe-sinh-san">Sức khỏe sinh sản</Link>
+          <Link href="/reproductive-health">Sức khỏe sinh sản</Link>
         </li>
         <li className="cursor-pointer hover:text-[#004AF7]">
           <Link href="/goc-song-khoe">Góc sống khỏe</Link>

@@ -3,31 +3,31 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
-import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
-import CategoryFunctionalProduct from "@/components/Category/categoryFunctionalProduct";
+import ProductMedicineList from "@/components/Product/productMedicineList";
+import CategoryFunctionalProduct from "@/components/Category/categoryCosmetics";
+import CategoryMedicine from "@/components/Category/categoryMedicine";
+import CategoryMedicalEquipment from "@/components/Category/categoryMedicalEquipment";
 
 // Mảng chứa dữ liệu sản phẩm
 
-export default function FunctionalProduct() {
+export default function MedicalEquipment() {
   const pathname = usePathname();
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
       <Header />
       <main className="flex flex-col pt-14">
-        {/* Điều hướng đường dẫn */}
         <div className="text-sm text-[#0053E2] px-5">
           <Link href="/" className="hover:underline text-blue-600">
             Trang chủ
           </Link>
-          {pathname === "/functional-product" && (
-            <span className="text-gray-500"> / Thực phẩm chức năng</span>
+          {pathname === "/medical-equipment" && (
+            <span className="text-gray-500"> / Thiết bị y tế</span>
           )}
         </div>
-        <div className="text-2xl font-bold py-4 px-6">Thực phẩm chức năng</div>
-
-        <CategoryFunctionalProduct />
-        <ProductPortfolioList />
+        <div className="text-2xl font-bold py-4 px-6">Thiết bị y tế</div>
+        <CategoryMedicalEquipment />
+        <ProductMedicineList />
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">
         Sản phẩm vừa xem

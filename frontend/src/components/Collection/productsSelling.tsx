@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/Product/productCard";
 import { ProductData } from "@/types/product";
-import ProductPortfolioList from "@/components/Product/productPortfolioList";
+import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import medicine1 from "@/images/medicinee.png";
 import { generateRandomId } from "@/utils/string";
 const productData: ProductData[] = [
