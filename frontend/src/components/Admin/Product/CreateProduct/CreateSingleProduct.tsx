@@ -7,9 +7,12 @@ import Thumbnail from "./thumbnail";
 import ProductDetails from "./productDetails";
 import General from "./general";
 import UnitAndPrice from "./unitPrice";
+import { useProduct } from "@/hooks/useProduct";
 
 const CreateSingleProduct = () => {
   const unitOptions: string[] = ["Gói", "Hộp", "Viên"];
+
+  const { addProduct } = useProduct();
 
   interface Item {
     id: number;
@@ -33,6 +36,35 @@ const CreateSingleProduct = () => {
   const removeItem = (id: number) => {
     setItems(items.filter((item) => item.id !== id));
   };
+
+  const onCreateSuccess =() => {
+    console.log("success")
+  }
+  const onCreateFailed = () => {
+    console.log("failed")
+  }
+  
+  const submitProduct = () => {
+    console.log("submit")
+    const product = {
+      name: "product",
+      price: 100,
+      description: "description",
+      category: "category",
+      stock: 100,
+      unit: "unit",
+      images: ["image1", "image2"],
+      thumbnail: "thumbnail",
+      details: "details",
+      items: items
+    }
+
+    addProduct(
+        product,
+        onCreateSuccess,
+        onCreateFailed
+    )
+  }
 
   return (
     <div className="">
@@ -59,7 +91,7 @@ const CreateSingleProduct = () => {
         </div>
       </div>
       <div className="flex justify-center mt-4 space-x-2">
-        <button className="text-sm bg-[#1E4DB7] text-white font-semibold py-3 px-5 rounded-xl hover:bg-[#002E99]">
+        <button onClick={submitProduct} className="text-sm bg-[#1E4DB7] text-white font-semibold py-3 px-5 rounded-xl hover:bg-[#002E99]">
           Save Changes
         </button>
         <button className="text-sm text-red-500 font-semibold py-3 px-5 rounded-xl border border-red-500 hover:bg-red-500 hover:text-white">

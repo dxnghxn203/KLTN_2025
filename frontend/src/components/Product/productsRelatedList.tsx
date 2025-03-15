@@ -15,6 +15,7 @@ const productData: ProductData[] = [
     price: 150000,
     unit: "Chai",
     originPrice: 180000,
+    brand: ""
   },
   {
     id: generateRandomId(),
@@ -24,6 +25,7 @@ const productData: ProductData[] = [
     name: "Sản phẩm sức khỏe bổ sung chế độ ăn uống...",
     price: 190000,
     unit: "Chai",
+    brand: ""
   },
   {
     id: generateRandomId(),
@@ -35,6 +37,7 @@ const productData: ProductData[] = [
     price: 150000,
     unit: "Chai",
     originPrice: 180000,
+    brand: ""
   },
   {
     id: generateRandomId(),
@@ -46,6 +49,7 @@ const productData: ProductData[] = [
     price: 150000,
     unit: "Chai",
     originPrice: 180000,
+    brand: ""
   },
 ];
 

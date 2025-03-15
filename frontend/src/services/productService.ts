@@ -77,3 +77,28 @@ export const getProductBySlug = async (slug: string) => {
         }
     }
 }
+
+export const addProduct = async (data : any) => {
+    try {
+        console.log("==> API", data);
+        // const response = await axiosClient.post(`/products`, data);
+        // return response.data;
+        // return {
+        //     status: 200,
+        //     message: "success",
+        //     data: null
+        // }
+        return {
+            status: 500,
+            message: "Internal server error",
+            data: null
+        }
+    }
+    catch (error: any) {
+        return {
+            status: 500,
+            message: error.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

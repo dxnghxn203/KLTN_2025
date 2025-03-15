@@ -1,66 +1,11 @@
+'use client'
 import { useState } from "react";
 import CustomPagination from "../CustomPagination/customPagination";
 import Link from "next/link";
+import { useOrder } from "@/hooks/useOrder";
 
 const Order = () => {
-  const [orders] = useState([
-    {
-      id: "ORD001",
-      customer: "John Doe",
-      productCode: "223421",
-      date: "2025-03-12",
-      total: 12000,
-      status: "Ordered",
-    },
-    {
-      id: "ORD002",
-      customer: "Alice Smith",
-      productCode: "223421",
-      date: "2025-03-10",
-      total: 12000,
-      status: "Ordered",
-    },
-    {
-      id: "ORD003",
-      customer: "Michael Brown",
-      productCode: "223421223421223421",
-      date: "2025-03-09",
-      total: 12000,
-      status: "Cancelled",
-    },
-    {
-      id: "ORD004",
-      customer: "Jane Doe",
-      productCode: "445566",
-      date: "2025-03-08",
-      total: 15000,
-      status: "Cancelled",
-    },
-    {
-      id: "ORD005",
-      customer: "Charlie Johnson",
-      productCode: "778899",
-      date: "2025-03-07",
-      total: 18000,
-      status: "Ordered",
-    },
-    {
-      id: "ORD006",
-      customer: "Charlie Johnson",
-      productCode: "778899",
-      date: "2025-03-07",
-      total: 18000,
-      status: "Ordered",
-    },
-    {
-      id: "ORD007",
-      customer: "Charlie Johnson",
-      productCode: "778899",
-      date: "2025-03-07",
-      total: 18000,
-      status: "Ordered",
-    },
-  ]);
+  const { allOrder } = useOrder();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ordersPerPage = 6; // Số đơn hàng hiển thị trên mỗi trang
@@ -68,7 +13,7 @@ const Order = () => {
   // Tính toán dữ liệu hiển thị theo trang
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = allOrder.slice(indexOfFirstOrder, indexOfLastOrder);
 
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("vi-VN", {
@@ -97,7 +42,6 @@ const Order = () => {
               <tr>
                 <th className="p-6 text-left">Order ID</th>
                 <th className="p-6 text-left">Customer</th>
-                <th className="p-6 text-left">Product Name</th>
                 <th className="p-6 text-left">Order Date</th>
                 <th className="p-6 text-left">Total</th>
                 <th className="p-6 text-left">Status</th>
@@ -105,7 +49,7 @@ const Order = () => {
               </tr>
             </thead>
             <tbody>
-              {currentOrders.map((order, index) => (
+              {currentOrders.map((order: any, index: any) => (
                 <tr
                   key={order.id}
                   className={`text-sm hover:bg-gray-50 transition ${
@@ -114,10 +58,9 @@ const Order = () => {
                       : ""
                   }`}
                 >
-                  <td className="p-6 text-left">{order.id}</td>
-                  <td className="p-6 text-left">{order.customer}</td>
-                  <td className="p-6 text-left">{order.productCode}</td>
-                  <td className="p-6 text-left">{order.date}</td>
+                  <td className="p-6 text-left">{order?.id}</td>
+                  <td className="p-6 text-left">{order?.customer?.name}</td>
+                  <td className="p-6 text-left">{order?.createdAt}</td>
                   <td className="p-6 text-left">
                     {formatCurrency(order.total)}
                   </td>
@@ -149,7 +92,7 @@ const Order = () => {
         <div className="flex justify-center p-6">
           <CustomPagination
             current={currentPage}
-            total={orders.length}
+            total={allOrder?.length}
             pageSize={ordersPerPage}
             onChange={(page) => setCurrentPage(page)}
           />
