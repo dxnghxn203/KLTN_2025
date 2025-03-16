@@ -72,16 +72,19 @@ export default function Header() {
                 <Image
                   src={textlogo}
                   alt=""
-                  width={90}
-                  height={90}
+                  width={80}
+                  height={80}
                   priority
-                  className="top-1 ml-2"
+                  className="top-1 ml-2 "
                 />
               </div>
             </div>
           </Link>
 
-          <div onClick={() => setIsDialogOpen(true)} className="cursor-pointer">
+          <div
+            onClick={() => setIsDialogOpen(true)}
+            className="cursor-pointer ml-4"
+          >
             <LocationDelivery />
           </div>
 

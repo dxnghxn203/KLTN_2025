@@ -5,7 +5,7 @@ import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
 import { ProductData } from "@/types/product";
 
-const ProductReproductiveHealthCard: React.FC<ProductData> = ({
+const ProductSupportSleepCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -111,4 +111,4 @@ const ProductReproductiveHealthCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductReproductiveHealthCard;
+export default ProductSupportSleepCard;

@@ -21,6 +21,7 @@ const menuItems = [
     label: "Analytical",
     path: "/dashboard",
   },
+  { id: "User", icon: <BsBox />, label: "User", path: "/product" },
   {
     id: "Order",
     icon: <FiShoppingBag />,

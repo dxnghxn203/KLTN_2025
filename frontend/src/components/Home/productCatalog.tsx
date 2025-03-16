@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import categories1 from "@/images/categories1.png";
 import categories2 from "@/images/categories2.png";
 import categories3 from "@/images/categories3.png";
@@ -33,48 +34,56 @@ const ProductCatalog: React.FC = () => {
       description: "Hỗ trợ tình dục...",
       imageSrc: categories1,
       bgColor: "bg-red-100",
+      path: "/reproductive-health", // Đường dẫn đã có
     },
     {
       title: "Dụng cụ y tế",
       description: "Gạc, Bông gòn, Cồn...",
       imageSrc: categories2,
       bgColor: "bg-cyan-100",
+      path: "/medical-equipment",
     },
     {
       title: "Dược mỹ phẩm",
       description: "Serum, Dưỡng trắng...",
       imageSrc: categories3,
       bgColor: "bg-orange-100",
+      path: "/cosmetics",
     },
     {
       title: "Thuốc",
       description: "Da liễu, Dị ứng...",
       imageSrc: categories4,
       bgColor: "bg-lime-100",
+      path: "/medicine",
     },
     {
       title: "Thực phẩm chức năng",
       description: "Hỗ trợ tăng cường...",
       imageSrc: categories5,
       bgColor: "bg-violet-200",
+      path: "/functional-product",
     },
     {
       title: "Chăm sóc cá nhân",
       description: "Xịt thơm miệng...",
       imageSrc: categories6,
       bgColor: "bg-blue-100",
+      path: "personal-care",
     },
     {
       title: "Hỗ trợ giấc ngủ",
       description: "An thần, Ngủ ngon...",
       imageSrc: categories7,
       bgColor: "bg-amber-100",
+      path: "/support-sleep",
     },
     {
       title: "Phong độ bền lâu",
       description: "Hỗ trợ sinh lý...",
       imageSrc: categories8,
       bgColor: "bg-orange-200",
+      path: "/physiological-support",
     },
   ];
 
@@ -185,26 +194,28 @@ const ProductCatalog: React.FC = () => {
         <div className="self-center mt-5 w-full">
           <div className="grid grid-cols-4 gap-6 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
             {categories.map((category, index) => (
-              <div
-                key={index}
-                className={`flex grow gap-5 justify-between items-start pt-4 pl-3.5 w-full text-black ${category.bgColor} rounded-xl max-md:mt-8`}
-              >
-                <div className="flex flex-col self-start">
-                  <div className="text-base font-semibold">
-                    {category.title}
+              <Link key={index} href={category.path} passHref>
+                <div
+                  key={index}
+                  className={`flex grow gap-5 justify-between items-start pt-4 pl-3.5 w-full text-black ${category.bgColor} rounded-xl max-md:mt-8`}
+                >
+                  <div className="flex flex-col self-start">
+                    <div className="text-base font-semibold">
+                      {category.title}
+                    </div>
+                    <div className="self-start mt-3 text-sm">
+                      {category.description}
+                    </div>
                   </div>
-                  <div className="self-start mt-3 text-sm">
-                    {category.description}
-                  </div>
+                  <Image
+                    src={category.imageSrc}
+                    alt={category.title}
+                    width={88}
+                    height={88}
+                    className="object-contain shrink-0 self-end mt-6 aspect-square"
+                  />
                 </div>
-                <Image
-                  src={category.imageSrc}
-                  alt={category.title}
-                  width={88}
-                  height={88}
-                  className="object-contain shrink-0 self-end mt-6 aspect-square"
-                />
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -1,9 +1,8 @@
 import axiosClient from "@/utils/configs/axiosClient";
+import medicine from "@/images/medicinee.png";
 
 export const getAllOrder = async (slug: string) => {
     try {
-        // const response = await axiosClient.get(`/orders`);
-
         return {
             status: 200,
             message: "success",
@@ -30,14 +29,16 @@ export const getAllOrder = async (slug: string) => {
                             name: "Allerphast 180 mg",
                             price: 100000,
                             quantity: 1,
-                            unit: "Hộp"
+                            unit: "Hộp",
+                            img: medicine,
                         },
                         {
                             id: "SP0002",               
                             name: "Allerphast 180 mg",
                             price: 100000,
                             quantity: 1,
-                            unit: "Hộp" 
+                            unit: "Hộp",
+                            img: medicine,
                         }
                     ],
                     total: 200000,
@@ -62,13 +63,7 @@ export const getAllOrder = async (slug: string) => {
                         }
                     },
                     products: [
-                        {
-                            id: "SP0001",
-                            name: "Allerphast 180 mg",
-                            price: 100000,
-                            quantity: 1,
-                            unit: "Hộp"
-                        },
+                        
                         {
                             id: "SP0002",
                             name: "Allerphast 180 mg",
@@ -77,7 +72,7 @@ export const getAllOrder = async (slug: string) => {
                             unit: "Hộp"
                         }
                     ],
-                    total: 200000,
+                    total: 100000,
                     status: "create_order",
                     createdAt: "2021-09-01T00:00:00.000Z",
                     updated_date: "2021-09-01T00:00:00.000Z"

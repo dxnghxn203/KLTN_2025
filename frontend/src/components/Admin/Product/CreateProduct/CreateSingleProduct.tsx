@@ -37,15 +37,15 @@ const CreateSingleProduct = () => {
     setItems(items.filter((item) => item.id !== id));
   };
 
-  const onCreateSuccess =() => {
-    console.log("success")
-  }
+  const onCreateSuccess = () => {
+    console.log("success");
+  };
   const onCreateFailed = () => {
-    console.log("failed")
-  }
-  
+    console.log("failed");
+  };
+
   const submitProduct = () => {
-    console.log("submit")
+    console.log("submit");
     const product = {
       name: "product",
       price: 100,
@@ -56,26 +56,22 @@ const CreateSingleProduct = () => {
       images: ["image1", "image2"],
       thumbnail: "thumbnail",
       details: "details",
-      items: items
-    }
+      items: items,
+    };
 
-    addProduct(
-        product,
-        onCreateSuccess,
-        onCreateFailed
-    )
-  }
+    addProduct(product, onCreateSuccess, onCreateFailed);
+  };
 
   return (
     <div className="">
-      <h2 className="text-2xl font-extrabold text-black">Create Order</h2>
+      <h2 className="text-2xl font-extrabold text-black">Create Product</h2>
       <div className="my-4 text-sm">
         <Link href="/dashboard" className="hover:underline text-[#1E4DB7]">
           Home
         </Link>
         <span> / </span>
         <Link href="/create-single-product" className="text-gray-800">
-          Create Order
+          Create Product
         </Link>
       </div>
       <div className="flex gap-4 h-full">
@@ -91,7 +87,10 @@ const CreateSingleProduct = () => {
         </div>
       </div>
       <div className="flex justify-center mt-4 space-x-2">
-        <button onClick={submitProduct} className="text-sm bg-[#1E4DB7] text-white font-semibold py-3 px-5 rounded-xl hover:bg-[#002E99]">
+        <button
+          onClick={submitProduct}
+          className="text-sm bg-[#1E4DB7] text-white font-semibold py-3 px-5 rounded-xl hover:bg-[#002E99]"
+        >
           Save Changes
         </button>
         <button className="text-sm text-red-500 font-semibold py-3 px-5 rounded-xl border border-red-500 hover:bg-red-500 hover:text-white">

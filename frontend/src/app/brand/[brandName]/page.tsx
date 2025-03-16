@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
@@ -11,6 +12,11 @@ const BrandDetail = () => {
     brandImage: string;
     brandDescription: string;
   };
+  const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({
+    min: 0,
+    max: Infinity,
+  });
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -30,7 +36,10 @@ const BrandDetail = () => {
           </Link>
         </div>
         <div className="grid grid-cols-6 gap-4">
-          <Filter />
+          <Filter
+            onPriceFilterChange={setPriceFilter}
+            onBrandFilterChange={setSelectedBrands}
+          />
           <div className="col-span-5 mr-5 pt-[38px] space-y-6">
             <div className="flex bg-white p-5 rounded-xl shadow-md border border-gray-200 items-center">
               <div className="w-[400px] flex justify-center">

@@ -7,6 +7,8 @@ import { useState } from "react";
 import Image from "next/image";
 import avata from "@/images/avataadmin.jpg";
 import { MdOutlineAccountCircle } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
+import { CiSearch } from "react-icons/ci";
 
 const Header = ({
   sidebarOpen,
@@ -16,9 +18,10 @@ const Header = ({
   setSidebarOpen: (open: boolean) => void;
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [search, setSearch] = useState("");
 
   return (
-    <header className="w-full bg-[#FAFBFB] p-4 flex items-center justify-between">
+    <header className="w-full bg-[#FAFBFB] p-4 flex items-center justify-between border-b border-gray-200">
       {/* Nút Toggle Sidebar */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -26,6 +29,18 @@ const Header = ({
       >
         <IoMenuOutline size={24} />
       </button>
+
+      {/* Search Bar */}
+      <div className="relative flex-1 max-w-md mx-4">
+        <CiSearch className="text-xl absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
 
       {/* Profile Dropdown */}
       <div className="relative">
@@ -48,7 +63,7 @@ const Header = ({
 
         {/* Dropdown Menu */}
         {showDropdown && (
-          <div className="absolute right-4 mt-2 bg-white rounded-lg shadow-lg min-w-max z-10 overflow-hidden">
+          <div className="absolute right-4 mt-2 bg-white rounded-lg shadow-lg min-w-max z-50 overflow-hidden">
             <div className="py-2">
               <span className="px-4 py-2 font-semibold">User Profile</span>
               <div className="flex px-4 py-2 items-center">
@@ -73,13 +88,13 @@ const Header = ({
 
               <Link href="/personal">
                 <div className="flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1">
-                  <MdOutlineAccountCircle className="text-xl" />
+                  <MdOutlineAccountCircle className="text-xl text-gray-800" />
                   <div className="text-gray-800 ">Thông tin tài khoản</div>
                 </div>
               </Link>
               <Link href="/personal/order-history">
-                <div className="text-red-600 flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1">
-                  <FiLogOut className="text-lg" />
+                <div className="flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1">
+                  <FiLogOut className="text-lg text-red-600 " />
                   <div className="text-red-600 ">Đăng xuất</div>
                 </div>
               </Link>
