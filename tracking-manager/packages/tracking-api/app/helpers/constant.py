@@ -1,8 +1,15 @@
+import random
+import string
+
 def get_create_order_queue():
     return "CREATE_ORDER"
 
 def get_create_tracking_queue():
     return "CREATE_TRACKING"
+
+def generate_random_string(length: int) -> str:
+    charset = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(charset, k=length))
 
 prefix = "stg"
 CITY_INDEX = f"{prefix}_cities"
