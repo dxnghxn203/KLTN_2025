@@ -1,18 +1,18 @@
+import logging
+
+import uvicorn
 from fastapi import FastAPI
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core import response, exception
 from app.routers import (
     user_router,
     authen_router,
     order_router,
-    product_router
+    product_router,
+    location_router
 )
-from app.core import database, redis_client
-import uvicorn
-import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,6 +42,7 @@ app.include_router(authen_router, prefix="/v1", tags=["Authen"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(product_router, prefix="/v1", tags=["Product"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])
+app.include_router(location_router, prefix="/v1", tags=["Location"])
 
 @app.get("/")
 def read_root():

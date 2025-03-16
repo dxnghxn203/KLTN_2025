@@ -21,15 +21,38 @@ type TimeRange struct {
 	EndTime   time.Time `json:"end_time" bson:"end_time"`
 }
 
+type addressOrderReq struct {
+	Address  string `json:"address" bson:"address"`
+	Ward     string `json:"ward" bson:"ward"`
+	District string `json:"district" bson:"district"`
+	Province string `json:"province" bson:"province"`
+	Postcode string `json:"postcode" bson:"postcode"`
+}
+
+type infoAddressOrderReq struct {
+	Name        string          `json:"name" bson:"name"`
+	PhoneNumber string          `json:"phone_number" bson:"phone_number"`
+	Email       string          `json:"email" bson:"email"`
+	Address     addressOrderReq `json:"address" bson:"address"`
+}
+
 type Orders struct {
 	// Id            primitive.ObjectID  `json:"_id" bson:"_id"`
-	OrderId     string        `json:"order_id" bson:"order_id"`
-	TrackingId  string        `json:"tracking_id" bson:"tracking_id"`
-	Status      string        `json:"status" bson:"status"`
-	Product     []ProductInfo `json:"product" bson:"product"`
-	CreatedDate time.Time     `json:"created_date" bson:"created_date"`
-	UpdatedDate time.Time     `json:"updated_date" bson:"updated_date"`
-	CreatedBy   string        `json:"created_by" bson:"created_by"`
+	OrderId              string              `json:"order_id" bson:"order_id"`
+	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
+	Status               string              `json:"status" bson:"status"`
+	Product              []ProductInfo       `json:"product" bson:"product"`
+	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
+	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
+	SenderProvinceCode   int                 `json:"sender_province_code" bson:"sender_province_code"`
+	SenderDistrictCode   int                 `json:"sender_district_code" bson:"sender_district_code"`
+	SenderCommuneCode    int                 `json:"sender_commune_code" bson:"sender_commune_code"`
+	ReceiverProvinceCode int                 `json:"receiver_province_code" bson:"receiver_province_code"`
+	ReceiverDistrictCode int                 `json:"receiver_district_code" bson:"receiver_district_code"`
+	ReceiverCommuneCode  int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
+	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
+	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
+	CreatedBy            string              `json:"created_by" bson:"created_by"`
 }
 
 type ProductInfo struct {
@@ -40,14 +63,22 @@ type ProductInfo struct {
 }
 
 type OrderRes struct {
-	Id          primitive.ObjectID `json:"_id" bson:"_id"`
-	OrderId     string             `json:"order_id" bson:"order_id"`
-	TrackingId  string             `json:"tracking_id" bson:"tracking_id"`
-	Status      string             `json:"status" bson:"status"`
-	Product     []ProductInfo      `json:"product" bson:"product"`
-	CreatedDate time.Time          `json:"created_date" bson:"created_date"`
-	UpdatedDate time.Time          `json:"updated_date" bson:"updated_date"`
-	CreatedBy   string             `json:"created_by" bson:"created_by"`
+	Id                   primitive.ObjectID  `json:"_id" bson:"_id"`
+	OrderId              string              `json:"order_id" bson:"order_id"`
+	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
+	Status               string              `json:"status" bson:"status"`
+	Product              []ProductInfo       `json:"product" bson:"product"`
+	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
+	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
+	SenderProvinceCode   int                 `json:"sender_province_code" bson:"sender_province_code"`
+	SenderDistrictCode   int                 `json:"sender_district_code" bson:"sender_district_code"`
+	SenderCommuneCode    int                 `json:"sender_commune_code" bson:"sender_commune_code"`
+	ReceiverProvinceCode int                 `json:"receiver_province_code" bson:"receiver_province_code"`
+	ReceiverDistrictCode int                 `json:"receiver_district_code" bson:"receiver_district_code"`
+	ReceiverCommuneCode  int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
+	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
+	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
+	CreatedBy            string              `json:"created_by" bson:"created_by"`
 }
 
 func (o *Orders) Create(ctx context.Context) (bool, string, error) {
