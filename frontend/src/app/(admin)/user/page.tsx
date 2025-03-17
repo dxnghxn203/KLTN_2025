@@ -2,11 +2,12 @@
 import { useState } from "react";
 import Sidebar from "@/components/Admin/Sidebar/sidebar";
 import Header from "@/components/Admin/Header/header";
-import CreateSingleProduct from "@/components/Admin/Product/CreateProduct/CreateSingleProduct";
+import Order from "@/components/Admin/Order/order";
+import UserManagement from "@/components/Admin/User/userManagement";
 
-const CreateSingle = () => {
+const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeItem, setActiveItem] = useState("Product");
+  const [activeItem, setActiveItem] = useState("Order");
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -24,11 +25,11 @@ const CreateSingle = () => {
 
         {/* Phần chính có thể cuộn */}
         <main className="flex-1 overflow-y-auto bg-[#FAFBFB] p-4">
-          <CreateSingleProduct />
+          <UserManagement />
         </main>
       </div>
     </div>
   );
 };
 
-export default CreateSingle;
+export default Dashboard;

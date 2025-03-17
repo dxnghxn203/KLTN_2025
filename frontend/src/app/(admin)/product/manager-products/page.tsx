@@ -9,15 +9,21 @@ const Dashboard = () => {
   const [activeItem, setActiveItem] = useState("Product");
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar cố định */}
       <Sidebar
         isOpen={sidebarOpen}
         activeItem={activeItem}
         setActiveItem={setActiveItem}
       />
-      <div className="flex-1">
+
+      {/* Nội dung chính */}
+      <div className="flex flex-col flex-1 h-screen">
+        {/* Header cố định */}
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="bg-[#FAFBFB] h-full">
+
+        {/* Phần chính có thể cuộn */}
+        <main className="flex-1 overflow-y-auto bg-[#FAFBFB] p-4">
           <ManagerProducts />
         </main>
       </div>

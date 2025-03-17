@@ -12,6 +12,7 @@
         "clean": "rm -rf node_modules && yarn"
     },
     "dependencies": {
+        "@headlessui/react": "^2.2.0",
         "@react-google-maps/api": "^2.20.6",
         "@reduxjs/toolkit": "^2.5.1",
         "@shadcn/ui": "^0.0.4",

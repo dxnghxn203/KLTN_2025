@@ -6,6 +6,7 @@ import clsx from "clsx";
 import { Dispatch, SetStateAction, memo } from "react";
 import logo from "@/images/MM.png";
 import textlogo from "@/images/medicare2.png";
+import { LuUsersRound } from "react-icons/lu";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ const menuItems = [
     label: "Analytical",
     path: "/dashboard",
   },
-  { id: "User", icon: <BsBox />, label: "User", path: "/product" },
+  { id: "User", icon: <LuUsersRound />, label: "User", path: "/user" },
   {
     id: "Order",
     icon: <FiShoppingBag />,
@@ -31,7 +32,6 @@ const menuItems = [
   { id: "Product", icon: <BsBox />, label: "Product", path: "/product" },
 ];
 
-// Sử dụng `memo` để tối ưu hiệu suất
 const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
   return (
     <aside

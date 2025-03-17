@@ -120,17 +120,17 @@ const Order = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow-sm rounded-2xl mt-4">
+      <div className="bg-white shadow-sm rounded-2xl mt-6 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-center">
-            <thead className="text-sm border-b border-gray-200">
+            <thead className="text-[#1E4DB7] text-sm border-b border-gray-200 bg-[#F0F3FD]">
               <tr>
-                <th className="p-6 text-left">Order ID</th>
-                <th className="p-6 text-left">Customer</th>
-                <th className="p-6 text-left">Order Date</th>
-                <th className="p-6 text-left">Total</th>
-                <th className="p-6 text-left">Status</th>
-                <th className="p-6 text-center">Actions</th>
+                <th className="px-6 py-4 text-left">Order ID</th>
+                <th className="px-6 py-4 text-left">Customer</th>
+                <th className="px-6 py-4 text-left">Order Date</th>
+                <th className="px-6 py-4 text-left">Total</th>
+                <th className="px-6 py-4 text-left">Status</th>
+                <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>

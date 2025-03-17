@@ -21,7 +21,7 @@ const Header = ({
   const [search, setSearch] = useState("");
 
   return (
-    <header className="w-full bg-[#FAFBFB] p-4 flex items-center justify-between border-b border-gray-200">
+    <header className="w-full bg-[#FAFBFB] p-3 flex items-center justify-between border-b border-gray-200">
       {/* Nút Toggle Sidebar */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -38,7 +38,7 @@ const Header = ({
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
