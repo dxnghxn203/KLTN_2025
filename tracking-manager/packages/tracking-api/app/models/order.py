@@ -1,6 +1,4 @@
 import json
-import random
-import string
 from datetime import datetime
 
 import httpx
@@ -9,13 +7,9 @@ from fastapi.responses import StreamingResponse
 from app.core import logger, response, rabbitmq
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, get_create_tracking_queue
+from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_random_string
 
 PAYMENT_API_URL = "http://127.0.0.1:8081/api/v1/payment/qr"
-
-def generate_random_string(length: int) -> str:
-    charset = string.ascii_uppercase + string.digits
-    return ''.join(random.choices(charset, k=length))
 
 async def check_order(item: ItemOrderInReq):
     try:
