@@ -26,7 +26,7 @@ export const getAllOrder = async (slug: string) => {
                     products: [
                         {
                             id: "SP0001",
-                            name: "Allerphast 180 mg",
+                            name: "Allerphast 180 mg Allerphast 180 mg Allerphast 180 mg",
                             price: 100000,
                             quantity: 1,
                             unit: "Hộp",
@@ -43,8 +43,8 @@ export const getAllOrder = async (slug: string) => {
                     ],
                     total: 200000,
                     status: "create_order",
-                    createdAt: "2021-09-01T00:00:00.000Z",
-                    updated_date: "2021-09-01T00:00:00.000Z"
+                    createdAt: "2021-09-01",
+                    updated_date: "2021-09-01"
                 },
                 {
                     id: "OD0002",
@@ -74,8 +74,8 @@ export const getAllOrder = async (slug: string) => {
                     ],
                     total: 100000,
                     status: "create_order",
-                    createdAt: "2021-09-01T00:00:00.000Z",
-                    updated_date: "2021-09-01T00:00:00.000Z"
+                    createdAt: "2021-09-01",
+                    updated_date: "2021-09-01"
                 },
                 {
                     id: "OD0003",
@@ -111,8 +111,8 @@ export const getAllOrder = async (slug: string) => {
                     ],
                     total: 200000,
                     status: "create_order",
-                    createdAt: "2021-09-01T00:00:00.000Z",
-                    updated_date: "2021-09-01T00:00:00.000Z"
+                    createdAt: "2021-09-01",
+                    updated_date: "2021-09-01"
                 }
             ]
         }

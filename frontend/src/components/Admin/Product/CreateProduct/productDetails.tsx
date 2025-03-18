@@ -40,62 +40,66 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="bg-white shadow-sm rounded-2xl p-4 h-full space-y-2">
-      {/* Categories */}
-      <h2 className="text-lg font-semibold">Product Details</h2>
-      <div className="space-y-4">
-        <label className="block font-medium mt-4">Categories</label>
-        <select
-          className="w-full mt-1 p-2 border rounded-lg"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="" disabled>
-            Categories
-          </option>
-          {categories.map((category, index) => (
-            <option key={index} value={category}>
-              {category}
+    <div>
+      <div className="bg-white shadow-sm rounded-2xl p-4 h-full space-y-2">
+        {/* Categories */}
+        <h2 className="text-lg font-semibold">Product Details</h2>
+        <div className="space-y-4">
+          <label className="block font-medium mt-4">Categories</label>
+          <select
+            className="w-full mt-1 p-2 border rounded-lg"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            <option value="" disabled>
+              Categories
             </option>
-          ))}
-        </select>
-        <p className="text-gray-500 text-sm mt-1">Add product to a category.</p>
-        <button
-          className="mt-2 flex items-center text-blue-600 text-sm hover:bg-[#1E4DB7] hover:text-white font-medium bg-[#E7ECF7] p-2 rounded-lg cursor-pointer"
-          onClick={() => setIsAddCategoriesDialogOpen(true)}
-        >
-          <Plus size={16} className="mr-1" /> Create New Category
-        </button>
-      </div>
+            {categories.map((category, index) => (
+              <option key={index} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+          <p className="text-gray-500 text-sm mt-1">
+            Add product to a category.
+          </p>
+          <button
+            className="mt-2 flex items-center text-blue-600 text-sm hover:bg-[#1E4DB7] hover:text-white font-medium bg-[#E7ECF7] p-2 rounded-lg cursor-pointer"
+            onClick={() => setIsAddCategoriesDialogOpen(true)}
+          >
+            <Plus size={16} className="mr-1" /> Create New Category
+          </button>
+        </div>
 
-      {/* Tags */}
-      <div className="space-y-4">
-        <label className="block font-medium">Product Template</label>
-        <select
-          className="w-full mt-1 p-2 border rounded-lg"
-          value={selectedTag}
-          onChange={(e) => setSelectedTag(e.target.value)}
-        >
-          <option value="" disabled>
-            Select a product template
-          </option>
-          {productTemplate.map((tag, index) => (
-            <option key={index} value={tag}>
-              {tag}
+        {/* Tags */}
+        <div className="space-y-4">
+          <label className="block font-medium">Product Template</label>
+          <select
+            className="w-full mt-1 p-2 border rounded-lg"
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+          >
+            <option value="" disabled>
+              Select a product template
             </option>
-          ))}
-        </select>
-        <p className="text-gray-500 text-sm mt-1">
-          Assign a template from your current theme to define how a single
-          product is displayed.
-        </p>
-        <button
-          className="mt-2 flex items-center text-blue-600 text-sm hover:bg-[#1E4DB7] hover:text-white font-medium bg-[#E7ECF7] p-2 rounded-lg"
-          onClick={() => setIsAddProductTemplateDialogOpen(true)}
-        >
-          <Plus size={16} className="mr-1" />
-          Create New Product Template
-        </button>
+            {productTemplate.map((tag, index) => (
+              <option key={index} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </select>
+          <p className="text-gray-500 text-sm mt-1">
+            Assign a template from your current theme to define how a single
+            product is displayed.
+          </p>
+          <button
+            className="mt-2 flex items-center text-blue-600 text-sm hover:bg-[#1E4DB7] hover:text-white font-medium bg-[#E7ECF7] p-2 rounded-lg"
+            onClick={() => setIsAddProductTemplateDialogOpen(true)}
+          >
+            <Plus size={16} className="mr-1" />
+            Create New Product Template
+          </button>
+        </div>
       </div>
       {isAddCategoriesDialogOpen && (
         <AddCategoryDialog

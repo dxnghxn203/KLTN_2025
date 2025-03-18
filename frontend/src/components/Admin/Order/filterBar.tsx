@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 type FilterType = {
-  stockStatus: string;
-  category: string;
-  bestSeller: string;
-  productType: string;
+  status: string;
+  date: string;
+  price: string;
 };
 
 interface FilterBarProps {
@@ -13,24 +12,23 @@ interface FilterBarProps {
 
 export default function FilterBar({ onFilterChange }: FilterBarProps) {
   const [filters, setFilters] = useState<FilterType>({
-    stockStatus: "",
-    category: "",
-    bestSeller: "",
-    productType: "",
+    status: "",
+    date: "",
+    price: "",
   });
 
   const handleChange = (key: keyof FilterType, value: string) => {
     setFilters({ ...filters, [key]: value });
   };
 
-  const handleClearBestSeller = () => {
-    setFilters((prev) => ({ ...prev, bestSeller: "" }));
+  const handleClearStatus = () => {
+    setFilters((prev) => ({ ...prev, status: "" }));
   };
-  const handleClearCategory = () => {
-    setFilters((prev) => ({ ...prev, category: "" }));
+  const handleClearDate = () => {
+    setFilters((prev) => ({ ...prev, date: "" }));
   };
-  const handleClearStock = () => {
-    setFilters((prev) => ({ ...prev, stockStatus: "" }));
+  const handleClearPrice = () => {
+    setFilters((prev) => ({ ...prev, price: "" }));
   };
 
   return (
@@ -38,31 +36,48 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
       {/* Bộ lọc */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Filter by Stock Status</span>
+          <span>Filter by Status</span>
           <span
             className="text-xs cursor-pointer font-normal"
-            onClick={handleClearStock}
+            onClick={handleClearStatus}
           >
             Clear
           </span>
         </div>
         <select
           className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.stockStatus}
-          onChange={(e) => handleChange("stockStatus", e.target.value)}
+          value={filters.status}
+          onChange={(e) => handleChange("status", e.target.value)}
         >
-          <option>Select stock status</option>
-          <option value="in-stock">In Stock</option>
-          <option value="out-of-stock">Stock Out</option>
-          <option value="low-stock">Stock Low</option>
+          <option>Select status</option>
+          <option value="in-stock">Completed</option>
+          <option value="out-of-stock">Cancel</option>
         </select>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Product Category</span>
+          <span>Filter by Order Date</span>
           <span
             className="text-xs cursor-pointer font-normal"
-            onClick={handleClearCategory}
+            onClick={handleClearDate}
+          >
+            Clear
+          </span>
+        </div>
+
+        <input
+          type="date"
+          className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
+          value={filters.date}
+          onChange={(e) => handleChange("date", e.target.value)}
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between items-center font-semibold text-sm">
+          <span>Filter by Price</span>
+          <span
+            className="text-xs cursor-pointer font-normal"
+            onClick={handleClearPrice}
           >
             Clear
           </span>
@@ -70,33 +85,12 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
 
         <select
           className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.category}
-          onChange={(e) => handleChange("category", e.target.value)}
+          value={filters.price}
+          onChange={(e) => handleChange("price", e.target.value)}
         >
-          <option>Select best category</option>
-          <option value="electronics">Electronics</option>
-          <option value="fashion">Fashion</option>
-        </select>
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Best Seller</span>
-          <span
-            className="text-xs cursor-pointer font-normal"
-            onClick={handleClearBestSeller}
-          >
-            Clear
-          </span>
-        </div>
-
-        <select
-          className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.bestSeller}
-          onChange={(e) => handleChange("bestSeller", e.target.value)}
-        >
-          <option>Select best seller</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
+          <option value="">Select order</option>
+          <option value="rise">Rise</option>
+          <option value="desc">Decrease</option>
         </select>
       </div>
     </div>

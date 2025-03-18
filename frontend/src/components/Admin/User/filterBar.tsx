@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 type FilterType = {
-  stockStatus: string;
-  category: string;
-  bestSeller: string;
-  productType: string;
+  role: string;
+  nameOrder: string;
+  date: string;
 };
 
 interface FilterBarProps {
@@ -13,24 +12,23 @@ interface FilterBarProps {
 
 export default function FilterBar({ onFilterChange }: FilterBarProps) {
   const [filters, setFilters] = useState<FilterType>({
-    stockStatus: "",
-    category: "",
-    bestSeller: "",
-    productType: "",
+    role: "",
+    nameOrder: "",
+    date: "",
   });
 
   const handleChange = (key: keyof FilterType, value: string) => {
     setFilters({ ...filters, [key]: value });
   };
 
-  const handleClearBestSeller = () => {
-    setFilters((prev) => ({ ...prev, bestSeller: "" }));
+  const handleClearRole = () => {
+    setFilters((prev) => ({ ...prev, role: "" }));
   };
-  const handleClearCategory = () => {
-    setFilters((prev) => ({ ...prev, category: "" }));
+  const handleClearNameOrder = () => {
+    setFilters((prev) => ({ ...prev, nameOrder: "" }));
   };
-  const handleClearStock = () => {
-    setFilters((prev) => ({ ...prev, stockStatus: "" }));
+  const handleClearDate = () => {
+    setFilters((prev) => ({ ...prev, date: "" }));
   };
 
   return (
@@ -38,31 +36,30 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
       {/* Bộ lọc */}
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Filter by Stock Status</span>
+          <span>Filter by Role</span>
           <span
             className="text-xs cursor-pointer font-normal"
-            onClick={handleClearStock}
+            onClick={handleClearRole}
           >
             Clear
           </span>
         </div>
         <select
           className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.stockStatus}
-          onChange={(e) => handleChange("stockStatus", e.target.value)}
+          value={filters.role}
+          onChange={(e) => handleChange("role", e.target.value)}
         >
-          <option>Select stock status</option>
-          <option value="in-stock">In Stock</option>
-          <option value="out-of-stock">Stock Out</option>
-          <option value="low-stock">Stock Low</option>
+          <option>Select role status</option>
+          <option value="in-stock">Admin</option>
+          <option value="out-of-stock">User</option>
         </select>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Product Category</span>
+          <span>Filter by Name</span>
           <span
             className="text-xs cursor-pointer font-normal"
-            onClick={handleClearCategory}
+            onClick={handleClearNameOrder}
           >
             Clear
           </span>
@@ -70,34 +67,31 @@ export default function FilterBar({ onFilterChange }: FilterBarProps) {
 
         <select
           className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.category}
-          onChange={(e) => handleChange("category", e.target.value)}
+          value={filters.nameOrder}
+          onChange={(e) => handleChange("nameOrder", e.target.value)}
         >
-          <option>Select best category</option>
-          <option value="electronics">Electronics</option>
-          <option value="fashion">Fashion</option>
+          <option value="">Select order</option>
+          <option value="asc">A → Z</option>
+          <option value="desc">Z → A</option>
         </select>
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Best Seller</span>
+          <span>Filter by Create Date</span>
           <span
             className="text-xs cursor-pointer font-normal"
-            onClick={handleClearBestSeller}
+            onClick={handleClearDate}
           >
             Clear
           </span>
         </div>
 
-        <select
+        <input
+          type="date"
           className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.bestSeller}
-          onChange={(e) => handleChange("bestSeller", e.target.value)}
-        >
-          <option>Select best seller</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
+          value={filters.date}
+          onChange={(e) => handleChange("date", e.target.value)}
+        />
       </div>
     </div>
   );

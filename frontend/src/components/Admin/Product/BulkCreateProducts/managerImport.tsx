@@ -8,7 +8,7 @@ const dataSource = [
     location: "66d7f88f1627385750c99b2e",
     import: 4,
     success: 2,
-    status: 50,
+    status: 70,
   },
   {
     key: "2",
@@ -62,10 +62,13 @@ const dataSource = [
 
 const ProgressBar: React.FC<{ percent: number }> = ({ percent }) => {
   let bgColor = "bg-orange-500"; // Mặc định màu cam
+
   if (percent === 100) {
     bgColor = "bg-green-500"; // 100% màu xanh lá
   } else if (percent > 50) {
     bgColor = "bg-blue-600"; // > 50% màu xanh biển
+  } else {
+    bgColor = "bg-orange-500"; // Giữ nguyên màu cam nếu <= 50%
   }
 
   return (
@@ -86,8 +89,7 @@ const ProgressBar: React.FC<{ percent: number }> = ({ percent }) => {
 export default function ManagerImport() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const productsPerPage = 6;
-  const totalproducts = dataSource; // Không lấy length mà lấy toàn bộ mảng
-
+  const totalproducts = dataSource;
   // Lọc các sản phẩm cho trang hiện tại
   const currentproducts = totalproducts.slice(
     (currentPage - 1) * productsPerPage,

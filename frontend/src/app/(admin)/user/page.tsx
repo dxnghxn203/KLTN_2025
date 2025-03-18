@@ -7,7 +7,7 @@ import UserManagement from "@/components/Admin/User/userManagement";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeItem, setActiveItem] = useState("Order");
+  const [activeItem, setActiveItem] = useState("User");
 
   return (
     <div className="flex h-screen overflow-hidden">

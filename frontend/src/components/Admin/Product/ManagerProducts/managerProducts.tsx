@@ -7,6 +7,9 @@ import FilterBar from "./filterBar";
 import Link from "next/link";
 import { IoMdArrowUp } from "react-icons/io";
 import AddNewDropdown from "./addNewDropdown";
+import { BiEditAlt } from "react-icons/bi";
+import { ImBin } from "react-icons/im";
+import { IoFilter } from "react-icons/io5";
 
 const products = [
   {
@@ -86,6 +89,12 @@ const products = [
 const ManagerProducts = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const productsPerPage = 6;
+  const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
+  const [showFilter, setShowFilter] = useState(false);
+
+  const toggleMenu = (productId: string | number) => {
+    setMenuOpen(menuOpen === productId ? null : productId);
+  };
 
   // Giả sử products là danh sách sản phẩm thực tế
   const totalproducts = products; // Không lấy length mà lấy toàn bộ mảng
@@ -95,9 +104,19 @@ const ManagerProducts = () => {
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement).closest(".menu-container")) {
+        setMenuOpen(null);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="space-y-6">
       <h2 className="text-2xl font-extrabold text-black">Product Management</h2>
       <div className="my-4 text-sm">
         <Link href="/dashboard" className="hover:underline text-blue-600">
@@ -159,7 +178,13 @@ const ManagerProducts = () => {
         </div>
       </div>
       <div className="flex justify-between items-center">
-        <FilterBar onFilterChange={(filters) => console.log(filters)} />
+        <button
+          className="border border-gray-300 px-2 py-2 rounded-lg hover:text-[#1E4DB7] hover:border-[#1E4DB7] text-sm flex items-center gap-1"
+          onClick={() => setShowFilter(!showFilter)}
+        >
+          <IoFilter className="text-lg" />
+          Filter
+        </button>
         <div className="flex gap-2">
           <AddNewDropdown />
 
@@ -169,6 +194,9 @@ const ManagerProducts = () => {
           </button>
         </div>
       </div>
+      {showFilter && (
+        <FilterBar onFilterChange={(filters) => console.log(filters)} />
+      )}
 
       {/* Bảng sản phẩm */}
       <div className="bg-white shadow-sm rounded-2xl overflow-hidden">
@@ -232,8 +260,27 @@ const ManagerProducts = () => {
                       <br />
                       <span className="text-gray-500 text-xs">Last Edited</span>
                     </td>
-                    <td className="py-4 px-6 text-center flex justify-center">
-                      <RiMore2Fill className="cursor-pointer text-xl" />
+                    <td className="py-4 px-6 text-center relative menu-container items-center ">
+                      <div
+                        className="p-2 rounded-full hover:text-[#1E4DB7] hover:bg-[#E7ECF7] cursor-pointer inline-flex items-center justify-center"
+                        onClick={(e) => {
+                          toggleMenu(order.id);
+                        }}
+                      >
+                        <RiMore2Fill className="text-xl " />
+                      </div>
+
+                      {menuOpen === order.id && (
+                        <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow-lg z-10">
+                          <button className="flex items-center w-full px-6 py-2 text-left hover:bg-gray-100">
+                            <BiEditAlt className="mr-2" /> Edit
+                          </button>
+                          <div className="border-t border-gray-200"></div>
+                          <button className="flex items-center w-full px-6 py-2 text-left hover:bg-gray-100 text-red-500">
+                            <ImBin className="mr-2 text-red-500" /> Delete
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -247,16 +294,15 @@ const ManagerProducts = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Phân trang */}
-        <div className="flex justify-center p-6">
-          <CustomPagination
-            current={currentPage}
-            total={totalproducts.length} // Tổng số sản phẩm
-            pageSize={productsPerPage}
-            onChange={(page) => setCurrentPage(page)}
-          />
-        </div>
+      </div>
+      {/* Phân trang */}
+      <div className="flex justify-center p-6">
+        <CustomPagination
+          current={currentPage}
+          total={totalproducts.length} // Tổng số sản phẩm
+          pageSize={productsPerPage}
+          onChange={(page) => setCurrentPage(page)}
+        />
       </div>
     </div>
   );

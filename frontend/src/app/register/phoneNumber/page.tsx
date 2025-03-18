@@ -1,12 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
-import RegisterForm from "./registerForm";
 import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import RegisterForm from "@/components/Register/registerForm";
 
-export default function RegisterWithEmail() {
+export default function RegisterWithPhoneNumer() {
   const router = useRouter(); // Khởi tạo router
 
   return (
