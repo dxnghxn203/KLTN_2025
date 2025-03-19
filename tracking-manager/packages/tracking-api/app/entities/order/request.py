@@ -9,13 +9,19 @@ class AddressOrderReq(BaseModel):
     district:  str
     province: str
 
+class InfoAddressOrderReq(BaseModel):
+    name: str
+    phone_number: str
+    email: str
+    address:  AddressOrderReq
+
 class ItemOrderReq(BaseModel):
     order_id: str
     tracking_id: str
     status: str
     product: List[ItemProductReq]
-    pick_from: AddressOrderReq
-    pick_to: AddressOrderReq
+    pick_from: InfoAddressOrderReq
+    pick_to: InfoAddressOrderReq
     sender_province_code: int
     sender_district_code: int
     sender_commune_code: int
@@ -27,8 +33,8 @@ class ItemOrderReq(BaseModel):
 
 class ItemOrderInReq(BaseModel):
     product: List[ItemProductReq]
-    pick_from: AddressOrderReq
-    pick_to: AddressOrderReq
+    pick_from: InfoAddressOrderReq
+    pick_to: InfoAddressOrderReq
     sender_province_code: int
     sender_district_code: int
     sender_commune_code: int

@@ -50,22 +50,22 @@ async def get_cities():
     query = {"query": {"match_all": {}}, "size": 65}
     es_response = elasticsearch.es_client.search(index=CITY_INDEX, body=query)
     data = [City(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.SuccessResponse(data=data)
+    return response.BaseResponse(data=data)
 
 async def get_districts_by_city(city_code: str):
     query = {"query": {"match": {"city_code": city_code}}, "size": 1000}
     es_response = elasticsearch.es_client.search(index=DISTRICT_INDEX, body=query)
     data = [District(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.SuccessResponse(data=data)
+    return response.BaseResponse(data=data)
 
 async def get_wards_by_district(district_code: str):
     query = {"query": {"match": {"district_code": district_code}}, "size": 1000}
     es_response = elasticsearch.es_client.search(index=WARD_INDEX, body=query)
     data = [Ward(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.SuccessResponse(data=data)
+    return response.BaseResponse(data=data)
 
 async def get_regions():
     query = {"query": {"match_all": {}}, "size": 65}
     es_response = elasticsearch.es_client.search(index="regions", body=query)
     data = [Region(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.SuccessResponse(data=data)
+    return response.BaseResponse(data=data)

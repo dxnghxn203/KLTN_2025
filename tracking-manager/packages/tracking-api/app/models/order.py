@@ -13,14 +13,12 @@ PAYMENT_API_URL = "http://127.0.0.1:8081/api/v1/payment/qr"
 
 async def check_order(item: ItemOrderInReq):
     try:
-        # Tạo order ID ngẫu nhiên
         random_order_id = generate_random_string(3)
         random_tracking_id = generate_random_string(5)
         timestamp = int(datetime.utcnow().timestamp())
-        order_id = f"{random_order_id}{timestamp}"
+        order_id = f"order{random_order_id}{timestamp}"
         tracking_id = f"{random_tracking_id}{timestamp}_V001"
 
-        # Chuyển đổi item thành đối tượng hợp lệ
         item_data = ItemOrderReq(**dict(item),
                                  order_id=order_id,
                                  tracking_id=tracking_id,
@@ -29,24 +27,21 @@ async def check_order(item: ItemOrderInReq):
         logger.info("item", json=item_data)
 
         total_price = 0
-        # Lấy dữ liệu từ Redis
 
         for product in item.product:
             total_price += product.price * product.quantity
-            data = redis.get_product_transaction(product_id=product.product_id)
+            data = redis.get_product_transaction(product_id=f"{product.product_id}_{product.price_id}")
             logger.info(f"Product data from Redis: {data}")
 
             if not data:
                 return response.BaseResponse(status="failed", message="Không tìm thấy sản phẩm trong hệ thống")
 
-            # Lấy giá trị ton, ban từ Redis
-            ton = data.get("ton", 0)
-            ban = data.get("ban", 0)
+            inventory = data.get("inventory", 0)
+            sell = data.get("sell", 0)
 
-            total_requested = product.quantity + ban
+            total_requested = product.quantity + sell
 
-            # Kiểm tra tồn kho
-            if total_requested > ton:
+            if total_requested > inventory:
                 return response.BaseResponse(status="failed", message="Hàng tồn không đủ")
 
         qr_payload = {
@@ -89,10 +84,10 @@ async def add_order(item: OrderRequest):
 
         order_dict = json.loads(order_data)
         logger.info(order_dict)
+        order_json = json.dumps(order_dict, ensure_ascii=False)
 
-        rabbitmq.send_message(get_create_order_queue(), json.dumps(order_dict))
-        rabbitmq.send_message(get_create_tracking_queue(), json.dumps(order_dict))
-
+        rabbitmq.send_message(get_create_order_queue(), order_json)
+        rabbitmq.send_message(get_create_tracking_queue(), order_json)
 
         return response.BaseResponse(status="success", message=f"Order {item.order_id} is added to Queue")
     except Exception as e:

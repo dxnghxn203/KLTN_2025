@@ -89,8 +89,8 @@ func GetProductTransaction(ctx context.Context, productID string) (map[string]in
 	}
 
 	result := map[string]int{
-		"ton": parseIntWithDefault(data["ton"], 0),
-		"ban": parseIntWithDefault(data["ban"], 0),
+		"inventory": parseIntWithDefault(data["inventory"], 0),
+		"sell":      parseIntWithDefault(data["sell"], 0),
 	}
 	return result, nil
 }
@@ -112,12 +112,12 @@ func parseIntWithDefault(value string, defaultValue int) int {
 
 func IncreaseProductSales(ctx context.Context, productID string, quantity int) error {
 	productKey := GetProductKey(productID)
-	_, err := RedisClient.HIncrBy(ctx, productKey, "ban", int64(quantity)).Result()
+	_, err := RedisClient.HIncrBy(ctx, productKey, "sell", int64(quantity)).Result()
 	if err != nil {
-		slog.Error("Không thể cập nhật số lượng bán của sản phẩm", "product_id", productID, "err", err)
+		slog.Error("Không thể cập nhật số lượng bán của sản phẩm", "product", productID, "err", err)
 		return err
 	}
 
-	slog.Info("Cập nhật số lượng bán thành công", "product_id", productID, "quantity", quantity)
+	slog.Info("Cập nhật số lượng bán thành công", "product", productID, "quantity", quantity)
 	return nil
 }

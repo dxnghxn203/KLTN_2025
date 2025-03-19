@@ -1,10 +1,13 @@
 from datetime import datetime
 
+from bson import ObjectId
+
 from app.core.database import db
-from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, \
-    ItemCategoryDBReq, ItemProductDBReq
+from app.core.s3 import upload_file
+from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, ItemProductRedisReq
 from app.helpers.constant import generate_random_string
 from app.middleware.logging import logger
+from app.helpers import redis
 
 COLECTION_NAME = "products"
 
@@ -18,40 +21,42 @@ async def get_product_by_slug(slug: str):
 async def add_product_db(item: ItemProductDBInReq, images_primary, images):
     try:
         timestamp = int(datetime.utcnow().timestamp())
-        random_id = generate_random_string(5)
+
+        random_id = generate_random_string(3)
         image_list = [
             ItemImageDBReq(
-                id=f"images_{random_id}_{timestamp}_{idx}",
-            ) for idx, img in enumerate(images or [])
+                images_id=f"images{random_id}{timestamp}{idx}",
+                images_url=file_url,
+            ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images"))
         ]
 
         price_list = []
         if item.prices and item.prices.prices:
             price_list = [
                 ItemPriceDBReq(
-                    id=f"price_{random_id}_{timestamp}_{idx}",
-                    price=price.price,
+                    price_id=f"price{random_id}{timestamp}{idx}",
+                    price=price.original_price*(100-price.discount)/100,
                     original_price=price.original_price,
                     unit_price=price.unit_price,
                     discount=price.discount,
-                    unit=price.unit
+                    unit=price.unit,
+                    amount=price.amount,
+                    amount_per_unit=price.amount_per_unit
                 ) for idx, price in enumerate(item.prices.prices)
             ]
 
-        category = ItemCategoryDBReq(
-            id=f"category_{random_id}_{timestamp}",
-            name=item.category.name if item.category else "",
-            slug=item.category.slug if item.category else ""
-        )
-
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
+        images_primary_url = upload_file(images_primary, "images_primary") or ""
+
+        product_id = f"product{random_id}{timestamp}"
 
         item_data = ItemProductDBReq(
-            **{k: v for k, v in dict(item).items() if k not in ["prices", "category", "ingredients"]},
+            **{k: v for k, v in dict(item).items() if k not in ["prices", "ingredients"]},
+            product_id=product_id,
             prices=price_list,
             images=image_list,
-            category=category,
-            ingredients=ingredients_list
+            ingredients=ingredients_list,
+            images_primary=images_primary_url
         )
 
         collection = db[COLECTION_NAME]
@@ -59,7 +64,12 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
 
         logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
 
+        for price in price_list:
+            redis_id = f"{product_id}_{price.price_id}"
+            redis_product = ItemProductRedisReq(inventory=price.amount)
+            redis.save_product(redis_product, redis_id)
+            logger.info(f"Đã lưu sản phẩm vào Redis với key: {redis_id}")
+
     except Exception as e:
         logger.error(f"Lỗi khi thêm sản phẩm: {e}")
         raise e
-

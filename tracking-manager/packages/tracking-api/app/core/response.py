@@ -10,12 +10,6 @@ class JsonException(Exception):
 
 class BaseResponse(BaseModel):
     code: int = 200
-    status: str = None
-    message: str = None
-    data: Any = None
-
-
-class SuccessResponse(BaseModel):
     status: str = "success"
     message: str = "Thành công!"
     data: Any = None

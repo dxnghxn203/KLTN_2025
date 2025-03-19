@@ -6,24 +6,34 @@ from typing import List, Optional
 
 class ItemProductReq(BaseModel):
     product_id: str = ""
-    name: str = ""
+    price_id: str = ""
+    product_name: str = ""
+    unit: str
     quantity: int = 0
     price: float = 0
 
+class ItemProductRedisReq(BaseModel):
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
+
 class ItemPriceDBReq(BaseModel):
-    id: str = ""
+    price_id: str = ""
     price: float = 0
     original_price: float = 0
     unit_price: str = ""
     discount: float = 0
     unit: str = ""
+    amount: int
+    amount_per_unit: str = ""
 
 class ItemPriceDBInReq(BaseModel):
-    price: float
     original_price: float
     unit_price: str
     discount: float
     unit: str
+    amount: int
+    amount_per_unit: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -47,17 +57,13 @@ class ListPriceDBInReq(BaseModel):
         raise ValueError("Invalid ListPriceDBInReq format")
 
 class ItemImageDBReq(BaseModel):
-    id: str = ""
-    url: str = ""
-
-class ItemCategoryDBReq(BaseModel):
-    id: str = ""
-    name: str = ""
-    slug: str = ""
+    images_id: str = ""
+    images_url: str = ""
 
 class ItemCategoryDBInReq(BaseModel):
-    name: str = ""
-    slug: str = ""
+    main_category_id: str = ""
+    sub_category_id: str = ""
+    child_category_id: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -69,8 +75,8 @@ class ItemCategoryDBInReq(BaseModel):
         raise ValueError("Invalid ItemCategoryDBInReq format")
 
 class ItemIngredientDBReq(BaseModel):
-    name: str = ""
-    amount: str = ""
+    ingredient_name: str = ""
+    ingredient_amount: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -94,9 +100,9 @@ class ListIngredientDBReq(BaseModel):
         raise ValueError("Invalid ListIngredientDBReq format")
 
 class ItemManufacturerDBReq(BaseModel):
-    name: str = ""
-    address: str = ""
-    contact: str = ""
+    manufacture_name: str = ""
+    manufacture_address: str = ""
+    manufacture_contact: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -108,14 +114,15 @@ class ItemManufacturerDBReq(BaseModel):
         raise ValueError("Invalid ItemManufacturerDBReq format")
 
 class ItemProductDBReq(BaseModel):
-    name: str = ""
+    product_id: str = ""
+    product_name: str = ""
     name_primary: str = ""
     prices: List[ItemPriceDBReq] = None
     slug: str = ""
     description: str = ""
     images_primary: str = ""
     images: List[ItemImageDBReq] = None
-    category: ItemCategoryDBReq
+    category: ItemCategoryDBInReq
     origin: str = ""
     ingredients: List[ItemIngredientDBReq] = None
     uses: str = ""
@@ -127,7 +134,7 @@ class ItemProductDBReq(BaseModel):
     dosage_form: str = ""
 
 class ItemProductDBInReq(BaseModel):
-    name: Optional[str] = Field(default="")
+    product_name: Optional[str] = Field(default="")
     name_primary: Optional[str] = Field(default="")
     prices: Optional[ListPriceDBInReq] = Field(None)
     slug: Optional[str] = Field(default="")
