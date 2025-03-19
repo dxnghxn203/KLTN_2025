@@ -5,7 +5,7 @@ import { OrdererInfo } from "@/components/Checkout/CheckoutInfo/infoDelivery";
 import { OrdererInfoPickup } from "./orderPickupPharma";
 import { ShippingAddress } from "@/components/Checkout/CheckoutInfo/shippingAddress";
 import { PaymentMethod } from "./paymentMethod";
-import { Toggle } from "@/components/Toggle/toggle";
+import { Toggle } from "@/components/toggle/toggle";
 import { FaTruckFast } from "react-icons/fa6";
 import {
   OrdererInfo as OrdererInfoType,
