@@ -351,6 +351,11 @@ const Order = () => {
                 </div>
               </div>
             </div>
+            <div className="flex justify-center mt-4">
+              <button className="bg-[#1E4DB7] text-white px-2 text-sm py-2 rounded-lg hover:bg-[#173F98]">
+                Download Bill
+              </button>
+            </div>
           </div>
         </div>
       )}
