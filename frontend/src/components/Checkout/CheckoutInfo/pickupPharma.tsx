@@ -10,7 +10,7 @@ import { FaTruckFast } from "react-icons/fa6";
 import {
   OrdererInfo as OrdererInfoType,
   AddressFormData,
-} from "../productInfo/types";
+} from "../ProductInfo/types";
 import { PharmaInfo } from "./pharmaInfo";
 import ReceiveDialog from "@/components/Dialog/receiveDialog";
 
