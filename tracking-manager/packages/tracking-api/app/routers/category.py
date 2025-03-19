@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 from app.core import logger, response
-from app.entities.category.request import MainCategoryReq, SubCategoryReq, ChildCategoryReq
+from app.entities.category.request import MainCategoryInReq, SubCategoryInReq, ChildCategoryInReq
 from app.models import category
 
 router = APIRouter()
@@ -35,7 +35,7 @@ async def get_category(main_slug: str):
         )
 
 @router.post("/category/add", response_model=response.BaseResponse)
-async def create_category(new_category: MainCategoryReq):
+async def create_category(new_category: MainCategoryInReq):
     try:
         await category.add_category(new_category.dict())
         return response.BaseResponse(message="Main-category added successfully")
@@ -52,7 +52,7 @@ async def create_category(new_category: MainCategoryReq):
         )
 
 @router.put("/category/update/{main_slug}", response_model=response.BaseResponse)
-async def update_category(main_slug: str, updated_category: MainCategoryReq):
+async def update_category(main_slug: str, updated_category: MainCategoryInReq):
     try:
         data = await category.update_category(main_slug, updated_category.dict())
         return response.BaseResponse(data=data)
@@ -86,7 +86,7 @@ async def update_category(main_slug: str, updated_category: MainCategoryReq):
 #         )
 
 @router.post("/category/{main_slug}/sub-category/add", response_model=response.BaseResponse)
-async def create_sub_category(main_slug: str, sub_category: SubCategoryReq):
+async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
     try:
         await category.add_sub_category(main_slug, sub_category.dict())
         return response.BaseResponse(message="Sub-category added successfully")
@@ -103,7 +103,7 @@ async def create_sub_category(main_slug: str, sub_category: SubCategoryReq):
         )
 
 @router.post("/category/{main_slug}/sub-category/{sub_slug}/child-category/add", response_model=response.BaseResponse)
-async def create_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryReq):
+async def create_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
     try:
         await category.add_child_category(main_slug, sub_slug, child_category.dict())
         return response.BaseResponse(message="Child-category added successfully")
