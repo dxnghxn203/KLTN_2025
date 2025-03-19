@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"time"
 	"tracking-consumer/pkg/database"
@@ -26,7 +27,6 @@ type addressOrderReq struct {
 	Ward     string `json:"ward" bson:"ward"`
 	District string `json:"district" bson:"district"`
 	Province string `json:"province" bson:"province"`
-	Postcode string `json:"postcode" bson:"postcode"`
 }
 
 type infoAddressOrderReq struct {
@@ -53,13 +53,16 @@ type Orders struct {
 	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
 	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
 	CreatedBy            string              `json:"created_by" bson:"created_by"`
+	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
 type ProductInfo struct {
-	ProductId string  `json:"product_id" bson:"product_id"`
-	Name      string  `json:"name" bson:"name"`
-	Quantity  int     `json:"quantity" bson:"quantity"`
-	Price     float64 `json:"price" bson:"price"`
+	ProductId   string  `json:"product_id" bson:"product_id"`
+	PriceId     string  `json:"price_id" bson:"price_id"`
+	ProductName string  `json:"product_name" bson:"product_name"`
+	Unit        string  `json:"unit" bson:"unit"`
+	Quantity    int     `json:"quantity" bson:"quantity"`
+	Price       float64 `json:"price" bson:"price"`
 }
 
 type OrderRes struct {
@@ -79,6 +82,7 @@ type OrderRes struct {
 	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
 	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
 	CreatedBy            string              `json:"created_by" bson:"created_by"`
+	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
 func (o *Orders) Create(ctx context.Context) (bool, string, error) {
@@ -142,9 +146,10 @@ func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
 	}
 
 	for _, product := range order.Product {
-		err := database.IncreaseProductSales(ctx, product.ProductId, product.Quantity)
+		productId := fmt.Sprintf("%s_%s", product.ProductId, product.PriceId)
+		err := database.IncreaseProductSales(ctx, productId, product.Quantity)
 		if err != nil {
-			slog.Error("Lỗi khi tăng số lượng bán của sản phẩm", "product_id", product.ProductId, "err", err)
+			slog.Error("Lỗi khi tăng số lượng bán của sản phẩm", "product", productId, "err", err)
 		}
 	}
 

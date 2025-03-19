@@ -38,18 +38,18 @@ router = APIRouter()
 # async def delete_regions():
 #     await location.delete_regions()
 
-@router.get("/location/cities", response_model=response.SuccessResponse)
+@router.get("/location/cities", response_model=response.BaseResponse)
 async def get_all_cities():
     return await location.get_cities()
 
-@router.get("/location/districts/{city_code}", response_model=response.SuccessResponse)
+@router.get("/location/districts/{city_code}", response_model=response.BaseResponse)
 async def get_districts_by_city(city_code: str):
     return await location.get_districts_by_city(city_code)
 
-@router.get("/location/wards/{district_code}", response_model=response.SuccessResponse)
+@router.get("/location/wards/{district_code}", response_model=response.BaseResponse)
 async def get_wards_by_district(district_code: str):
     return await location.get_wards_by_district(district_code)
 
-@router.get("/location/regions", response_model=response.SuccessResponse)
+@router.get("/location/regions", response_model=response.BaseResponse)
 async def get_all_regions():
     return await location.get_regions()

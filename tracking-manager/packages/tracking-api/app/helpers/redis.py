@@ -2,6 +2,7 @@ import json
 
 from app.core import redis_client, logger
 from app.entities.order.request import ItemOrderReq
+from app.entities.product.request import ItemProductRedisReq
 
 redis = redis_client.redis
 REQUEST_COUNT_MAX=5
@@ -82,16 +83,25 @@ def get_product_transaction(product_id: str):
     data = redis.hgetall(key)
 
     return {
-        "ton": int(data.get("ton", 0)),
-        "ban": int(data.get("ban", 0)),
+        "inventory": int(data.get("inventory", 0)),
+        "sell": int(data.get("sell", 0)),
     } if data else None
+
+def save_product(product: ItemProductRedisReq, id: str):
+    key = product_key(id)
+    redis.hmset(key, {
+        "inventory": product.inventory,
+        "sell": product.sell,
+        "delivery": product.delivery
+    })
+    redis.persist(key)
 
 def order_key(order_id: str) -> str:
     return f"order:{order_id}"
 
 def save_order(order: ItemOrderReq):
     key = order_key(order.order_id)
-    order_json = json.dumps(order.dict())
+    order_json = json.dumps(order.dict(), ensure_ascii=False)
     redis.set(key, order_json)
     redis.persist(key)
 

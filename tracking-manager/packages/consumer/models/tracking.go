@@ -11,11 +11,12 @@ import (
 )
 
 type Tracking struct {
-	OrderId     string    `json:"order_id" bson:"order_id"`
-	TrackingId  string    `json:"tracking_id" bson:"tracking_id"`
-	Status      string    `json:"status" bson:"status"`
-	CreatedDate time.Time `json:"created_date" bson:"created_date"`
-	UpdatedDate time.Time `json:"updated_date" bson:"updated_date"`
+	OrderId             string    `json:"order_id" bson:"order_id"`
+	TrackingId          string    `json:"tracking_id" bson:"tracking_id"`
+	Status              string    `json:"status" bson:"status"`
+	CreatedDate         time.Time `json:"created_date" bson:"created_date"`
+	UpdatedDate         time.Time `json:"updated_date" bson:"updated_date"`
+	DeliveryInstruction string    `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
 func (t *Tracking) Create(ctx context.Context) (bool, string, error) {
