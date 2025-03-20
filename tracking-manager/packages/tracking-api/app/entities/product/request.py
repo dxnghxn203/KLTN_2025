@@ -62,8 +62,11 @@ class ItemImageDBReq(BaseModel):
 
 class ItemCategoryDBInReq(BaseModel):
     main_category_id: str = ""
+    main_category_slug: str = ""
     sub_category_id: str = ""
+    sub_category_slug: str = ""
     child_category_id: str = ""
+    child_category_slug: str = ""
 
     @model_validator(mode="before")
     @classmethod

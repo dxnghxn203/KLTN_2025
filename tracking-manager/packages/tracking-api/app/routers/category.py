@@ -37,7 +37,7 @@ async def get_category(main_slug: str):
 @router.post("/category/add", response_model=response.BaseResponse)
 async def create_category(new_category: MainCategoryInReq):
     try:
-        await category.add_category(new_category.dict())
+        await category.add_category(new_category)
         return response.BaseResponse(message="Main-category added successfully")
     except ValueError as e:
         raise response.JsonException(
@@ -51,44 +51,10 @@ async def create_category(new_category: MainCategoryInReq):
             message="Internal server error"
         )
 
-@router.put("/category/update/{main_slug}", response_model=response.BaseResponse)
-async def update_category(main_slug: str, updated_category: MainCategoryInReq):
-    try:
-        data = await category.update_category(main_slug, updated_category.dict())
-        return response.BaseResponse(data=data)
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
-    except Exception as e:
-        logger.error(f"Error updating category: {str(e)}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
-
-# @router.delete("/category/delete/{main_slug}", response_model=response.BaseResponse)
-# async def delete_category(main_slug: str):
-#     try:
-#         data = await category.delete_category(main_slug)
-#         return response.BaseResponse(data=data)
-#     except ValueError as e:
-#         raise response.JsonException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             message=str(e)
-#         )
-#     except Exception as e:
-#         logger.error(f"Error deleting category: {str(e)}")
-#         raise response.JsonException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             message="Internal server error"
-#         )
-
 @router.post("/category/{main_slug}/sub-category/add", response_model=response.BaseResponse)
 async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
     try:
-        await category.add_sub_category(main_slug, sub_category.dict())
+        await category.add_sub_category(main_slug, sub_category)
         return response.BaseResponse(message="Sub-category added successfully")
     except ValueError as e:
         raise response.JsonException(
@@ -105,7 +71,7 @@ async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
 @router.post("/category/{main_slug}/sub-category/{sub_slug}/child-category/add", response_model=response.BaseResponse)
 async def create_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
     try:
-        await category.add_child_category(main_slug, sub_slug, child_category.dict())
+        await category.add_child_category(main_slug, sub_slug, child_category)
         return response.BaseResponse(message="Child-category added successfully")
     except ValueError as e:
         raise response.JsonException(
@@ -114,6 +80,69 @@ async def create_child_category(main_slug: str, sub_slug: str, child_category: C
         )
     except Exception as e:
         logger.error(f"Error adding child category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/category/update/{main_category_id}", response_model=response.BaseResponse)
+async def update_main_category(
+    main_category_id: str,
+    main_category_name: str = None,
+    main_category_slug: str = None
+):
+    try:
+        await category.update_main_category(main_category_id, main_category_name, main_category_slug)
+        return response.BaseResponse(message="Main category updated successfully")
+    except ValueError as e:
+        raise response.JsonException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error updating main category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/category/sub-category/update/{sub_category_id}", response_model=response.BaseResponse)
+async def update_sub_category(
+    sub_category_id: str,
+    sub_category_name: str = None,
+    sub_category_slug: str = None
+):
+    try:
+        await category.update_sub_category(sub_category_id, sub_category_name, sub_category_slug)
+        return response.BaseResponse(message="Sub-category updated successfully")
+    except ValueError as e:
+        raise response.JsonException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error updating sub-category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/category/child-category/update/{child_category_id}", response_model=response.BaseResponse)
+async def update_child_category(
+    child_category_id: str,
+    child_category_name: str = None,
+    child_category_slug: str = None
+):
+    try:
+        await category.update_child_category(child_category_id, child_category_name, child_category_slug)
+        return response.BaseResponse(message="Child-category updated successfully")
+    except ValueError as e:
+        raise response.JsonException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Error updating child-category: {str(e)}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

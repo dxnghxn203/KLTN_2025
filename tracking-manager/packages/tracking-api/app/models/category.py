@@ -47,14 +47,14 @@ async def add_category(item: MainCategoryInReq):
                     child_category_id=child_category_id,
                     child_category_name=child.child_category_name,
                     child_category_slug=child.child_category_slug
-                ).dict())
+                ))
 
             sub_categories.append(SubCategoryReq(
                 sub_category_id=sub_category_id,
                 sub_category_name=sub.sub_category_name,
                 sub_category_slug=sub.sub_category_slug,
                 child_category=child_categories
-            ).dict())
+            ))
 
         category_data = MainCategoryReq(
             main_category_id=main_category_id,
@@ -63,7 +63,7 @@ async def add_category(item: MainCategoryInReq):
             sub_category=sub_categories
         )
 
-        await collection.insert_one(category_data.dict())
+        collection.insert_one(category_data.dict())
     except Exception as e:
         logger.error(f"Error adding category: {str(e)}")
         raise e
@@ -77,23 +77,31 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
         if not category:
             raise ValueError("Main category not found")
 
+        existing_sub = next(
+            (sub for sub in category.get("sub_category", []) if
+             sub["sub_category_slug"] == sub_category.sub_category_slug),
+            None
+        )
+        if existing_sub:
+            raise ValueError("Sub category slug already exists")
+
         sub_category_id = generate_id("SUB")
         child_categories = [ChildCategoryReq(
             child_category_id=generate_id("CHILD"),
             child_category_name=child.child_category_name,
             child_category_slug=child.child_category_slug
-        ).dict() for child in sub_category.child_category]
+        ) for child in sub_category.child_category]
 
         new_sub_category = SubCategoryReq(
             sub_category_id=sub_category_id,
             sub_category_name=sub_category.sub_category_name,
             sub_category_slug=sub_category.sub_category_slug,
             child_category=child_categories
-        ).dict()
+        )
 
         collection.update_one(
             {"main_category_slug": main_slug},
-            {"$push": {"sub_category": new_sub_category}}
+            {"$push": {"sub_category": new_sub_category.dict()}}
         )
     except Exception as e:
         logger.error(f"Error adding sub-category: {str(e)}")
@@ -110,16 +118,24 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
 
         for sub in category.get("sub_category", []):
             if sub["sub_category_slug"] == sub_slug:
+                existing_child = next(
+                    (child for child in sub.get("child_category", []) if
+                     child["child_category_slug"] == child_category.child_category_slug),
+                    None
+                )
+                if existing_child:
+                    raise ValueError("Child category slug already exists")
+
                 child_category_id = generate_id("CHILD")
                 new_child_category = ChildCategoryReq(
                     child_category_id=child_category_id,
                     child_category_name=child_category.child_category_name,
                     child_category_slug=child_category.child_category_slug
-                ).dict()
+                )
 
                 collection.update_one(
                     {"main_category_slug": main_slug, "sub_category.sub_category_slug": sub_slug},
-                    {"$push": {"sub_category.$.child_category": new_child_category}}
+                    {"$push": {"sub_category.$.child_category": new_child_category.dict()}}
                 )
                 return
 

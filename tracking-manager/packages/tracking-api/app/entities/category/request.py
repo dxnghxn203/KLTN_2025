@@ -25,10 +25,10 @@ class ChildCategoryInReq(BaseModel):
 class SubCategoryInReq(BaseModel):
     sub_category_name: str = ""
     sub_category_slug: str = ""
-    child_category: List[ChildCategoryReq]
+    child_category: List[ChildCategoryInReq]
 
 class MainCategoryInReq(BaseModel):
     main_category_name: str = ""
     main_category_slug: str = ""
-    sub_category: List[SubCategoryReq]
+    sub_category: List[SubCategoryInReq]
 
