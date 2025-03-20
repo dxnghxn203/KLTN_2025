@@ -2,17 +2,10 @@ cluster.name: "tracking-cluster"
 node.name: "node-1"
 network.host: 0.0.0.0
 
-# Cấu hình bảo mật
-xpack.security.enabled: true
-xpack.security.enrollment.enabled: true
-xpack.security.http.ssl.enabled: false
-xpack.security.transport.ssl.enabled: true
-xpack.security.transport.ssl.verification_mode: certificate
-xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
-xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
-
 # Cấu hình discovery
 discovery.type: single-node
 
 # Giới hạn bộ nhớ
 bootstrap.memory_lock: true
+
+# Các cấu hình xpack đã bị xóa vì elasticsearch-oss không hỗ trợ
