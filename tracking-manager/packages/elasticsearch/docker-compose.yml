@@ -5,7 +5,7 @@ services:
       context: .
     container_name: elasticsearch
     environment:
-      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+      - "ES_JAVA_OPTS=-Xms128m -Xmx128m"
     ulimits:
       memlock:
         soft: -1
@@ -16,18 +16,31 @@ services:
       - 9200:9200
     networks:
       - elastic
+    deploy:
+      resources:
+        limits:
+          memory: 300M
+        reservations:
+          memory: 200M
 
   kibana:
     image: docker.elastic.co/kibana/kibana-oss:7.10.2
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - "NODE_OPTIONS=--max-old-space-size=150"
     ports:
       - 5601:5601
     depends_on:
       - elasticsearch
     networks:
       - elastic
+    deploy:
+      resources:
+        limits:
+          memory: 250M
+        reservations:
+          memory: 150M
 
 volumes:
   es-data:

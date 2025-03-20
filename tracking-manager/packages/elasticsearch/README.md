@@ -23,6 +23,21 @@ docker-compose ps
 docker-compose logs -f elasticsearch
 ```
 
+## Xử lý lỗi Out of Memory
+
+Nếu vẫn gặp lỗi out of memory:
+
+1. Chỉ chạy Elasticsearch, tắt Kibana (comment phần kibana trong docker-compose.yml)
+2. Tăng swap space trên máy host:
+```bash
+# Tạo file swap 1GB
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+3. Giảm thêm bộ nhớ trong ES_JAVA_OPTS nếu cần
+
 ## Thông tin truy cập
 - Elasticsearch: http://localhost:9200
 - Kibana: http://localhost:5601
@@ -30,7 +45,6 @@ docker-compose logs -f elasticsearch
 ## Kiểm tra hoạt động của Elasticsearch
 ```bash
 curl -XGET 'http://localhost:9200'
-curl -XGET 'http://localhost:9200/_cluster/health?pretty'
 ```
 
 ## Dừng dịch vụ
@@ -38,12 +52,7 @@ curl -XGET 'http://localhost:9200/_cluster/health?pretty'
 docker-compose down
 ```
 
-## Xóa toàn bộ dữ liệu (volume)
-```bash
-docker-compose down -v
-```
-
 ## Lưu ý quan trọng
-- Phiên bản Elasticsearch-OSS không hỗ trợ tính năng X-Pack và bảo mật
-- Cấu hình này phù hợp cho môi trường phát triển, không nên dùng cho production
-- Nếu muốn sử dụng chức năng bảo mật, hãy quay lại phiên bản Elasticsearch đầy đủ
+- Cấu hình hiện tại đã được tối ưu hóa để sử dụng ít bộ nhớ nhất có thể
+- Không nên sử dụng cấu hình này cho môi trường production
+- Đây là cấu hình tối thiểu chỉ để phát triển và thử nghiệm

@@ -8,4 +8,11 @@ discovery.type: single-node
 # Giới hạn bộ nhớ
 bootstrap.memory_lock: true
 
+# Cấu hình giảm thiểu bộ nhớ
+indices.memory.index_buffer_size: 10%
+indices.queries.cache.size: 1%
+indices.fielddata.cache.size: 1%
+indices.breaker.total.use_real_memory: false
+indices.breaker.total.limit: 40%
+
 # Các cấu hình xpack đã bị xóa vì elasticsearch-oss không hỗ trợ
