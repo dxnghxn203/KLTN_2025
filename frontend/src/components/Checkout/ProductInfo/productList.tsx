@@ -1,16 +1,7 @@
 "use client";
 import React from "react";
 import Image, { StaticImageData } from "next/image";
-
-interface Product {
-  id: number;
-  name: string;
-  image: string | StaticImageData;
-  price: number;
-  originPrice: number;
-  quantity: number;
-  unit: string;
-}
+import { Product } from "@/types/product";
 
 interface ProductListProps {
   products: Product[];
@@ -29,7 +20,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
           >
             <div className="w-[40%] flex items-center px-5 py-2">
               <Image
-                src={product.image}
+                src={product.imageSrc}
                 alt={product.name}
                 width={55}
                 height={55}
@@ -49,7 +40,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
                 </span>
               )}
             </div>
-            <div className="w-[15%] text-center">x1 Chai</div>
+            <div className="w-[15%] text-center">x{product.quantity} Chai</div>
           </div>
         ))}
       </div>

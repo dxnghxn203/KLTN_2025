@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { DeliveryMethod } from "./deliveryMethod";
 import { OrdererInfo } from "@/components/Checkout/CheckoutInfo/infoDelivery";
 import { OrdererInfoPickup } from "./orderPickupPharma";
@@ -14,7 +14,11 @@ import {
 import { PharmaInfo } from "./pharmaInfo";
 import ReceiveDialog from "@/components/Dialog/receiveDialog";
 
-const Delivery: React.FC = () => {
+interface DeliveryProps {
+  setData: (data: any) => void;
+}
+
+const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
   const [deliveryMethod, setDeliveryMethod] = useState<"delivery" | "pickup">(
     "delivery"
   );
@@ -27,12 +31,21 @@ const Delivery: React.FC = () => {
     fullName: "",
     phone: "",
     email: "",
-    province: "",
+    city: "",
     district: "",
     ward: "",
     address: "",
     notes: "",
+    cityCode: "",
+    districtCode: "",
+    wardCode: "",
   });
+
+  useEffect(() => {
+    setData({ ordererInfo, addressInfo, deliveryMethod });
+  }
+    , [ordererInfo, addressInfo, deliveryMethod]);
+
   const [requireInvoice, setRequireInvoice] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | "bank">(
     "cash"

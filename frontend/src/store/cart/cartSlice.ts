@@ -4,6 +4,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 const initialState: CartState = {
     cartlocal: [] as CartItem[],  
     cart: [] as CartItem[],      
+    cartSelected: [],
     loading: false,
     error: null,
 };
@@ -64,6 +65,18 @@ export const cartSlice = createSlice({
             state.cartlocal = [];
         },
 
+        // product selected
+        addCartSelected: (state, action: PayloadAction<string[]>) => {
+            if (!Array.isArray(state.cartSelected)) {
+                state.cartSelected = [];
+            }
+
+            state.cartSelected = action.payload;
+        },
+        removeCartSelected: (state, action: PayloadAction<string>) => {
+            state.cartSelected = state.cartSelected.filter((item) => item !== action.payload);
+        },
+
         // add cart
         addCartStart: (state) => {
             state.loading = true;
@@ -85,6 +98,9 @@ export const {
     updateUnitCartLocal,
     removeCartLocal,
     clearCartLocal,
+
+    addCartSelected,
+    removeCartSelected,
 
     addCartStart,
     addCartSuccess,

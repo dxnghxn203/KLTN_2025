@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CartItem } from '@/types/cart';
-import { addCartLocal, clearCartLocal, removeCartLocal, selectCartError, selectCartLoading, selectCartLocal, updateQuantityCartLocal, updateUnitCartLocal } from '@/store';
+import { addCartSelected, addCartLocal, clearCartLocal, removeCartLocal, selectCartError, selectCartLoading, selectCartLocal, updateQuantityCartLocal, updateUnitCartLocal, selectCartSelected, removeCartSelected } from '@/store';
 
 export function useCart() {
     const dispatch = useDispatch();
@@ -13,7 +13,7 @@ export function useCart() {
     const addToCart = (item: CartItem) => {
         dispatch(addCartLocal(item));
     };
-
+    
     const updateQuantity = (id: string, quantity: number) => {
         dispatch(updateQuantityCartLocal({ id, quantity }));
     };
@@ -30,6 +30,15 @@ export function useCart() {
         dispatch(clearCartLocal());
     };
 
+    const addCartSelectedLocal = (data: string[]) => {
+        dispatch(addCartSelected(data));
+    };
+
+    const removeCartSelectedLocal = (id: string) => {
+        dispatch(removeCartSelected(id));   
+    }
+    const cartSelected = useSelector(selectCartSelected);
+
     return {
         cartLocal,
         isLoading,
@@ -38,7 +47,10 @@ export function useCart() {
         updateQuantity,
         updateUnit,
         removeFromCart,
-        clearCart
+        clearCart,
+        cartSelected,
+        addCartSelectedLocal,
+        removeCartSelectedLocal
     };
 }
 

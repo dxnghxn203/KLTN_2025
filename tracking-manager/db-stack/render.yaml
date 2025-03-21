@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: tracking-rabbitmq
+    env: docker
+    plan: starter # Plan Starter với giới hạn 512MB RAM
+    dockerfilePath: ./rabbitmq/Dockerfile
+    dockerContext: .  # Thay đổi dockerContext để bao gồm thư mục rabbitmq
+    disk:
+      name: rabbitmq-data
+      mountPath: /var/lib/rabbitmq
+      sizeGB: 1
+    envVars:
+      - key: RABBITMQ_DEFAULT_USER
+        value: admin
+      - key: RABBITMQ_DEFAULT_PASS
+        sync: false
+        generateValue: true
+      # Thêm biến môi trường để giới hạn bộ nhớ Java
+      - key: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+        value: "+MMscs 400 +MMhcs 400"
+    healthCheckPath: /
+    healthCheckTimeout: 10
+    autoDeploy: true

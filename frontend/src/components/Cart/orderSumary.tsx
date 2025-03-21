@@ -7,6 +7,7 @@ interface OrderSummaryProps {
   totalOriginPrice: number;
   totalDiscount: number;
   totalSave: number;
+  checkout: ()=> void;
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -14,6 +15,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   totalOriginPrice,
   totalDiscount,
   totalSave,
+  checkout
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -71,18 +73,17 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </div>
         </div>
         <div className="flex justify-center w-full">
-          <Link href="/checkout">
             <button
               className={`w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white rounded-3xl ${
                 totalAmount === 0
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-700 hover:bg-[#002E99]"
               }`}
+              onClick={checkout}
               disabled={totalAmount === 0}
             >
               Mua hàng
             </button>
-          </Link>
         </div>
         {totalAmount === 0 && (
           <div className="mt-2 text-center text-red-500">

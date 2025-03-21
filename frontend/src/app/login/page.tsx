@@ -19,10 +19,8 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, showToast]);
 
-  // Show error toast when there's an authentication error
   useEffect(() => {
     if (error) {
-      console.log("Authentication error, showing error toast:", error);
       showToast(error, ToastType.ERROR);
     }
   }, [error, showToast]);
