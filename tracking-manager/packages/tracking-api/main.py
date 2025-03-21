@@ -6,7 +6,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core import response, exception
-from app.core.rabbitmq import test_send_message
 from app.routers import (
     user_router,
     authen_router,
@@ -49,7 +48,6 @@ app.include_router(category_router, prefix="/v1", tags=["Category"])
 
 @app.get("/read-root")
 def read_root():
-    test_send_message()
     return {
         "service": "Tracking API",
         "version": "1.0.0",

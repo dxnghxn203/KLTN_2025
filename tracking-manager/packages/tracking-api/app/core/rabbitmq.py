@@ -31,20 +31,3 @@ def send_message(queue_name, message):
     except pika.exceptions.AMQPConnectionError:
         print("Lost connection. Reconnecting...")
         time.sleep(5)  # Wait before reconnecting
-
-def test_send_message():
-    queue_name = "CREATE_TRACKING"
-    message = "Hello RabbitMQ! Đây là message test."
-
-    connection = connect()
-    if connection:
-        try:
-            channel = connection.channel()
-            channel.queue_declare(queue=queue_name, durable=True)  # Khai báo queue nếu chưa tồn tại
-            channel.basic_publish(exchange='', routing_key=queue_name, body=message)
-            connection.close()
-            print(f"✅ Gửi thành công message đến queue '{queue_name}': {message}")
-        except Exception as e:
-            print("❌ Lỗi khi gửi message:", e)
-    else:
-        print("❌ Không thể kết nối đến RabbitMQ!")
