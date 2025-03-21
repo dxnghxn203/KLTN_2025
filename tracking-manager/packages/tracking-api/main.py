@@ -46,7 +46,7 @@ app.include_router(order_router, prefix="/v1", tags=["Order"])
 app.include_router(location_router, prefix="/v1", tags=["Location"])
 app.include_router(category_router, prefix="/v1", tags=["Category"])
 
-@app.get("/")
+@app.get("/read-root")
 def read_root():
     return {
         "service": "Tracking API",
