@@ -3,8 +3,8 @@ version: '3.8'
 services:
   rabbitmq:
     build:
-      context: ./rabbitmq
-      dockerfile: Dockerfile
+      context: .  # Thay đổi context lên một cấp để bao gồm thư mục rabbitmq
+      dockerfile: ./rabbitmq/Dockerfile
     container_name: tracking-rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=admin
