@@ -51,7 +51,7 @@ RUN mkdir -p /var/lib/rabbitmq /var/log/rabbitmq && \
     chmod 755 /var/lib/rabbitmq /var/log/rabbitmq
 
 # Mở cổng chính - Render sẽ tự động định tuyến cổng
-EXPOSE 5672 15672
+EXPOSE 10567 15672
 
 # Thiết lập healthcheck nhẹ
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
