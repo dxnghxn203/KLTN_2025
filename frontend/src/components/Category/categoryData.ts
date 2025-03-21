@@ -8,7 +8,6 @@ interface SubSubCategory {
   img: string | StaticImageData;
 
 }
-
 interface SubCategory {
   name: string;
   link: string;

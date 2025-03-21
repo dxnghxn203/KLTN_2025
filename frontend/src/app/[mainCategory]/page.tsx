@@ -6,6 +6,7 @@ import Footer from "@/components/Footer/footer";
 import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import CategoryList from "@/components/Category/categogyList";
+import { useMainCategory } from "@/hooks/useCategory";
 
 const mainCategoryTitles: Record<string, string> = {
   "thuc-pham-chuc-nang": "Thực phẩm chức năng",
@@ -20,12 +21,16 @@ const mainCategoryTitles: Record<string, string> = {
 
 export default function MainCategoryPage() {
   const params = useParams();
-  const mainCategory = Array.isArray(params.mainCategory)
+
+  const mainCategory2 = Array.isArray(params.mainCategory)
     ? params.mainCategory[0]
     : params.mainCategory;
 
+  const { mainCategory } = useMainCategory(params.mainCategory);
+  // console.log("mainCategory page");
+  // console.log(mainCategory);
   const mainCategoryTitle =
-    mainCategoryTitles[mainCategory] || "Danh mục sản phẩm";
+    mainCategoryTitles[mainCategory2] || "Danh mục sản phẩm";
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">

@@ -2,9 +2,12 @@
 import { useParams } from "next/navigation";
 import CategoryCard from "@/components/Category/CategoryCard";
 import { categoryProducts } from "@/components/Category/categoryData";
+import { useCategory, useMainCategory } from "@/hooks/useCategory";
 
 export default function CategoryList() {
   const params = useParams();
+
+  // const { mainCategory } = useMainCategory();
   const mainCategory = Array.isArray(params.mainCategory)
     ? params.mainCategory[0]
     : params.mainCategory;
