@@ -3,7 +3,7 @@ version: '3.8'
 services:
   rabbitmq:
     build:
-      context: .  # Thay đổi context lên một cấp để bao gồm thư mục rabbitmq
+      context: .
       dockerfile: ./rabbitmq/Dockerfile
     container_name: tracking-rabbitmq
     environment:
@@ -13,11 +13,17 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     ports:
       - "5672:5672"
+      - "15672:15672"
+    command: >
+      bash -c "
+        rabbitmq-plugins enable --offline rabbitmq_management &&
+        rabbitmq-server
+      "
     deploy:
       resources:
         limits:
-          memory: 100M
-          cpus: '0.2'
+          memory: 200M
+          cpus: '0.3'
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmqctl", "ping"]

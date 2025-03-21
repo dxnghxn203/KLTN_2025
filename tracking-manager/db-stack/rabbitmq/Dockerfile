@@ -1,4 +1,4 @@
-FROM rabbitmq:3.9-alpine
+FROM rabbitmq:3.9-management-alpine
 
 # Thông tin dự án
 LABEL maintainer="KLTN 2025" \
@@ -34,7 +34,11 @@ disk_free_limit.absolute = 100MB\n\
 queue_index_embed_msgs_below = 1000\n\
 \n\
 # Tối ưu hóa thông lượng I/O\n\
-io_thread_pool_size = 2' > /etc/rabbitmq/rabbitmq.conf
+io_thread_pool_size = 2\n\
+\n\
+# Đảm bảo Management UI có thể truy cập từ bên ngoài\n\
+management.listener.port = 15672\n\
+management.listener.ssl = false' > /etc/rabbitmq/rabbitmq.conf
 
 # Tối ưu thư mục dữ liệu
 RUN mkdir -p /var/lib/rabbitmq /var/log/rabbitmq && \
