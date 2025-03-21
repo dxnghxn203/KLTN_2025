@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: tracking-rabbitmq
+    env: docker
+    plan: starter
+    dockerfilePath: ./rabbitmq/Dockerfile
+    dockerContext: ./rabbitmq
+    disk:
+      name: rabbitmq-data
+      mountPath: /var/lib/rabbitmq
+      sizeGB: 1
+    envVars:
+      - key: RABBITMQ_DEFAULT_USER
+        value: admin
+      - key: RABBITMQ_DEFAULT_PASS
+        sync: false
+        generateValue: true
+    healthCheckPath: /
+    healthCheckTimeout: 10
+    autoDeploy: true

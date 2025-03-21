@@ -13,24 +13,22 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     ports:
       - "5672:5672"
-      
     deploy:
       resources:
         limits:
           memory: 100M
-          cpus: '0.3'
+          cpus: '0.2'
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmqctl", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
-
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "5m"
+        max-file: "2"
 
 volumes:
   rabbitmq-data:
