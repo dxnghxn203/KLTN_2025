@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 export function useCategory() {
     const dispatch = useDispatch();
-    const allCategory = useSelector(selectAllCategory);
+    const allCategory: any = useSelector(selectAllCategory);
 
     useEffect(() => {
         dispatch(fetchGetAllCategoryStart(
