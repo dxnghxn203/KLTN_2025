@@ -4,6 +4,10 @@
 
 RabbitMQ được cấu hình nhẹ, sử dụng dưới 100MB bộ nhớ.
 
+### Trạng thái
+
+✅ **RabbitMQ đã cài đặt và chạy thành công!**
+
 ### Khởi động RabbitMQ
 
 ```bash
@@ -25,11 +29,29 @@ docker-compose up -d rabbitmq
 - Password: kltn_2025
 - URL: amqp://admin:kltn_2025@localhost:5672
 
-### Kiểm tra trạng thái
+### Kiểm tra plugins đã cài đặt
 
 ```bash
-docker exec tracking-rabbitmq rabbitmqctl ping
-docker exec tracking-rabbitmq rabbitmqctl status
+docker exec tracking-rabbitmq rabbitmq-plugins list
+```
+
+### Bật Management UI (Khuyến nghị)
+
+```bash
+# Bật Management UI
+docker exec tracking-rabbitmq rabbitmq-plugins enable rabbitmq_management
+
+# Thêm port vào docker-compose.yml
+# ports:
+#   - "5672:5672"
+#   - "15672:15672"
+
+# Khởi động lại container
+docker-compose restart rabbitmq
+
+# Truy cập UI tại: http://localhost:15672
+# Username: admin
+# Password: kltn_2025
 ```
 
 ### Ví dụ sử dụng RabbitMQ từ Node.js
@@ -98,39 +120,24 @@ print(' [*] Đang chờ messages. Nhấn CTRL+C để thoát')
 channel.start_consuming()
 ```
 
-### Bật Management UI
-
-RabbitMQ Management là plugin hữu ích để quản lý và giám sát hàng đợi. Để bật nó:
-
-1. Cài đặt plugin:
-```bash
-docker exec tracking-rabbitmq rabbitmq-plugins enable rabbitmq_management
-```
-
-2. Cập nhật docker-compose.yml để mở port 15672:
-```yaml
-ports:
-  - "5672:5672"
-  - "15672:15672"
-```
-
-3. Khởi động lại container:
-```bash
-docker-compose restart rabbitmq
-```
-
-4. Truy cập Management UI tại: http://localhost:15672
-   - Username: admin
-   - Password: kltn_2025
-
-### Lưu ý về phiên bản
-
-RabbitMQ 3.9.29 hiện đã hết hạn hỗ trợ theo nhà phát triển. Cân nhắc nâng cấp lên phiên bản mới hơn trong môi trường sản xuất.
-
-### Kiểm tra logs
+### Các lệnh hữu ích cho RabbitMQ
 
 ```bash
+# Kiểm tra trạng thái
+docker exec tracking-rabbitmq rabbitmqctl ping
+docker exec tracking-rabbitmq rabbitmqctl status
+
+# Liệt kê queues
+docker exec tracking-rabbitmq rabbitmqctl list_queues
+
+# Liệt kê exchanges
+docker exec tracking-rabbitmq rabbitmqctl list_exchanges
+
+# Kiểm tra logs
 docker exec tracking-rabbitmq cat /var/log/rabbitmq/rabbit@$(docker exec tracking-rabbitmq hostname).log
+
+# Xem thông tin tài nguyên sử dụng
+docker stats tracking-rabbitmq
 ```
 
 ### Tắt RabbitMQ
@@ -139,8 +146,9 @@ docker exec tracking-rabbitmq cat /var/log/rabbitmq/rabbit@$(docker exec trackin
 docker-compose stop rabbitmq
 ```
 
-## Giám sát sử dụng tài nguyên
+## Hiệu năng và phiên bản
 
-```bash
-docker stats tracking-rabbitmq
-```
+- Phiên bản RabbitMQ: 3.9.29
+- Erlang: 25.3.2.9 [jit]
+- Giới hạn bộ nhớ: 100MB
+- Trạng thái hỗ trợ: Hết hạn hỗ trợ (cân nhắc nâng cấp trong môi trường sản xuất)
