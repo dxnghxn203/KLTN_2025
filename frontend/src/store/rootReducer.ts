@@ -4,6 +4,8 @@ import cartReducer from './cart/cartSlice';
 import productReducer from './product/productSlice';
 import orderReducer from './order/orderSlice';
 import { locationSlice } from './location/locationSlice';
+import categoryReducer from './category/categorySlice';
+
 // Import other reducers here
 
 const rootReducer = combineReducers({
@@ -12,6 +14,7 @@ const rootReducer = combineReducers({
   product: productReducer,
   order: orderReducer,
   location: locationSlice.reducer,
+  category: categoryReducer,
   // Add other reducers here
 });
 

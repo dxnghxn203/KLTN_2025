@@ -1,6 +1,6 @@
 import axios from "axios";
 const axiosClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "https://kltn-2025-tracking-api.onrender.com",
     headers: {
         "Access-Control-Allow-Credentials": true,
         // "Access-Control-Allow-Private-Network": true,
