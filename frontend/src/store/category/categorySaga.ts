@@ -8,6 +8,10 @@ import {
     fetchGetMainCategoryStart, 
     fetchGetMainCategorySuccess,
     fetchGetMainCategoryFailed,
+
+    fetchGetSubCategoryStart,
+    fetchGetSubCategorySuccess,
+    fetchGetSubCategoryFailed,
 } from './categorySlice';
 
 // Fetch all category
@@ -40,8 +44,24 @@ function* fetchGetMainCategory(action: any): Generator<any, void, any> {
     }
 }
 
+
+function* fetchGetSubCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const category = yield call(categoryService.getSubCategory, payload.mainCategory, payload.subCategory);
+        if (category.code === 200) {
+            yield put(fetchGetSubCategorySuccess(category.data));
+            return;
+        }
+        yield put(fetchGetSubCategoryFailed("Category not found")); 
+    }
+    catch (error) {
+        yield put(fetchGetSubCategoryFailed("Failed to fetch category"));
+    }
+}
 export function* categorySaga() {
     yield takeLatest(fetchGetAllCategoryStart.type, fetchGetAllCategory);
     yield takeLatest(fetchGetMainCategoryStart.type, fetchGetMainCategory);
+    yield takeLatest(fetchGetSubCategoryStart.type, fetchGetSubCategory);
 
 }

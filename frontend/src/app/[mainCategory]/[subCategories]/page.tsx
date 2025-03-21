@@ -6,7 +6,8 @@ import Footer from "@/components/Footer/footer";
 import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import SubSubCategory from "@/components/Category/subSubCategory";
-import { categoryProducts } from "@/components/Category/categoryData";
+import { useCategory } from "@/hooks/useCategory";
+import { useEffect } from "react";
 
 const categoryTitles: Record<string, string> = {
   "thuc-pham-chuc-nang": "Thực phẩm chức năng",
@@ -21,21 +22,24 @@ const categoryTitles: Record<string, string> = {
 
 export default function CategoryPage() {
   const params = useParams();
+  
   const mainCategory = Array.isArray(params.mainCategory)
     ? params.mainCategory[0]
     : params.mainCategory;
+
   const subCategories = Array.isArray(params.subCategories)
     ? params.subCategories[0]
     : params.subCategories;
 
   const categoryTitle = categoryTitles[mainCategory] || "Danh mục sản phẩm";
 
-  // Lấy tên subCategory dựa trên mainCategory và link
-  const subCategory = categoryProducts[mainCategory]?.find(
-    (category) => category.subCategories.link === subCategories
-  )?.subCategories.name;
+  const { subCategory, fetchSubCategory  } = useCategory();
 
-  const subCategoriesTitle = subCategory || "Danh mục con";
+  useEffect(() => {
+    fetchSubCategory(mainCategory, subCategories);
+  }, []);
+
+  const subCategoriesTitle = subCategory?.sub_category_name || "Danh mục con";
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -58,7 +62,7 @@ export default function CategoryPage() {
           </>
         </div>
         <div className="text-2xl font-bold p-4">{subCategoriesTitle}</div>
-        <SubSubCategory />
+        <SubSubCategory  child_category = {subCategory}/>
         <ProductPortfolioList />
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">

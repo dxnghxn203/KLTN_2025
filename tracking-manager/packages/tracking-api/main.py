@@ -4,8 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.core import response, exception
+from app.core import response, exception, elasticsearch
 from app.routers import (
     user_router,
     authen_router,

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false,
   webpack: (config) => {
     config.watchOptions = {
       poll: 1000,
@@ -11,6 +11,7 @@ const nextConfig = {
   images: {
     domains: [
       'kltn2025.s3.ap-southeast-2.amazonaws.com',
+      
       // Giữ lại các domain hiện có nếu có
     ],
   },

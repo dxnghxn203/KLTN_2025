@@ -1,13 +1,13 @@
 "use client";
 import { useParams } from "next/navigation";
 import CategoryCard from "@/components/Category/categoryCard";
-import { categoryProducts } from "@/components/Category/categoryData";
 
 export default function CategoryList(
   { data }: { data: { mainCategory: string; sub_category: any } }
 ) {
   const params = useParams();
-  const mainCategory = params.mainCategory[0];
+  const mainCategory = data.mainCategory || 
+    (Array.isArray(params.mainCategory) ? params.mainCategory[0] : params.mainCategory);
   const sub_category = data.sub_category || [];
 
   return (
@@ -17,7 +17,7 @@ export default function CategoryList(
           <CategoryCard
             key={index}
             mainCategory={mainCategory}
-            icon={"https://via"}
+            icon={"https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222"}
             subCategories={categoryData}
           />
         ))
