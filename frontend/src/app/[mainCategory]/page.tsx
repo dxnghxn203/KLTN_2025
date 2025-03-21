@@ -1,0 +1,54 @@
+"use client";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import Header from "@/components/Header/header";
+import Footer from "@/components/Footer/footer";
+import ProductPortfolioList from "@/components/Product/productFunctionalList";
+import ProductsViewedList from "@/components/Product/productsViewedList";
+import CategoryList from "@/components/Category/categogyList";
+
+const mainCategoryTitles: Record<string, string> = {
+  "thuc-pham-chuc-nang": "Thực phẩm chức năng",
+  thuoc: "Thuốc",
+  "duoc-my-pham": "Dược mỹ phẩm",
+  "thiet-bi-y-te": "Thiết bị y tế",
+  "cham-soc-ca-nhan": "Chăm sóc cá nhân",
+  "me-va-be": "Mẹ và bé",
+  "suc-khoe-sinh-san": "Sức khỏe sinh sản",
+  "goc-song-khoe": "Góc sống khỏe",
+};
+
+export default function MainCategoryPage() {
+  const params = useParams();
+  const mainCategory = Array.isArray(params.mainCategory)
+    ? params.mainCategory[0]
+    : params.mainCategory;
+
+  const mainCategoryTitle =
+    mainCategoryTitles[mainCategory] || "Danh mục sản phẩm";
+
+  return (
+    <div className="flex flex-col pb-12 bg-white pt-[80px]">
+      <Header />
+      <main className="flex flex-col pt-14">
+        <div className="text-sm text-[#0053E2] px-5">
+          <Link href="/" className="hover:underline text-blue-600">
+            Trang chủ
+          </Link>
+          <span className="text-gray-500"> / {mainCategoryTitle}</span>
+        </div>
+        <div className="text-2xl font-bold p-4">{mainCategoryTitle}</div>
+        <CategoryList />
+        <ProductPortfolioList />
+      </main>
+      <div className="text-2xl font-extrabold text-black px-5 pt-10">
+        Sản phẩm vừa xem
+      </div>
+      <div className="px-5">
+        <ProductsViewedList />
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
