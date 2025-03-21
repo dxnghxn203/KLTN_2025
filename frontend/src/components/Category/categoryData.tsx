@@ -1,7 +1,6 @@
 import danhchotreem from "@/images/category/danhchotreem.webp";
 import chamsocsacdep from "@/images/category/chamsocsacdep.jpg";
 import { StaticImageData } from "next/image";
-import { useMainCategory } from "@/hooks/useCategory";
 
 interface SubSubCategory {
   name: string;

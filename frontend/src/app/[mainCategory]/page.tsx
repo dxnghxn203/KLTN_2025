@@ -5,12 +5,13 @@ import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
 import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
+import { useCategory } from "@/hooks/useCategory";
+import { useMemo } from "react";
 import CategoryList from "@/components/Category/categogyList";
-import { useMainCategory } from "@/hooks/useCategory";
 
 const mainCategoryTitles: Record<string, string> = {
   "thuc-pham-chuc-nang": "Thực phẩm chức năng",
-  thuoc: "Thuốc",
+  "thuoc": "Thuốc",
   "duoc-my-pham": "Dược mỹ phẩm",
   "thiet-bi-y-te": "Thiết bị y tế",
   "cham-soc-ca-nhan": "Chăm sóc cá nhân",
@@ -21,16 +22,12 @@ const mainCategoryTitles: Record<string, string> = {
 
 export default function MainCategoryPage() {
   const params = useParams();
-
-  const mainCategory2 = Array.isArray(params.mainCategory)
-    ? params.mainCategory[0]
-    : params.mainCategory;
-
-  const { mainCategory } = useMainCategory(params.mainCategory);
-  // console.log("mainCategory page");
-  // console.log(mainCategory);
-  const mainCategoryTitle =
-    mainCategoryTitles[mainCategory2] || "Danh mục sản phẩm";
+  const { mainCategory, fetchMainCategory } = useCategory();
+  
+  const data = useMemo(() => {
+    fetchMainCategory(params.mainCategory);
+    return mainCategory;
+  }, [params.mainCategory]);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -40,10 +37,10 @@ export default function MainCategoryPage() {
           <Link href="/" className="hover:underline text-blue-600">
             Trang chủ
           </Link>
-          <span className="text-gray-500"> / {mainCategoryTitle}</span>
+          <span className="text-gray-500"> / {data.main_category_name}</span>
         </div>
-        <div className="text-2xl font-bold p-4">{mainCategoryTitle}</div>
-        <CategoryList />
+        <div className="text-2xl font-bold p-4">{data.main_category_name}</div>
+        <CategoryList data={data} />
         <ProductPortfolioList />
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">

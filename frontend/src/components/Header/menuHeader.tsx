@@ -1,9 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useCategory } from "@/hooks/useCategory";
+import { use, useEffect } from "react";
 
 export default function MenuHeader() {
-  const { allCategory } = useCategory();
+  const { allCategory, fetchAllCategory } = useCategory();
+
+  // useEffect(() => {
+  //   fetchAllCategory();
+  // }, []);
 
   return (
     <nav className="bg-[#F0F5FF] h-[46px] text-[#002E99] py-2 flex justify-center items-center">

@@ -1,26 +1,24 @@
 "use client";
 import { useParams } from "next/navigation";
-import CategoryCard from "@/components/Category/CategoryCard";
+import CategoryCard from "@/components/Category/categoryCard";
 import { categoryProducts } from "@/components/Category/categoryData";
 
-export default function CategoryList() {
+export default function CategoryList(
+  { data }: { data: { mainCategory: string; sub_category: any } }
+) {
   const params = useParams();
-  const mainCategory = Array.isArray(params.mainCategory)
-    ? params.mainCategory[0]
-    : params.mainCategory;
-
-  // Lấy danh sách sản phẩm từ category
-  const productList = categoryProducts[mainCategory] || [];
+  const mainCategory = params.mainCategory[0];
+  const sub_category = data.sub_category || [];
 
   return (
     <div className="px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {productList.length > 0 ? (
-        productList.map((categoryData, index) => (
+      {sub_category.length > 0 ? (
+        sub_category.map((categoryData:any, index:any) => (
           <CategoryCard
             key={index}
             mainCategory={mainCategory}
-            icon={categoryData.icon}
-            subCategories={categoryData.subCategories}
+            icon={"https://via"}
+            subCategories={categoryData}
           />
         ))
       ) : (
