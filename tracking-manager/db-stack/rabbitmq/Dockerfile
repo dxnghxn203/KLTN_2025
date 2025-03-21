@@ -38,7 +38,12 @@ io_thread_pool_size = 2\n\
 \n\
 # Đảm bảo Management UI có thể truy cập từ bên ngoài\n\
 management.listener.port = 15672\n\
-management.listener.ssl = false' > /etc/rabbitmq/rabbitmq.conf
+management.listener.ssl = false\n\
+management.path.prefix =\n\
+management.disable_stats_auth = true' > /etc/rabbitmq/rabbitmq.conf
+
+# Đảm bảo management plugin được bật sẵn
+RUN rabbitmq-plugins enable --offline rabbitmq_management
 
 # Tối ưu thư mục dữ liệu
 RUN mkdir -p /var/lib/rabbitmq /var/log/rabbitmq && \
