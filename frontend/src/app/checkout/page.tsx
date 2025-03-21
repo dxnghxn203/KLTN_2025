@@ -1,72 +1,111 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import OrderSummary from "@/components/Checkout/ProductInfo/orderSumary";
 import Footer from "@/components/Footer/footer";
 import Header from "@/components/Header/header";
 import Image, { StaticImageData } from "next/image";
-import medicine from "@/images/medicinee.png";
 import Delivery from "@/components/Checkout/CheckoutInfo/pickupPharma";
 import ProductList from "@/components/Checkout/ProductInfo/productList";
-
-interface Product {
-  id: number;
-  name: string;
-  image: string | StaticImageData;
-  price: number;
-  originPrice: number;
-  quantity: number;
-  unit: string;
-}
-const productsData: Product[] = [
-  {
-    id: 1,
-    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo",
-    image: medicine,
-    price: 100000,
-    originPrice: 300000,
-    quantity: 1,
-    unit: "Cái",
-  },
-  {
-    id: 2,
-    name: "Nước Yến Sào Cao Cấp Đông Trùng Hạ Thảo",
-    image: medicine,
-    price: 100000,
-    originPrice: 300000,
-    quantity: 2,
-    unit: "Cái",
-  },
-];
+import { useCart } from "@/hooks/useCart";
+import { Product } from "@/types/product";
+import { useOrder } from "@/hooks/useOrder";
+import sepay_qr_ORDER7NS1742504401 from "@/images/sepay_qr_ORDER7NS1742504401.png";
 
 const ShoppingCart: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(productsData);
-  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const { cartLocal, cartSelected } = useCart();
+
+  const products: Product[] = useMemo(() => {
+    return cartLocal
+      .filter(product => cartSelected.includes(product.id.toString()))
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        imageSrc: product.imageSrc,
+        price: product.price,
+        originPrice: product.originPrice,
+        quantity: product.quantity,
+        unit: product.unit,
+        discount: (product.originPrice - product.price).toString(),
+      }))
+  }, [cartLocal, cartSelected]);
+
   const totalAmount = useMemo(() => {
     return products
-      .filter((product) => selectedProducts.includes(product.id))
       .reduce((total, product) => total + product.price * product.quantity, 0);
-  }, [products, selectedProducts]);
+  }, [products]);
 
   const totalOriginPrice = useMemo(() => {
-    return selectedProducts.reduce((total, productId) => {
-      const product = products.find((p) => p.id === productId);
-      if (product) {
-        total += product.originPrice * product.quantity;
-      }
-      return total;
+    return products.reduce((total, product) => {
+      return total + product.originPrice * product.quantity;
     }, 0);
-  }, [selectedProducts, products]);
-  const totalDiscount = totalOriginPrice - totalAmount;
+  }, [products]);
+
+  const value = totalOriginPrice - totalAmount;
+  const totalDiscount = value > 0 ? value : 0;
   const totalSave = totalDiscount;
+
+  const { checkOrder } = useOrder();
+  const checkout = () => {
+    const infor = {
+      orderData: {
+        product: products,
+        ...data
+      }
+    }
+    checkOrder(
+      infor,
+      (data: any) => {
+        console.log("Order success");
+        setShowSuccessModal(true);
+      },
+      () => {
+        console.error("Order failed:");
+      }
+    );
+  };
+
+  const [data, setData] = useState<any>()
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState<StaticImageData | string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typeof qrCodeData === 'string' && qrCodeData.startsWith('blob:')) {
+        URL.revokeObjectURL(qrCodeData);
+      }
+    };
+  }, [qrCodeData]);
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <Header />
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-4">Thanh toán!</h3>
+              <p className="mb-4">Cảm ơn bạn đã đặt hàng. Vui lòng sử dụng mã QR để thanh toán.</p>
+              <div className="flex justify-center mb-4">
+                  <Image
+                    src={sepay_qr_ORDER7NS1742504401}
+                    className="ml-4 rounded-lg border border-stone-300"
+                    alt={"QR code"}
+                  />
+                </div>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <main className="flex flex-col px-5">
         <div className="flex flex-col">
-          {/* Đặt div chứa link riêng biệt */}
           <div className="pt-14">
             <Link
               href="/cart"
@@ -81,13 +120,14 @@ const ShoppingCart: React.FC = () => {
         <div className="flex flex-col lg:flex-row">
           <div className="flex-1 rounded-xl">
             <ProductList products={products} />
-            <Delivery />
+            <Delivery setData={setData} />
           </div>
           <OrderSummary
             totalAmount={totalAmount}
             totalOriginPrice={totalOriginPrice}
             totalDiscount={totalDiscount}
             totalSave={totalSave}
+            checkout={checkout}
           />
         </div>
       </main>

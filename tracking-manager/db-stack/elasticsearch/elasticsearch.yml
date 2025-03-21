@@ -1,0 +1,34 @@
+# ======================== Elasticsearch Configuration =========================
+
+# Tên cluster - thay đổi nếu muốn
+cluster.name: tracking-cluster
+
+# Tên node - thay đổi nếu muốn
+node.name: tracking-node
+
+# Đường dẫn lưu dữ liệu
+path.data: /usr/share/elasticsearch/data
+
+# Đường dẫn lưu logs
+path.logs: /usr/share/elasticsearch/logs
+
+# Chạy ở chế độ single node
+discovery.type: single-node
+
+# Cấu hình mạng, cho phép truy cập từ xa
+network.host: 0.0.0.0
+http.port: 9200
+
+# Giảm thiểu bộ nhớ cho cấu hình
+bootstrap.memory_lock: true
+indices.memory.index_buffer_size: 5%
+indices.fielddata.cache.size: 5%
+indices.queries.cache.size: 5%
+
+# Tối ưu hóa hiệu suất
+thread_pool.write.size: 1
+thread_pool.search.size: 1
+
+# Tắt tính năng không cần thiết
+action.auto_create_index: false
+action.destructive_requires_name: true

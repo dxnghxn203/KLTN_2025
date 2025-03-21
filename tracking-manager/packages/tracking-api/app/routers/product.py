@@ -4,7 +4,6 @@ from fastapi import APIRouter, status, UploadFile, File
 from pyfa_converter_v2 import BodyDepends
 
 from app.core import logger, response
-from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq
 from app.models.product import get_product_by_slug, add_product_db
 router = APIRouter()
@@ -19,20 +18,6 @@ async def get_product(slug: str):
                 message="Product not found"
             )
         return response.BaseResponse(status="success",data={**product, "_id": str(product["_id"])})
-    except Exception as e:
-        logger.error("Error getting product", error=str(e))
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
-
-@router.post("/test")
-async def test(
-    images: UploadFile = File(None)
-    ):
-    try:
-        url = upload_file(images, "images")
-        return response.BaseResponse(status="success", message=url)
     except Exception as e:
         logger.error("Error getting product", error=str(e))
         raise response.JsonException(

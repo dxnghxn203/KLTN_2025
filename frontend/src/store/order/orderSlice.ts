@@ -27,6 +27,18 @@ export const orderSlice = createSlice({
         fetchGetAllOrderFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
+        },
+        // check order
+        fetchCheckOrderStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchCheckOrderSuccess(state, action: PayloadAction<any>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchCheckOrderFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
         }
     },
 });
@@ -35,6 +47,10 @@ export const {
     fetchGetAllOrderStart,
     fetchGetAllOrderSuccess,
     fetchGetAllOrderFailed,
+
+    fetchCheckOrderStart,
+    fetchCheckOrderSuccess,
+    fetchCheckOrderFailed
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

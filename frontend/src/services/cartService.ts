@@ -1,5 +1,7 @@
+import axiosClient from "@/utils/configs/axiosClient";
 
 export const addCart = async ( data: any): Promise<any> => {
+
     try {
         return {
             status: true,
@@ -12,3 +14,4 @@ export const addCart = async ( data: any): Promise<any> => {
         };
     }
 }
+

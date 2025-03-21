@@ -34,6 +34,40 @@ async def get_category(main_slug: str):
             message="Internal server error"
         )
 
+@router.get("/category/{main_slug}/sub-category/{sub_slug}", response_model=response.BaseResponse)
+async def get_sub_category(main_slug: str, sub_slug: str):
+    try:
+        data = await category.get_sub_category(main_slug, sub_slug)
+        if not data:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Category not found"
+            )
+        return response.BaseResponse(data=data)
+    except Exception as e:
+        logger.error(f"Error getting category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/category/{main_slug}/sub-category/{sub_slug}/child-category/{child_slug}", response_model=response.BaseResponse)
+async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
+    try:
+        data = await category.get_child_category(main_slug, sub_slug, child_slug)
+        if not data:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Category not found"
+            )
+        return response.BaseResponse(data=data)
+    except Exception as e:
+        logger.error(f"Error getting category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/category/add", response_model=response.BaseResponse)
 async def create_category(new_category: MainCategoryInReq):
     try:

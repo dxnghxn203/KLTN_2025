@@ -17,15 +17,67 @@ async def get_all_categories():
         logger.error(f"Error getting all categories: {str(e)}")
         raise e
 
-
 async def get_category_by_slug(main_slug: str):
     try:
         collection = db[COLLECTION_NAME]
-        return collection.find_one({"main_category_slug": main_slug}, {"_id": 0})
+        category = collection.find_one({"main_category_slug": main_slug}, {"_id": 0})
+        if not category:
+            return None
+
+        product_collection = db[PRODUCT_COLLECTION]
+        products = list(product_collection.find({"category.main_category_slug": main_slug}, {"_id": 0}))
+        category["products"] = products
+
+        return category
     except Exception as e:
         logger.error(f"Error getting category by slug: {str(e)}")
         raise e
 
+async def get_sub_category(main_slug: str, sub_slug: str):
+    try:
+        collection = db[COLLECTION_NAME]
+        category = collection.find_one({"main_category_slug": main_slug}, {"_id": 0, "sub_category": 1})
+        if not category:
+            raise ValueError("Main category not found")
+
+        sub_category = next((sub for sub in category.get("sub_category", []) if sub["sub_category_slug"] == sub_slug),
+                            None)
+        if not sub_category:
+            raise ValueError("Sub-category not found")
+
+        product_collection = db[PRODUCT_COLLECTION]
+        sub_category["products"] = list(product_collection.find({"category.sub_category_slug": sub_slug}, {"_id": 0}))
+
+        return sub_category
+    except Exception as e:
+        logger.error(f"Error getting sub-category: {str(e)}")
+        raise e
+
+async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
+    try:
+        collection = db[COLLECTION_NAME]
+        category = collection.find_one({"main_category_slug": main_slug}, {"_id": 0, "sub_category": 1})
+        if not category:
+            raise ValueError("Main category not found")
+
+        for sub in category.get("sub_category", []):
+            if sub["sub_category_slug"] == sub_slug:
+                child_category = next(
+                    (child for child in sub.get("child_category", []) if child["child_category_slug"] == child_slug),
+                    None)
+                if not child_category:
+                    raise ValueError("Child-category not found")
+
+                product_collection = db[PRODUCT_COLLECTION]
+                child_category["products"] = list(
+                    product_collection.find({"category.child_category_slug": child_slug}, {"_id": 0}))
+
+                return child_category
+
+        raise ValueError("Sub-category not found")
+    except Exception as e:
+        logger.error(f"Error getting child-category: {str(e)}")
+        raise e
 
 async def add_category(item: MainCategoryInReq):
     try:
@@ -106,7 +158,6 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
     except Exception as e:
         logger.error(f"Error adding sub-category: {str(e)}")
         raise e
-
 
 async def add_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
     try:

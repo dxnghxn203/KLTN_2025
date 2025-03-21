@@ -25,6 +25,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
                 images_url=file_url,
             ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images"))
         ]
+        logger.info(f"{image_list}")
 
         price_list = []
         if item.prices and item.prices.prices:
