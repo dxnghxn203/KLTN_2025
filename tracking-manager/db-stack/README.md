@@ -4,6 +4,70 @@
 
 RabbitMQ được cấu hình nhẹ, sử dụng dưới 100MB bộ nhớ.
 
+### Cách chạy Dockerfile
+
+#### Cách 1: Sử dụng docker-compose (Khuyến nghị)
+
+```bash
+# Di chuyển đến thư mục db-stack
+cd /Users/mac/DEVELOPMENT/Presonal/KHOALUAN_2025/tracking-manager/db-stack
+
+# Build image từ Dockerfile
+docker-compose build rabbitmq
+
+# Khởi động container
+docker-compose up -d rabbitmq
+
+# Kiểm tra trạng thái
+docker-compose ps rabbitmq
+```
+
+#### Cách 2: Sử dụng Docker trực tiếp
+
+```bash
+# Di chuyển đến thư mục chứa Dockerfile
+cd /Users/mac/DEVELOPMENT/Presonal/KHOALUAN_2025/tracking-manager/db-stack/rabbitmq
+
+# Build image
+docker build -t tracking-rabbitmq:latest .
+
+# Chạy container
+docker run -d --name tracking-rabbitmq \
+  -p 5672:5672 \
+  -v rabbitmq-data:/var/lib/rabbitmq \
+  --memory=100m \
+  --cpus=0.3 \
+  tracking-rabbitmq:latest
+
+# Kiểm tra trạng thái
+docker ps | grep tracking-rabbitmq
+```
+
+### Kiểm tra RabbitMQ đã chạy thành công
+
+```bash
+# Kiểm tra logs
+docker logs tracking-rabbitmq
+
+# Kiểm tra kết nối
+docker exec tracking-rabbitmq rabbitmqctl ping
+
+# Hiển thị thông tin chi tiết
+docker exec tracking-rabbitmq rabbitmqctl status
+```
+
+### Dừng và xóa container
+
+```bash
+# Nếu sử dụng docker-compose
+docker-compose stop rabbitmq
+docker-compose rm rabbitmq
+
+# Nếu sử dụng Docker trực tiếp
+docker stop tracking-rabbitmq
+docker rm tracking-rabbitmq
+```
+
 ### Trạng thái
 
 ✅ **RabbitMQ đã cài đặt và chạy thành công!**
