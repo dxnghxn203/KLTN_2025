@@ -20,7 +20,7 @@ interface SubCategory {
 interface CategoryCardProps {
   mainCategory: string;
   icon: string | StaticImageData;
-  subCategories: SubCategory; // subCategories không phải mảng nữa
+  subCategories: SubCategory;
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({
