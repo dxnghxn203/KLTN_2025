@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { AddressFormData } from "../productInfo/types";
+import { AddressFormData } from "../ProductInfo/types";
 import { PiFireTruck } from "react-icons/pi";
 
 interface ShippingAddressProps {

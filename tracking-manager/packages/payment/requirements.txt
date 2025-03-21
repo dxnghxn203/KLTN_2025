@@ -7,3 +7,4 @@ qrcode==7.4.2
 pillow==10.1.0
 python-multipart==0.0.6
 aiohttp==3.9.1
+httpx==0.20.0

@@ -7,23 +7,20 @@ from fastapi.responses import StreamingResponse
 from app.core import logger, response, rabbitmq
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_random_string
+from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_random_string, generate_id
 
 PAYMENT_API_URL = "http://127.0.0.1:8081/api/v1/payment/qr"
 
 async def check_order(item: ItemOrderInReq):
     try:
-        random_order_id = generate_random_string(3)
-        random_tracking_id = generate_random_string(5)
-        timestamp = int(datetime.utcnow().timestamp())
-        order_id = f"order{random_order_id}{timestamp}"
-        tracking_id = f"{random_tracking_id}{timestamp}_V001"
+        order_id = generate_id("ORDER")
+        tracking_id = generate_id("TRACKING")
 
         item_data = ItemOrderReq(**dict(item),
                                  order_id=order_id,
                                  tracking_id=tracking_id,
                                  status="create_order",
-                                 created_by=f"system{timestamp}")
+                                 created_by="system")
         logger.info("item", json=item_data)
 
         total_price = 0

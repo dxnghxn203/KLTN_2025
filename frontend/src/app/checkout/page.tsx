@@ -7,8 +7,8 @@ import Footer from "@/components/Footer/footer";
 import Header from "@/components/Header/header";
 import Image, { StaticImageData } from "next/image";
 import medicine from "@/images/medicinee.png";
-import Delivery from "../../components/Checkout/CheckoutInfo/pickupPharma";
-import ProductList from "../../components/Checkout/productInfo/productList";
+import Delivery from "@/components/Checkout/CheckoutInfo/pickupPharma";
+import ProductList from "@/components/Checkout/ProductInfo/productList";
 
 interface Product {
   id: number;
