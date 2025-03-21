@@ -8,16 +8,16 @@ from dotenv import load_dotenv
 from app.core import logger
 
 load_dotenv()
-queue_host = "127.0.0.1"
-queue_port = 5672
-queue_user = "guest"
-queue_pwd = "guest"
-
+queue_host = os.getenv("RABBITMQ_HOST")
+queue_port = os.getenv("RABBITMQ_PORT")
+queue_user = os.getenv("RABBITMQ_USER")
+queue_pwd = os.getenv("RABBITMQ_PW")
+queue_vhost = os.getenv("RABBITMQ_VHOST")
 
 # Connect to RabbitMQ
 def connect():
     credentials = pika.PlainCredentials(queue_user, queue_pwd)
-    rabbitmq_parameters = pika.ConnectionParameters(queue_host, queue_port, '/', credentials)
+    rabbitmq_parameters = pika.ConnectionParameters(queue_host, queue_port, queue_vhost, credentials)
     connection = pika.BlockingConnection(rabbitmq_parameters)
     return connection
 
@@ -31,3 +31,20 @@ def send_message(queue_name, message):
     except pika.exceptions.AMQPConnectionError:
         print("Lost connection. Reconnecting...")
         time.sleep(5)  # Wait before reconnecting
+
+def test_send_message():
+    queue_name = "CREATE_TRACKING"
+    message = "Hello RabbitMQ! Đây là message test."
+
+    connection = connect()
+    if connection:
+        try:
+            channel = connection.channel()
+            channel.queue_declare(queue=queue_name, durable=True)  # Khai báo queue nếu chưa tồn tại
+            channel.basic_publish(exchange='', routing_key=queue_name, body=message)
+            connection.close()
+            print(f"✅ Gửi thành công message đến queue '{queue_name}': {message}")
+        except Exception as e:
+            print("❌ Lỗi khi gửi message:", e)
+    else:
+        print("❌ Không thể kết nối đến RabbitMQ!")

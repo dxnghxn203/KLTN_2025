@@ -1,4 +1,4 @@
-
+import os
 from typing import Optional
 
 import httpx
@@ -33,10 +33,11 @@ class PaymentModel:
         qr_payload = {
             "order_id": order_id,
         }
+        TRACKING_API_URL = os.getenv("TRACKING_API_URL")
 
         async with httpx.AsyncClient() as client:
             result = await client.post(
-                "http://127.0.0.1:8000/v1/order/add",
+                f"{TRACKING_API_URL}/v1/order/add",
                 headers={"accept": "application/json", "Content-Type": "application/json"},
                 json=qr_payload
             )

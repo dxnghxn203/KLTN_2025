@@ -4,7 +4,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from app.core import response, exception, elasticsearch
+
+from app.core import response, exception
+from app.core.rabbitmq import test_send_message
 from app.routers import (
     user_router,
     authen_router,
@@ -22,7 +24,7 @@ app = FastAPI()
 # CORS configuration
 origins = [
     "http://localhost:8000",
-    "http://localhost:3000",
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
@@ -47,6 +49,7 @@ app.include_router(category_router, prefix="/v1", tags=["Category"])
 
 @app.get("/read-root")
 def read_root():
+    test_send_message()
     return {
         "service": "Tracking API",
         "version": "1.0.0",

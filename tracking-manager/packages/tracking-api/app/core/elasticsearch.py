@@ -11,7 +11,7 @@ es_user = os.getenv("ES_USER")
 es_pw = os.getenv("ES_PW")
 
 try:
-    es_client = Elasticsearch([f"https://dxnghxn203-search-4561204506.us-east-1.bonsaisearch.net:443"], http_auth=("vqp2comkid", "jie24l3i6n"))
+    es_client = Elasticsearch([f"{es_host}:{es_port}"], http_auth=(es_user, es_pw))
     es_client.ping()
     print("Connected to Elasticsearch!")
 except Exception as e:
