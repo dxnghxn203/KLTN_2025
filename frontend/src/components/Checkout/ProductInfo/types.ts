@@ -2,10 +2,13 @@ export interface AddressFormData {
     fullName: string;
     phone: string;
     email?: string;
-    province: string;
-    district: string;
-    ward: string;
-    address: string;
+    city: string;
+    cityCode: any;
+    districtCode: any;
+    district: any;
+    wardCode: any;
+    ward: any;
+    address: any;
     notes?: string;
   }
   

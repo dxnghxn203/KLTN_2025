@@ -1,9 +1,0 @@
-# Ignore data directory
-data/
-
-# Ignore logs
-logs/
-
-# Ignore certificates
-*.p12
-*.pem

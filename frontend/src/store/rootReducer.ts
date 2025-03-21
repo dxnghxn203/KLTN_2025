@@ -3,6 +3,7 @@ import authReducer from './auth/authSlice';
 import cartReducer from './cart/cartSlice';
 import productReducer from './product/productSlice';
 import orderReducer from './order/orderSlice';
+import { locationSlice } from './location/locationSlice';
 // Import other reducers here
 
 const rootReducer = combineReducers({
@@ -10,6 +11,7 @@ const rootReducer = combineReducers({
   cart: cartReducer,
   product: productReducer,
   order: orderReducer,
+  location: locationSlice.reducer,
   // Add other reducers here
 });
 

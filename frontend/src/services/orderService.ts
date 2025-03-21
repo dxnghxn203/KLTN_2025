@@ -120,3 +120,37 @@ export const getAllOrder = async (slug: string) => {
         throw error;
     }
 }
+
+
+export const checkOrder = async ( data: any): Promise<any> => {
+    try {
+        console.log("call api check order");
+        const response = await axiosClient.post('/v1/order/check', data);
+        console.log("check order response");
+        return {
+            status: response?.status,
+            message: 'Kiểm tra đơn hàng thành công',
+            data: response
+        };
+    } catch (error: any) {
+        return {
+            status: false,
+            message: 'Lổi đặt hàng',
+        };
+    }
+}
+export const createOrder = async ( data: any): Promise<any> => {
+    try {
+        const response = await axiosClient.post('/v1/order/add', data);
+        return {
+            status: response?.status,
+            message: 'Đặt hàng thành công',
+            data: response.data
+        };
+    } catch (error: any) {
+        return {
+            status: false,
+            message: 'Lổi đặt hàng',
+        };
+    }
+}

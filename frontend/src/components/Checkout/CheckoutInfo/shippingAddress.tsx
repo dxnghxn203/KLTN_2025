@@ -2,6 +2,7 @@
 import React from "react";
 import { AddressFormData } from "../ProductInfo/types";
 import { PiFireTruck } from "react-icons/pi";
+import { useLocation } from "@/hooks/useLocation";
 
 interface ShippingAddressProps {
   address: AddressFormData;
@@ -18,6 +19,8 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
   const buttonClass =
     "flex items-center justify-between flex-1 px-6 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] bg-white focus:ring-1 focus:ring-[#0053E2] outline-none";
 
+
+  const { cities, districts, wards, getDistrictsByCityId, getCities, getWardsByDistrictId } = useLocation();
   return (
     <section className="flex flex-col gap-4 mt-6">
       <header className="flex gap-2 self-start text-sm text-black">
@@ -25,7 +28,6 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
         <h3>Địa chỉ nhận hàng</h3>
       </header>
 
-      {/* Họ và tên + Số điện thoại (cùng 1 hàng) */}
       <div className="flex gap-5 text-sm">
         <input
           type="text"
@@ -43,44 +45,67 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
         />
       </div>
 
-      {/* Chọn tỉnh/thành phố + Chọn quận/huyện */}
       <div className="flex gap-5 text-sm">
-        <button className={buttonClass}>
-          <span className="text-[14px] font-normal text-[#9CA3AF]">
-            Chọn tỉnh/ thành phố
-          </span>
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/c42641fbb9d2d25efb54c01baf92422b1b029d282229366b15196bcbbdeb58c2?placeholderIfAbsent=true"
-            alt=""
-            className="object-contain shrink-0 w-6 aspect-square ml-auto"
-          />
-        </button>
+        <div className="relative flex-1">
+          <select
+            value={address.cityCode || ""}
+            onChange={(e) => {
+              const cityCode = Number(e.target.value);
+              console.log(e.target.selectedOptions[0].text);
+              onChange({ ...address, city: e.target.selectedOptions[0].text, cityCode: cityCode });
+              if (cityCode) getDistrictsByCityId(cityCode.toString());
+            }}
+            className={`${buttonClass} appearance-none`}
+          >
+            <option value="" disabled>Chọn tỉnh/ thành phố</option>
+            {cities.map((city) => (
+              <option key={city.code} value={city.code}>
+                {city.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <button className={buttonClass}>
-          <span className="text-[14px] font-normal text-[#9CA3AF]">
-            Chọn quận/ huyện
-          </span>
-          <img
-            src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/c42641fbb9d2d25efb54c01baf92422b1b029d282229366b15196bcbbdeb58c2?placeholderIfAbsent=true"
-            alt=""
-            className="object-contain shrink-0 w-6 aspect-square ml-auto"
-          />
-        </button>
+        <div className="relative flex-1">
+          <select
+            value={address.districtCode || ""}
+            onChange={(e) => {
+              const districtCode = Number(e.target.value);
+              onChange({ ...address, district: e.target.selectedOptions[0].text, districtCode: districtCode });
+              if (districtCode) getWardsByDistrictId(districtCode.toString());
+            }}
+            disabled={!address.city || districts.length === 0}
+            className={`${buttonClass} appearance-none`}
+          >
+            <option value="" disabled>Chọn quận/ huyện</option>
+            {districts.map((district) => (
+              <option key={district.code} value={district.code}>
+                {district.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="relative flex-1">
+          <select
+            value={address.wardCode || ""}
+            onChange={(e) => {
+              const wardCode = Number(e.target.value);
+              onChange({ ...address, ward: e.target.selectedOptions[0].text, wardCode: wardCode });
+            }}
+            disabled={!address.district || wards.length === 0}
+            className={`${buttonClass} appearance-none`}
+          >
+            <option value="" disabled>Chọn phường/ xã</option>
+            {wards.map((ward) => (
+              <option key={ward.code} value={ward.code}>
+                {ward.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Chọn phường/xã */}
-      <button className={buttonClass}>
-        <span className="text-[14px] font-normal text-[#9CA3AF]">
-          Chọn phường/ xã
-        </span>
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/c42641fbb9d2d25efb54c01baf92422b1b029d282229366b15196bcbbdeb58c2?placeholderIfAbsent=true"
-          alt=""
-          className="object-contain shrink-0 w-6 aspect-square ml-auto"
-        />
-      </button>
-
-      {/* Địa chỉ cụ thể */}
       <input
         type="text"
         value={address.address}

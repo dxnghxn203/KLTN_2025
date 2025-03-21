@@ -1,4 +1,4 @@
-import { fetchGetAllOrderStart, selectAllOrder } from "@/store/order";
+import { fetchCheckOrderStart, fetchGetAllOrderStart, selectAllOrder } from "@/store/order";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -13,8 +13,17 @@ export function useOrder() {
         }));
     }, [dispatch]);
 
+    const checkOrder = async (data: any, onSuccess: (data: any)=> void,onFailed: ()=>void ) => {
+        dispatch(fetchCheckOrderStart({
+            ...data,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+    
     return {
-        allOrder
+        allOrder,
+        checkOrder
     };
 }
 

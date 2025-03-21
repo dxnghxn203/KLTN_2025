@@ -1,21 +1,24 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, use, useEffect } from "react";
 import { ImBin } from "react-icons/im";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import DeleteProductDialog from "@/components/Dialog/deleteProductDialog";
 import OrderSummary from "@/components/Cart/orderSumary";
 import { useCart } from "@/hooks/useCart";
+import { useRouter } from "next/navigation";
 
 const unitOptions = ["Cái", "Hộp", "Chai", "Gói"];
 
 const ShoppingCart: React.FC = () => {
-  const { cartLocal, updateQuantity, updateUnit, removeFromCart } = useCart();
+  const { cartLocal, updateQuantity, updateUnit, removeFromCart, addCartSelectedLocal, cartSelected } = useCart();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
+
+  const router = useRouter();
 
   const totalAmount = useMemo(() => {
     return cartLocal
@@ -47,6 +50,14 @@ const ShoppingCart: React.FC = () => {
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
   };
+
+  useEffect(() => {
+    const add = () => {
+      addCartSelectedLocal(selectedProducts);
+    }
+    add();
+  }, [selectedProducts]);
+
   const handleDeleteClick = (id: string) => {
     setSelectedProductId(id);
     setIsDeleteDialogOpen(true);
@@ -63,6 +74,10 @@ const ShoppingCart: React.FC = () => {
 
   const handleUnitChange = (id: string, newUnit: string) => {
     updateUnit(id, newUnit);
+  };
+
+  const checkout = () => {
+    router.push("/checkout");
   };
 
   return (
@@ -100,9 +115,8 @@ const ShoppingCart: React.FC = () => {
         {cartLocal?.map((product, index) => (
           <div
             key={product.id}
-            className={`flex items-center justify-between py-4 mx-5 text-sm ${
-              index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
-            }`}
+            className={`flex items-center justify-between py-4 mx-5 text-sm ${index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
+              }`}
           >
             <div className="w-[55%] flex items-center px-4 py-2">
               <label
@@ -188,6 +202,7 @@ const ShoppingCart: React.FC = () => {
         totalOriginPrice={totalOriginPrice}
         totalDiscount={totalDiscount}
         totalSave={totalSave}
+        checkout={checkout}
       />
 
       {isDeleteDialogOpen && selectedProductId !== null && (
@@ -196,7 +211,7 @@ const ShoppingCart: React.FC = () => {
           onClose={handleCloseDialog}
           onConfirm={() => {
             removeFromCart(selectedProductId);
-            selectedProducts.splice(
+            selectedProducts?.splice(
               selectedProducts.indexOf(selectedProductId),
               1
             );
