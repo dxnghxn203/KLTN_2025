@@ -32,7 +32,7 @@ func (m *Manager) Run(ctx context.Context, cancelF context.CancelFunc, wg *sync.
 		wg.Add(q.numberOfWorker())
 		slog.Info("start queue", q.queueName(), q.numberOfWorker())
 		go func(q Queue, wg *sync.WaitGroup, cancelF context.CancelFunc) {
-			amqpURL := fmt.Sprintf("amqp://%s:%s@%s:%s", os.Getenv("RABBITMQ_USER"), os.Getenv("RABBITMQ_PW"), os.Getenv("RABBITMQ_HOST"), os.Getenv("RABBITMQ_PORT"))
+			amqpURL := fmt.Sprintf("amqps://%s:%s@%s/%s", os.Getenv("RABBITMQ_USER"), os.Getenv("RABBITMQ_PW"), os.Getenv("RABBITMQ_HOST"), os.Getenv("RABBITMQ_USER"))
 			slog.Info("Connecting to rabbitmq", "url", amqpURL)
 			rabbitCon := rabbitmq.CreateCon(amqpURL)
 			if rabbitCon != nil {
