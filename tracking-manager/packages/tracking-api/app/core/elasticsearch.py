@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from elasticsearch import Elasticsearch
+from opensearchpy import OpenSearch
 
 load_dotenv()
 
@@ -11,7 +11,13 @@ try:
     es_user = os.getenv("ES_USER")
     es_pw = os.getenv("ES_PW")
 
-    es_client = Elasticsearch(f"{es_host}:{es_port}", basic_auth=(es_user, es_pw))
+    es_client = OpenSearch(
+        hosts=[es_host],
+        http_auth=(es_user, es_pw),
+        use_ssl=True,
+        verify_certs=True
+    )
+
     es_client.ping()
     print("Connected to Elasticsearch!")
 except Exception as e:
