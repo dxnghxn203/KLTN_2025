@@ -12,7 +12,7 @@ PRODUCT_COLLECTION = "products"
 async def get_all_categories():
     try:
         collection = db[COLLECTION_NAME]
-        return list(collection.find({}, {"_id": 0}))  # Ẩn ObjectId
+        return list(collection.find({}, {"_id": 0, "main_category_id": 1, "main_category_name": 1, "main_category_slug": 1}))
     except Exception as e:
         logger.error(f"Error getting all categories: {str(e)}")
         raise e
