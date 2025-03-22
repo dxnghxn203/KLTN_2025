@@ -19,3 +19,14 @@ export const getMainCategory = async (mainslug:any) : Promise<any>=> {
         throw error;
     }
 }
+
+export const getSubCategory = async (mainslug:any, subslug:any) : Promise<any>=> {
+    try {
+        const response = await axiosClient.get(`/v1/category/${mainslug}/sub-category/${subslug}`);
+        // console.log("service");
+        // console.log(response);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

@@ -3,15 +3,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import vitaminkhoangchat from "@/images/vitamin-khoang-chat.png";
-import caithien from "@/images/cai-thien-tang-cuong-chuc-nang.png";
-
-interface SubCategory {
-  name: string;
-  link: string;
-  productCount: number;
-  subSubCategories: any;
-}
 
 interface CategoryCardProps {
   mainCategory: string;
@@ -46,17 +37,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
     page * itemsPerPage,
     (page + 1) * itemsPerPage
   );
-  console.log(subCategories);
   return (
     <div className="relative flex items-center shadow-sm rounded-lg bg-[#F6FBFF] border border-gray-200 group h-[160px]">
       <div className="flex flex-col items-center w-1/3 text-center p-2 transition duration-300 rounded-lg">
         <Link
-          href={`/${subCategories?.main_category_slug}/${subCategories?.sub_category_slug}`}
+          href={`/${mainCategory}/${subCategories.sub_category_slug}`}
           className="items-center"
         >
           <div className="flex justify-center items-center">
             <Image
-              src={vitaminkhoangchat}
+              src={icon}
               alt="Category Icon"
               width={65}
               height={65}
@@ -76,7 +66,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           {visibleSubSubCategories.map((sub: any, index: any) => (
             <Link
               key={index}
-              href={`/${mainCategory}/${subCategories.link}/${sub.link}`}
+              href={`/${mainCategory}/${subCategories?.sub_category_slug}/${sub.child_category_slug}`}
               className="block text-[#1D4ED8] hover:underline text-sm font-medium"
             >
               {sub?.child_category_name}

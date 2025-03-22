@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -57,6 +59,28 @@ func main() {
 		cancelF()
 		quit <- true
 	}()
+
+	go startHTTPServer()
+
 	<-quit
 	wg.Wait()
+}
+
+func startHTTPServer() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "RabbitMQ Worker is running!")
+	})
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "OK")
+	})
+
+	port := "10000"
+
+	fmt.Println("INFO: HTTP server đang chạy trên cổng " + port)
+	log.Info("HTTP server đang chạy trên cổng " + port)
+
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatal("Không thể khởi chạy HTTP server:", err)
+	}
 }

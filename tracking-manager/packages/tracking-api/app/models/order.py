@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 
 import httpx
@@ -9,7 +10,7 @@ from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderReques
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_random_string, generate_id
 
-PAYMENT_API_URL = "http://127.0.0.1:8081/api/v1/payment/qr"
+PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
 async def check_order(item: ItemOrderInReq):
     try:
@@ -49,7 +50,7 @@ async def check_order(item: ItemOrderInReq):
 
         async with httpx.AsyncClient() as client:
             qr_response = await client.post(
-                f"{PAYMENT_API_URL}",
+                f"{PAYMENT_API_URL}api/v1/payment/qr",
                 headers={"accept": "application/json", "Content-Type": "application/json"},
                 json=qr_payload
             )

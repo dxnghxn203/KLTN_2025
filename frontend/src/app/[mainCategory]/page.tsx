@@ -6,7 +6,7 @@ import Footer from "@/components/Footer/footer";
 import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import { useCategory } from "@/hooks/useCategory";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import CategoryList from "@/components/Category/categogyList";
 
 export default function MainCategoryPage() {
@@ -26,10 +26,15 @@ export default function MainCategoryPage() {
           <Link href="/" className="hover:underline text-blue-600">
             Trang chủ
           </Link>
-          <span className="text-gray-500"> / {data.main_category_name}</span>
+          <span className="text-gray-500">
+            {" "}
+            / {mainCategory?.main_category_name}
+          </span>
         </div>
-        <div className="text-2xl font-bold p-4">{data.main_category_name}</div>
-        <CategoryList data={data} />
+        <div className="text-2xl font-bold p-4">
+          {mainCategory?.main_category_name}
+        </div>
+        <CategoryList data={mainCategory} />
         <ProductPortfolioList />
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">
@@ -38,7 +43,6 @@ export default function MainCategoryPage() {
       <div className="px-5">
         <ProductsViewedList />
       </div>
-
       <Footer />
     </div>
   );
