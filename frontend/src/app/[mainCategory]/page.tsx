@@ -17,6 +17,7 @@ export default function MainCategoryPage() {
     fetchMainCategory(params.mainCategory);
     return mainCategory;
   }, [params.mainCategory]);
+  // console.log("duyen", mainCategory);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -27,7 +28,6 @@ export default function MainCategoryPage() {
             Trang chủ
           </Link>
           <span className="text-gray-500">
-            {" "}
             / {mainCategory?.main_category_name}
           </span>
         </div>

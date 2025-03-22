@@ -9,37 +9,32 @@ import SubSubCategory from "@/components/Category/subSubCategory";
 import { useCategory } from "@/hooks/useCategory";
 import { useEffect } from "react";
 
-const categoryTitles: Record<string, string> = {
-  "thuc-pham-chuc-nang": "Thực phẩm chức năng",
-  thuoc: "Thuốc",
-  "duoc-my-pham": "Dược mỹ phẩm",
-  "thiet-bi-y-te": "Thiết bị y tế",
-  "cham-soc-ca-nhan": "Chăm sóc cá nhân",
-  "me-va-be": "Mẹ và bé",
-  "suc-khoe-sinh-san": "Sức khỏe sinh sản",
-  "goc-song-khoe": "Góc sống khỏe",
-};
-
 export default function CategoryPage() {
   const params = useParams();
-  
-  const mainCategory = Array.isArray(params.mainCategory)
+  const { subCategory, fetchSubCategory } = useCategory();
+  const { mainCategory } = useCategory();
+
+  const mainCategories = Array.isArray(params.mainCategory)
     ? params.mainCategory[0]
     : params.mainCategory;
+
+  // console.log("ĐUYENUYENN", mainCategory);
 
   const subCategories = Array.isArray(params.subCategories)
     ? params.subCategories[0]
     : params.subCategories;
 
-  const categoryTitle = categoryTitles[mainCategory] || "Danh mục sản phẩm";
+  // console.log("ĐUYENUYENN", subCategories);
 
-  const { subCategory, fetchSubCategory  } = useCategory();
+  const categoryTitle = mainCategory?.main_category_name || "Danh mục sản phẩm";
+  // console.log("GGGGG", categoryTitle);
 
   useEffect(() => {
-    fetchSubCategory(mainCategory, subCategories);
+    fetchSubCategory(mainCategories, subCategories);
   }, []);
 
   const subCategoriesTitle = subCategory?.sub_category_name || "Danh mục con";
+  // console.log("ĐUYENUYENN", subCategoriesTitle);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -51,7 +46,7 @@ export default function CategoryPage() {
           </Link>
           <span> / </span>
           <Link
-            href={`/${mainCategory}`}
+            href={`/${mainCategory?.main_category_name}`}
             className="hover:underline text-blue-600"
           >
             {categoryTitle}
@@ -62,7 +57,7 @@ export default function CategoryPage() {
           </>
         </div>
         <div className="text-2xl font-bold p-4">{subCategoriesTitle}</div>
-        <SubSubCategory  child_category = {subCategory}/>
+        <SubSubCategory child_category={subCategory} />
         <ProductPortfolioList />
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">
