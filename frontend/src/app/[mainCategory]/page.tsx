@@ -9,21 +9,10 @@ import { useCategory } from "@/hooks/useCategory";
 import { useMemo } from "react";
 import CategoryList from "@/components/Category/categogyList";
 
-const mainCategoryTitles: Record<string, string> = {
-  "thuc-pham-chuc-nang": "Thực phẩm chức năng",
-  "thuoc": "Thuốc",
-  "duoc-my-pham": "Dược mỹ phẩm",
-  "thiet-bi-y-te": "Thiết bị y tế",
-  "cham-soc-ca-nhan": "Chăm sóc cá nhân",
-  "me-va-be": "Mẹ và bé",
-  "suc-khoe-sinh-san": "Sức khỏe sinh sản",
-  "goc-song-khoe": "Góc sống khỏe",
-};
-
 export default function MainCategoryPage() {
   const params = useParams();
   const { mainCategory, fetchMainCategory } = useCategory();
-  
+
   const data = useMemo(() => {
     fetchMainCategory(params.mainCategory);
     return mainCategory;

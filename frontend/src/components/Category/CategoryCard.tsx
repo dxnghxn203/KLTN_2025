@@ -3,12 +3,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-
-interface SubSubCategory {
-  name: string;
-  link: string;
-  img: string | StaticImageData;
-}
+import vitaminkhoangchat from "@/images/vitamin-khoang-chat.png";
+import caithien from "@/images/cai-thien-tang-cuong-chuc-nang.png";
 
 interface SubCategory {
   name: string;
@@ -53,23 +49,23 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   console.log(subCategories);
   return (
     <div className="relative flex items-center shadow-sm rounded-lg bg-[#F6FBFF] border border-gray-200 group h-[160px]">
-      <div className="flex flex-col items-center w-1/3 text-center p-2 hover:shadow-lg transition duration-300 rounded-lg">
+      <div className="flex flex-col items-center w-1/3 text-center p-2 transition duration-300 rounded-lg">
         <Link
-          href={`/${mainCategory}/${subCategories.link}`}
+          href={`/${subCategories?.main_category_slug}/${subCategories?.sub_category_slug}`}
           className="items-center"
         >
           <div className="flex justify-center items-center">
-            {/* <Image
-              src={icon}
+            <Image
+              src={vitaminkhoangchat}
               alt="Category Icon"
-              width={50}
-              height={50}
+              width={65}
+              height={65}
               className="cursor-pointer"
-            /> */}
+            />
           </div>
 
           <h3 className="font-semibold text-gray-800 text-sm mt-2">
-            {subCategories?.sub_category_name || "Danh mục"}
+            {subCategories?.sub_category_name}
           </h3>
         </Link>
       </div>
@@ -77,7 +73,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
       <div className="flex-1 py-4 px-2">
         <div className="flex flex-col space-y-2">
-          {visibleSubSubCategories.map((sub:any, index:any) => (
+          {visibleSubSubCategories.map((sub: any, index: any) => (
             <Link
               key={index}
               href={`/${mainCategory}/${subCategories.link}/${sub.link}`}
