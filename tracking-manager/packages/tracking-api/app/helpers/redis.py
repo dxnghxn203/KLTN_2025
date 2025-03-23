@@ -23,8 +23,9 @@ def check_request_count(username):
     req_count_key=request_count_key(username)
 
     value = redis.get(req_count_key)
-    count = value.decode('utf-8') if value else None
-
+    count = value if value else None
+    if isinstance(count, bytes):
+        count = count.decode('utf-8')
     if count is None:
         return True
     count = int(count)
@@ -49,17 +50,20 @@ def update_otp_request_count_value(key: str):
     ttl = ttl if ttl > 0 else 300
     redis.expire(key, ttl)
 
-def save_otp(key: str, otp: str):
+def save_otp(username: str, otp: str):
+    key = opt_key(username)
     redis.set(key, otp, 300)
 
 def save_otp_and_update_request_count(username: str, otp: str):
-    save_otp(opt_key(username), otp)
+    save_otp(username, otp)
     update_otp_request_count_value(request_count_key(username))
 
-def check_otp(username: str, otp: str):
+def get_otp(username: str):
     key = opt_key(username)
     value = redis.get(key)
-    return value.decode('utf-8') == otp if value else False
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    return value if value else None
 
 def jwt_token_key(username: str) -> str:
     return f"jwt_token:{username}"

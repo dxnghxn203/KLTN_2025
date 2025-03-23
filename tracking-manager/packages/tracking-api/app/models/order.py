@@ -31,7 +31,7 @@ async def check_order(item: ItemOrderInReq):
             logger.info(f"Product data from Redis: {data}")
 
             if not data:
-                return response.FailResponse(message="Không tìm thấy sản phẩm trong hệ thống")
+                raise ValueError("Không tìm thấy sản phẩm trong hệ thống")
 
             inventory = data.get("inventory", 0)
             sell = data.get("sell", 0)
@@ -39,7 +39,7 @@ async def check_order(item: ItemOrderInReq):
             total_requested = product.quantity + sell
 
             if total_requested > inventory:
-                return response.FailResponse(message="Hàng tồn không đủ")
+                raise ValueError("Hàng tồn không đủ")
 
         qr_payload = {
             "bank_id": "TPB",
@@ -56,7 +56,7 @@ async def check_order(item: ItemOrderInReq):
 
         if qr_response.status_code != 200:
             logger.error(f"Failed to generate QR: {qr_response.text}")
-            return response.FailResponse(message="Không thể tạo QR code")
+            raise ValueError("Không thể tạo QR code")
 
         redis.save_order(item_data)
 
@@ -86,7 +86,7 @@ async def add_order(item: OrderRequest):
         rabbitmq.send_message(get_create_order_queue(), order_json)
         rabbitmq.send_message(get_create_tracking_queue(), order_json)
 
-        return response.SuccessResponse(status="success", message=f"Order {item.order_id} is added to Queue")
+        return item.order_id
     except Exception as e:
         logger.error("Failed [add_order]:", error=e)
         raise e

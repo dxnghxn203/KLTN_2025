@@ -1,3 +1,4 @@
+import base64
 import os
 import random
 import secrets
@@ -19,15 +20,25 @@ security = HTTPBearer(
 
 
 def verify_token(cred: HTTPAuthorizationCredentials = Depends(security)):
-    if not cred:
-        raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED, message="Không có mã xác thực")
-    if not cred.scheme == "Bearer":
+    if not cred or cred.scheme != "Bearer":
         raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED, message="Mã xác thực không hợp lệ")
     if not validate_jwt(cred.credentials):
         raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED,
                             message="Mã xác thực không hợp lệ hoặc đã phiên đăng nhập đã hết hạn")
     return cred.credentials
 
+def verify_token_admin(cred: HTTPAuthorizationCredentials = Depends(security)):
+    if not cred or cred.scheme != "Bearer":
+        raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED, message="Mã xác thực không hợp lệ")
+    if not validate_jwt(cred.credentials):
+        raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            message="Mã xác thực không hợp lệ hoặc đã phiên đăng nhập đã hết hạn")
+    payload = decode_jwt(token=cred.credentials)
+
+    if "role" not in payload or payload["role"] != "admin_account":
+        raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED, message="Không có quyền truy cập")
+
+    return cred.credentials
 
 def destroy_token(cred: HTTPAuthorizationCredentials = Depends(security)):
     if not cred:
@@ -64,25 +75,22 @@ def check_validate_token(username: str):
 
 def decode_jwt(token: str) -> dict:
     try:
-        payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=[os.getenv("ALGORITHM")])
-        return payload
+        public_key = get_public_key()
+        algorithm = os.getenv("ALGORITHM")
+
+        return jwt.decode(token, public_key, algorithms=[algorithm])
 
     except jwt.ExpiredSignatureError:
+        logger.error("Token expired")
         raise response.JsonException(
             status_code=status.HTTP_403_FORBIDDEN,
             message="Token has expired"
         )
     except(jwt.PyJWTError, ValidationError) as e:
-        logger.error(f"Token decoding error: {str(e)}")
-        raise response.JsonException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            message="Lỗi xác thực",
-        )
-    except Exception as e:
         logger.error("Token decoding", error=str(e))
         raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
+            status_code=status.HTTP_403_FORBIDDEN,
+            message=f"Could not validate credentials",
         )
 
 
@@ -124,3 +132,20 @@ def generate_password():
 def generate_otp():
     alphabet = string.digits + string.ascii_uppercase  # Generates OTP using digits and uppercase letters
     return ''.join(secrets.choice(alphabet) for _ in range(6))  # Creates a 6-character OTP
+
+def fix_base64_padding(b64_str):
+    b64_str = b64_str.replace("\n", "").replace(" ", "")
+    missing_padding = len(b64_str) % 4
+    if missing_padding:
+        b64_str += "=" * (4 - missing_padding)
+    return b64_str
+
+def get_private_key():
+    private_key_b64 = os.getenv("JWT_PRIVATE_KEY", "")
+    private_key_b64 = fix_base64_padding(private_key_b64)
+    return base64.b64decode(private_key_b64).decode("utf-8")
+
+def get_public_key():
+    public_key_b64 = os.getenv("JWT_PUBLIC_KEY", "")
+    public_key_b64 = fix_base64_padding(public_key_b64)
+    return base64.b64decode(public_key_b64).decode("utf-8")

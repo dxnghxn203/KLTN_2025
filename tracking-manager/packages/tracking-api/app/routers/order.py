@@ -10,6 +10,11 @@ router = APIRouter()
 async def check_order(item: ItemOrderInReq):
     try:
         return await order.check_order(item)
+    except ValueError as e:
+        raise response.JsonException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message=str(e)
+        )
     except Exception as e:
         logger.error("Error getting current", error=str(e))
         raise response.JsonException(
@@ -20,7 +25,13 @@ async def check_order(item: ItemOrderInReq):
 @router.post("/order/add", response_model=response.BaseResponse)
 async def add_order(item: OrderRequest):
     try:
-        return await order.add_order(item)
+        result = await order.add_order(item)
+        return response.BaseResponse(
+            status_code=status.HTTP_201_CREATED,
+            status="created",
+            message=f"order added successfully",
+            data=result
+        )
     except Exception as e:
         logger.error("Error adding order", error=str(e))
         raise response.JsonException(

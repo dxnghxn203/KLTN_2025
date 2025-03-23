@@ -1,5 +1,3 @@
-from pydantic import BaseModel, validator
-
 import re
 
 def validate_password(value):

@@ -20,7 +20,8 @@ class SuccessResponse(BaseModel):
     message: str = "Thành công!"
     data: Any = None
 
-class FailResponse(BaseModel):
-    status_code: int = 400
-    status: str = "fail"
-    message: str
+class PagingSearch(BaseModel):
+    total_pages: int = 1
+    total_rows: int = 1
+    current_page: int = 1
+    page_size: int = 10
