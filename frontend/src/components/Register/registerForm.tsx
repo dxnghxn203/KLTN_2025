@@ -1,4 +1,6 @@
+"use client";
 import React from "react";
+import Link from "next/link";
 
 const RegisterForm: React.FC = () => {
   return (
@@ -77,14 +79,16 @@ const RegisterForm: React.FC = () => {
             />
           </div>
 
-          <div className="pt-6">
-            <button
-              type="submit"
-              className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-800 transition-colors"
-            >
-              Tạo tài khoản
-            </button>
-          </div>
+          <Link href="/register/verifyOTP">
+            <div className="pt-6">
+              <button
+                type="submit"
+                className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-800 transition-colors"
+              >
+                Tiếp tục
+              </button>
+            </div>
+          </Link>
         </form>
       </div>
     </div>
