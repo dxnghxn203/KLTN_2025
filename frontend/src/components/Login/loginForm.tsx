@@ -68,10 +68,10 @@ const LoginForm: React.FC = () => {
         <button
           className="flex items-center gap-2"
           onClick={handleGoogleSignIn}
-          disabled={isLoading || localLoading}
+          disabled={ localLoading}
         >
           <Image src={google} alt="" width={30} className="object-cover" />
-          {isLoading ? loadingGG() : <span>Đăng nhập với Google</span>}
+          {localLoading ? loadingGG() : <span>Đăng nhập với Google</span>}
         </button>
       </div>
 

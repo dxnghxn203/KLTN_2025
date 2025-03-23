@@ -11,7 +11,7 @@ export default function RegisterWithPhoneNumer() {
 
   return (
     <div className="flex flex-col items-center bg-white pt-[80px]">
-      <Header />
+       {/* <Header /> */}
       <main className="flex flex-col items-center w-full pt-14">
         <div className="w-full px-6">
           <Link

@@ -104,7 +104,6 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2 text-white">
-          {/* Cart section with dropdown */}
           <div
             className="relative"
             ref={cartDropdownRef}
@@ -129,7 +128,6 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Cart dropdown */}
             {showCartDropdown && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[60]">
                 <div className="p-4">

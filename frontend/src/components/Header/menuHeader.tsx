@@ -5,8 +5,11 @@ import { use, useEffect } from "react";
 
 export default function MenuHeader() {
   const { allCategory, fetchAllCategory } = useCategory();
-  // console.log("title", allCategory);
 
+  useEffect(() => {
+    fetchAllCategory();
+  }, []);
+  
   return (
     <nav className="bg-[#F0F5FF] h-[46px] text-[#002E99] py-2 flex justify-center items-center">
       <ul className="flex justify-center space-x-14 font-normal text-[14px]">

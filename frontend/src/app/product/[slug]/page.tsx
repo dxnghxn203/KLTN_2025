@@ -23,7 +23,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
-      <Header />
+       {/* <Header /> */}
       <main className="flex flex-col space-y-8 px-5 pt-16">
         {productBySlug ? (
           <>

@@ -21,7 +21,7 @@ const authOptions: NextAuthOptions = {
             if (account?.provider === "google") {
                 try {
                     const response = await signInWithGoogle({
-                        id_token: account.idToken as string,
+                        id_token: account.id_token as string,
                         accessToken: account.accessToken as string,
                         email: user.email as string,
                     })

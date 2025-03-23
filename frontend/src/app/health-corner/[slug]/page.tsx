@@ -37,7 +37,7 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
-      <Header />
+       {/* <Header /> */}
       <main className="flex flex-col space-y-8 px-5 justify-center items-center">
         <div className="px-6 py-10">
           <h1 className="text-3xl font-bold">{article.title}</h1>
