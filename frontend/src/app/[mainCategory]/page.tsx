@@ -1,13 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
 import ProductPortfolioList from "@/components/Product/productFunctionalList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import { useCategory } from "@/hooks/useCategory";
-import { useEffect, useMemo } from "react";
-import CategoryList from "@/components/Category/categogyList";
+import { useMemo } from "react";
+import CategoryList from "@/components/Category/categoryList";
 
 export default function MainCategoryPage() {
   const params = useParams();
@@ -17,7 +16,6 @@ export default function MainCategoryPage() {
     fetchMainCategory(params.mainCategory);
     return mainCategory;
   }, [params.mainCategory]);
-  // console.log("duyen", mainCategory);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
