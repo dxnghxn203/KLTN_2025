@@ -30,7 +30,7 @@ export default function RegisterPage() {
 
         <Link href="/register/phoneNumber" passHref>
           <button className="px-5 h-[55px] text-sm font-semibold text-black border border-solid border-black border-opacity-10 rounded-3xl w-[400px] max-md:px-5">
-            Tiếp tục với số điện thoại
+            Tiếp tục với email
           </button>
         </Link>
 
