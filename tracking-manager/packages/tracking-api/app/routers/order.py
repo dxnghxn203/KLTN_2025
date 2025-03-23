@@ -22,7 +22,7 @@ async def add_order(item: OrderRequest):
     try:
         return await order.add_order(item)
     except Exception as e:
-        logger.error("Error getting current", error=str(e))
+        logger.error("Error adding order", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

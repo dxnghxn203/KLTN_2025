@@ -3,7 +3,6 @@ import os
 import pandas as pd
 
 from app.core import elasticsearch
-from app.core import response
 from app.entities.location.response import City, District, Ward, Region
 from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX
 from app.helpers.es_location import insert_es_cities, delete_index, insert_es_districts, insert_es_wards, \
@@ -46,22 +45,22 @@ async def get_cities():
     query = {"query": {"match_all": {}}, "size": 65}
     es_response = elasticsearch.es_client.search(index=CITY_INDEX, body=query)
     data = [City(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.BaseResponse(data=data)
+    return data
 
 async def get_districts_by_city(city_code: str):
     query = {"query": {"match": {"city_code": city_code}}, "size": 1000}
     es_response = elasticsearch.es_client.search(index=DISTRICT_INDEX, body=query)
     data = [District(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.BaseResponse(data=data)
+    return data
 
 async def get_wards_by_district(district_code: str):
     query = {"query": {"match": {"district_code": district_code}}, "size": 1000}
     es_response = elasticsearch.es_client.search(index=WARD_INDEX, body=query)
     data = [Ward(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.BaseResponse(data=data)
+    return data
 
 async def get_regions():
     query = {"query": {"match_all": {}}, "size": 65}
     es_response = elasticsearch.es_client.search(index=REGION_INDEX, body=query)
     data = [Region(**hit["_source"]) for hit in es_response["hits"]["hits"]]
-    return response.BaseResponse(data=data)
+    return data

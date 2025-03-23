@@ -32,7 +32,7 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
     try:
         logger.info(f"item router: {item}")
         await add_product_db(item, images_primary, images)
-        return response.BaseResponse(status="success", message="Product added successfully")
+        return response.SuccessResponse(status="success", message="Product added successfully")
     except Exception as e:
         logger.error("Error adding product", error=str(e))
         raise response.JsonException(

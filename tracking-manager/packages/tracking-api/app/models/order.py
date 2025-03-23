@@ -1,6 +1,5 @@
 import json
 import os
-from datetime import datetime
 
 import httpx
 from fastapi.responses import StreamingResponse
@@ -8,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from app.core import logger, response, rabbitmq
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_random_string, generate_id
+from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -32,7 +31,7 @@ async def check_order(item: ItemOrderInReq):
             logger.info(f"Product data from Redis: {data}")
 
             if not data:
-                return response.BaseResponse(status="failed", message="Không tìm thấy sản phẩm trong hệ thống")
+                return response.FailResponse(message="Không tìm thấy sản phẩm trong hệ thống")
 
             inventory = data.get("inventory", 0)
             sell = data.get("sell", 0)
@@ -40,7 +39,7 @@ async def check_order(item: ItemOrderInReq):
             total_requested = product.quantity + sell
 
             if total_requested > inventory:
-                return response.BaseResponse(status="failed", message="Hàng tồn không đủ")
+                return response.FailResponse(message="Hàng tồn không đủ")
 
         qr_payload = {
             "bank_id": "TPB",
@@ -57,7 +56,7 @@ async def check_order(item: ItemOrderInReq):
 
         if qr_response.status_code != 200:
             logger.error(f"Failed to generate QR: {qr_response.text}")
-            return response.BaseResponse(status="failed", message="Không thể tạo QR code")
+            return response.FailResponse(message="Không thể tạo QR code")
 
         redis.save_order(item_data)
 
@@ -72,7 +71,7 @@ async def check_order(item: ItemOrderInReq):
 
     except Exception as e:
         logger.error("Failed [check_order]:", error=e)
-        return response.BaseResponse(status="failed", message="Không thể check order")
+        raise e
 
 async def add_order(item: OrderRequest):
     try:
@@ -87,7 +86,7 @@ async def add_order(item: OrderRequest):
         rabbitmq.send_message(get_create_order_queue(), order_json)
         rabbitmq.send_message(get_create_tracking_queue(), order_json)
 
-        return response.BaseResponse(status="success", message=f"Order {item.order_id} is added to Queue")
+        return response.SuccessResponse(status="success", message=f"Order {item.order_id} is added to Queue")
     except Exception as e:
         logger.error("Failed [add_order]:", error=e)
-        return response.BaseResponse(status="failed", message="Không thể add order")
+        raise e

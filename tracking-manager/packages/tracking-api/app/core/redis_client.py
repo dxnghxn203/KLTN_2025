@@ -23,11 +23,3 @@ except r.ConnectionError as e:
     print("Error: Unable to connect to Redis.", e)
 except Exception as e:
     print("An unexpected error occurred:", e)
-
-
-# def set(key, value, ex):
-#     redis.set(key, value, ex)
-#
-def get_decode_value(key):
-    value = redis.get(key)
-    return value.decode('utf-8') if value else None

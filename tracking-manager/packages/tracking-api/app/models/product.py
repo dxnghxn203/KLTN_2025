@@ -1,18 +1,16 @@
-from datetime import datetime
-
+from app.core import logger
 from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
     ItemProductRedisReq
 from app.helpers import redis
-from app.helpers.constant import generate_random_string, generate_id
-from app.middleware.logging import logger
+from app.helpers.constant import generate_id
 
-COLECTION_NAME = "products"
+collection_name = "products"
 
 async def get_product_by_slug(slug: str):
     try:
-        collection = db[COLECTION_NAME]
+        collection = db[collection_name]
         return collection.find_one({"slug": slug})
     except Exception as e:
         raise e
@@ -56,7 +54,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             images_primary=images_primary_url
         )
 
-        collection = db[COLECTION_NAME]
+        collection = db[collection_name]
         insert_result = collection.insert_one(item_data.dict())
 
         logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")

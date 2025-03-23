@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from app.core.authGoogle import google_auth
-from app.core.schemas import SuccessResponse, ErrorResponse
+from app.core.response import BaseResponse
 from app.entities.authen import GoogleAuthRequest, AuthRequest
 
 router = APIRouter()
@@ -10,23 +10,23 @@ async def login(request: GoogleAuthRequest):
     try:
         authGoogle = await google_auth(request.id_token)
         if authGoogle is None or authGoogle == False:
-            return ErrorResponse(
-                code=status.HTTP_401_UNAUTHORIZED,
+            return BaseResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Access token không hợp lệ!"
             )
         if authGoogle['email'] != request.email:
-             return ErrorResponse(
-                code=status.HTTP_401_UNAUTHORIZED,
+             return BaseResponse(
+                staus_code=status.HTTP_401_UNAUTHORIZED,
                 message="Email không hợp lệ!"
             )
-        return SuccessResponse(message="Success", data={"token": 'token'})
+        return BaseResponse(message="Success", data={"token": 'token'})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/authen/login")
 async def login(request: AuthRequest):
     try:
-        return SuccessResponse(message="Success", data={"token": 'token'})
+        return BaseResponse(message="Success", data={"token": 'token'})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -34,6 +34,6 @@ async def login(request: AuthRequest):
 @router.post("/authen/logout")
 async def logout():
     try:
-        return SuccessResponse(message="Success", data={"token": 'token'})
+        return BaseResponse(message="Success", data={"token": 'token'})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

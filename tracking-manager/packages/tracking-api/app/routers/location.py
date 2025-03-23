@@ -1,6 +1,7 @@
 from fastapi import APIRouter
+from starlette import status
 
-from app.core import response
+from app.core import response, logger
 from app.models import location
 
 router = APIRouter()
@@ -40,16 +41,49 @@ async def delete_regions():
 
 @router.get("/location/cities", response_model=response.BaseResponse)
 async def get_all_cities():
-    return await location.get_cities()
+    try:
+        result = await location.get_cities()
+        return response.SuccessResponse(data=result)
+    except Exception as e:
+        logger.error(f"Error getting cities: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 
 @router.get("/location/districts/{city_code}", response_model=response.BaseResponse)
 async def get_districts_by_city(city_code: str):
-    return await location.get_districts_by_city(city_code)
+    try:
+        result = await location.get_districts_by_city(city_code)
+        return response.SuccessResponse(data=result)
+    except Exception as e:
+        logger.error(f"Error getting districts: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
 @router.get("/location/wards/{district_code}", response_model=response.BaseResponse)
 async def get_wards_by_district(district_code: str):
-    return await location.get_wards_by_district(district_code)
+    try:
+        result = await location.get_wards_by_district(district_code)
+        return response.SuccessResponse(data=result)
+    except Exception as e:
+        logger.error(f"Error getting wards: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
 @router.get("/location/regions", response_model=response.BaseResponse)
 async def get_all_regions():
-    return await location.get_regions()
+    try:
+        result = await location.get_regions()
+        return response.SuccessResponse(data=result)
+    except Exception as e:
+        logger.error(f"Error getting regions: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

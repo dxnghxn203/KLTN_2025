@@ -5,25 +5,24 @@ from app.entities.category.request import MainCategoryInReq, MainCategoryReq, Ch
 from app.helpers.constant import generate_id
 from app.middleware.logging import logger
 
-COLLECTION_NAME = "categories"
-PRODUCT_COLLECTION = "products"
+collection_name = "categories"
+product_collection_name = "products"
 
 async def get_all_categories():
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         return list(collection.find({}, {"_id": 0, "main_category_id": 1, "main_category_name": 1, "main_category_slug": 1}))
     except Exception as e:
-        logger.error(f"Error getting all categories: {str(e)}")
         raise e
 
 async def get_category_by_slug(main_slug: str):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug}, {"_id": 0})
         if not category:
             return None
 
-        product_collection = db[PRODUCT_COLLECTION]
+        product_collection = db[product_collection_name]
         products = list(product_collection.find({"category.main_category_slug": main_slug}, {"_id": 0}))
         category["products"] = products
 
@@ -34,7 +33,7 @@ async def get_category_by_slug(main_slug: str):
 
 async def get_sub_category(main_slug: str, sub_slug: str):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug}, {"_id": 0, "sub_category": 1})
         if not category:
             raise ValueError("Main category not found")
@@ -44,17 +43,16 @@ async def get_sub_category(main_slug: str, sub_slug: str):
         if not sub_category:
             raise ValueError("Sub-category not found")
 
-        product_collection = db[PRODUCT_COLLECTION]
+        product_collection = db[product_collection_name]
         sub_category["products"] = list(product_collection.find({"category.sub_category_slug": sub_slug}, {"_id": 0}))
 
         return sub_category
     except Exception as e:
-        logger.error(f"Error getting sub-category: {str(e)}")
         raise e
 
 async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug}, {"_id": 0, "sub_category": 1})
         if not category:
             raise ValueError("Main category not found")
@@ -67,7 +65,7 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
                 if not child_category:
                     raise ValueError("Child-category not found")
 
-                product_collection = db[PRODUCT_COLLECTION]
+                product_collection = db[product_collection_name]
                 child_category["products"] = list(
                     product_collection.find({"category.child_category_slug": child_slug}, {"_id": 0}))
 
@@ -80,7 +78,7 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
 
 async def add_category(item: MainCategoryInReq):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         existing = collection.find_one({"main_category_slug": item.main_category_slug})
         if existing:
             raise ValueError("Main category already exists")
@@ -122,7 +120,7 @@ async def add_category(item: MainCategoryInReq):
 
 async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug})
 
         if not category:
@@ -160,7 +158,7 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
 
 async def add_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug})
 
         if not category:
@@ -196,7 +194,7 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
 
 async def update_main_category(main_category_id: str, main_category_name: str, main_category_slug: str):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         update_data = {}
 
         if main_category_name:
@@ -216,7 +214,7 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
             raise ValueError("Không có danh mục nào được cập nhật")
 
         if "main_category_slug" in update_data:
-            product_collection = db[PRODUCT_COLLECTION]
+            product_collection = db[product_collection_name]
             product_collection.update_many(
                 {"main_category_id": main_category_id},
                 {"$set": {"main_category_slug": update_data["main_category_slug"]}}
@@ -227,7 +225,7 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
 
 async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_category_slug: str):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
 
         update_data = {}
         if sub_category_name:
@@ -247,7 +245,7 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
             raise ValueError("Không có danh mục con nào được cập nhật")
 
         if "sub_category.$.sub_category_slug" in update_data:
-            product_collection = db[PRODUCT_COLLECTION]
+            product_collection = db[product_collection_name]
             product_collection.update_many(
                 {"sub_category_id": sub_category_id},
                 {"$set": {"sub_category_slug": update_data["sub_category.$.sub_category_slug"]}}
@@ -258,7 +256,7 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
 
 async def update_child_category(child_category_id: str, child_category_name: str, child_category_slug: str):
     try:
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
 
         update_data = {}
         if child_category_name:
@@ -279,7 +277,7 @@ async def update_child_category(child_category_id: str, child_category_name: str
             raise ValueError("Không có danh mục con cấp 2 nào được cập nhật")
 
         if "sub_category.$[].child_category.$[child].child_category_slug" in update_data:
-            product_collection = db[PRODUCT_COLLECTION]
+            product_collection = db[product_collection_name]
             product_collection.update_many(
                 {"child_category_id": child_category_id},
                 {"$set": {"child_category_slug": update_data["sub_category.$[].child_category.$[child].child_category_slug"]}}
@@ -292,7 +290,7 @@ async def update_sub_category_image(sub_category_id: str, image: str):
     try:
         image_url = upload_file(image, "sub_category")
 
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         result = collection.update_one(
             {"sub_category.sub_category_id": sub_category_id},
             {"$set": {"sub_category.$.sub_image_url": image_url}}
@@ -307,7 +305,7 @@ async def update_child_category_image(child_category_id: str, image: str):
     try:
         image_url = upload_file(image, "child_category")
 
-        collection = db[COLLECTION_NAME]
+        collection = db[collection_name]
         result = collection.update_one(
             {"sub_category.child_category.child_category_id": child_category_id},
             {"$set": {"sub_category.$[].child_category.$[child].child_image_url": image_url}},

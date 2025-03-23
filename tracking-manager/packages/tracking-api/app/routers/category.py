@@ -10,7 +10,7 @@ router = APIRouter()
 async def get_categories():
     try:
         data = await category.get_all_categories()
-        return response.BaseResponse(data=data)
+        return response.SuccessResponse(data=data)
     except Exception as e:
         logger.error(f"Error getting all categories: {str(e)}")
         raise response.JsonException(
@@ -27,9 +27,9 @@ async def get_category(main_slug: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Category not found"
             )
-        return response.BaseResponse(data=data)
+        return response.SuccessResponse(data=data)
     except Exception as e:
-        logger.error(f"Error getting category: {str(e)}")
+        logger.error(f"Error getting category by slug: {str(e)}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
@@ -44,7 +44,7 @@ async def get_sub_category(main_slug: str, sub_slug: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Category not found"
             )
-        return response.BaseResponse(data=data)
+        return response.SuccessResponse(data=data)
     except Exception as e:
         logger.error(f"Error getting category: {str(e)}")
         raise response.JsonException(
@@ -61,7 +61,7 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Category not found"
             )
-        return response.BaseResponse(data=data)
+        return response.SuccessResponse(data=data)
     except Exception as e:
         logger.error(f"Error getting category: {str(e)}")
         raise response.JsonException(
@@ -73,7 +73,7 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
 async def create_category(new_category: MainCategoryInReq):
     try:
         await category.add_category(new_category)
-        return response.BaseResponse(message="Main-category added successfully")
+        return response.SuccessResponse(message="Main-category added successfully")
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -90,7 +90,7 @@ async def create_category(new_category: MainCategoryInReq):
 async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
     try:
         await category.add_sub_category(main_slug, sub_category)
-        return response.BaseResponse(message="Sub-category added successfully")
+        return response.SuccessResponse(message="Sub-category added successfully")
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -107,7 +107,7 @@ async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
 async def create_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
     try:
         await category.add_child_category(main_slug, sub_slug, child_category)
-        return response.BaseResponse(message="Child-category added successfully")
+        return response.SuccessResponse(message="Child-category added successfully")
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -128,7 +128,7 @@ async def update_main_category(
 ):
     try:
         await category.update_main_category(main_category_id, main_category_name, main_category_slug)
-        return response.BaseResponse(message="Main category updated successfully")
+        return response.SuccessResponse(message="Main category updated successfully")
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -149,7 +149,7 @@ async def update_sub_category(
 ):
     try:
         await category.update_sub_category(sub_category_id, sub_category_name, sub_category_slug)
-        return response.BaseResponse(message="Sub-category updated successfully")
+        return response.SuccessResponse(message="Sub-category updated successfully")
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -170,7 +170,7 @@ async def update_child_category(
 ):
     try:
         await category.update_child_category(child_category_id, child_category_name, child_category_slug)
-        return response.BaseResponse(message="Child-category updated successfully")
+        return response.SuccessResponse(message="Child-category updated successfully")
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -187,7 +187,7 @@ async def update_child_category(
 async def update_sub_category_image(sub_category_id: str, image: UploadFile = File(...)):
     try:
         await category.update_sub_category_image(sub_category_id, image)
-        return response.BaseResponse(message="Sub-category image updated successfully")
+        return response.SuccessResponse(message="Sub-category image updated successfully")
     except Exception as e:
         logger.error(f"Error updating sub-category image: {str(e)}")
         raise response.JsonException(
@@ -199,11 +199,9 @@ async def update_sub_category_image(sub_category_id: str, image: UploadFile = Fi
 @router.put("/category/child-category/{child_category_id}/update-image", response_model=response.BaseResponse)
 async def update_child_category_image(child_category_id: str, image: UploadFile = File(...)):
     try:
-
-        # Cập nhật URL ảnh trong DB
         await category.update_child_category_image(child_category_id, image)
 
-        return response.BaseResponse(message="Child-category image updated successfully")
+        return response.SuccessResponse(message="Child-category image updated successfully")
     except Exception as e:
         logger.error(f"Error updating child-category image: {str(e)}")
         raise response.JsonException(

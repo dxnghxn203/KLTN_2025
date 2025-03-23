@@ -9,7 +9,18 @@ class JsonException(Exception):
         self.message = message
 
 class BaseResponse(BaseModel):
-    code: int = 200
+    status_code: int = 200
+    status: str = ""
+    message: str = ""
+    data: Any = None
+
+class SuccessResponse(BaseModel):
+    status_code: int = 200
     status: str = "success"
     message: str = "Thành công!"
     data: Any = None
+
+class FailResponse(BaseModel):
+    status_code: int = 400
+    status: str = "fail"
+    message: str
