@@ -30,7 +30,7 @@ const ProductCard: React.FC<ProductData> = ({
                     {discount}
                   </div>
                 ) : (
-                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md opacity-0">
+                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md">
                     Ưu đãi
                   </div>
                 )}
@@ -63,19 +63,19 @@ const ProductCard: React.FC<ProductData> = ({
             </div>
 
             {/* Tên sản phẩm */}
-            <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5]">
+            <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] h-[48px]">
               {name}
             </div>
 
             {/* Giá sản phẩm */}
             <div className="mt-2">
-              <div
-                className={`text-sm text-zinc-400 line-through ${
-                  originPrice ? "" : "invisible"
-                }`}
-              >
-                {(originPrice || 0).toLocaleString("vi-VN")}đ
-              </div>
+              {originPrice ? (
+                <div className="text-sm text-zinc-400 line-through">
+                  {originPrice.toLocaleString("vi-VN")}đ
+                </div>
+              ) : (
+                <div className="text-sm opacity-0">Giá gốc</div>
+              )}
               <div className="text-lg font-bold text-[#0053E2]">
                 {price.toLocaleString("vi-VN")}đ/{unit}
               </div>

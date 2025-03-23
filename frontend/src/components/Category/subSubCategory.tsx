@@ -2,6 +2,7 @@
 import { useParams } from "next/navigation";
 import { categoryProducts } from "@/components/Category/categoryData";
 import Image from "next/image";
+import image from "@/images/pill.png";
 
 export default function SubSubCategory({
   child_category,
@@ -16,12 +17,7 @@ export default function SubSubCategory({
             (subSubCategory: any, index: any) => (
               <div key={index} className="flex flex-col items-center">
                 <div className="rounded-full bg-[#EAEFFA] w-[130px] h-[130px] flex items-center justify-center">
-                  <Image
-                    src={subSubCategory.img}
-                    alt="icon"
-                    width={120}
-                    height={120}
-                  />
+                  <Image src={image} alt="icon" width={90} height={90} />
                 </div>
                 <span className="mt-2 w-[130px] text-center">
                   {subSubCategory.child_category_name}
