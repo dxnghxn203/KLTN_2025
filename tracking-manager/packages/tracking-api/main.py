@@ -23,7 +23,8 @@ app = FastAPI()
 # CORS configuration
 origins = [
     "http://localhost:8000",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://kltn-2025.vercel.app"
 ]
 
 app.add_middleware(
