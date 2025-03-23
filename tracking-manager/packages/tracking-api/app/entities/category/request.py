@@ -5,11 +5,13 @@ class ChildCategoryReq(BaseModel):
     child_category_id: str = ""
     child_category_name: str = ""
     child_category_slug: str = ""
+    child_image_url: str = ""
 
 class SubCategoryReq(BaseModel):
     sub_category_id: str = ""
     sub_category_name: str = ""
     sub_category_slug: str = ""
+    sub_image_url: str = ""
     child_category: List[ChildCategoryReq]
 
 class MainCategoryReq(BaseModel):

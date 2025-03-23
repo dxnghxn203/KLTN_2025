@@ -1,4 +1,5 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, UploadFile, File
+
 from app.core import logger, response
 from app.entities.category.request import MainCategoryInReq, SubCategoryInReq, ChildCategoryInReq
 from app.models import category
@@ -181,3 +182,44 @@ async def update_child_category(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.put("/category/sub-category/{sub_category_id}/update-image", response_model=response.BaseResponse)
+async def update_sub_category_image(sub_category_id: str, image: UploadFile = File(...)):
+    try:
+        await category.update_sub_category_image(sub_category_id, image)
+        return response.BaseResponse(message="Sub-category image updated successfully")
+    except Exception as e:
+        logger.error(f"Error updating sub-category image: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+
+@router.put("/category/child-category/{child_category_id}/update-image", response_model=response.BaseResponse)
+async def update_child_category_image(child_category_id: str, image: UploadFile = File(...)):
+    try:
+
+        # Cập nhật URL ảnh trong DB
+        await category.update_child_category_image(child_category_id, image)
+
+        return response.BaseResponse(message="Child-category image updated successfully")
+    except Exception as e:
+        logger.error(f"Error updating child-category image: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+# @router.put("/category/update-default-image", response_model=response.BaseResponse)
+# async def update_default_image(image: str):
+#     try:
+#         await category.update_all_categories_image(image)
+#
+#         return response.BaseResponse(message="Default image updated for all categories")
+#     except Exception as e:
+#         logger.error(f"Error updating default image: {str(e)}")
+#         raise response.JsonException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             message="Internal server error"
+#         )
