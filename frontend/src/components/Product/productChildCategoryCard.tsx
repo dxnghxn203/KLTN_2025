@@ -5,7 +5,7 @@ import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
 import { ProductData } from "@/types/product";
 
-const ProductPortfolioCard: React.FC<ProductData> = ({
+const ProductChildCategoryCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -111,4 +111,4 @@ const ProductPortfolioCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductPortfolioCard;
+export default ProductChildCategoryCard;

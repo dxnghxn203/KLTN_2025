@@ -1,18 +1,20 @@
 import React, { useState } from "react";
-import ProductPortfolioCard from "./productFunctionalCard";
+import ProductPortfolioCard from "./productMainCategoryCard";
 import { ProductData } from "@/types/product";
 import medicine1 from "@/images/medicinee.png";
 import { generateRandomId } from "@/utils/string";
 import Filter from "@/components/Category/filter";
 import shopping from "@/images/shopping.png";
 import Image from "next/image";
-import ProductCosmeticsCard from "./productCosmeticsCard";
+import ProductCosmeticsCard from "./productSubCategoryCard";
+import ProductSubCategoryCard from "./productSubCategoryCard";
 
 const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
@@ -23,7 +25,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -33,7 +36,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -43,7 +47,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -53,7 +58,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -63,7 +69,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -73,7 +80,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -83,7 +91,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -93,7 +102,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -103,7 +113,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -113,7 +124,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -123,7 +135,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -133,7 +146,7 @@ const productData: ProductData[] = [
   },
 ];
 
-const ProductCosmeticsList: React.FC = () => {
+const ProductSubCategoryList: React.FC = () => {
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
 
@@ -175,7 +188,7 @@ const ProductCosmeticsList: React.FC = () => {
         onBrandFilterChange={setSelectedBrands}
       />
 
-      <div className="col-span-5 mr-5 pt-[38px] space-y-6">
+      <div className="col-span-5 mr-5 space-y-6">
         <div className="flex space-x-4 items-center">
           <span className="">Sắp xếp theo</span>
           <button
@@ -204,7 +217,7 @@ const ProductCosmeticsList: React.FC = () => {
             <>
               <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
                 {sortedAndFilteredProducts.map((product, index) => (
-                  <ProductCosmeticsCard key={index} {...product} />
+                  <ProductSubCategoryCard key={index} {...product} />
                 ))}
               </div>
               {showAll && (
@@ -235,4 +248,4 @@ const ProductCosmeticsList: React.FC = () => {
   );
 };
 
-export default ProductCosmeticsList;
+export default ProductSubCategoryList;

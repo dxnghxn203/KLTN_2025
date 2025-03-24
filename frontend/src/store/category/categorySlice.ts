@@ -4,14 +4,16 @@ interface CategoryState {
     categories: any[];
     mainCategories: any[];
     subCategories: any[];
+    childCategories:any[];
     loading: boolean;
     error: string | null;
 }
 
 const initialState: CategoryState = {
+    categories: [],
     mainCategories: [],
     subCategories: [],
-    categories: [],
+    childCategories:[],
     loading: false,
     error: null,
 };
@@ -62,7 +64,26 @@ export const categorySlice = createSlice({
             console.log("Fetching categories failed, error:", action);
             state.loading = false;
             state.error = action.payload;
-        }
+        },
+
+        fetchGetChildCategoryStart(state, action: PayloadAction<any>) {
+            console.log("Fetching categories started");
+
+            state.loading = true;
+        },
+        fetchGetChildCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+
+            state.childCategories = action.payload
+            state.loading = false;
+            state.error = null;
+        },
+        fetchGetChildCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categuuories failed, error:", action);
+            state.loading = false;
+            state.error = action.payload;
+        },
+       
 
     },
 });
@@ -71,6 +92,7 @@ export const {
     fetchGetAllCategoryStart,
     fetchGetAllCategorySuccess,
     fetchGetAllCategoryFailed,
+
     fetchGetMainCategoryStart,
     fetchGetMainCategorySuccess,
     fetchGetMainCategoryFailed,
@@ -78,6 +100,10 @@ export const {
     fetchGetSubCategoryStart,
     fetchGetSubCategorySuccess,
     fetchGetSubCategoryFailed,
+
+    fetchGetChildCategoryStart,
+    fetchGetChildCategorySuccess,
+    fetchGetChildCategoryFailed,
 } = categorySlice.actions;
 
 export default categorySlice.reducer;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
 import { ProductData } from "@/types/product";
 
-const ProductSupportSleepCard: React.FC<ProductData> = ({
+const ProductSubCategoryCard: React.FC<ProductData> = ({
   discount,
   imageSrc,
   category,
@@ -111,4 +111,4 @@ const ProductSupportSleepCard: React.FC<ProductData> = ({
   );
 };
 
-export default ProductSupportSleepCard;
+export default ProductSubCategoryCard;

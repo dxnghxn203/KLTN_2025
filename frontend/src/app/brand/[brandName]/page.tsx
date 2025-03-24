@@ -5,7 +5,7 @@ import Header from "@/components/Header/header";
 import Footer from "@/components/Footer/footer";
 import Link from "next/link";
 import Filter from "@/components/Category/filter";
-import ProductPortfolioList from "@/components/Product/productFunctionalList";
+import ProductPortfolioList from "@/components/Product/productMainCategoryList";
 const BrandDetail = () => {
   const { brandName, brandImage, brandDescription } = useParams() as {
     brandName: string;
@@ -20,7 +20,7 @@ const BrandDetail = () => {
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-       {/* <Header /> */}
+      {/* <Header /> */}
       <main className="flex flex-col pt-14">
         <div className="px-5 text-sm text-[#0053E2]">
           <Link href="/" className="hover:underline text-blue-600">
