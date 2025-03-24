@@ -82,8 +82,8 @@ async def verify_user(us: any, p: str):
     try:
         if us is None:
             return None
-        if bcrypt.checkpw(p.encode('utf-8'), us['password'].encode('utf-8')):
-            logger.info("Đã đăng nhập thành công", username=us['username'])
+        if bcrypt.checkpw(p.encode('utf-8'), us['password'].encode('utf-8')) and us['active']:
+            logger.info("Đã đăng nhập thành công", username=us['user_name'])
             return us
         return None
 

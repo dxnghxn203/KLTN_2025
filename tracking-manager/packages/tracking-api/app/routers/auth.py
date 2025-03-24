@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, status, Form
+from fastapi import APIRouter, status, Form, Depends
 
 from app.core import logger, response, mail
 from app.core.authGoogle import google_auth
 from app.core.response import BaseResponse
-from app.entities.authen import GoogleAuthRequest, AuthRequest
+from app.entities.authen import GoogleAuthRequest
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware import middleware
@@ -11,7 +11,7 @@ from app.models import user, auth
 
 router = APIRouter()
 
-@router.post("/authen/google-auth")
+@router.post("/auth/google-auth")
 async def login(request: GoogleAuthRequest):
     try:
         authGoogle = await google_auth(request.id_token)
@@ -33,7 +33,7 @@ async def login(request: GoogleAuthRequest):
             message="Internal server error"
         )
 
-@router.post("/login")
+@router.post("/auth/login")
 async def login(email: str = Form(), password: str = Form()):
     try:
         us = await user.get_by_email(email)
@@ -80,11 +80,19 @@ async def login(email: str = Form(), password: str = Form()):
             )
 
     except Exception as e:
-        raise e
+        logger.error(f"Error login: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
-@router.post("/authen/logout")
-async def logout():
+@router.get("/auth/logout", response_model=BaseResponse)
+async def logout(token: str = Depends(middleware.destroy_token)):
     try:
-        return BaseResponse(message="Success", data={"token": 'token'})
+        logger.info(", hủy token")
+        return response.SuccessResponse(message="Đã đăng xuất")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

@@ -71,7 +71,7 @@ def jwt_token_key(username: str) -> str:
 def get_jwt_token(username: str):
     key = jwt_token_key(username)
     token = redis.get(key)
-    return token.decode('utf-8') if token else None
+    return token if token else None
 
 
 def save_jwt_token(username: str, token: str):

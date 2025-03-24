@@ -40,7 +40,7 @@ app.add_exception_handler(response.JsonException, exception.json_exception_handl
 app.add_exception_handler(RequestValidationError, exception.validation_exception_handler)
 
 # Routers
-app.include_router(authen_router, prefix="/v1", tags=["Authen"])
+app.include_router(authen_router, prefix="/v1", tags=["Auth"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(product_router, prefix="/v1", tags=["Product"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])
