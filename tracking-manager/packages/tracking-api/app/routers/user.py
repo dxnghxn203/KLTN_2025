@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette import status
 
 from app.core import response, logger, mail
@@ -6,7 +6,7 @@ from app.core.response import BaseResponse, SuccessResponse
 from app.entities.user.request import ItemUserRegisReq, ItemOtpReq, VerifyEmailReq
 from app.helpers import redis
 from app.middleware import middleware
-from app.models import user
+from app.models import user, auth
 
 router = APIRouter()
 
@@ -110,6 +110,18 @@ async def verify_user(request: VerifyEmailReq):
         return await user.update_user_verification(email)
     except Exception as e:
         logger.error(f"Error verifying email = {email}: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/users/current", response_model=BaseResponse)
+async def get_users(token: str = Depends(middleware.verify_token)):
+    try:
+        data = await auth.get_current(token)
+        return SuccessResponse(data=data)
+    except Exception as e:
+        logger.error("Error getting current", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
