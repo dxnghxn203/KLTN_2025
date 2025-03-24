@@ -24,3 +24,4 @@ opensearch-py~=2.8.0
 resend~=2.6.0
 requests~=2.32.3
 email-validator~=2.2.0
+cryptography~=44.0.0
