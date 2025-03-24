@@ -43,7 +43,6 @@ export default function MainCategoryPage() {
       <div className="px-5">
         <ProductsViewedList />
       </div>
-      <Footer />
     </div>
   );
 }

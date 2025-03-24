@@ -11,8 +11,8 @@ export default function RegisterWithPhoneNumer() {
 
   return (
     <div className="flex flex-col items-center bg-white pt-[80px]">
-       {/* <Header /> */}
-      <main className="flex flex-col items-center w-full pt-14">
+      {/* <Header /> */}
+      <main className="flex flex-col items-center w-full pt-14 mb-10">
         <div className="w-full px-6">
           <Link
             href="/register"
@@ -25,7 +25,6 @@ export default function RegisterWithPhoneNumer() {
         <div className="text-3xl font-extrabold text-black">Đăng ký</div>
         <RegisterForm />
       </main>
-      <Footer />
     </div>
   );
 }

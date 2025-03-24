@@ -21,7 +21,7 @@ const BrandDetail = () => {
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
       {/* <Header /> */}
-      <main className="flex flex-col pt-14">
+      <main className="flex flex-col pt-14 mb-10">
         <div className="px-5 text-sm text-[#0053E2]">
           <Link href="/" className="hover:underline text-blue-600">
             Trang chủ
@@ -76,7 +76,6 @@ const BrandDetail = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

@@ -23,8 +23,8 @@ const OtpVerificationPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 mt-12">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-center mb-4">Xác nhận mã OTP</h2>
         <p className="text-gray-600 text-center mb-4">
           Vui lòng nhập mã OTP đã được gửi đến{" "}

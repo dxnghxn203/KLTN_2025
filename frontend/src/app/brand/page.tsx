@@ -157,8 +157,8 @@ const BrandItem: React.FC<BrandProps> = ({ name, imageSrc }) => (
 const BrandList: React.FC = () => {
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-       {/* <Header /> */}
-      <main className="flex flex-col pt-14">
+      {/* <Header /> */}
+      <main className="flex flex-col pt-14 mb-10">
         <div className="text-sm text-[#0053E2] px-5">
           <Link href="/" className="hover:underline text-blue-600">
             Trang chủ
@@ -178,7 +178,6 @@ const BrandList: React.FC = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

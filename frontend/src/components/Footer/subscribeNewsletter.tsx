@@ -2,7 +2,7 @@ import React from "react";
 
 const SubscribeNewsletter: React.FC = () => {
   return (
-    <div className="flex flex-col items-center self-stretch px-20 pt-7 pb-14 mt-10 w-full text-sm text-black bg-slate-100 max-md:px-5 max-md:max-w-full">
+    <div className="flex flex-col items-center self-stretch px-20 pt-7 pb-14 w-full text-sm text-black bg-slate-100 max-md:px-5 max-md:max-w-full">
       <div className="flex flex-col items-center max-w-full w-[634px]">
         <div className="text-2xl font-extrabold">Đăng ký nhận bản tin</div>
         <div className="self-stretch mt-8 font-medium max-md:max-w-full">

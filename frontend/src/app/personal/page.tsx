@@ -10,8 +10,8 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-       {/* <Header /> */}
-      <main className="flex flex-col pt-14">
+      {/* <Header /> */}
+      <main className="flex flex-col pt-14 mb-10">
         <div className="text-sm text-[#0053E2] px-5">
           <Link href="/" className="hover:underline text-blue-600">
             Trang chủ
@@ -31,7 +31,6 @@ export default function Profile() {
         </div>
         <Sidebar />
       </main>
-      <Footer />
     </div>
   );
 }

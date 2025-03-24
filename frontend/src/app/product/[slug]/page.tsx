@@ -23,8 +23,8 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
-       {/* <Header /> */}
-      <main className="flex flex-col space-y-8 px-5 pt-16">
+      {/* <Header /> */}
+      <main className="flex flex-col space-y-8 px-5 pt-16 mb-10">
         {productBySlug ? (
           <>
             {loading ? (
@@ -53,7 +53,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         Những sản phẩm liên quan
         <ProductsRelatedList />
       </div>
-      <Footer />
     </div>
   );
 }

@@ -39,7 +39,7 @@ const articles: ArticleProps[] = [
 
 const HealthCorner: React.FC = () => {
   return (
-    <div className="flex flex-col px-6 mt-9 w-full max-md:px-5 max-md:max-w-full">
+    <div className="flex flex-col px-6 mt-10 w-full max-md:px-5 max-md:max-w-full">
       <div className="self-start text-2xl font-extrabold text-black">
         Góc sức khỏe
       </div>

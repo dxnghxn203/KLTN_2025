@@ -18,7 +18,7 @@ const ShoppingCart: React.FC = () => {
 
   const products: Product[] = useMemo(() => {
     return cartLocal
-      .filter(product => cartSelected.includes(product.id.toString()))
+      .filter((product) => cartSelected.includes(product.id.toString()))
       .map((product) => ({
         id: product.id,
         name: product.name,
@@ -28,12 +28,14 @@ const ShoppingCart: React.FC = () => {
         quantity: product.quantity,
         unit: product.unit,
         discount: (product.originPrice - product.price).toString(),
-      }))
+      }));
   }, [cartLocal, cartSelected]);
 
   const totalAmount = useMemo(() => {
-    return products
-      .reduce((total, product) => total + product.price * product.quantity, 0);
+    return products.reduce(
+      (total, product) => total + product.price * product.quantity,
+      0
+    );
   }, [products]);
 
   const totalOriginPrice = useMemo(() => {
@@ -51,9 +53,9 @@ const ShoppingCart: React.FC = () => {
     const infor = {
       orderData: {
         product: products,
-        ...data
-      }
-    }
+        ...data,
+      },
+    };
     checkOrder(
       infor,
       (data: any) => {
@@ -66,13 +68,15 @@ const ShoppingCart: React.FC = () => {
     );
   };
 
-  const [data, setData] = useState<any>()
+  const [data, setData] = useState<any>();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [qrCodeData, setQrCodeData] = useState<StaticImageData | string | null>(null);
+  const [qrCodeData, setQrCodeData] = useState<StaticImageData | string | null>(
+    null
+  );
 
   useEffect(() => {
     return () => {
-      if (typeof qrCodeData === 'string' && qrCodeData.startsWith('blob:')) {
+      if (typeof qrCodeData === "string" && qrCodeData.startsWith("blob:")) {
         URL.revokeObjectURL(qrCodeData);
       }
     };
@@ -80,20 +84,22 @@ const ShoppingCart: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
-       {/* <Header /> */}
+      {/* <Header /> */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <div className="text-center">
               <h3 className="text-xl font-semibold mb-4">Thanh toán!</h3>
-              <p className="mb-4">Cảm ơn bạn đã đặt hàng. Vui lòng sử dụng mã QR để thanh toán.</p>
+              <p className="mb-4">
+                Cảm ơn bạn đã đặt hàng. Vui lòng sử dụng mã QR để thanh toán.
+              </p>
               <div className="flex justify-center mb-4">
-                  <Image
-                    src={sepay_qr_ORDER7NS1742504401}
-                    className="ml-4 rounded-lg border border-stone-300"
-                    alt={"QR code"}
-                  />
-                </div>
+                <Image
+                  src={sepay_qr_ORDER7NS1742504401}
+                  className="ml-4 rounded-lg border border-stone-300"
+                  alt={"QR code"}
+                />
+              </div>
               <button
                 onClick={() => setShowSuccessModal(false)}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -131,7 +137,6 @@ const ShoppingCart: React.FC = () => {
           />
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

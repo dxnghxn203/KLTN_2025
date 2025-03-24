@@ -144,8 +144,13 @@ export default function Header() {
                           cartLocal.length > 3 ? "custom-scrollbar" : ""
                         }`}
                       >
-                        {cartLocal.map((item) => (
-                          <div key={item.id} className="flex py-3 border-b">
+                        {cartLocal.map((item, index) => (
+                          <div
+                            key={item.id}
+                            className={`flex py-3 ${
+                              index !== cartLocal.length - 1 ? "border-b" : ""
+                            }`}
+                          >
                             <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
                               <Image
                                 src={item.imageSrc}
@@ -183,13 +188,11 @@ export default function Header() {
                         ))}
                       </div>
 
-                      <div className="mt-3 pt-3 border-t">
-                        <Link href="/cart" legacyBehavior>
-                          <a className="mt-3 block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
-                            Xem giỏ hàng
-                          </a>
-                        </Link>
-                      </div>
+                      <Link href="/cart" legacyBehavior>
+                        <a className="text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
+                          Xem giỏ hàng
+                        </a>
+                      </Link>
                     </>
                   )}
                 </div>

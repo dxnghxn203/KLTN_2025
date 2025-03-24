@@ -71,7 +71,6 @@ export default function CategoryPage() {
       <div className="px-5">
         <ProductsViewedList />
       </div>
-      <Footer />
     </div>
   );
 }
