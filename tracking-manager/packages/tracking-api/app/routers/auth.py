@@ -11,7 +11,7 @@ from app.models import user, auth
 
 router = APIRouter()
 
-@router.post("/auth/google-auth")
+@router.post("/authen/google-auth")
 async def login(request: GoogleAuthRequest):
     try:
         authGoogle = await google_auth(request.id_token)
@@ -89,7 +89,7 @@ async def login(email: str = Form(), password: str = Form()):
 @router.get("/auth/logout", response_model=BaseResponse)
 async def logout(token: str = Depends(middleware.destroy_token)):
     try:
-        logger.info(", hủy token")
+        logger.info("hủy token")
         return response.SuccessResponse(message="Đã đăng xuất")
     except Exception as e:
         raise response.JsonException(
