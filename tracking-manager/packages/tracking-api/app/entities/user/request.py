@@ -6,10 +6,10 @@ from app.common import password
 
 
 class ItemUserRegisReq(BaseModel):
-    phone_number: str
-    user_name: str = None
-    email: str = None
-    password: str = None
+    phone_number: str = ""
+    user_name: str = ""
+    email: str = ""
+    password: str = ""
     gender: str = "Nam"
     birthday: datetime.datetime = None
 

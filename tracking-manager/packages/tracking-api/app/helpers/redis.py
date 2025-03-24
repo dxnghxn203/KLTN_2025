@@ -7,80 +7,68 @@ from app.entities.product.request import ItemProductRedisReq
 redis = redis_client.redis
 REQUEST_COUNT_MAX=5
 
-def opt_key(username: str) -> str:
+# ==== OTP & REQUEST COUNT MANAGEMENT ====
+
+def otp_key(username: str) -> str:
     return f"otp_request:{username}"
 
 def request_count_key(username: str) -> str:
     return f"otp_request_count:{username}"
 
-def block_key(username: str) -> str:
-    return f"block_user:{username}"
-
 def get_ttl(key: str):
     return redis.ttl(key)
 
 def check_request_count(username):
-    req_count_key=request_count_key(username)
+    key=request_count_key(username)
+    count = redis.get(key)
 
-    value = redis.get(req_count_key)
-    count = value if value else None
-    if isinstance(count, bytes):
-        count = count.decode('utf-8')
     if count is None:
         return True
-    count = int(count)
+    count = int(count.decode() if isinstance(count, bytes) else count)
 
-    if count<REQUEST_COUNT_MAX:
+    if count < REQUEST_COUNT_MAX:
         return True
-    if count==REQUEST_COUNT_MAX:
-        delete_otp_request(username)
-        block_send_otp(req_count_key)
 
-    return False
-
-def block_send_otp(key):
+    delete_otp(username)
     redis.incr(key)
     redis.expire(key, 1800)
+    return False
 
-def update_otp_request_count_value(key: str):
-    ttl = get_ttl(key)
+def update_otp_request_count_value(username: str):
+    key = request_count_key(username)
     redis.incr(key)
-
-    # Restore the TTL (if it had a TTL set)
-    ttl = ttl if ttl > 0 else 300
-    redis.expire(key, ttl)
+    redis.expire(key, max(get_ttl(key), 300))
 
 def save_otp(username: str, otp: str):
-    key = opt_key(username)
-    redis.set(key, otp, 300)
+    redis.set(otp_key(username), otp, 300)
 
 def save_otp_and_update_request_count(username: str, otp: str):
     save_otp(username, otp)
-    update_otp_request_count_value(request_count_key(username))
+    update_otp_request_count_value(username)
 
 def get_otp(username: str):
-    key = opt_key(username)
-    value = redis.get(key)
-    if isinstance(value, bytes):
-        return value.decode('utf-8')
-    return value if value else None
+    value = redis.get(otp_key(username))
+    return value.decode() if isinstance(value, bytes) else value
+
+def delete_otp(username: str):
+    redis.delete(otp_key(username))
+
+# ==== JWT TOKEN MANAGEMENT ====
 
 def jwt_token_key(username: str) -> str:
     return f"jwt_token:{username}"
 
 def get_jwt_token(username: str):
-    key = jwt_token_key(username)
-    token = redis.get(key)
-    return token if token else None
-
+    token = redis.get(jwt_token_key(username))
+    return token.decode() if isinstance(token, bytes) else token
 
 def save_jwt_token(username: str, token: str):
-    key = jwt_token_key(username)
-    redis.set(key, token, 86400)
+    redis.set(jwt_token_key(username), token, 86400)
 
 def delete_jwt_token(username: str):
-    key = jwt_token_key(username)
-    redis.delete(key)
+    redis.delete(jwt_token_key(username))
+
+# ==== PRODUCT MANAGEMENT ====
 
 def product_key(product_id: str) -> str:
     return f"product:{product_id}"
@@ -89,42 +77,26 @@ def get_product_transaction(product_id: str):
     key = product_key(product_id)
     data = redis.hgetall(key)
 
-    return {
-        "inventory": int(data.get("inventory", 0)),
-        "sell": int(data.get("sell", 0)),
-    } if data else None
+    return {field: int(data[field]) for field in ["inventory", "sell"] if field in data} if data else None
 
 def save_product(product: ItemProductRedisReq, id: str):
-    key = product_key(id)
-    redis.hmset(key, {
+    redis.hmset(product_key(id), {
         "inventory": product.inventory,
         "sell": product.sell,
         "delivery": product.delivery
     })
-    redis.persist(key)
+    redis.persist(product_key(id))
+
+# ==== ORDER MANAGEMENT ====
 
 def order_key(order_id: str) -> str:
     return f"order:{order_id}"
 
 def save_order(order: ItemOrderReq):
-    key = order_key(order.order_id)
-    order_json = json.dumps(order.dict(), ensure_ascii=False)
-    redis.set(key, order_json, 600)
-    redis.persist(key)
+    redis.set(order_key(order.order_id), json.dumps(order.dict(), ensure_ascii=False), 600)
+    redis.persist(order_key(order.order_id))
 
 def get_order(order_id: str):
-    key = order_key(order_id)
-    data = redis.get(key)
-    return data if data else None
+    data = redis.get(order_key(order_id))
+    return data.decode() if isinstance(data, bytes) else data
 
-def delete_otp_request(username: str):
-    key = opt_key(username)
-    redis.delete(key)
-
-def delete_otp_request_count(username: str):
-    key = request_count_key(username)
-    redis.delete(key)
-
-def delete_otp(username: str):
-    delete_otp_request_count(username)
-    delete_otp_request(username)

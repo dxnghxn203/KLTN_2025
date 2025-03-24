@@ -6,10 +6,11 @@ from pydantic import BaseModel, Field, EmailStr
 
 class ItemUserRes(BaseModel):
     id: str = Field(..., alias='_id')
-    phone_number: str
-    user_name: str
+    phone_number: Optional[Union[str, None]] = None
+    user_name: Optional[Union[str, None]] = None
     email: EmailStr = None
-    gender: str = "Nam"
+    gender: Optional[Union[str, None]] = None
+    auth_provider: Optional[Union[str, None]] = None
     birthday: Optional[Union[datetime.datetime, None]] = None
     #image_url: Optional[Union[str, None]] = None
     role_id: Optional[Union[str, None]] = None
