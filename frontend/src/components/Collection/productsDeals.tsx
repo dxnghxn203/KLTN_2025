@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/Product/productCard";
 import { ProductData } from "@/types/product";
-import ProductPortfolioList from "@/components/Product/productFunctionalList";
+import ProductPortfolioList from "@/components/Product/productMainCategoryList";
 import medicine1 from "@/images/medicinee.png";
 import { generateRandomId } from "@/utils/string";
 import ProductDealsList from "../Product/productDealsList";
@@ -12,7 +12,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
@@ -23,7 +24,8 @@ const productData: ProductData[] = [
   },
   {
     id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -34,7 +36,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -46,7 +49,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -58,7 +62,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -70,7 +75,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -82,7 +88,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -94,7 +101,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -106,7 +114,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -118,7 +127,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -130,7 +140,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -142,7 +153,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -154,7 +166,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -166,7 +179,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -178,7 +192,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -190,7 +205,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -202,7 +218,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -214,7 +231,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -226,7 +244,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",
@@ -238,7 +257,8 @@ const productData: ProductData[] = [
   {
     id: generateRandomId(),
     discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
     category: "Dinh dưỡng",
     rating: 4.5,
     name: "NutriGrow Nutrimed...",

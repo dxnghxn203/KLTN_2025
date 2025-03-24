@@ -14,7 +14,6 @@ export default function CategoryList({
       ? params.mainCategory[0]
       : params.mainCategory);
   const sub_category = data.sub_category || [];
-  console.log("duyenoi", sub_category);
 
   return (
     <div className="px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

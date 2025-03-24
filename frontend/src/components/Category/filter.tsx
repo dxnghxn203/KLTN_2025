@@ -81,7 +81,7 @@ export default function Filter({
   return (
     <div className="pl-5 space-y-4">
       {/* Header */}
-      <div className="flex pt-12 space-x-6">
+      <div className="flex pt-2 space-x-6">
         <span className="font-semibold">Bộ lọc</span>
         <span
           className="text-[#0053E2] cursor-pointer"

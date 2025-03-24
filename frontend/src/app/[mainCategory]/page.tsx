@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Footer from "@/components/Footer/footer";
-import ProductPortfolioList from "@/components/Product/productFunctionalList";
+import ProductMainCategoryList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import { useCategory } from "@/hooks/useCategory";
 import { useMemo } from "react";
@@ -19,7 +19,7 @@ export default function MainCategoryPage() {
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-       {/* <Header /> */}
+      {/* <Header /> */}
       <main className="flex flex-col pt-14">
         <div className="text-sm text-[#0053E2] px-5">
           <Link href="/" className="hover:underline text-blue-600">
@@ -33,7 +33,9 @@ export default function MainCategoryPage() {
           {mainCategory?.main_category_name}
         </div>
         <CategoryList data={mainCategory} />
-        <ProductPortfolioList />
+        <div className="mt-6">
+          <ProductMainCategoryList />
+        </div>
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">
         Sản phẩm vừa xem
