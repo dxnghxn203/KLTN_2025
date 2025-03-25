@@ -10,7 +10,14 @@ import { useRouter } from "next/navigation";
 const unitOptions = ["Cái", "Hộp", "Chai", "Gói"];
 
 const ShoppingCart: React.FC = () => {
-  const { cartLocal, updateQuantity, updateUnit, removeFromCart, addCartSelectedLocal, cartSelected } = useCart();
+  const {
+    cartLocal,
+    updateQuantity,
+    updateUnit,
+    removeFromCart,
+    addCartSelectedLocal,
+    cartSelected,
+  } = useCart();
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -54,7 +61,7 @@ const ShoppingCart: React.FC = () => {
   useEffect(() => {
     const add = () => {
       addCartSelectedLocal(selectedProducts);
-    }
+    };
     add();
   }, [selectedProducts]);
 
@@ -77,7 +84,7 @@ const ShoppingCart: React.FC = () => {
   };
 
   const checkout = () => {
-    router.push("/checkout");
+    router.push("/thanh-toan");
   };
 
   return (
@@ -115,8 +122,9 @@ const ShoppingCart: React.FC = () => {
         {cartLocal?.map((product, index) => (
           <div
             key={product.id}
-            className={`flex items-center justify-between py-4 mx-5 text-sm ${index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
-              }`}
+            className={`flex items-center justify-between py-4 mx-5 text-sm ${
+              index !== cartLocal?.length - 1 ? "border-b border-gray-300" : ""
+            }`}
           >
             <div className="w-[55%] flex items-center px-4 py-2">
               <label

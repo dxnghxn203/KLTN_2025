@@ -52,8 +52,6 @@ const RegisterForm: React.FC = () => {
         errors.email = emailError; // Gán lỗi định dạng email nếu có
       }
     }
-
-    // Kiểm tra mật khẩu
     if (!errors.password) {
       const passwordError = validatePassword(formData.password);
       if (passwordError) {
@@ -210,7 +208,7 @@ const RegisterForm: React.FC = () => {
         <div className="">
           {isFormValid ? (
             <Link
-              href="/register/verifyOTP"
+              href="/dang-ky/xac-thuc-OTP"
               className="block w-full text-center text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
             >
               Tiếp tục

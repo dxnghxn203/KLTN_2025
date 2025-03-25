@@ -15,7 +15,7 @@ export default function RegisterWithPhoneNumer() {
       <main className="flex flex-col items-center w-full pt-14 mb-10">
         <div className="w-full px-6">
           <Link
-            href="/register"
+            href="/dang-ky"
             className="inline-flex items-center text-blue-700 hover:text-[#002E99] transition-colors"
           >
             <ChevronLeft size={20} />

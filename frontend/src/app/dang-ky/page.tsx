@@ -28,7 +28,7 @@ export default function RegisterPage() {
           <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
         </div>
 
-        <Link href="/register/phoneNumber" passHref>
+        <Link href="/dang-ky/email" passHref>
           <button className="px-5 h-[55px] text-sm font-semibold text-black border border-solid border-black border-opacity-10 rounded-3xl w-[400px] max-md:px-5">
             Tiếp tục với email
           </button>
@@ -43,7 +43,7 @@ export default function RegisterPage() {
           <div className="grow shrink font-medium text-black/70">
             Bạn đã có tài khoản?
           </div>
-          <Link href="/login" legacyBehavior>
+          <Link href="/dang-nhap" legacyBehavior>
             <a className="font-bold text-[#0053E2] hover:text-[#002E99] transition-colors">
               Đăng nhập
             </a>

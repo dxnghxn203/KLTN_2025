@@ -137,7 +137,10 @@ const brands: BrandProps[] = [
 ];
 
 const BrandItem: React.FC<BrandProps> = ({ name, imageSrc }) => (
-  <Link href={`/brand/${encodeURIComponent(name)}`} className="flex flex-col">
+  <Link
+    href={`/thuong-hieu/${encodeURIComponent(name)}`}
+    className="flex flex-col"
+  >
     <div className="flex flex-col justify-center items-center px-7 rounded-full bg-neutral-100 h-[170px] w-[170px] max-md:px-5">
       <img
         loading="lazy"
@@ -155,7 +158,7 @@ const BrandItem: React.FC<BrandProps> = ({ name, imageSrc }) => (
 const BrandList: React.FC = () => {
   return (
     <div className="flex flex-col w-full max-md:px-5 max-md:max-w-full">
-      <Link href="/brand">
+      <Link href="/thuong-hieu">
         <div className="px-6 flex flex-wrap gap-5 justify-between items-start w-full text-black max-md:max-w-full">
           <div className="flex gap-2 text-sm font-semibold ml-auto items-center mt-[-30px]">
             <div>Xem tất cả</div>

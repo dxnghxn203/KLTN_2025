@@ -22,7 +22,7 @@ const ProductMainCategoryCard: React.FC<ProductData> = ({
       <div className="flex text-xs font-bold whitespace-normal">
         <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
           {/* Ảnh sản phẩm */}
-          <Link href="/detailproduct" legacyBehavior>
+          <Link href="/chi-tiet-san-pham" legacyBehavior>
             <div className="py-4 flex flex-col items-center">
               <div className="flex justify-end w-full">
                 {discount !== undefined ? (

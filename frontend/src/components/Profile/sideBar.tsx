@@ -32,7 +32,7 @@ const Sidebar = () => {
         </div>
         <div className="bg-[#F5F7F9] mt-2 rounded-lg">
           <div>
-            <Link href="/personal/personal-infomation">
+            <Link href="/ca-nhan/thong-tin-ca-nhan">
               <button
                 className={`font-medium px-4 py-4 w-full text-left flex items-center rounded-lg cursor-pointer 
       ${
@@ -46,7 +46,7 @@ const Sidebar = () => {
               </button>
             </Link>
 
-            <Link href="/personal/order-history">
+            <Link href="/ca-nhan/lich-su-don-hang">
               <button
                 className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
                 ${

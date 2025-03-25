@@ -7,7 +7,7 @@ import google from "@/images/google.png";
 import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { validateEmail, validateEmptyFields } from "@/utils/validation";
 
 const LoginForm: React.FC = () => {
   const { signInWithGoogle, login, isLoading } = useAuth();
@@ -15,7 +15,11 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
   const { showToast } = useToast();
-  const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleGoogleSignIn = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -25,16 +29,29 @@ const LoginForm: React.FC = () => {
       showToast("Đăng nhập bằng Google thất bại", ToastType.ERROR);
     }
   };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+    setErrors((prev) => ({ ...prev, [id]: "" })); // Xóa lỗi khi thay đổi giá trị
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      showToast("Vui lòng nhập đầy đủ thông tin", ToastType.WARNING);
+    const emptyFieldErrors = validateEmptyFields(formData);
+    const errors: { [key: string]: string } = { ...emptyFieldErrors };
+    if (!errors.email) {
+      const emailError = validateEmail(formData.email);
+      if (emailError) {
+        errors.email = emailError;
+      }
+    }
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
       return;
     }
-
     setLocalLoading(true);
-    // For testing - show a toast directly
     showToast("Đang xử lý đăng nhập...", ToastType.INFO);
   };
 
@@ -74,14 +91,15 @@ const LoginForm: React.FC = () => {
           <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
             <input
               id="email"
-              type="email"
               placeholder=""
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
-              required
             />
           </div>
+          {errors.email && (
+            <p className="text-red-500 text-sm">{errors.email}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -92,12 +110,14 @@ const LoginForm: React.FC = () => {
             <input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
-              required
             />
           </div>
+          {errors.password && (
+            <p className="text-red-500 text-sm">{errors.password}</p>
+          )}
         </div>
 
         <div className="flex justify-end">
@@ -120,7 +140,7 @@ const LoginForm: React.FC = () => {
 
       <div className="flex gap-2 text-sm justify-center mt-4">
         <span className="font-medium">Bạn chưa có tài khoản?</span>
-        <Link href="/register" legacyBehavior>
+        <Link href="/dang-ky" legacyBehavior>
           <a className="font-bold text-[#0053E2] hover:text-[#002E99] transition-colors">
             Đăng ký ngay
           </a>

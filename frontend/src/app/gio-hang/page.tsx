@@ -17,7 +17,7 @@ export default function Cart() {
         <div className="flex flex-col px-5">
           <div className="pt-14">
             <Link
-              href="/home"
+              href="/"
               className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
             >
               <ChevronLeft size={20} />

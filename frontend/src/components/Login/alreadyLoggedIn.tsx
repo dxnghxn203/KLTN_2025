@@ -56,14 +56,14 @@ const AlreadyLoggedIn: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        <Link href="/home">
+        <Link href="/">
           <div className="flex items-center justify-center gap-2 w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-medium hover:bg-[#0042b4] transition-colors">
             <IoHome className="text-xl" />
             <span>Đi đến trang chủ</span>
           </div>
         </Link>
 
-        <Link href="/personal">
+        <Link href="/ca-nhan">
           <div className="mt-4 flex items-center justify-center gap-2 w-full h-[55px] rounded-3xl border border-[#0053E2] text-[#0053E2] font-medium hover:bg-blue-50 transition-colors">
             <FaCircleUser className="text-xl" />
             <span>Xem thông tin cá nhân</span>

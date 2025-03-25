@@ -110,7 +110,7 @@ export default function Header() {
             onMouseEnter={() => setShowCartDropdown(true)}
             onMouseLeave={() => setShowCartDropdown(false)}
           >
-            <Link href="/cart" className="focus:outline-none">
+            <Link href="/gio-hang" className="focus:outline-none">
               <div
                 className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${
                   pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
@@ -188,7 +188,7 @@ export default function Header() {
                         ))}
                       </div>
 
-                      <Link href="/cart" legacyBehavior>
+                      <Link href="/gio-hang" legacyBehavior>
                         <a className="text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
                           Xem giỏ hàng
                         </a>
@@ -239,12 +239,12 @@ export default function Header() {
                 {showDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
                     <div className="py-2 text-sm">
-                      <Link href="/personal">
+                      <Link href="/ca-nhan">
                         <div className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer">
                           Thông tin tài khoản
                         </div>
                       </Link>
-                      <Link href="/personal/order-history">
+                      <Link href="/ca-nhan/lich-su-don-hang">
                         <div className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer">
                           Lịch sử đơn hàng
                         </div>
@@ -262,7 +262,7 @@ export default function Header() {
               </div>
             </>
           ) : (
-            <Link href="/login" className="focus:outline-none">
+            <Link href="/dang-nhap" className="focus:outline-none">
               <div
                 className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
                   pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"

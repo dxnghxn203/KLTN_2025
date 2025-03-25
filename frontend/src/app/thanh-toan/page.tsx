@@ -114,7 +114,7 @@ const ShoppingCart: React.FC = () => {
         <div className="flex flex-col">
           <div className="pt-14">
             <Link
-              href="/cart"
+              href="/gio-hang"
               className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
             >
               <ChevronLeft size={20} />

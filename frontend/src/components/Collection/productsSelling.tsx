@@ -276,7 +276,7 @@ const ProductsSelling: React.FC = () => {
         Trang chủ
       </Link>
       <span> / </span>
-      <Link href="/collection/products-selling" className="text-gray-800">
+      <Link href="/bo-suu-tap/san-pham-ban-chay" className="text-gray-800">
         Sản phẩm bán chạy
       </Link>
       <div className="self-start text-2xl font-extrabold text-black py-4">

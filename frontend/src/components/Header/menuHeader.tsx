@@ -9,7 +9,7 @@ export default function MenuHeader() {
   useEffect(() => {
     fetchAllCategory();
   }, []);
-  
+
   return (
     <nav className="bg-[#F0F5FF] h-[46px] text-[#002E99] py-2 flex justify-center items-center">
       <ul className="flex justify-center space-x-14 font-normal text-[14px]">
@@ -27,13 +27,13 @@ export default function MenuHeader() {
             ))}
             {/* Thêm mục "Góc sức khỏe" */}
             <li className="cursor-pointer hover:text-[#004AF7]">
-              <Link href="/health-corner" passHref>
+              <Link href="/goc-suc-khoe" passHref>
                 Góc sức khỏe
               </Link>
             </li>
             {/* Thêm mục "Khác" */}
             <li className="cursor-pointer hover:text-[#004AF7]">
-              <Link href="/other" passHref>
+              <Link href="/khac" passHref>
                 Khác
               </Link>
             </li>

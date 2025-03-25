@@ -55,7 +55,7 @@ const OtpVerificationPage: React.FC = () => {
             </button>
           </div>
           <div className="pt-4">
-            <Link href="/login">
+            <Link href="/dang-nhap">
               <button
                 type="submit"
                 className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-700 transition-colors"

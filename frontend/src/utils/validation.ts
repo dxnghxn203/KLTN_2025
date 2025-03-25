@@ -27,11 +27,26 @@ export const validatePassword = (value: string): string | null => {
   // Kiểm tra trường trống
   export const validateEmptyFields = (fields: { [key: string]: string }): { [key: string]: string } => {
     const errors: { [key: string]: string } = {};
+    
+    // Bản đồ ánh xạ key sang tiếng Việt
+    const keyToVietnamese: { [key: string]: string } = {
+      email: "Email đăng nhập",
+      password: "Mật khẩu",
+      username: "Tên người dùng",
+      phoneNumber: "Số điện thoại",
+      gender: "Giới tính",
+      dateOfBirth: "Ngày sinh",
+      confirmPassword: "Xác nhận mật khẩu",
+    };
+    
+  
     for (const [key, value] of Object.entries(fields)) {
       if (!value.trim()) {
-        errors[key] = `Trường ${key} không được để trống.`;
+        const vietnameseKey = keyToVietnamese[key] || key; // Sử dụng key gốc nếu không có ánh xạ
+        errors[key] = `${vietnameseKey} không được để trống.`;
       }
     }
     return errors;
   };
+  
   

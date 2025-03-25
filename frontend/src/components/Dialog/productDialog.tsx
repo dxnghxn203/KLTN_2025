@@ -124,7 +124,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
               </div>
             </div>
             <Link
-              href="/checkout"
+              href="/thanh-toan"
               className="block mt-10 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full text-center"
             >
               Mua ngay

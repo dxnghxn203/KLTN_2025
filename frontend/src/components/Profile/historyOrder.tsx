@@ -133,7 +133,7 @@ const HistoryOrder: React.FC = () => {
                 <div className="bg-[#FFFBE6] text-[#FAB328] p-2 rounded-lg text-sm font-semibold w-[90%]">
                   Tích lũy {order.points} điểm
                 </div>
-                <Link href={`/personal/order-history/${order.id}`}>
+                <Link href={`/ca-nhan/lich-su-don-hang/${order.id}`}>
                   <button className="px-2 py-2 text-sm bg-[#0053E2] items-center font-semibold text-white rounded-lg">
                     Chi tiết
                   </button>
