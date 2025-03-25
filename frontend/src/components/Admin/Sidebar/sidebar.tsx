@@ -22,14 +22,14 @@ const menuItems = [
     label: "Analytical",
     path: "/dashboard",
   },
-  { id: "User", icon: <LuUsersRound />, label: "User", path: "/user" },
+  { id: "User", icon: <LuUsersRound />, label: "User", path: "/users" },
   {
     id: "Order",
     icon: <FiShoppingBag />,
     label: "Order",
-    path: "/order",
+    path: "/orders",
   },
-  { id: "Product", icon: <BsBox />, label: "Product", path: "/product" },
+  { id: "Product", icon: <BsBox />, label: "Product", path: "/products" },
 ];
 
 const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
