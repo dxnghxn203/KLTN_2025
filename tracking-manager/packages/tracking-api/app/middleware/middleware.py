@@ -7,9 +7,8 @@ from typing import Optional
 
 import bcrypt
 import jwt
-from fastapi import Depends, status, Header
+from fastapi import Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.security.utils import get_authorization_scheme_param
 from pydantic import ValidationError
 
 from app.core import logger, response
