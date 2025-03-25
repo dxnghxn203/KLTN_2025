@@ -30,7 +30,7 @@ const ProductCard: React.FC<ProductData> = ({
                     {discount}
                   </div>
                 ) : (
-                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md">
+                  <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md opacity-0">
                     Ưu đãi
                   </div>
                 )}

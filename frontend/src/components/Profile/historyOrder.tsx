@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import medicine from "@/images/medicinee.png";
 import Image from "next/image";
 import { useState } from "react";
+import Link from "next/link";
 
 const tabs = [
   { id: "all", label: "Tất cả" },
@@ -42,10 +43,6 @@ const HistoryOrder: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const router = useRouter();
-
-  const goToOrderDetail = (orderId: string) => {
-    router.push(`/personal/order-history/${orderId}`);
-  };
 
   return (
     <div>
@@ -92,11 +89,7 @@ const HistoryOrder: React.FC = () => {
       {/* Nội dung tab "Tất cả" */}
       {activeTab === "all" &&
         orders.map((order) => (
-          <div
-            key={order.id}
-            className="bg-[#F5F7F9] rounded-lg p-4 mt-4 cursor-pointer"
-            onClick={() => goToOrderDetail(order.id)}
-          >
+          <div key={order.id} className="bg-[#F5F7F9] rounded-lg p-4 mt-4">
             <div className="border-b last:border-0">
               <div className="flex justify-between items-center">
                 <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-medium">
@@ -136,8 +129,15 @@ const HistoryOrder: React.FC = () => {
                 </p>
               </div>
 
-              <div className="bg-[#FFFBE6] text-[#FAB328] p-2 mt-2 rounded text-sm font-semibold">
-                Tích lũy {order.points} điểm
+              <div className="flex justify-between mt-2">
+                <div className="bg-[#FFFBE6] text-[#FAB328] p-2 rounded-lg text-sm font-semibold w-[90%]">
+                  Tích lũy {order.points} điểm
+                </div>
+                <Link href={`/personal/order-history/${order.id}`}>
+                  <button className="px-2 py-2 text-sm bg-[#0053E2] items-center font-semibold text-white rounded-lg">
+                    Chi tiết
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
