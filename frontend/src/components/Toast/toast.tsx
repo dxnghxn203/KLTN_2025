@@ -70,37 +70,22 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
 
   return (
     <div 
-      className={`flex items-center w-80 p-4 mb-4 rounded-lg shadow-xl ${config.bgColor} border-l-4 ${config.borderColor}`}
+      className={`fixed top-5 w-80 right-5 px-4 py-2 rounded-lg animate-slide-in ${config.bgColor} border-l-4 ${config.borderColor}`}
       style={{
         animation: 'fadeIn 0.3s ease-out forwards',
         opacity: 0  
       }}
       role="alert"
     >
-      <div className={`inline-flex items-center justify-center flex-shrink-0 ${config.iconColor}`}>
-        {config.icon}
-      </div>
-      <div className={`ml-3 text-sm font-medium ${config.textColor} flex-grow`}>
-        {message}
-      </div>
-      {onClose && (
-        <button 
-          type="button" 
-          className={`ml-auto -mx-1.5 -my-1.5 rounded-lg p-1.5 hover:bg-gray-100 focus:ring-2 focus:ring-gray-300 inline-flex items-center justify-center h-8 w-8 ${config.textColor}`}
-          onClick={onClose}
-          aria-label="Close"
-        >
-          <span className="sr-only">Close</span>
-          <FiX size={18} />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <span className={`block ${config.iconColor}`}>{config.icon}</span>
+          <span className={`block font-semibold ${config.textColor}`}>{message}</span>
+        </div>
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+          <FiX size={20} />
         </button>
-      )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+      </div>
     </div>
   );
 };

@@ -1,26 +1,24 @@
 "use client";
-import { useState } from "react";
-import Sidebar from "@/components/Admin/Sidebar/sidebar";
-import Header from "@/components/Admin/Header/header";
+
+import { useToast } from "@/providers/toastProvider";
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeItem, setActiveItem] = useState("Analytical");
+  const toast = useToast();
+  
+  const showtext = () => {
+    toast.showToast("Hello, this is a sdsge dvcddfdf", "success");
+    toast.showToast("Hello, this is a sdsge", "error");
+    toast.showToast("Hello, this is a sdsge", "warning");
+    toast.showToast("Hello, this is a sdsge", "info");
+    toast.showToast("Hello, this is a sdsge cdcd ", "default");
+    //chỉnh UI tại frontend/src/components/Toast/toast.tsx
+  };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar
-        isOpen={sidebarOpen}
-        activeItem={activeItem}
-        setActiveItem={setActiveItem}
-      />
-      <div className="flex-1">
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="p-4">
-          <h2>Welcome to the Dashboard</h2>
-        </main>
-      </div>
-    </div>
+    <>
+      <h2>Welcome to the Dashboard</h2>
+      <button onClick={() => showtext()}>Click me</button>
+    </>
   );
 };
 

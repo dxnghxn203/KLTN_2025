@@ -1,5 +1,4 @@
 import { IoMenuOutline, IoChevronDownOutline } from "react-icons/io5";
-import { HiOutlineUserCircle } from "react-icons/hi2";
 import { HiOutlineMail } from "react-icons/hi";
 import { FiLogOut } from "react-icons/fi";
 import Link from "next/link";
@@ -7,7 +6,6 @@ import { useState } from "react";
 import Image from "next/image";
 import avata from "@/images/avataadmin.jpg";
 import { MdOutlineAccountCircle } from "react-icons/md";
-import { FiSearch } from "react-icons/fi";
 import { CiSearch } from "react-icons/ci";
 
 const Header = ({
@@ -22,7 +20,6 @@ const Header = ({
 
   return (
     <header className="w-full bg-[#FAFBFB] p-3 flex items-center justify-between border-b border-gray-200">
-      {/* Nút Toggle Sidebar */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className="text-gray-600 hover:text-gray-900"
@@ -30,7 +27,6 @@ const Header = ({
         <IoMenuOutline size={24} />
       </button>
 
-      {/* Search Bar */}
       <div className="relative flex-1 max-w-md mx-4">
         <CiSearch className="text-xl absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         <input

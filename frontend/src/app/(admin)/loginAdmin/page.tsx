@@ -2,7 +2,6 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
       <div className="flex w-3/4 h-3/4 rounded-2xl shadow-lg overflow-hidden bg-white">
-        {/* Left Section */}
         <div className="w-1/2 bg-blue-600 flex flex-col items-center justify-center text-white p-8">
           <h1 className="text-4xl font-bold">
             med<span className="text-yellow-400">explorer</span>
@@ -19,7 +18,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right Section */}
         <div className="w-1/2 flex flex-col items-center justify-center p-12">
           <h2 className="text-2xl font-bold text-blue-700 mb-6">Welcome!</h2>
           <form className="w-full max-w-sm">

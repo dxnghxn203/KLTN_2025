@@ -58,16 +58,27 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-
       <div
-        className="fixed left-0 right-0 top-4 flex justify-center items-start z-[99999]"
+        className="fixed right-4 top-4 flex flex-col items-end z-[99999]"
         style={{ pointerEvents: "none" }}
       >
-        <div className="flex flex-col items-center space-y-2 max-w-md w-full">
-          {toasts.map((toast) => (
+        <div 
+          // className="flex flex-col items-end min-w-[320px] max-w-[384px]"
+          // style={{ 
+          //   maxHeight: 'calc(100vh - 32px)',
+          //   overflow: 'hidden'
+          // }}
+        >
+          {toasts.map((toast, index) => (
             <div
               key={toast.id}
-              style={{ pointerEvents: "auto", width: "100%" }}
+              style={{ 
+                pointerEvents: "auto",
+                width: "100%",
+                marginBottom: "12px",
+                animation: "slideInRight 0.3s ease-out",
+              }}
+              className="hover:-translate-x-1 transition-transform duration-200"
             >
               <Toast
                 message={toast.message}
@@ -78,6 +89,30 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
           ))}
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes slideInRight {
+          0% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideOutRight {
+          0% {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </ToastContext.Provider>
   );
 };

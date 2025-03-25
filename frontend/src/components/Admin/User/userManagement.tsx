@@ -127,7 +127,7 @@ const UserManagement = () => {
             Home
           </Link>
           <span> / </span>
-          <Link href="/user" className="text-gray-800">
+          <Link href="/users" className="text-gray-800">
             User management
           </Link>
         </div>
