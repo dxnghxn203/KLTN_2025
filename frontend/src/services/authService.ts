@@ -3,7 +3,7 @@ import { AuthResponse, GoogleSignInData, LoginData } from "@/types/auth";
 
 export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResponse> => {
     try {
-        const response = await axiosClient.post('/v1/authen/google-auth', data);
+        const response = await axiosClient.post('/v1/auth/google-auth', data);
         
         return {
             success: true,

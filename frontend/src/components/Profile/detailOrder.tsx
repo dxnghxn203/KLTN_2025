@@ -164,18 +164,23 @@ const OrderDetailPage = () => {
               <p>Tổng tiền</p>
               <p>(2 sản phẩm)</p>
             </div>
-            <p className="font-semibold text-2xl text-[#0053E2]">90.000đ</p>{" "}
+            <p className="font-semibold text-2xl text-[#0053E2]">90.000đ</p>
           </div>
           <hr className="border-t border-gray-300 my-4" />
           <div className="flex justify-between text-center items-center">
             <p className="">Số điểm tích lũy</p>
-            <p className="font-semibold text-[#FAB328]">+9 điểm</p>{" "}
+            <p className="font-semibold text-[#FAB328]">+9 điểm</p>
           </div>
           <div className="flex justify-between text-center items-center pt-4">
             <p className="">Phương thức thanh toán</p>
-            <p className="font-semibold">Tiền mặt</p>{" "}
+            <p className="font-semibold">Tiền mặt</p>
           </div>
         </div>
+      </div>
+      <div className="flex justify-center items-center mt-6">
+        <button className="px-4 py-2 border border-gray-500 rounded-lg hover:text-[#0053E2] hover:border-[#0053E2]">
+          Hủy đơn hàng
+        </button>
       </div>
     </div>
   );

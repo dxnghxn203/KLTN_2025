@@ -22,7 +22,13 @@ export default function SubSubCategory({
             >
               <div key={index} className="flex flex-col items-center">
                 <div className="rounded-full bg-[#EAEFFA] w-[130px] h-[130px] flex items-center justify-center">
-                  <Image src={image} alt="icon" width={90} height={90} />
+                  <Image
+                    src={child.child_image_url}
+                    alt="icon"
+                    width={90}
+                    height={90}
+                    className="object-contain bg-transparent"
+                  />
                 </div>
                 <span className="mt-2 w-[130px] text-center">
                   {child.child_category_name}
