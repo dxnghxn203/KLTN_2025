@@ -317,45 +317,45 @@ async def update_child_category_image(child_category_id: str, image: str):
         logger.error(f"Lỗi cập nhật ảnh danh mục con cấp 2: {str(e)}")
         raise e
 
-# async def update_all_categories_image(image_url):
-#     try:
-#         #image_url = upload_file(image, "default")
-#
-#         collection = db[COLLECTION_NAME]
-#
-#         categories = collection.find({})
-#         categories = categories.to_list(length=None)
-#
-#         updated_count = 0
-#
-#         for category in categories:
-#             updated = False  # Biến flag để kiểm tra có cần update không
-#
-#             # Kiểm tra sub_category
-#             if "sub_category" in category:
-#                 for sub in category["sub_category"]:
-#                     if "sub_image_url" not in sub or sub["sub_image_url"] == "":
-#                         sub["sub_image_url"] = image_url
-#                         updated = True
-#
-#                     # Kiểm tra child_category trong sub_category
-#                     if "child_category" in sub:
-#                         for child in sub["child_category"]:
-#                             if "child_image_url" not in child or child["child_image_url"] == "":
-#                                 child["child_image_url"] = image_url
-#                                 updated = True
-#
-#             # Nếu có thay đổi thì cập nhật lại MongoDB
-#             if updated:
-#                 collection.update_one(
-#                     {"_id": category["_id"]}, {"$set": {"sub_category": category["sub_category"]}}
-#                 )
-#                 updated_count += 1
-#
-#         if updated_count == 0:
-#             raise ValueError("Không có danh mục nào cần cập nhật")
-#
-#         logger.info(f"Updated {updated_count} categories with default image.")
-#     except Exception as e:
-#         logger.error(f"Lỗi cập nhật ảnh mặc định: {str(e)}")
-#         raise e
+async def update_all_categories_image(image_url):
+    try:
+        image_url = upload_file(image_url, "default")
+
+        collection = db[collection_name]
+
+        categories = collection.find({})
+        categories = categories.to_list(length=None)
+
+        updated_count = 0
+
+        for category in categories:
+            updated = False  # Biến flag để kiểm tra có cần update không
+
+            # Kiểm tra sub_category
+            if "sub_category" in category:
+                for sub in category["sub_category"]:
+                    #if "sub_image_url" not in sub or sub["sub_image_url"] == "":
+                    sub["sub_image_url"] = image_url
+                    updated = True
+
+                    # Kiểm tra child_category trong sub_category
+                    if "child_category" in sub:
+                        for child in sub["child_category"]:
+                            #if "child_image_url" not in child or child["child_image_url"] == "":
+                            child["child_image_url"] = image_url
+                            updated = True
+
+            # Nếu có thay đổi thì cập nhật lại MongoDB
+            if updated:
+                collection.update_one(
+                    {"_id": category["_id"]}, {"$set": {"sub_category": category["sub_category"]}}
+                )
+                updated_count += 1
+
+        if updated_count == 0:
+            raise ValueError("Không có danh mục nào cần cập nhật")
+
+        logger.info(f"Updated {updated_count} categories with default image.")
+    except Exception as e:
+        logger.error(f"Lỗi cập nhật ảnh mặc định: {str(e)}")
+        raise e

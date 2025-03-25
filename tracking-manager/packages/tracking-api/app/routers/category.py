@@ -209,15 +209,15 @@ async def update_child_category_image(child_category_id: str, image: UploadFile 
             message="Internal server error"
         )
 
-# @router.put("/category/update-default-image", response_model=response.BaseResponse)
-# async def update_default_image(image: str):
-#     try:
-#         await category.update_all_categories_image(image)
-#
-#         return response.BaseResponse(message="Default image updated for all categories")
-#     except Exception as e:
-#         logger.error(f"Error updating default image: {str(e)}")
-#         raise response.JsonException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             message="Internal server error"
-#         )
+@router.put("/category/update-default-image", response_model=response.BaseResponse)
+async def update_default_image(image: UploadFile = File(...)):
+    try:
+        await category.update_all_categories_image(image)
+
+        return response.BaseResponse(message="Default image updated for all categories")
+    except Exception as e:
+        logger.error(f"Error updating default image: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

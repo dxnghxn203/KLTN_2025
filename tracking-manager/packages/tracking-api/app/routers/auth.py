@@ -12,7 +12,7 @@ from app.models.auth import handle_otp_verification
 
 router = APIRouter()
 
-@router.post("/authen/google-auth")
+@router.post("/auth/google-auth")
 async def login(request: GoogleAuthRequest):
     try:
         auth_google = await google_auth(request.id_token)

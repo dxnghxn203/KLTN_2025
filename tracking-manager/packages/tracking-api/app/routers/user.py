@@ -48,7 +48,19 @@ async def send_otp(item: ItemOtpReq):
 async def verify_user(request: VerifyEmailReq):
     try:
         email, otp = request.email, request.otp
-        await user.get_by_email_and_auth_provider(email, "email")
+        user_info = await user.get_by_email_and_auth_provider(email, "email")
+
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Người dùng không tồn tại."
+            )
+
+        if user_info.get("verified_email_at"):
+            raise response.JsonException(
+                status_code=status.HTTP_207_MULTI_STATUS,
+                message="Tài khoản đã được xác thực."
+            )
 
         if redis.get_otp(email) != otp:
             raise response.JsonException(
@@ -57,6 +69,8 @@ async def verify_user(request: VerifyEmailReq):
             )
 
         return await user.update_user_verification(email)
+    except response.JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error verify email: {e}")
         raise response.JsonException(
