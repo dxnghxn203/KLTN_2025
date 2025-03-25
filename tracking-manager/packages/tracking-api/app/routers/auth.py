@@ -12,7 +12,7 @@ from app.models.auth import handle_otp_verification
 
 router = APIRouter()
 
-@router.post("/authen/google-auth")
+@router.post("/auth/google-auth")
 async def login(request: GoogleAuthRequest):
     try:
         auth_google = await google_auth(request.id_token)
@@ -22,8 +22,7 @@ async def login(request: GoogleAuthRequest):
                 message="Access token hoặc email không hợp lệ!"
             )
 
-        user_data = ItemUserRegisReq(email=request.email, user_name=auth_google["name"])
-        user_info = await user.add_user_google(user_data)
+        user_info = await user.add_user_google(request.email, request.name)
 
         jwt_token = await auth.get_token(user_info.data["user_id"])
 

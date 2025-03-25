@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 from pydantic import BaseModel, field_validator, model_validator
 
@@ -6,11 +7,11 @@ from app.common import password
 
 
 class ItemUserRegisReq(BaseModel):
-    phone_number: str = ""
-    user_name: str = ""
-    email: str = ""
-    password: str = ""
-    gender: str = "Nam"
+    phone_number: Optional[str] = None
+    user_name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    gender: Optional[str] = None
     birthday: datetime.datetime = None
 
     @model_validator(mode='before')
@@ -35,11 +36,18 @@ class ItemUserRegisReq(BaseModel):
 
     @field_validator("password", mode="before")
     def validate_password(cls, v):
+        if v and v != "Google@123":
+            password.validate_password(v)
         password.validate_password(v)
         return v
 
     @field_validator('birthday', mode="before")
     def validate_birthday(cls, v):
+        if v is None:
+            return datetime.datetime(1970, 1, 1)
+
+        if isinstance(v, datetime.datetime):
+            return v
         try:
             parsed_date = datetime.datetime.fromisoformat(v.replace("Z", "+00:00"))
             parsed_date = parsed_date.replace(tzinfo=None)

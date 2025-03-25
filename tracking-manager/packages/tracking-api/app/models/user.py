@@ -66,22 +66,24 @@ async def add_user_email(item: ItemUserRegisReq):
             message="Internal server error"
         )
 
-async def add_user_google(item: ItemUserRegisReq):
+async def add_user_google(email: str, user_name: str):
     try:
-        if not item:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message='Vui lòng nhập thông tin user.'
-            )
-
-        existing_user = await get_by_email_and_auth_provider(item.email, 'google')
+        existing_user = await get_by_email_and_auth_provider(email, 'google')
         if existing_user:
             return response.BaseResponse(
                 message="Tài khoản Google đã tồn tại.",
                 data={"user_id": str(existing_user["_id"])}
             )
+        item = ItemUserRegisReq(
+            email=email,
+            user_name=user_name,
+            phone_number="Google",
+            password="Google@123",
+            gender="Google",
+            birthday=datetime.now()
+        )
 
-        user_id = await create_user(item, auth_provider="google")
+        user_id = await create_user(item, auth_provider="google", password="Google@123")
 
         return response.BaseResponse(
             status_code=status.HTTP_201_CREATED,
@@ -90,7 +92,7 @@ async def add_user_google(item: ItemUserRegisReq):
             data={"user_id": str(user_id)}
         )
     except Exception as e:
-        logger.error("Failed [add_user] :", error=e)
+        logger.error(f"Failed [add_user]: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
