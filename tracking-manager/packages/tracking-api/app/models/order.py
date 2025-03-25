@@ -11,7 +11,7 @@ from app.helpers.constant import get_create_order_queue, get_create_tracking_que
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
-async def check_order(item: ItemOrderInReq):
+async def check_order(item: ItemOrderInReq, user_id: str):
     try:
         order_id = generate_id("ORDER")
         tracking_id = generate_id("TRACKING")
@@ -20,7 +20,7 @@ async def check_order(item: ItemOrderInReq):
                                  order_id=order_id,
                                  tracking_id=tracking_id,
                                  status="create_order",
-                                 created_by="system")
+                                 created_by=user_id)
         logger.info("item", json=item_data)
 
         total_price = 0

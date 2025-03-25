@@ -1,35 +1,20 @@
-from typing import Optional
-
-from aiohttp.web_middlewares import middleware
-from fastapi import APIRouter, status, Depends, Header
+from fastapi import APIRouter, status, Depends
 
 from app.core import logger, response
 from app.entities.order.request import ItemOrderInReq, OrderRequest
 from app.middleware import middleware
-from app.middleware.middleware import verify_token_optional
 from app.models import order, auth
 
 router = APIRouter()
 
 @router.post("/order/check", response_model=response.BaseResponse)
-async def check_order(
-        item: ItemOrderInReq,
-        token: str = Depends(middleware.verify_token_optional)):
+async def check_order(item: ItemOrderInReq, token: str = Depends(middleware.verify_token_optional)):
     try:
         user_id = "guest"
-        logger.info(f"Token: {token}")
         if token:
             user_info = await auth.get_current(token)
-            logger.info(f"user_info: {user_info}")
             user_id = user_info.id
-        logger.info(f"User id: {user_id}")
-        #return await order.check_order(item)
-        return response.BaseResponse(
-            status_code=status.HTTP_200_OK,
-            status="success",
-            message="Order checked successfully",
-            data={}
-        )
+        return await order.check_order(item, user_id)
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
