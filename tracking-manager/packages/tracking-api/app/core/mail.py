@@ -1,25 +1,38 @@
-import hashlib
 import os
-import time
-from urllib.parse import urlencode
-
-import resend
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from app.core import logger
 
-resend.api_key=os.getenv("MAIL_API_KEY")
+GMAIL_USER=os.getenv("GMAIL_USER")
+GMAIL_PASSWORD=os.getenv("GMAIL_PASS")
 
 def send_otp_email(email: str, otp_code: str) -> bool:
 
     try:
-        response = resend.Emails.send({
-            "from": "onboarding@resend.dev",  # Dùng domain mặc định
-            "to": [email],
-            "subject": "Your OTP Code",
-            "html": f"<h3>Your OTP Code is: <strong>{otp_code}</strong></h3><p>This code is valid for 5 minutes.</p>"
-        })
+        subject = "Your OTP Code"
+        html_content = f"""
+                <html>
+                <body>
+                    <h3>Your OTP Code is: <strong>{otp_code}</strong></h3>
+                    <p>This code is valid for 5 minutes.</p>
+                </body>
+                </html>
+                """
 
-        logger.info(f"OTP {otp_code} sent to {email}")
+        msg = MIMEMultipart()
+        msg["From"] = GMAIL_USER
+        msg["To"] = email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(html_content, "html"))
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(GMAIL_USER, GMAIL_PASSWORD)
+        server.sendmail(GMAIL_USER, email, msg.as_string())
+        server.quit()
+        logger.info(f"OTP sent to {email}")
         return True
     except Exception as e:
         logger.error(f"Error sending OTP: {str(e)}")

@@ -1,22 +1,44 @@
-from fastapi import APIRouter, status
+from typing import Optional
+
+from aiohttp.web_middlewares import middleware
+from fastapi import APIRouter, status, Depends, Header
 
 from app.core import logger, response
 from app.entities.order.request import ItemOrderInReq, OrderRequest
-from app.models import order
+from app.middleware import middleware
+from app.middleware.middleware import verify_token_optional
+from app.models import order, auth
 
 router = APIRouter()
 
 @router.post("/order/check", response_model=response.BaseResponse)
-async def check_order(item: ItemOrderInReq):
+async def check_order(
+        item: ItemOrderInReq,
+        token: str = Depends(middleware.verify_token_optional)):
     try:
-        return await order.check_order(item)
+        user_id = "guest"
+        logger.info(f"Token: {token}")
+        if token:
+            user_info = await auth.get_current(token)
+            logger.info(f"user_info: {user_info}")
+            user_id = user_info.id
+        logger.info(f"User id: {user_id}")
+        #return await order.check_order(item)
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            status="success",
+            message="Order checked successfully",
+            data={}
+        )
     except ValueError as e:
         raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
             message=str(e)
         )
+    except response.JsonException as je:
+        raise je
     except Exception as e:
-        logger.error("Error getting current", error=str(e))
+        logger.error(f"Error checking order {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

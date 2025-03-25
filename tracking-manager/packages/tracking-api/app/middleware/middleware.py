@@ -3,11 +3,13 @@ import os
 import random
 import secrets
 import string
+from typing import Optional
 
 import bcrypt
 import jwt
-from fastapi import Depends, status
+from fastapi import Depends, status, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security.utils import get_authorization_scheme_param
 from pydantic import ValidationError
 
 from app.core import logger, response
@@ -33,6 +35,14 @@ def validate_and_decode_token(cred: HTTPAuthorizationCredentials):
 
 def verify_token(cred: HTTPAuthorizationCredentials = Depends(security)):
     validate_and_decode_token(cred)
+    return cred.credentials
+
+def verify_token_optional(cred: Optional[HTTPAuthorizationCredentials] = Depends(security)):
+
+    logger.info(f"cred: {cred}")
+    if not cred or not cred.credentials:
+        return None
+    #validate_and_decode_token(cred)
     return cred.credentials
 
 def verify_token_admin(cred: HTTPAuthorizationCredentials = Depends(security)):

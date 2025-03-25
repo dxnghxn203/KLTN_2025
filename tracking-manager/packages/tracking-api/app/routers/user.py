@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from starlette import status
 
 from app.core import response, logger
-from app.core.response import BaseResponse, SuccessResponse
+from app.core.response import BaseResponse, SuccessResponse, JsonException
 from app.entities.user.request import ItemUserRegisReq, ItemOtpReq, VerifyEmailReq
 from app.helpers import redis
 from app.middleware import middleware
@@ -15,6 +15,8 @@ router = APIRouter()
 async def register_email(item: ItemUserRegisReq):
     try:
         return await user.add_user_email(item)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error register email: {e}")
         raise response.JsonException(
@@ -30,6 +32,8 @@ async def register_email(item: ItemUserRegisReq):
             status="created",
             message="Đã Đăng ký thành công"
         )
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error register email: {e}")
         raise response.JsonException(
@@ -96,6 +100,7 @@ async def verify_user(request: VerifyEmailReq):
 @router.get("/users/current", response_model=BaseResponse)
 async def get_user(token: str = Depends(middleware.verify_token)):
     try:
+        logger.info(f"Token: {token}")
         data = await auth.get_current(token)
         return SuccessResponse(data=data)
     except Exception as e:
