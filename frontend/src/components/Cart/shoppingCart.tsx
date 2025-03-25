@@ -211,10 +211,6 @@ const ShoppingCart: React.FC = () => {
           onClose={handleCloseDialog}
           onConfirm={() => {
             removeFromCart(selectedProductId);
-            selectedProducts?.splice(
-              selectedProducts.indexOf(selectedProductId),
-              1
-            );
             handleCloseDialog();
           }}
         />

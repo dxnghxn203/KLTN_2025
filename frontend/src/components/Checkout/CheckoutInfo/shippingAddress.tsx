@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { AddressFormData } from "../ProductInfo/types";
 import { PiFireTruck } from "react-icons/pi";
 import { useLocation } from "@/hooks/useLocation";
@@ -21,6 +21,11 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
 
 
   const { cities, districts, wards, getDistrictsByCityId, getCities, getWardsByDistrictId } = useLocation();
+
+  useEffect(() => {
+    getCities();
+  }, []);
+  
   return (
     <section className="flex flex-col gap-4 mt-6">
       <header className="flex gap-2 self-start text-sm text-black">
@@ -66,7 +71,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
           </select>
         </div>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1" >
           <select
             value={address.districtCode || ""}
             onChange={(e) => {
