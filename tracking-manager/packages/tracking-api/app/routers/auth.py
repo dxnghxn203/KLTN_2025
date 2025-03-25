@@ -22,12 +22,13 @@ async def login(request: GoogleAuthRequest):
                 message="Access token hoặc email không hợp lệ!"
             )
 
-        user_data = ItemUserRegisReq(email=request.email, user_name=auth_google["name"])
-        user_info = await user.add_user_google(user_data)
+        user_info = await user.add_user_google(request.email, request.name)
 
         jwt_token = await auth.get_token(user_info.data["user_id"])
 
         return SuccessResponse(message=user_info.message, data={"token": jwt_token})
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error("Error google auth", error=str(e))
         return BaseResponse(
@@ -39,7 +40,6 @@ async def login(request: GoogleAuthRequest):
 async def login(email: str = Form(), password: str = Form()):
     try:
         us = await user.get_by_email_and_auth_provider(email, "email")
-        logger.info(f"user info: {us}")
         if not await user.verify_user(us, password):
             raise JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -57,6 +57,8 @@ async def login(email: str = Form(), password: str = Form()):
         res = ItemUserRes.from_mongo(us)
         res.token = jwt_token
         return SuccessResponse(data=res)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error login email: {e}")
         return BaseResponse(
