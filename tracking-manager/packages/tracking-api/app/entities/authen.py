@@ -4,7 +4,6 @@ from pydantic import BaseModel, validator
 class GoogleAuthRequest(BaseModel):
     id_token: str = None
     email: str = None
-    name: str = None
 
 class AuthRequest(BaseModel):
     phoneNumber: str = None

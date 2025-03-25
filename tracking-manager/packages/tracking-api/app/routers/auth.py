@@ -22,7 +22,7 @@ async def login(request: GoogleAuthRequest):
                 message="Access token hoặc email không hợp lệ!"
             )
 
-        user_info = await user.add_user_google(request.email, request.name)
+        user_info = await user.add_user_google(request.email, auth_google["name"])
 
         jwt_token = await auth.get_token(user_info.data["user_id"])
 
