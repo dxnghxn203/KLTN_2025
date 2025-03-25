@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Link from "next/link";
 
 const OtpVerificationPage: React.FC = () => {
   const [email, setEmail] = useState("lethithuyduyen230803@gmail.com");
@@ -54,12 +55,14 @@ const OtpVerificationPage: React.FC = () => {
             </button>
           </div>
           <div className="pt-4">
-            <button
-              type="submit"
-              className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-700 transition-colors"
-            >
-              Xác nhận
-            </button>
+            <Link href="/login">
+              <button
+                type="submit"
+                className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-700 transition-colors"
+              >
+                Xác nhận
+              </button>
+            </Link>
           </div>
         </form>
       </div>

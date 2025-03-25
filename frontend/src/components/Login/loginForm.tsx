@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 
 const LoginForm: React.FC = () => {
   const { signInWithGoogle, login, isLoading } = useAuth();
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
   const { showToast } = useToast();
@@ -28,7 +28,7 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phoneNumber || !password) {
+    if (!email || !password) {
       showToast("Vui lòng nhập đầy đủ thông tin", ToastType.WARNING);
       return;
     }
@@ -36,21 +36,6 @@ const LoginForm: React.FC = () => {
     setLocalLoading(true);
     // For testing - show a toast directly
     showToast("Đang xử lý đăng nhập...", ToastType.INFO);
-
-    try {
-      if (phoneNumber === "0943640913" && password === "12345") {
-        showToast("Đăng nhập thành công!", ToastType.SUCCESS);
-        router.push("/dashboard");
-      } else {
-        const formData = { phoneNumber, password };
-        await login(formData);
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      showToast("Đăng nhập thất bại", ToastType.ERROR);
-    } finally {
-      setLocalLoading(false);
-    }
   };
 
   const loadingGG = () => {
@@ -68,7 +53,7 @@ const LoginForm: React.FC = () => {
         <button
           className="flex items-center gap-2"
           onClick={handleGoogleSignIn}
-          disabled={ localLoading}
+          disabled={localLoading}
         >
           <Image src={google} alt="" width={30} className="object-cover" />
           {localLoading ? loadingGG() : <span>Đăng nhập với Google</span>}
@@ -77,22 +62,22 @@ const LoginForm: React.FC = () => {
 
       <div className="flex gap-2 items-center mt-4 text-sm text-black">
         <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
-        <div className="text-black/40">hoặc đăng nhập với số điện thoại</div>
+        <div className="text-black/40">hoặc đăng nhập với email</div>
         <div className="flex-1 border-t-[0.5px] border-black border-opacity-10" />
       </div>
 
       <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
-          <label htmlFor="phoneNumber" className="text-sm font-medium">
-            Số điện thoại đăng nhập
+          <label htmlFor="email" className="text-sm font-medium">
+            Email đăng nhập
           </label>
           <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
             <input
-              id="phoneNumber"
-              type="tel"
+              id="email"
+              type="email"
               placeholder=""
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
               required
             />

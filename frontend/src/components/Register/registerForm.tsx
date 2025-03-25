@@ -1,14 +1,23 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   validatePassword,
   validateEmail,
   validateEmptyFields,
 } from "@/utils/validation";
+import Link from "next/link";
+import { fetchInsertUserStart } from "@/store";
+import { useDispatch } from "react-redux";
+import { useUser } from "@/hooks/useUser";
+// useDispatch
 
 const RegisterForm: React.FC = () => {
+  const [isFormValid, setIsFormValid] = React.useState(false);
+  const { insertUser, fetchInsertUser } = useUser();
   const [formData, setFormData] = useState({
     username: "",
+    phoneNumber: "",
     gender: "",
     dateOfBirth: "",
     email: "",
@@ -16,67 +25,62 @@ const RegisterForm: React.FC = () => {
     confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState({
-    username: "",
-    gender: "",
-    dateOfBirth: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  // const router = useRouter();
+  const dispatch = useDispatch();
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
-    setErrors((prev) => ({ ...prev, [id]: "" })); // Xóa lỗi khi người dùng thay đổi giá trị
+    setErrors((prev) => ({ ...prev, [id]: "" })); // Xóa lỗi khi thay đổi giá trị
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: typeof errors = {
-      username: "",
-      gender: "",
-      dateOfBirth: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    };
 
-    const emptyFieldError = validateEmptyFields(formData);
-    if (emptyFieldError) {
-      const field = emptyFieldError.match(/Trường (\w+)/)?.[1];
-      // if (field) newErrors[field] = emptyFieldError;
-    }
+    // Kiểm tra các trường trống
+    const emptyFieldErrors = validateEmptyFields(formData);
+
+    // Tạo object để chứa lỗi
+    const errors: { [key: string]: string } = { ...emptyFieldErrors };
 
     // Kiểm tra email
-    try {
-      await validateEmail(formData.email);
-    } catch (err: any) {
-      newErrors.email = err.message;
+    if (!errors.email) {
+      const emailError = validateEmail(formData.email);
+      if (emailError) {
+        errors.email = emailError; // Gán lỗi định dạng email nếu có
+      }
     }
 
     // Kiểm tra mật khẩu
-    try {
-      await validatePassword(formData.password);
-    } catch (err: any) {
-      newErrors.password = err.message;
+    if (!errors.password) {
+      const passwordError = validatePassword(formData.password);
+      if (passwordError) {
+        errors.password = passwordError; // Gán lỗi định dạng mật khẩu nếu có
+      }
+    }
+    if (!errors.confirmPassword) {
+      if (formData.confirmPassword !== formData.password) {
+        errors.confirmPassword = "Mật khẩu xác nhận không khớp.";
+      }
     }
 
-    // Kiểm tra mật khẩu nhập lại
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu và mật khẩu nhập lại không khớp.";
-    }
-
-    // Nếu có lỗi, cập nhật state lỗi
-    if (Object.values(newErrors).some((error) => error)) {
-      setErrors(newErrors);
+    // Cập nhật lỗi vào state nếu có
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
+      setIsFormValid(false);
       return;
     }
 
-    // Không có lỗi, chuyển trang
-    window.location.href = "/register/verifyOTP";
+    // Nếu không có lỗi, xử lý tiếp
+
+    fetchInsertUser(formData);
+    console.log("insert user: ", insertUser);
+    if (insertUser) {
+      setIsFormValid(true);
+    }
+    // setIsFormValid(true);
   };
 
   return (
@@ -98,6 +102,21 @@ const RegisterForm: React.FC = () => {
             <p className="text-red-500 text-sm">{errors.username}</p>
           )}
         </div>
+        <div className="space-y-2">
+          <label htmlFor="phoneNumber" className="text-sm font-medium">
+            Số điện thoại
+          </label>
+          <input
+            id="phoneNumber"
+            type="tel"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+            className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
+          />
+          {errors.phoneNumber && (
+            <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+          )}
+        </div>
 
         {/* Giới tính */}
         <div className="space-y-2">
@@ -111,9 +130,8 @@ const RegisterForm: React.FC = () => {
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           >
             <option value="">Chọn giới tính</option>
-            <option value="male">Nam</option>
-            <option value="female">Nữ</option>
-            <option value="other">Khác</option>
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
           </select>
           {errors.gender && (
             <p className="text-red-500 text-sm">{errors.gender}</p>
@@ -187,13 +205,34 @@ const RegisterForm: React.FC = () => {
             <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
           )}
         </div>
+        {/* Nút submit */}
 
-        <button
-          type="submit"
-          className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
-        >
-          Tiếp tục
-        </button>
+        <div className="">
+          {isFormValid ? (
+            <Link
+              href="/register/verifyOTP"
+              className="block w-full text-center text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
+            >
+              Tiếp tục
+            </Link>
+          ) : (
+            <button
+              type="submit"
+              className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
+            >
+              Tiếp tục
+            </button>
+          )}
+        </div>
+        {/* <div className="">
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
+          >
+            Tiếp tục
+          </button> */}
+        {/* </div> */}
       </form>
     </div>
   );

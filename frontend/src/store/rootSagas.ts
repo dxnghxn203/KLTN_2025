@@ -5,6 +5,7 @@ import { productSaga } from './product';
 import { orderSaga } from './order';
 import { locationSaga } from './location';
 import { categorySaga } from './category';
+import { userSaga } from './user';
 
 export default function* rootSaga() {
     yield all([fork(authSaga)]);
@@ -13,4 +14,5 @@ export default function* rootSaga() {
     yield all([fork(orderSaga)]);
     yield all([fork(locationSaga)]);
     yield all([fork(categorySaga)]);
+    yield all([fork(userSaga)]);
 }
