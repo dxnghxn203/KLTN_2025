@@ -22,6 +22,21 @@ async def register_email(item: ItemUserRegisReq):
             message="Internal server error"
         )
 
+@router.post("/user/register_email-test")
+async def register_email(item: ItemUserRegisReq):
+    try:
+        return response.BaseResponse(
+            status_code=status.HTTP_201_CREATED,
+            status="created",
+            message="Đã Đăng ký thành công"
+        )
+    except Exception as e:
+        logger.error(f"Error register email: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/users/otp")
 async def send_otp(item: ItemOtpReq):
     try:
