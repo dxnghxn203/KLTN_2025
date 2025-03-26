@@ -6,15 +6,10 @@ import {
   validateEmail,
   validateEmptyFields,
 } from "@/utils/validation";
-import Link from "next/link";
-import { fetchInsertUserStart } from "@/store";
 import { useDispatch } from "react-redux";
 import { useUser } from "@/hooks/useUser";
-// useDispatch
 
 const RegisterForm: React.FC = () => {
-  const [isFormValid, setIsFormValid] = React.useState(false);
-  const { insertUser, fetchInsertUser } = useUser();
   const [formData, setFormData] = useState({
     username: "",
     phoneNumber: "",
@@ -24,38 +19,42 @@ const RegisterForm: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
-
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  // const router = useRouter();
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const { fetchInsertUser } = useUser();
   const dispatch = useDispatch();
+  const router = useRouter();
+
+  // Hàm xử lý khi thay đổi input
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
-    setErrors((prev) => ({ ...prev, [id]: "" })); // Xóa lỗi khi thay đổi giá trị
   };
 
+  // Hàm xử lý khi submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Kiểm tra các trường trống
-    const emptyFieldErrors = validateEmptyFields(formData);
+    // Đánh dấu form đã được submit
+    setIsSubmitted(true);
 
-    // Tạo object để chứa lỗi
+    // Thực hiện kiểm tra lỗi
+    const emptyFieldErrors = validateEmptyFields(formData);
     const errors: { [key: string]: string } = { ...emptyFieldErrors };
 
-    // Kiểm tra email
     if (!errors.email) {
       const emailError = validateEmail(formData.email);
       if (emailError) {
-        errors.email = emailError; // Gán lỗi định dạng email nếu có
+        errors.email = emailError;
       }
     }
     if (!errors.password) {
       const passwordError = validatePassword(formData.password);
       if (passwordError) {
-        errors.password = passwordError; // Gán lỗi định dạng mật khẩu nếu có
+        errors.password = passwordError;
       }
     }
     if (!errors.confirmPassword) {
@@ -64,21 +63,13 @@ const RegisterForm: React.FC = () => {
       }
     }
 
-    // Cập nhật lỗi vào state nếu có
-    if (Object.keys(errors).length > 0) {
-      setErrors(errors);
-      setIsFormValid(false);
-      return;
-    }
+    setErrors(errors);
 
-    // Nếu không có lỗi, xử lý tiếp
-
-    fetchInsertUser(formData);
-    console.log("insert user: ", insertUser);
-    if (insertUser) {
-      setIsFormValid(true);
+    // Kiểm tra nếu form hợp lệ thì xử lý logic submit
+    if (Object.keys(errors).length === 0) {
+      await fetchInsertUser(formData);
+      router.push("/dang-ky/xac-thuc-OTP");
     }
-    // setIsFormValid(true);
   };
 
   return (
@@ -96,10 +87,12 @@ const RegisterForm: React.FC = () => {
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
-          {errors.username && (
+          {isSubmitted && errors.username && (
             <p className="text-red-500 text-sm">{errors.username}</p>
           )}
         </div>
+
+        {/* Số điện thoại */}
         <div className="space-y-2">
           <label htmlFor="phoneNumber" className="text-sm font-medium">
             Số điện thoại
@@ -111,7 +104,7 @@ const RegisterForm: React.FC = () => {
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
-          {errors.phoneNumber && (
+          {isSubmitted && errors.phoneNumber && (
             <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
           )}
         </div>
@@ -131,7 +124,7 @@ const RegisterForm: React.FC = () => {
             <option value="Nam">Nam</option>
             <option value="Nữ">Nữ</option>
           </select>
-          {errors.gender && (
+          {isSubmitted && errors.gender && (
             <p className="text-red-500 text-sm">{errors.gender}</p>
           )}
         </div>
@@ -148,7 +141,7 @@ const RegisterForm: React.FC = () => {
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
-          {errors.dateOfBirth && (
+          {isSubmitted && errors.dateOfBirth && (
             <p className="text-red-500 text-sm">{errors.dateOfBirth}</p>
           )}
         </div>
@@ -165,7 +158,7 @@ const RegisterForm: React.FC = () => {
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
-          {errors.email && (
+          {isSubmitted && errors.email && (
             <p className="text-red-500 text-sm">{errors.email}</p>
           )}
         </div>
@@ -182,7 +175,7 @@ const RegisterForm: React.FC = () => {
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
-          {errors.password && (
+          {isSubmitted && errors.password && (
             <p className="text-red-500 text-sm">{errors.password}</p>
           )}
         </div>
@@ -199,38 +192,22 @@ const RegisterForm: React.FC = () => {
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
-          {errors.confirmPassword && (
+          {isSubmitted && errors.confirmPassword && (
             <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
           )}
         </div>
-        {/* Nút submit */}
 
-        <div className="">
-          {isFormValid ? (
-            <Link
-              href="/dang-ky/xac-thuc-OTP"
-              className="block w-full text-center text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
-            >
-              Tiếp tục
-            </Link>
-          ) : (
+        {/* Nút chuyển trang */}
+        <div className="pt-4">
+          <div className="pt-4">
             <button
               type="submit"
-              className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
+              className="w-full text-base font-bold text-white rounded-3xl py-4 bg-blue-700"
             >
               Tiếp tục
             </button>
-          )}
+          </div>
         </div>
-        {/* <div className="">
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl py-4 mt-4"
-          >
-            Tiếp tục
-          </button> */}
-        {/* </div> */}
       </form>
     </div>
   );

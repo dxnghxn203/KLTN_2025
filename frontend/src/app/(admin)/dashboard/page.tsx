@@ -4,7 +4,7 @@ import { useToast } from "@/providers/toastProvider";
 
 const Dashboard = () => {
   const toast = useToast();
-  
+
   const showtext = () => {
     toast.showToast("Hello, this is a sdsge dvcddfdf", "success");
     toast.showToast("Hello, this is a sdsge", "error");
