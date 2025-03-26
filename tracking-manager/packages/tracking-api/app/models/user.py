@@ -60,7 +60,7 @@ async def add_user_email(item: ItemUserRegisReq):
             message="Đã Đăng ký thành công"
         )
     except Exception as e:
-        logger.error("Failed [add_user] :", error=e)
+        logger.error(f"Failed [add_user] :{e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
@@ -100,7 +100,7 @@ async def add_user_google(email: str, user_name: str):
 
 async def update_user_verification(email: str):
     collection = database.db[collection_name]
-    collection.update_one({"email": email}, {"$set": {"verified_email_at": datetime.utcnow()}})
+    collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"verified_email_at": datetime.utcnow()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
 async def verify_user(us: any, p: str):
