@@ -95,5 +95,5 @@ async def add_order(item: OrderRequest):
 
         return item.order_id
     except Exception as e:
-        logger.error("Failed [add_order]:", error=e)
+        logger.error(f"Failed [add_order]: {e}")
         raise e
