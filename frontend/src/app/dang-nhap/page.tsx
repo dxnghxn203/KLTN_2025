@@ -10,24 +10,17 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const { isAuthenticated, error } = useAuth();
-  const { showToast } = useToast();
+  const toast = useToast();
 
-  // Show success toast when user is authenticated
+
   useEffect(() => {
     if (isAuthenticated) {
-      showToast("Đăng nhập thành công!", ToastType.SUCCESS);
+      toast.showToast("Đăng nhập thành công!", ToastType.SUCCESS);
     }
-  }, [isAuthenticated, showToast]);
-
-  useEffect(() => {
-    if (error) {
-      showToast(error, ToastType.ERROR);
-    }
-  }, [error, showToast]);
+  }, [isAuthenticated]);
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
-      {/* <Header /> */}
       <main className="flex flex-col items-center space-y-8 pt-14">
         <h1 className="mt-5 text-3xl font-extrabold text-black">
           {isAuthenticated ? "Bạn đã đăng nhập" : "Đăng nhập"}

@@ -59,27 +59,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div
-        className="fixed right-4 top-4 flex flex-col items-end z-[99999]"
+        className="fixed right-4 top-4 flex flex-col items-end z-[50]"
         style={{ pointerEvents: "none" }}
       >
-        <div 
-          // className="flex flex-col items-end min-w-[320px] max-w-[384px]"
-          // style={{ 
-          //   maxHeight: 'calc(100vh - 32px)',
-          //   overflow: 'hidden'
-          // }}
-        >
+        <div className="mt-8 ">
+          <div className="flex flex-col items-end">
           {toasts.map((toast, index) => (
-            <div
-              key={toast.id}
-              style={{ 
-                pointerEvents: "auto",
-                width: "100%",
-                marginBottom: "12px",
-                animation: "slideInRight 0.3s ease-out",
-              }}
-              className="hover:-translate-x-1 transition-transform duration-200"
-            >
+            <div key={toast.id}>
               <Toast
                 message={toast.message}
                 type={toast.type}
@@ -87,6 +73,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
               />
             </div>
           ))}
+          </div>
         </div>
       </div>
 

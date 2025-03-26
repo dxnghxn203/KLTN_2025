@@ -1,13 +1,17 @@
 "use client";
 import React, { useState } from "react";
-import Link from "next/link";
+import { useToast } from "@/providers/toastProvider";
+import { useUser } from "@/hooks/useUser";
+import { useParams, useRouter } from "next/navigation";
 
 const OtpVerificationPage: React.FC = () => {
-  const [email, setEmail] = useState("lethithuyduyen230803@gmail.com");
+  const params = useParams();
+  const email = params.slug as string;
+
   const [isResending, setIsResending] = useState(false);
 
   const maskEmail = (email: string) => {
-    const [name, domain] = email.split("@");
+    const [name, domain] = email.split("%40");
     const visibleStart = name[0];
     const visibleEnd = name.slice(-2);
     const maskedMiddle = "*".repeat(
@@ -15,6 +19,10 @@ const OtpVerificationPage: React.FC = () => {
     );
     return `${visibleStart}${maskedMiddle}${visibleEnd}@${domain}`;
   };
+  const getEmail = (email: string) => {
+    const [name, domain] = email.split("%40");
+    return `${name}@${domain}`;
+  }
 
   const handleResendOtp = () => {
     setIsResending(true);
@@ -22,6 +30,33 @@ const OtpVerificationPage: React.FC = () => {
       setIsResending(false);
     }, 5000);
   };
+
+  const toast = useToast();
+  const { verifyOtp } = useUser();
+  const router = useRouter();
+
+  const submitData = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const otp = e.currentTarget.otp.value;
+    if (!otp) {
+      toast.showToast("Vui lòng nhập OTP", "warning");
+      return;
+    }
+    const param = {
+      email: getEmail(email),
+      otp: otp
+    }
+    verifyOtp({
+      param: param,
+      onSuccess: (message: string) => {
+        toast.showToast(message, "success");
+        router.push(`/dang-nhap`);
+      },
+      onFailure: (message: string) => {
+        toast.showToast(message, "error");
+      }
+    })
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 mt-12">
@@ -32,7 +67,7 @@ const OtpVerificationPage: React.FC = () => {
           <span className="tracking-widest">{maskEmail(email)}</span>.
         </p>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={submitData}>
           <div className="space-y-2">
             <label htmlFor="otp" className="text-sm font-medium">
               Mã OTP
@@ -55,14 +90,12 @@ const OtpVerificationPage: React.FC = () => {
             </button>
           </div>
           <div className="pt-4">
-            <Link href="/dang-nhap">
-              <button
-                type="submit"
-                className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-700 transition-colors"
-              >
-                Xác nhận
-              </button>
-            </Link>
+            <button
+              type="submit"
+              className="w-full text-base font-bold text-white bg-blue-700 rounded-3xl h-[55px] hover:bg-blue-700 transition-colors"
+            >
+              Xác nhận
+            </button>
           </div>
         </form>
       </div>

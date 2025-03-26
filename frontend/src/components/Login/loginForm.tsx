@@ -14,7 +14,8 @@ const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
-  const { showToast } = useToast();
+  const [localLoadingGG, setLocalLoadingGG] = useState(false);
+  const toast = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,11 +23,15 @@ const LoginForm: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleGoogleSignIn = async (e: React.MouseEvent) => {
+    setLocalLoadingGG(true);
     e.preventDefault();
     try {
       await signInWithGoogle();
+      toast.showToast("Đăng nhập bằng Google thành công", ToastType.SUCCESS);
+      setLocalLoadingGG(false);
     } catch (error) {
-      showToast("Đăng nhập bằng Google thất bại", ToastType.ERROR);
+      toast.showToast("Đăng nhập bằng Google thất bại", ToastType.ERROR);
+      setLocalLoadingGG(false);
     }
   };
   const handleChange = (
@@ -52,7 +57,9 @@ const LoginForm: React.FC = () => {
       return;
     }
     setLocalLoading(true);
-    showToast("Đang xử lý đăng nhập...", ToastType.INFO);
+    toast.showToast("Đang xử lý đăng nhập...", ToastType.INFO);
+    //
+    
   };
 
   const loadingGG = () => {

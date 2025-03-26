@@ -16,23 +16,27 @@ export const userSlice = createSlice({
     initialState,
     reducers: {
 
-        fetchInsertUserStart: (state) => {
-            console.log("Slice Start");
+        fetchInsertUserStart: (state, action) => {
             state.loading = true;
         },
         fetchInsertUserSuccess: (state) => {
-            console.log("Slice Success:");
             state.responseInsertUser = true;
             state.loading = false;
         },
         fetchInsertUserFailure: (state) => {
-
-            console.log("Slice Failure");
             state.responseInsertUser = false
             state.loading = false;
         },
-
-        
+        // verifyOtp: 
+        fetchVerifyOtpStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchVerifyOtpSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchVerifyOtpFailure: (state) => {
+            state.loading = false;
+        }
     },
 });
 
@@ -40,6 +44,10 @@ export const {
     fetchInsertUserStart,
     fetchInsertUserSuccess,
     fetchInsertUserFailure,
+
+    fetchVerifyOtpStart,
+    fetchVerifyOtpSuccess,
+    fetchVerifyOtpFailure
 
 } = userSlice.actions;
 

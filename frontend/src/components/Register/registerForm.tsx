@@ -8,8 +8,10 @@ import {
 } from "@/utils/validation";
 import { useDispatch } from "react-redux";
 import { useUser } from "@/hooks/useUser";
+import { useToast } from "@/providers/toastProvider";
 
 const RegisterForm: React.FC = () => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     username: "",
     phoneNumber: "",
@@ -67,8 +69,18 @@ const RegisterForm: React.FC = () => {
 
     // Kiểm tra nếu form hợp lệ thì xử lý logic submit
     if (Object.keys(errors).length === 0) {
-      await fetchInsertUser(formData);
-      router.push("/dang-ky/xac-thuc-OTP");
+      await fetchInsertUser({
+        param: formData,
+        onSuccess: (message: string) => {
+          console.log(message);
+          toast.showToast(message, "success" );
+          router.push(`/dang-ky/${formData.email}`);
+        },
+        onFailure: (message: string) => {
+          console.log(message);
+          toast.showToast(message, "error" );
+        }
+      });
     }
   };
 
