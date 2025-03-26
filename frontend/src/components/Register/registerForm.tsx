@@ -35,52 +35,30 @@ const RegisterForm: React.FC = () => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
-
-  // Hàm xử lý khi submit form
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    // Đánh dấu form đã được submit
     setIsSubmitted(true);
 
-    // Thực hiện kiểm tra lỗi
-    const emptyFieldErrors = validateEmptyFields(formData);
-    const errors: { [key: string]: string } = { ...emptyFieldErrors };
+    const validationErrors = validateEmptyFields(formData);
+    setErrors(validationErrors);
 
-    if (!errors.email) {
-      const emailError = validateEmail(formData.email);
-      if (emailError) {
-        errors.email = emailError;
+    if (Object.keys(validationErrors).length === 0) {
+      try {
+        await fetchInsertUser({
+          param: formData,
+          onSuccess: (message: string) => {
+            console.log(message);
+            toast.showToast(message, "success");
+            router.push(`/dang-ky/${formData.email}`);
+          },
+          onFailure: (message: string) => {
+            console.log(message);
+            toast.showToast(message, "error");
+          },
+        });
+      } catch (error) {
+        console.error("Error during registration:", error);
       }
-    }
-    if (!errors.password) {
-      const passwordError = validatePassword(formData.password);
-      if (passwordError) {
-        errors.password = passwordError;
-      }
-    }
-    if (!errors.confirmPassword) {
-      if (formData.confirmPassword !== formData.password) {
-        errors.confirmPassword = "Mật khẩu xác nhận không khớp.";
-      }
-    }
-
-    setErrors(errors);
-
-    // Kiểm tra nếu form hợp lệ thì xử lý logic submit
-    if (Object.keys(errors).length === 0) {
-      await fetchInsertUser({
-        param: formData,
-        onSuccess: (message: string) => {
-          console.log(message);
-          toast.showToast(message, "success" );
-          router.push(`/dang-ky/${formData.email}`);
-        },
-        onFailure: (message: string) => {
-          console.log(message);
-          toast.showToast(message, "error" );
-        }
-      });
     }
   };
 
@@ -224,5 +202,4 @@ const RegisterForm: React.FC = () => {
     </div>
   );
 };
-
 export default RegisterForm;

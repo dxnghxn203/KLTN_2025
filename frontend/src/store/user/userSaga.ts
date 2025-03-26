@@ -8,9 +8,13 @@ import {
 
     fetchVerifyOtpStart,
     fetchVerifyOtpSuccess,
-    fetchVerifyOtpFailure
+    fetchVerifyOtpFailure,
+
+    fetchSendOtpStart,
+    fetchSendOtpSuccess,    
+    fetchSendOtpFailure
 } from "./userSlice";
-import { insertUser, verifyOtp } from "@/services/userService";
+import { insertUser, sendOtp, verifyOtp } from "@/services/userService";
 import { on } from "events";
 
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
@@ -55,10 +59,31 @@ function* userVerifyOtpWorkerSaga(action: any): Generator<any, void, any> {
         yield put(fetchVerifyOtpFailure());
     }
 }
+function* userSendOtpWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;    
+    try {
+        const response = yield call(sendOtp, payload);
+        if (response.status_code === 200) {
+            yield put(fetchSendOtpSuccess());
+            onSuccess(response.message);
+        } else {
+            yield put(fetchSendOtpFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        onFailure(error?.response?.data?.message);
+        yield put(fetchSendOtpFailure());
+    }
+}
 
 
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
+    yield takeLatest(fetchSendOtpStart.type, userSendOtpWorkerSaga);
 }
 

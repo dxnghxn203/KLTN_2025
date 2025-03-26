@@ -1,9 +1,8 @@
 import axiosClient from "@/utils/configs/axiosClient";
-import { message } from "antd";
 export const insertUser = async (params: any): Promise<any> => {
     try {
         const url = "/v1/user/register_email";
-        console.log("param:", params);
+        // console.log("param:", params);
         const paramsReq = {
             "phone_number": params.phoneNumber,
             "user_name": params.username,
@@ -31,3 +30,15 @@ export const verifyOtp = async (params: any): Promise<any> => {
         throw error;
     }
 }
+
+export const sendOtp = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/users/otp";
+        const result = await axiosClient.post(url, params);
+        return result;
+
+    } catch (error) {
+        throw error;
+    }
+}
+

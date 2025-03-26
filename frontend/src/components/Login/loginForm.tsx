@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,11 +7,11 @@ import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
 import { useAuth } from "@/hooks/useAuth";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
+import { useRouter } from "next/navigation";
 
 const LoginForm: React.FC = () => {
-  const { signInWithGoogle, login, isLoading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { signInWithGoogle, login, isLoading, user, isAuthenticated } =
+    useAuth();
   const [localLoading, setLocalLoading] = useState(false);
   const [localLoadingGG, setLocalLoadingGG] = useState(false);
   const toast = useToast();
@@ -21,6 +20,7 @@ const LoginForm: React.FC = () => {
     password: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const router = useRouter();
 
   const handleGoogleSignIn = async (e: React.MouseEvent) => {
     setLocalLoadingGG(true);
@@ -39,7 +39,7 @@ const LoginForm: React.FC = () => {
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
-    setErrors((prev) => ({ ...prev, [id]: "" })); // Xóa lỗi khi thay đổi giá trị
+    setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,10 +56,18 @@ const LoginForm: React.FC = () => {
       setErrors(errors);
       return;
     }
+
     setLocalLoading(true);
-    toast.showToast("Đang xử lý đăng nhập...", ToastType.INFO);
-    //
-    
+    try {
+      await login(formData);
+      toast.showToast("Đăng nhập thành công!", ToastType.SUCCESS);
+      // console.log("Login success", formData);
+      router.push("/");
+    } catch (error) {
+      toast.showToast("Đăng nhập thất bại", ToastType.ERROR);
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
   const loadingGG = () => {
@@ -77,10 +85,10 @@ const LoginForm: React.FC = () => {
         <button
           className="flex items-center gap-2"
           onClick={handleGoogleSignIn}
-          disabled={localLoading}
+          disabled={localLoadingGG}
         >
           <Image src={google} alt="" width={30} className="object-cover" />
-          {localLoading ? loadingGG() : <span>Đăng nhập với Google</span>}
+          {localLoadingGG ? loadingGG() : <span>Đăng nhập với Google</span>}
         </button>
       </div>
 

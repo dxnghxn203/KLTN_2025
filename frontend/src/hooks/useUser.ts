@@ -1,5 +1,4 @@
-import { fetchInsertUserStart, fetchVerifyOtpStart } from "@/store";
-import { fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetSubCategoryStart, selectAllCategory, selectChildCategory, selectMainCategory, selectSubCategory } from "@/store/category";
+import { fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
 import { insertUserSelector } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -35,10 +34,25 @@ export function useUser() {
     }));
   };
 
+  const sendOtp = ({
+    param, onSuccess, onFailure
+  }: {
+    param: any;
+    onSuccess: (message: string) => void;
+    onFailure: (message: string) => void;
+  }) => {
+    dispatch(fetchSendOtpStart({
+      ...param,
+      onSuccess,
+      onFailure
+    }));
+  }
+
   return {
     insertUser,
     fetchInsertUser,
-    verifyOtp
+    verifyOtp,
+    sendOtp
   };
 }
 

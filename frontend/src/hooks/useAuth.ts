@@ -1,7 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useSession } from 'next-auth/react';
-
-
 import { useEffect } from 'react';
 import { googleLoginStart, googleLoginSuccess, loginStart, logoutStart, selectAuth } from '@/store';
 
@@ -10,7 +8,6 @@ export function useAuth() {
     const { data: session } = useSession();
     const { isAuthenticated, loading, error , user} = useSelector(selectAuth);
     
-    // Sync NextAuth session with Redux whenever session changes
     useEffect(() => {
         if (session?.user && !isAuthenticated) {
             dispatch(googleLoginSuccess(session.user));
@@ -21,8 +18,10 @@ export function useAuth() {
         dispatch(googleLoginStart());
     };
     
+    
     const login = (credentials: any) => {
         dispatch(loginStart(credentials));
+        console.log('login', credentials);
     };
     
     const logout = () => {

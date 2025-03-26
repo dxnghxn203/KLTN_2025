@@ -20,19 +20,12 @@ export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResp
 
 export const login = async (data: LoginData): Promise<AuthResponse> => {
     try {
-        // const response = await axiosClient.post('/v1/authen/login', data);
-        // return {
-        //     success: true,
-        //     user: response.data.user,
-        //     token: response.data.token
-        // };
-
+        const response = await axiosClient.post('/v1/authen/login', data);
         return {
             success: true,
-            user: null,
-            token: "null"
+            user: response.data.user,
+            token: response.data.token
         };
-
     } catch (error: any) {
         return {
             success: false,

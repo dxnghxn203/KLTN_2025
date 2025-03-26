@@ -7,8 +7,10 @@ import { useParams, useRouter } from "next/navigation";
 const OtpVerificationPage: React.FC = () => {
   const params = useParams();
   const email = params.slug as string;
-
   const [isResending, setIsResending] = useState(false);
+  const toast = useToast();
+  const { verifyOtp, sendOtp } = useUser();
+  const router = useRouter();
 
   const maskEmail = (email: string) => {
     const [name, domain] = email.split("%40");
@@ -22,18 +24,21 @@ const OtpVerificationPage: React.FC = () => {
   const getEmail = (email: string) => {
     const [name, domain] = email.split("%40");
     return `${name}@${domain}`;
-  }
-
-  const handleResendOtp = () => {
-    setIsResending(true);
-    setTimeout(() => {
-      setIsResending(false);
-    }, 5000);
   };
 
-  const toast = useToast();
-  const { verifyOtp } = useUser();
-  const router = useRouter();
+  const handleResendOtp = () => {
+    sendOtp({
+      param: { email: getEmail(email) },
+      onSuccess: (message: string) => {
+        toast.showToast(message, "success");
+        setIsResending(false);
+      },
+      onFailure: (message: string) => {
+        toast.showToast(message, "error");
+        setIsResending(false);
+      },
+    });
+  };
 
   const submitData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,8 +49,8 @@ const OtpVerificationPage: React.FC = () => {
     }
     const param = {
       email: getEmail(email),
-      otp: otp
-    }
+      otp: otp,
+    };
     verifyOtp({
       param: param,
       onSuccess: (message: string) => {
@@ -54,9 +59,9 @@ const OtpVerificationPage: React.FC = () => {
       },
       onFailure: (message: string) => {
         toast.showToast(message, "error");
-      }
-    })
-  }
+      },
+    });
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 mt-12">

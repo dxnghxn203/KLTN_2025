@@ -64,15 +64,15 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       >
         <div className="mt-8 ">
           <div className="flex flex-col items-end">
-          {toasts.map((toast, index) => (
-            <div key={toast.id}>
-              <Toast
-                message={toast.message}
-                type={toast.type}
-                onClose={() => removeToast(toast.id)}
-              />
-            </div>
-          ))}
+            {toasts.map((toast, index) => (
+              <div key={toast.id}>
+                <Toast
+                  message={toast.message}
+                  type={toast.type}
+                  onClose={() => removeToast(toast.id)}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>

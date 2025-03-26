@@ -36,6 +36,16 @@ export const userSlice = createSlice({
         },
         fetchVerifyOtpFailure: (state) => {
             state.loading = false;
+        },
+        // sendOtp:
+        fetchSendOtpStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchSendOtpSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchSendOtpFailure: (state) => {
+            state.loading = false;
         }
     },
 });
@@ -47,7 +57,11 @@ export const {
 
     fetchVerifyOtpStart,
     fetchVerifyOtpSuccess,
-    fetchVerifyOtpFailure
+    fetchVerifyOtpFailure,
+
+    fetchSendOtpStart,  
+    fetchSendOtpSuccess,
+    fetchSendOtpFailure
 
 } = userSlice.actions;
 
