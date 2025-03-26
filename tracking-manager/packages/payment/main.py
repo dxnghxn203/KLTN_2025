@@ -42,7 +42,13 @@ def health_check():
         "service": settings.APP_NAME,
         "version": "1.0.0"
     }
-
+@app.get("/")
+def home():
+    return {
+        "service": "Payment",
+        "version": "1.0.0",
+        "status": "active"
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8081)

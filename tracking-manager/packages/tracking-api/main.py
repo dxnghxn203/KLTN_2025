@@ -54,6 +54,13 @@ def read_root():
         "version": "1.0.0",
         "status": "active"
     }
+@app.get("/")
+def home():
+    return {
+        "service": "Tracking API",
+        "version": "1.0.0",
+        "status": "active"
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
