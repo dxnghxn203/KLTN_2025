@@ -5,6 +5,7 @@ from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
 from app.entities.user.request import ItemUserRegisReq, ItemOtpReq, VerifyEmailReq
 from app.helpers import redis
+from app.helpers.redis import delete_otp
 from app.middleware import middleware
 from app.models import user, auth
 from app.models.auth import handle_otp_verification
@@ -24,28 +25,16 @@ async def register_email(item: ItemUserRegisReq):
             message="Internal server error"
         )
 
-@router.post("/user/register_email-test")
-async def register_email(item: ItemUserRegisReq):
-    try:
-        return response.BaseResponse(
-            status_code=status.HTTP_201_CREATED,
-            status="created",
-            message="Đã Đăng ký thành công"
-        )
-    except JsonException as je:
-        raise je
-    except Exception as e:
-        logger.error(f"Error register email: {e}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
-
 @router.post("/users/otp")
 async def send_otp(item: ItemOtpReq):
     try:
         email = item.email
         user_info = await user.get_by_email_and_auth_provider(email, "email")
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Người dùng không tồn tại."
+            )
         if user_info.get("verified_email_at"):
             raise response.JsonException(
                 status_code=status.HTTP_207_MULTI_STATUS,
@@ -86,6 +75,8 @@ async def verify_user(request: VerifyEmailReq):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="OTP không hợp lệ hoặc đã hết hạn."
             )
+
+        delete_otp(email)
 
         return await user.update_user_verification(email)
     except response.JsonException as je:

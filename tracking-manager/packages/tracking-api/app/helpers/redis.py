@@ -1,6 +1,6 @@
 import json
 
-from app.core import redis_client
+from app.core import redis_client, logger
 from app.entities.order.request import ItemOrderReq
 from app.entities.product.request import ItemProductRedisReq
 
@@ -15,10 +15,16 @@ def otp_key(username: str) -> str:
 def request_count_key(username: str) -> str:
     return f"otp_request_count:{username}"
 
+def block_key(username: str) -> str:
+    return f"block_otp:{username}"
+
 def get_ttl(key: str):
     return redis.ttl(key)
 
 def check_request_count(username):
+    if redis.exists(block_key(username)):
+        return False
+
     key=request_count_key(username)
     count = redis.get(key)
 
@@ -32,6 +38,7 @@ def check_request_count(username):
     delete_otp(username)
     redis.incr(key)
     redis.expire(key, 1800)
+    block_otp(username)
     return False
 
 def update_otp_request_count_value(username: str):
@@ -41,6 +48,9 @@ def update_otp_request_count_value(username: str):
 
 def save_otp(username: str, otp: str):
     redis.set(otp_key(username), otp, 300)
+
+def block_otp(username: str):
+    redis.set(block_key(username), 1, 1800)
 
 def save_otp_and_update_request_count(username: str, otp: str):
     save_otp(username, otp)
