@@ -20,7 +20,7 @@ const OtpVerificationPage: React.FC = () => {
     setIsResending(true);
     setTimeout(() => {
       setIsResending(false);
-    }, 5000); // Simulate a delay for resending OTP
+    }, 5000);
   };
 
   return (
