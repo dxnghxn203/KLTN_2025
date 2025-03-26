@@ -16,13 +16,6 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         order_id = generate_id("ORDER")
         tracking_id = generate_id("TRACKING")
 
-        item_data = ItemOrderReq(**dict(item),
-                                 order_id=order_id,
-                                 tracking_id=tracking_id,
-                                 status="create_order",
-                                 created_by=user_id)
-        logger.info("item", json=item_data)
-
         total_price = 0
 
         for product in item.product:
@@ -41,22 +34,36 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             if total_requested > inventory:
                 raise ValueError("Hàng tồn không đủ")
 
+        logger.info(f"Total price: {total_price}")
+
         qr_payload = {
             "bank_id": "TPB",
             "order_id": order_id,
             "amount": total_price
         }
 
+        logger.info(f"QR Payload: {qr_payload}")
+        logger.info(f"{PAYMENT_API_URL}api/v1/payment/qr")
+
         async with httpx.AsyncClient() as client:
             qr_response = await client.post(
-                f"{PAYMENT_API_URL}api/v1/payment/qr",
+                f"{PAYMENT_API_URL}/api/v1/payment/qr",
                 headers={"accept": "application/json", "Content-Type": "application/json"},
                 json=qr_payload
             )
 
+        logger.info(f"QR Response: {qr_response}")
+
         if qr_response.status_code != 200:
             logger.error(f"Failed to generate QR: {qr_response.text}")
             raise ValueError("Không thể tạo QR code")
+
+        item_data = ItemOrderReq(**dict(item),
+                                 order_id=order_id,
+                                 tracking_id=tracking_id,
+                                 status="create_order",
+                                 created_by=user_id)
+        logger.info("item", json=item_data)
 
         redis.save_order(item_data)
 
@@ -70,7 +77,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         )
 
     except Exception as e:
-        logger.error("Failed [check_order]:", error=e)
+        logger.error(f"Failed [check_order]: {e}")
         raise e
 
 async def add_order(item: OrderRequest):
@@ -88,5 +95,5 @@ async def add_order(item: OrderRequest):
 
         return item.order_id
     except Exception as e:
-        logger.error("Failed [add_order]:", error=e)
+        logger.error(f"Failed [add_order]: {e}")
         raise e
