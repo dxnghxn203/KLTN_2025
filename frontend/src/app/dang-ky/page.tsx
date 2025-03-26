@@ -13,7 +13,6 @@ export default function RegisterPage() {
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       <main className="flex flex-col items-center space-y-8 pt-14 mb-10">
         <div className="mt-5 text-3xl font-extrabold text-black">Đăng ký</div>
-
         <div className="flex justify-center items-center rounded-3xl bg-[#0053E2] text-white h-[55px] w-full text-sm font-semibold">
           <button className="flex items-center gap-2">
             <Image src={google} alt="" width={30} className="object-cover" />

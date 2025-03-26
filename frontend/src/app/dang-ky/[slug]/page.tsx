@@ -64,7 +64,7 @@ const OtpVerificationPage: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 mt-12">
+    <div className="flex justify-center items-center bg-gray-50 pb-10 pt-[150px]">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
         <h2 className="text-2xl font-bold text-center mb-4">Xác nhận mã OTP</h2>
         <p className="text-gray-600 text-center mb-4">
