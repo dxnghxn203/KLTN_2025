@@ -44,7 +44,9 @@ async def get_sub_category(main_slug: str, sub_slug: str):
             raise ValueError("Sub-category not found")
 
         product_collection = db[product_collection_name]
-        sub_category["products"] = list(product_collection.find({"category.sub_category_slug": sub_slug}, {"_id": 0}))
+        sub_category["products"] = list(product_collection.find(
+            {"category.main_category_slug": main_slug, "category.sub_category_slug": sub_slug},
+            {"_id": 0}))
 
         return sub_category
     except Exception as e:
@@ -67,7 +69,11 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
 
                 product_collection = db[product_collection_name]
                 child_category["products"] = list(
-                    product_collection.find({"category.child_category_slug": child_slug}, {"_id": 0}))
+                    product_collection.find({
+                        "category.main_category_slug": main_slug,
+                        "category.sub_category_slug": sub_slug,
+                        "category.child_category_slug": child_slug
+                    }, {"_id": 0}))
 
                 return child_category
 
