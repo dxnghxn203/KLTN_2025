@@ -2,6 +2,7 @@ from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.category.request import MainCategoryInReq, MainCategoryReq, ChildCategoryReq, SubCategoryReq, \
     SubCategoryInReq, ChildCategoryInReq
+from app.entities.product.response import ItemProductDBRes
 from app.helpers.constant import generate_id
 from app.middleware.logging import logger
 
@@ -24,7 +25,7 @@ async def get_category_by_slug(main_slug: str):
 
         product_collection = db[product_collection_name]
         products = list(product_collection.find({"category.main_category_slug": main_slug}, {"_id": 0}))
-        category["products"] = products
+        category["products"] = [ItemProductDBRes(**prod) for prod in products]
 
         return category
     except Exception as e:
@@ -44,9 +45,10 @@ async def get_sub_category(main_slug: str, sub_slug: str):
             raise ValueError("Sub-category not found")
 
         product_collection = db[product_collection_name]
-        sub_category["products"] = list(product_collection.find(
+        products = list(product_collection.find(
             {"category.main_category_slug": main_slug, "category.sub_category_slug": sub_slug},
             {"_id": 0}))
+        sub_category["products"] = [ItemProductDBRes(**prod) for prod in products]
 
         return sub_category
     except Exception as e:
@@ -68,13 +70,13 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
                     raise ValueError("Child-category not found")
 
                 product_collection = db[product_collection_name]
-                child_category["products"] = list(
+                products = list(
                     product_collection.find({
                         "category.main_category_slug": main_slug,
                         "category.sub_category_slug": sub_slug,
                         "category.child_category_slug": child_slug
                     }, {"_id": 0}))
-
+                child_category["products"] = [ItemProductDBRes(**prod) for prod in products]
                 return child_category
 
         raise ValueError("Sub-category not found")

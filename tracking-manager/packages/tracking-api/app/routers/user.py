@@ -91,7 +91,6 @@ async def verify_user(request: VerifyEmailReq):
 @router.get("/users/current", response_model=BaseResponse)
 async def get_user(token: str = Depends(middleware.verify_token)):
     try:
-        logger.info(f"Token: {token}")
         data = await auth.get_current(token)
         return SuccessResponse(data=data)
     except Exception as e:

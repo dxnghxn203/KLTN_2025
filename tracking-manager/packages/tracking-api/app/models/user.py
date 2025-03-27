@@ -112,6 +112,21 @@ async def verify_user(us: any, p: str):
     except Exception as e:
         raise e
 
-async def get_by_id(id: str):
-    collection = database.db[collection_name]
-    return collection.find_one({"_id": ObjectId(id)})
+async def get_by_id(user_id: str):
+    try:
+        collection = database.db[collection_name]
+        user_info = collection.find_one({"_id": ObjectId(user_id)})
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="User not found"
+            )
+        return user_info
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting user by id: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

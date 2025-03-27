@@ -5,6 +5,7 @@ import jwt
 from starlette import status
 
 from app.core import logger, response, mail
+from app.core.response import JsonException
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware.middleware import get_private_key, decode_jwt, generate_otp
@@ -27,6 +28,8 @@ async def get_current(token: str) -> ItemUserRes:
         if user_info:
             user_info['token'] = token
             return ItemUserRes.from_mongo(user_info)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error get_current user: {str(e)}")
         raise e

@@ -4,12 +4,15 @@ import os
 import httpx
 from fastapi.responses import StreamingResponse
 
-from app.core import logger, response, rabbitmq
+from app.core import logger, response, rabbitmq, database
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
+from app.entities.order.response import ItemOrderRes
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
+
+collection_name = "orders"
 
 async def check_order(item: ItemOrderInReq, user_id: str):
     try:
@@ -96,4 +99,14 @@ async def add_order(item: OrderRequest):
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
+        raise e
+
+async def get_order_by_user(user_id: str):
+    try:
+        collection = database.db[collection_name]
+        order_list = collection.find({"created_by": user_id})
+        logger.info(f"Order list: {order_list}")
+        return [ItemOrderRes(**prod) for prod in order_list]
+    except Exception as e:
+        logger.error(f"Failed [get_order_by_user]: {e}")
         raise e
