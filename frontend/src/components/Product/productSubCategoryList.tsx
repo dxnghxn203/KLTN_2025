@@ -6,152 +6,25 @@ import { generateRandomId } from "@/utils/string";
 import Filter from "@/components/Category/filter";
 import shopping from "@/images/shopping.png";
 import Image from "next/image";
-import ProductCosmeticsCard from "./productSubCategoryCard";
 import ProductSubCategoryCard from "./productSubCategoryCard";
-
-const productData: ProductData[] = [
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 210000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-];
-
-const ProductSubCategoryList: React.FC = () => {
+import { useParams } from "next/navigation";
+export default function ProductSubCategoryList({
+  data,
+  mainCategoryName,
+}: {
+  data: { subCategory: string; products: any };
+  mainCategoryName: string;
+}) {
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
-
+  const products = data.products || [];
+  const params = useParams();
+  const subCategories = Array.isArray(params.subCategories)
+    ? params.subCategories[0]
+    : params.subCategories;
+  console.log("SubCategory:", subCategories);
   // Hàm sắp xếp sản phẩm theo giá
-  const sortedProducts = [...productData].sort((a, b) => {
+  const sortedProducts = [...products].sort((a, b) => {
     if (sortOrder === "asc") return a.price - b.price;
     if (sortOrder === "desc") return b.price - a.price;
     return 0;
@@ -168,7 +41,7 @@ const ProductSubCategoryList: React.FC = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 
   // Lọc sản phẩm theo giá và thương hiệu
-  const sortedAndFilteredProducts = [...productData]
+  const sortedAndFilteredProducts = [...products]
     .filter(
       (product) =>
         product.price >= priceFilter.min &&
@@ -213,11 +86,16 @@ const ProductSubCategoryList: React.FC = () => {
           </button>
         </div>
         <div className="w-full max-md:px-5 max-md:max-w-full">
-          {sortedAndFilteredProducts.length > 0 ? (
+          {products.length > 0 ? (
             <>
               <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
-                {sortedAndFilteredProducts.map((product, index) => (
-                  <ProductSubCategoryCard key={index} {...product} />
+                {products.map((productData: any, index: any) => (
+                  <ProductSubCategoryCard
+                    key={index}
+                    subCategory={subCategories}
+                    products={productData}
+                    mainCategoryName={mainCategoryName}
+                  />
                 ))}
               </div>
               {showAll && (
@@ -246,6 +124,4 @@ const ProductSubCategoryList: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default ProductSubCategoryList;
+}

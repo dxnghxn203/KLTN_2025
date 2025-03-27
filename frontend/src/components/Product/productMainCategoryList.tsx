@@ -18,7 +18,7 @@ export default function ProductMainCategoryList({
     (Array.isArray(params.mainCategory)
       ? params.mainCategory[0]
       : params.mainCategory);
-  console.log("MainCategory:", mainCategory);
+  // console.log("MainCategory:", mainCategory);
   const products = data.products || [];
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");

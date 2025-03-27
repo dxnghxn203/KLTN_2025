@@ -15,7 +15,7 @@ interface Product {
     id: string;
     name: string;
     price: number;
-    discount: string;
+    discount: number;
     originPrice: number;
     imageSrc: string | StaticImageData;
     unit: string;

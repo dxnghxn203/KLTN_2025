@@ -8,150 +8,27 @@ import shopping from "@/images/shopping.png";
 import Image from "next/image";
 import ProductPersonalCareCard from "./productChildCategoryCard";
 import ProductChildCategoryCard from "./productChildCategoryCard";
+import { useParams } from "next/navigation";
 
-const productData: ProductData[] = [
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 210000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-];
-
-const ProductChildCategoryList: React.FC = () => {
+export default function ProductChildCategoryList({
+  data,
+  mainCategoryName,
+}: {
+  data: { childCategory: string; products: any };
+  mainCategoryName: string;
+}) {
+  const params = useParams();
+  const childCategory =
+    data.childCategory ||
+    (Array.isArray(params.childCategory)
+      ? params.childCategory[0]
+      : params.childCategory);
+  const products = data.products || [];
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
 
   // Hàm sắp xếp sản phẩm theo giá
-  const sortedProducts = [...productData].sort((a, b) => {
+  const sortedProducts = [...products].sort((a, b) => {
     if (sortOrder === "asc") return a.price - b.price;
     if (sortOrder === "desc") return b.price - a.price;
     return 0;
@@ -168,7 +45,7 @@ const ProductChildCategoryList: React.FC = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 
   // Lọc sản phẩm theo giá và thương hiệu
-  const sortedAndFilteredProducts = [...productData]
+  const sortedAndFilteredProducts = [...products]
     .filter(
       (product) =>
         product.price >= priceFilter.min &&
@@ -213,11 +90,16 @@ const ProductChildCategoryList: React.FC = () => {
           </button>
         </div>
         <div className="w-full max-md:px-5 max-md:max-w-full">
-          {sortedAndFilteredProducts.length > 0 ? (
+          {products.length > 0 ? (
             <>
               <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
-                {sortedAndFilteredProducts.map((product, index) => (
-                  <ProductChildCategoryCard key={index} {...product} />
+                {products.map((productData: any, index: any) => (
+                  <ProductChildCategoryCard
+                    key={index}
+                    childCategory={childCategory}
+                    products={productData}
+                    mainCategoryName={mainCategoryName}
+                  />
                 ))}
               </div>
               {showAll && (
@@ -246,6 +128,4 @@ const ProductChildCategoryList: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default ProductChildCategoryList;
+}

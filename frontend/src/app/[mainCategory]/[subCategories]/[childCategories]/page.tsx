@@ -63,7 +63,10 @@ export default function CategoryPage() {
           <span className="text-sm text-gray-500">{childCategoryTitle}</span>
         </div>
         <div className="text-2xl font-bold p-4">{childCategoryTitle}</div>
-        <ProductChildCategoryList />
+        <ProductChildCategoryList
+          data={childCategory}
+          mainCategoryName={mainCategory?.main_category_name}
+        />
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">
         Sản phẩm vừa xem

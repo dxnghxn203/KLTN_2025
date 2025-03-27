@@ -5,26 +5,27 @@ import { StaticImageData } from "next/image";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 import Link from "next/link";
+// import "react-toastify/dist/ReactToastify.css";
 
 interface ProductDialogProps {
-  id: string;
   name: string;
   price: number;
-  discount: string;
+  discount: number;
   originPrice: number;
-  imageSrc: string | StaticImageData;
+  imageSrc: StaticImageData;
   unit: string;
+  id: string;
   onClose: () => void;
 }
 
 const ProductDialog: React.FC<ProductDialogProps> = ({
-  id,
   name,
   price,
   discount,
   originPrice,
   imageSrc,
   unit,
+  id,
   onClose,
 }) => {
   const [quantity, setQuantity] = useState(1);
@@ -42,7 +43,6 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
 
   const handleAddToCart = () => {
     addToCart({
-      id,
       name,
       price,
       discount,
@@ -50,6 +50,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
       imageSrc,
       unit,
       quantity,
+      id,
     });
   };
 
@@ -81,14 +82,14 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
           <div className="w-1/2 text-left">
             <h1 className="text-2xl font-semibold text-black">{name}</h1>
             <div className="flex gap-2 mt-3">
-              {discount && (
+              {discount !== 0 && (
                 <span className="px-2 py-2 text-xs font-medium text-black bg-amber-300 rounded-lg flex items-center justify-center">
-                  {discount}
+                  {discount}%
                 </span>
               )}
               {originPrice != null && originPrice !== 0 && (
                 <span className="text-xl font-bold text-zinc-400 line-through flex items-center justify-center">
-                  {Number(originPrice).toLocaleString("vi-VN")}đ
+                  {originPrice.toLocaleString("vi-VN")}đ
                 </span>
               )}
             </div>

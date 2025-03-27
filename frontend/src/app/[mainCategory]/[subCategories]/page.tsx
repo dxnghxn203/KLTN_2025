@@ -19,8 +19,6 @@ export default function CategoryPage() {
     ? params.mainCategory[0]
     : params.mainCategory;
 
-  // console.log("ĐUYENUYENN", mainCategory);
-
   const subCategories = Array.isArray(params.subCategories)
     ? params.subCategories[0]
     : params.subCategories;
@@ -29,18 +27,13 @@ export default function CategoryPage() {
     ? params.childCategories[0]
     : params.childCategories;
 
-  // console.log("ĐUYENUYENN", subCategories);
-
   const categoryTitle = mainCategory?.main_category_name || "Danh mục sản phẩm";
-  // console.log("GGGGG", categoryTitle);
 
   useEffect(() => {
     fetchSubCategory(mainCategories, subCategories);
   }, []);
-  // console.log("child", childCategory);
 
   const subCategoriesTitle = subCategory?.sub_category_name || "Danh mục con";
-  // console.log("ĐUYENUYENN", subCategoriesTitle);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -68,7 +61,10 @@ export default function CategoryPage() {
           main_category={mainCategory}
         />
         <div className="mt-6">
-          <ProductSubCategoryList />
+          <ProductSubCategoryList
+            data={subCategory}
+            mainCategoryName={mainCategory?.main_category_name}
+          />
         </div>
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">

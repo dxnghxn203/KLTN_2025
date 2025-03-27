@@ -21,7 +21,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
   const params = useParams();
   // const { mainCategory, fetchMainCategory } = useCategory();
   // fetchMainCategory(params.mainCategory);
-  console.log("Products:", mainCategoryName);
+  // console.log("Products:", mainCategoryName);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -32,9 +32,9 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
           <Link href="/chi-tiet-san-pham" legacyBehavior>
             <div className="py-4 flex flex-col items-center">
               <div className="flex justify-end w-full">
-                {products?.prices?.discount !== undefined ? (
+                {products?.prices[0]?.discount !== 0 ? (
                   <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md transition-opacity">
-                    {products?.prices?.discount}
+                    {products?.prices[0]?.discount}%
                   </div>
                 ) : (
                   <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md opacity-0">
@@ -80,7 +80,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
             <div className="mt-2">
               <div
                 className={`text-sm text-zinc-400 line-through ${
-                  products?.prices[0]?.price ? "" : "invisible"
+                  products?.prices[0]?.original_price ? "" : "invisible"
                 }`}
               >
                 {(products?.prices[0]?.original_price || 0).toLocaleString(
@@ -108,18 +108,18 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
       </div>
 
       {/* Dialog hiển thị khi isDialogOpen = true */}
-      {/* {isDialogOpen && (
+      {isDialogOpen && (
         <ProductDialog
-          id={generateRandomId()}
-          name={name}
-          price={price}
-          discount={discount ?? ""}
-          originPrice={originPrice ?? 0}
-          imageSrc={imageSrc}
-          unit={unit}
+          name={products?.name_primary}
+          price={products?.prices[0]?.price}
+          discount={products?.prices[0]?.discount}
+          originPrice={products?.prices[0]?.original_price}
+          imageSrc={products?.images_primary}
+          unit={products?.prices[0]?.unit}
+          id={products?.id}
           onClose={() => setIsDialogOpen(false)}
         />
-      )} */}
+      )}
     </>
   );
 };
