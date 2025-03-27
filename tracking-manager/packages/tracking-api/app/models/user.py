@@ -60,11 +60,8 @@ async def add_user_email(item: ItemUserRegisReq):
             message="Đã Đăng ký thành công"
         )
     except Exception as e:
-        logger.error(f"Failed [add_user] :{e}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
+        logger.error(f"Failed [add_user_email] :{e}")
+        raise e
 
 async def add_user_google(email: str, user_name: str):
     try:
@@ -92,11 +89,8 @@ async def add_user_google(email: str, user_name: str):
             data={"user_id": str(user_id)}
         )
     except Exception as e:
-        logger.error(f"Failed [add_user]: {e}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
+        logger.error(f"Failed [add_user_google]: {e}")
+        raise e
 
 async def update_user_verification(email: str):
     collection = database.db[collection_name]
@@ -122,11 +116,15 @@ async def get_by_id(user_id: str):
                 message="User not found"
             )
         return user_info
-    except response.JsonException as je:
-        raise je
     except Exception as e:
         logger.error(f"Error getting user by id: {str(e)}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
+        raise e
+
+async def update_status(user_id: str, status: bool):
+    try:
+        collection = database.db[collection_name]
+        collection.update_one({"_id": ObjectId(user_id)}, {"$set": {"active": status}})
+        return response.SuccessResponse(message=f"Cập nhật trạng thái user thành {status}")
+    except Exception as e:
+        logger.error(f"Error updating user status: {str(e)}")
+        raise e

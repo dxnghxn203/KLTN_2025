@@ -99,3 +99,22 @@ async def get_user(token: str = Depends(middleware.verify_token)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.put("/users/status", response_model=BaseResponse)
+async def get_user(user_id: str, status_user: str, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        user_info = await user.get_by_id(user_id)
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="User not found"
+            )
+        return await user.update_status(user_id, status_user)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting current user: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

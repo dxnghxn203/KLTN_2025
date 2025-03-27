@@ -46,7 +46,7 @@ def verify_token_optional(cred: Optional[HTTPAuthorizationCredentials] = Depends
 def verify_token_admin(cred: HTTPAuthorizationCredentials = Depends(security)):
     payload = validate_and_decode_token(cred)
 
-    if payload.get("role") != "admin_account":
+    if not payload.get("role") or payload.get("role") != "admin_account":
         raise response.JsonException(status_code=status.HTTP_403_FORBIDDEN, message="Không có quyền truy cập")
 
     return cred.credentials

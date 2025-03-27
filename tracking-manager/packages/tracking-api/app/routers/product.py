@@ -4,6 +4,7 @@ from fastapi import APIRouter, status, UploadFile, File
 from pyfa_converter_v2 import BodyDepends
 
 from app.core import logger, response
+from app.core.response import JsonException
 from app.entities.product.request import ItemProductDBInReq
 from app.models.product import get_product_by_slug, add_product_db
 router = APIRouter()
@@ -18,6 +19,8 @@ async def get_product(slug: str):
                 message="Product not found"
             )
         return response.BaseResponse(status="success",data={**product, "_id": str(product["_id"])})
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error("Error getting product", error=str(e))
         raise response.JsonException(
@@ -33,6 +36,8 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
         logger.info(f"item router: {item}")
         await add_product_db(item, images_primary, images)
         return response.SuccessResponse(status="success", message="Product added successfully")
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error("Error adding product", error=str(e))
         raise response.JsonException(

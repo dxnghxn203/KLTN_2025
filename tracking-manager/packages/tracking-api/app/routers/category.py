@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, UploadFile, File
 
 from app.core import logger, response
+from app.core.response import JsonException
 from app.entities.category.request import MainCategoryInReq, SubCategoryInReq, ChildCategoryInReq
 from app.models import category
 
@@ -11,6 +12,8 @@ async def get_categories():
     try:
         data = await category.get_all_categories()
         return response.SuccessResponse(data=data)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error getting all categories: {str(e)}")
         raise response.JsonException(
@@ -22,12 +25,9 @@ async def get_categories():
 async def get_category(main_slug: str):
     try:
         data = await category.get_category_by_slug(main_slug)
-        if not data:
-            raise response.JsonException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                message="Category not found"
-            )
         return response.SuccessResponse(data=data)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error getting category by slug: {str(e)}")
         raise response.JsonException(
@@ -39,12 +39,9 @@ async def get_category(main_slug: str):
 async def get_sub_category(main_slug: str, sub_slug: str):
     try:
         data = await category.get_sub_category(main_slug, sub_slug)
-        if not data:
-            raise response.JsonException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                message="Category not found"
-            )
         return response.SuccessResponse(data=data)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error getting category: {str(e)}")
         raise response.JsonException(
@@ -62,6 +59,8 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
                 message="Category not found"
             )
         return response.SuccessResponse(data=data)
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error getting category: {str(e)}")
         raise response.JsonException(
@@ -74,11 +73,9 @@ async def create_category(new_category: MainCategoryInReq):
     try:
         await category.add_category(new_category)
         return response.SuccessResponse(message="Main-category added successfully")
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
+
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error adding category: {str(e)}")
         raise response.JsonException(
@@ -91,11 +88,8 @@ async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
     try:
         await category.add_sub_category(main_slug, sub_category)
         return response.SuccessResponse(message="Sub-category added successfully")
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error adding sub-category: {str(e)}")
         raise response.JsonException(
@@ -108,11 +102,8 @@ async def create_child_category(main_slug: str, sub_slug: str, child_category: C
     try:
         await category.add_child_category(main_slug, sub_slug, child_category)
         return response.SuccessResponse(message="Child-category added successfully")
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error adding child category: {str(e)}")
         raise response.JsonException(
@@ -129,11 +120,8 @@ async def update_main_category(
     try:
         await category.update_main_category(main_category_id, main_category_name, main_category_slug)
         return response.SuccessResponse(message="Main category updated successfully")
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error updating main category: {str(e)}")
         raise response.JsonException(
@@ -150,11 +138,8 @@ async def update_sub_category(
     try:
         await category.update_sub_category(sub_category_id, sub_category_name, sub_category_slug)
         return response.SuccessResponse(message="Sub-category updated successfully")
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error updating sub-category: {str(e)}")
         raise response.JsonException(
@@ -171,11 +156,8 @@ async def update_child_category(
     try:
         await category.update_child_category(child_category_id, child_category_name, child_category_slug)
         return response.SuccessResponse(message="Child-category updated successfully")
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error updating child-category: {str(e)}")
         raise response.JsonException(
@@ -188,6 +170,8 @@ async def update_sub_category_image(sub_category_id: str, image: UploadFile = Fi
     try:
         await category.update_sub_category_image(sub_category_id, image)
         return response.SuccessResponse(message="Sub-category image updated successfully")
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error updating sub-category image: {str(e)}")
         raise response.JsonException(
@@ -202,6 +186,8 @@ async def update_child_category_image(child_category_id: str, image: UploadFile 
         await category.update_child_category_image(child_category_id, image)
 
         return response.SuccessResponse(message="Child-category image updated successfully")
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error updating child-category image: {str(e)}")
         raise response.JsonException(
@@ -215,6 +201,8 @@ async def update_default_image(image: UploadFile = File(...)):
         await category.update_all_categories_image(image)
 
         return response.BaseResponse(message="Default image updated for all categories")
+    except JsonException as je:
+        raise je
     except Exception as e:
         logger.error(f"Error updating default image: {str(e)}")
         raise response.JsonException(

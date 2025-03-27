@@ -3,6 +3,7 @@ import os
 
 import httpx
 from fastapi.responses import StreamingResponse
+from starlette import status
 
 from app.core import logger, response, rabbitmq, database
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
@@ -27,7 +28,10 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             logger.info(f"Product data from Redis: {data}")
 
             if not data:
-                raise ValueError("Không tìm thấy sản phẩm trong hệ thống")
+                return response.JsonException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    message="Không tìm thấy sản phẩm"
+                )
 
             inventory = data.get("inventory", 0)
             sell = data.get("sell", 0)
@@ -35,7 +39,10 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             total_requested = product.quantity + sell
 
             if total_requested > inventory:
-                raise ValueError("Hàng tồn không đủ")
+                return response.JsonException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    message="Sản phẩm không đủ hàng"
+                )
 
         logger.info(f"Total price: {total_price}")
 
@@ -59,7 +66,6 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
         if qr_response.status_code != 200:
             logger.error(f"Failed to generate QR: {qr_response.text}")
-            raise ValueError("Không thể tạo QR code")
 
         item_data = ItemOrderReq(**dict(item),
                                  order_id=order_id,
@@ -71,7 +77,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         redis.save_order(item_data)
 
         return StreamingResponse(
-            status_code=200,
+            status_code=status.HTTP_200_OK,
             content=iter([qr_response.content]),
             media_type="image/png",
             headers={
@@ -87,7 +93,10 @@ async def add_order(item: OrderRequest):
     try:
         order_data = redis.get_order(item.order_id)
         if not order_data:
-            return response.BaseResponse(status="failed", message="Không tìm thấy order")
+            return response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy thông tin đơn hàng"
+            )
 
         order_dict = json.loads(order_data)
         logger.info(order_dict)
