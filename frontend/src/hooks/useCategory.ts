@@ -1,4 +1,4 @@
-import { fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetSubCategoryStart, selectAllCategory, selectChildCategory, selectMainCategory, selectSubCategory } from "@/store/category";
+import { fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, selectAllCategory, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useCategory() {
@@ -7,6 +7,7 @@ export function useCategory() {
   const mainCategory: any = useSelector(selectMainCategory);
   const subCategory: any = useSelector(selectSubCategory);
   const childCategory: any = useSelector(selectChildCategory);
+  // const productByMainSlug: any = useSelector(selectProductByMainSlug);
   // Hàm khởi động fetch dữ liệu cho tất cả danh mục
   const fetchAllCategory = () => {
     dispatch(fetchGetAllCategoryStart());
@@ -22,6 +23,10 @@ export function useCategory() {
   const fetchChildCategory = (mainCategory: any, subCategory: any, childCategory:any) => {
     dispatch(fetchGetChildCategoryStart({ mainCategory, subCategory, childCategory }));
   }
+  // const fetchProductByMainSlug = (mainCategory: any) => {
+  //   dispatch(fetchGetProductByMainSlugStart(mainCategory));
+  //   // console.log('mainCategory', mainCategory);
+  // }
   
   return {
     allCategory,
@@ -34,7 +39,8 @@ export function useCategory() {
     subCategory,
     
     fetchChildCategory,
-    childCategory
+    childCategory,
+
     
   };
 }

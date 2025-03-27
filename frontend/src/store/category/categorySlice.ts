@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface CategoryState {
     categories: any[];
+    products: any[];
     mainCategories: any[];
     subCategories: any[];
     childCategories:any[];
@@ -14,6 +15,7 @@ const initialState: CategoryState = {
     mainCategories: [],
     subCategories: [],
     childCategories:[],
+    products: [],
     loading: false,
     error: null,
 };
@@ -38,7 +40,7 @@ export const categorySlice = createSlice({
             state.error = action.payload;
         },
         fetchGetMainCategoryStart(state) {
-            console.log("Fetching categories started");  
+            // console.log("Fetching categories started");  
             state.loading = true;  
         },
         fetchGetMainCategorySuccess(state, action: PayloadAction<any[]>) {
@@ -83,6 +85,24 @@ export const categorySlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // fetch product by main slug
+        fetchGetProductByMainSlugStart(state, action: PayloadAction<string>) {
+            console.log("Fetching product by main slug started");
+            state.loading = true;
+        },
+        fetchGetProductByMainSlugSuccess(state, action: PayloadAction<any[]>) { 
+            console.log("Fetching product by main slug successful, data:", action.payload);      
+            state.products = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchGetProductByMainSlugFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching product by main slug failed, error:", action);
+            state.loading = false;
+            state.error = action.payload;
+        }
+
+
        
 
     },
@@ -104,6 +124,10 @@ export const {
     fetchGetChildCategoryStart,
     fetchGetChildCategorySuccess,
     fetchGetChildCategoryFailed,
+
+    fetchGetProductByMainSlugStart,
+    fetchGetProductByMainSlugSuccess,
+    fetchGetProductByMainSlugFailed
 } = categorySlice.actions;
 
 export default categorySlice.reducer;

@@ -6,7 +6,7 @@ export function useProduct() {
     const dispatch = useDispatch();
     const productBySlug = useSelector(selectProductBySlug);
 
-    const getProductBySlug = async (slug: string) => {
+    const fetchProductBySlug = async (slug: string) => {
         dispatch(fetchProductBySlugStart(slug));
     }
 
@@ -25,7 +25,7 @@ export function useProduct() {
     return {
         addProduct,
         productBySlug,
-        getProductBySlug
+        fetchProductBySlug
     };
 }
 

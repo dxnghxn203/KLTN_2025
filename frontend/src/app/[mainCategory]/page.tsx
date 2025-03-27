@@ -16,6 +16,7 @@ export default function MainCategoryPage() {
     fetchMainCategory(params.mainCategory);
     return mainCategory;
   }, [params.mainCategory]);
+  console.log("MainCategory:", mainCategory);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
@@ -34,7 +35,10 @@ export default function MainCategoryPage() {
         </div>
         <CategoryList data={mainCategory} />
         <div className="mt-6">
-          <ProductMainCategoryList />
+          <ProductMainCategoryList
+            data={mainCategory}
+            mainCategoryName={mainCategory?.main_category_name}
+          />
         </div>
       </main>
       <div className="text-2xl font-extrabold text-black px-5 pt-10">

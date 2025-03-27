@@ -15,6 +15,7 @@ export default function CategoryList({
       : params.mainCategory);
   const sub_category = data.sub_category || [];
 
+  // console.log("Subname:", sub_category?.sub_category_name);
   return (
     <div className="px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {sub_category.length > 0 ? (
@@ -22,9 +23,6 @@ export default function CategoryList({
           <CategoryCard
             key={index}
             mainCategory={mainCategory}
-            icon={
-              "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222"
-            }
             subCategories={categoryData}
           />
         ))

@@ -16,6 +16,10 @@ import {
     fetchGetChildCategoryStart,
     fetchGetChildCategorySuccess,
     fetchGetChildCategoryFailed,
+
+    // fetchGetProductByMainSlugStart,
+    // fetchGetProductByMainSlugSuccess,
+    // fetchGetProductByMainSlugFailed
 } from './categorySlice';
 
 // Fetch all category
@@ -47,8 +51,6 @@ function* fetchGetMainCategory(action: any): Generator<any, void, any> {
         yield put(fetchGetMainCategoryFailed("Failed to fetch category"));
     }
 }
-
-
 function* fetchGetSubCategory(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
@@ -78,11 +80,28 @@ function* fetchGetChildCategory(action: any): Generator<any, void, any> {
         yield put(fetchGetChildCategoryFailed("Failed to fetch catfffegory"));
     }
 }
+// function* fetchGetProductByMainSlug(action: any): Generator<any, void, any> {
+//     try {
+//         const { payload } = action;
+//         const product = yield call(categoryService.getProductByMainSlug, payload);
+//         if (product.status_code === 200) {
+//             yield put(fetchGetProductByMainSlugSuccess(product.data));
+//             console.log("SAGA", product.data);
+//             return;
+//         }
+//         yield put(fetchGetProductByMainSlugFailed("Product not found"));
+
+//     }
+//     catch (error) {
+//         yield put(fetchGetProductByMainSlugFailed("Failed to fetch product"));
+//     }
+// }
 export function* categorySaga() {
     yield takeLatest(fetchGetAllCategoryStart.type, fetchGetAllCategory);
     yield takeLatest(fetchGetMainCategoryStart.type, fetchGetMainCategory);
     yield takeLatest(fetchGetSubCategoryStart.type, fetchGetSubCategory);
     yield takeLatest(fetchGetChildCategoryStart.type, fetchGetChildCategory);
+    // yield takeLatest(fetchGetProductByMainSlugStart.type, fetchGetProductByMainSlug);
 
 
 }

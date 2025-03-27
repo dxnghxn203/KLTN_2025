@@ -20,14 +20,17 @@ export const productSlice = createSlice({
     reducers: {
         // Fetch product by slug
         fetchProductBySlugStart(state, action: PayloadAction<string>) {
+            console.log("Fetching product by slug started");
             state.loading = true;
         },
         fetchProductBySlugSuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching product by slug successful, data:", action.payload);
             state.product = action.payload;
             state.loading = false;
             state.error = null;
         },
         fetchProductBySlugFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching product by slug failed, error:", action);
             state.loading = false;
             state.error = action.payload;
         },

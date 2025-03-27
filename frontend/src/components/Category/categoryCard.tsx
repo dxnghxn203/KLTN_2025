@@ -3,17 +3,14 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import pill from "@/images/pill.png";
 
 interface CategoryCardProps {
   mainCategory: string;
-  icon: string | StaticImageData;
   subCategories: any;
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({
   mainCategory,
-  icon,
   subCategories,
 }) => {
   const itemsPerPage = 5;
@@ -38,8 +35,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
     page * itemsPerPage,
     (page + 1) * itemsPerPage
   );
-  // console.log("1000", subCategorie);
-  // console.log("Image", subCategories?.sub_image_url);
   return (
     <div className="relative flex items-center shadow-sm rounded-lg bg-[#F6FBFF] border border-gray-200 group h-[160px]">
       <div className="flex flex-col items-center w-1/3 text-center p-2 transition duration-300 rounded-lg">

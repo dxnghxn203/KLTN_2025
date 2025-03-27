@@ -42,3 +42,4 @@ export const getChildCategory = async (main_slug:any, sub_slug:any, child_slug:a
         throw error;
     }
 };
+

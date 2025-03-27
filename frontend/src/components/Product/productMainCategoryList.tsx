@@ -1,173 +1,33 @@
 import React, { useState } from "react";
-import ProductPortfolioCard from "./productMainCategoryCard";
-import { ProductData } from "@/types/product";
-import medicine1 from "@/images/medicinee.png";
-import { generateRandomId } from "@/utils/string";
 import Filter from "@/components/Category/filter";
 import shopping from "@/images/shopping.png";
 import Image from "next/image";
 import ProductMainCategoryCard from "./productMainCategoryCard";
+import { useParams } from "next/navigation";
 
-const productData: ProductData[] = [
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 210000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 80000,
-    unit: "Chai",
-    brand: "Stella Pharm",
-  },
-];
-
-const ProductMainCategoryList: React.FC = () => {
+export default function ProductMainCategoryList({
+  data,
+  mainCategoryName,
+}: {
+  data: { mainCategory: string; products: any };
+  mainCategoryName: string;
+}) {
+  const params = useParams();
+  const mainCategory =
+    data.mainCategory ||
+    (Array.isArray(params.mainCategory)
+      ? params.mainCategory[0]
+      : params.mainCategory);
+  console.log("MainCategory:", mainCategory);
+  const products = data.products || [];
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
-
-  // Hàm sắp xếp sản phẩm theo giá
-  const sortedProducts = [...productData].sort((a, b) => {
-    if (sortOrder === "asc") return a.price - b.price;
-    if (sortOrder === "desc") return b.price - a.price;
-    return 0;
-  });
-
-  const displayedProducts = showAll
-    ? sortedProducts
-    : sortedProducts.slice(0, 10);
-
   const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({
     min: 0,
     max: Infinity,
   });
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-
-  // Lọc sản phẩm theo giá và thương hiệu
-  const sortedAndFilteredProducts = [...productData]
+  const sortedAndFilteredProducts = [...products]
     .filter(
       (product) =>
         product.price >= priceFilter.min &&
@@ -179,7 +39,6 @@ const ProductMainCategoryList: React.FC = () => {
       if (sortOrder === "desc") return b.price - a.price;
       return 0;
     });
-
   return (
     <div className="grid grid-cols-6 gap-4">
       <Filter
@@ -212,11 +71,16 @@ const ProductMainCategoryList: React.FC = () => {
           </button>
         </div>
         <div className="w-full max-md:px-5 max-md:max-w-full">
-          {sortedAndFilteredProducts.length > 0 ? (
+          {products.length > 0 ? (
             <>
               <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
-                {sortedAndFilteredProducts.map((product, index) => (
-                  <ProductMainCategoryCard key={index} {...product} />
+                {products.map((productData: any, index: any) => (
+                  <ProductMainCategoryCard
+                    key={index}
+                    mainCategory={mainCategory}
+                    products={productData}
+                    mainCategoryName={mainCategoryName}
+                  />
                 ))}
               </div>
               {showAll && (
@@ -245,6 +109,4 @@ const ProductMainCategoryList: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default ProductMainCategoryList;
+}
