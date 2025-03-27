@@ -15,11 +15,6 @@ async def check_order(item: ItemOrderInReq, token: str = Depends(middleware.veri
             user_info = await auth.get_current(token)
             user_id = user_info.id
         return await order.check_order(item, user_id)
-    except ValueError as e:
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message=str(e)
-        )
     except response.JsonException as je:
         raise je
     except Exception as e:
@@ -39,6 +34,27 @@ async def add_order(item: OrderRequest):
             message=f"order added successfully",
             data=result
         )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error adding order", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/order/order", response_model=response.BaseResponse)
+async def get_order_by_user(token: str = Depends(middleware.verify_token)):
+    try:
+        user_info = await auth.get_current(token)
+        logger.info(f"user_info: {user_info}")
+        result = await order.get_order_by_user(user_info.id)
+        return response.BaseResponse(
+            message=f"order found",
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
     except Exception as e:
         logger.error("Error adding order", error=str(e))
         raise response.JsonException(

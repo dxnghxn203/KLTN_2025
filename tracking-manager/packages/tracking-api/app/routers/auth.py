@@ -53,7 +53,7 @@ async def login(email: str = Form(), password: str = Form()):
                 message="Tài khoản chưa xác thực. Vui lòng nhập OTP!"
             )
 
-        jwt_token = await auth.get_token(str(us["_id"]))
+        jwt_token = await auth.get_token(str(us.get("_id")), us.get("role_id"))
         res = ItemUserRes.from_mongo(us)
         res.token = jwt_token
         return SuccessResponse(data=res)
