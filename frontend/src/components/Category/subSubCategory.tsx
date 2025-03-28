@@ -14,7 +14,7 @@ export default function SubSubCategory({
 }) {
   return (
     <div>
-      {sub_category.child_category.length > 0 ? (
+      {sub_category.child_category ? (
         <div className="flex justify-start gap-6 flex-wrap px-5">
           {sub_category.child_category.map((child: any, index: any) => (
             <Link
