@@ -9,17 +9,17 @@ export default function ProductMainCategoryList({
   data,
   mainCategoryName,
 }: {
-  data: { mainCategory: string; products: any };
+  data: { mainCategory: string; products: any } | null;
   mainCategoryName: string;
 }) {
   const params = useParams();
   const mainCategory =
-    data.mainCategory ||
+    data?.mainCategory ||
     (Array.isArray(params.mainCategory)
       ? params.mainCategory[0]
       : params.mainCategory);
   // console.log("MainCategory:", mainCategory);
-  const products = data.products || [];
+  const products = data?.products || [];
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
   const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({
