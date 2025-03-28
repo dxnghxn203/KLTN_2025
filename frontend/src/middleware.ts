@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
 
     const publicPaths = [
         '/',
-        '/login',
+        '/dang-nhap',
         '/register',
         '/contact',
         '/api/',

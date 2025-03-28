@@ -16,9 +16,9 @@ const AlreadyLoggedIn: React.FC = () => {
       const timer = setTimeout(() => {
         setCountdown(countdown - 1);
       }, 1000);
-
       return () => clearTimeout(timer);
     } else {
+      router.push("/");
     }
   }, [countdown, router]);
 
@@ -30,7 +30,7 @@ const AlreadyLoggedIn: React.FC = () => {
           {user?.image ? (
             <img
               src={user?.image}
-              alt={user.name || "User"}
+              alt={"null"}
               className="w-16 h-16 rounded-full object-cover"
             />
           ) : (
@@ -38,10 +38,10 @@ const AlreadyLoggedIn: React.FC = () => {
           )}
         </div>
 
-        <h2 className="text-xl font-semibold mb-1">{user?.name || "hxn203"}</h2>
+        <h2 className="text-xl font-semibold mb-1">{user?.name || user?.user_name}</h2>
 
         <p className="text-gray-500 text-sm mb-4">
-          {user?.email || "dxnghxn203@gmail.com"}
+          {user?.email || "null"}
         </p>
 
         <div className="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-6 space-y-4">

@@ -1,5 +1,6 @@
 import axiosClient from "@/utils/configs/axiosClient";
 import { AuthResponse, GoogleSignInData, LoginData } from "@/types/auth";
+import { message } from "antd";
 
 export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResponse> => {
     try {
@@ -18,15 +19,17 @@ export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResp
     }
 };
 
-export const login = async (data: LoginData): Promise<AuthResponse> => {
+export const login = async (data: any): Promise<AuthResponse> => {
     try {
-        const response = await axiosClient.post('/v1/authen/login', data);
+        const response: any = await axiosClient.post('/v1/auth/login', data);
         return {
             success: true,
-            user: response.data.user,
-            token: response.data.token
+            user: response?.data || null,
+            token: response?.data?.token || null,
+            message: response?.message || 'Đăng nhập thành công',
         };
     } catch (error: any) {
+        console.error('Login error:', error);
         return {
             success: false,
             message: error.response?.data?.message || 'Đăng nhập thất bại'
