@@ -40,6 +40,7 @@ async def handle_otp_verification(email: str):
     try:
         if not redis.check_request_count(email):
             ttl = redis.get_ttl(redis.request_count_key(email))
+            logger.info(f"TTL for OTP request of {email}: {ttl}")
             if ttl is None or not isinstance(ttl, int):
                 ttl = 60
 
@@ -55,5 +56,5 @@ async def handle_otp_verification(email: str):
         mail.send_otp_email(email, otp)
         return otp
     except Exception as e:
-        logger.error(f"Error handle_otp_verification: {str(e)}")
+        logger.error(f"Error handle_otp_verification: {e}")
         raise e
