@@ -21,7 +21,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
   const params = useParams();
   // const { mainCategory, fetchMainCategory } = useCategory();
   // fetchMainCategory(params.mainCategory);
-  // console.log("Products:", mainCategoryName);
+  console.log("Products:", products?.product_id);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -116,7 +116,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
           originPrice={products?.prices[0]?.original_price}
           imageSrc={products?.images_primary}
           unit={products?.prices[0]?.unit}
-          id={products?.id}
+          id={products?.product_id}
           onClose={() => setIsDialogOpen(false)}
         />
       )}

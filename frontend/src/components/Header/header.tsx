@@ -80,14 +80,12 @@ export default function Header() {
               </div>
             </div>
           </Link>
-
           <div
             onClick={() => setIsDialogOpen(true)}
             className="cursor-pointer ml-4"
           >
             <LocationDelivery />
           </div>
-
           <div className="flex items-center bg-white rounded-full px-4 py-2 w-[480px] h-[48px]">
             <input
               type="text"
@@ -141,25 +139,27 @@ export default function Header() {
                     <>
                       <div
                         className={`max-h-[250px] overflow-y-auto ${
-                          cartLocal.length > 3 ? "custom-scrollbar" : ""
+                          cartLocal.length > 3 ? "scrollbar-thin" : ""
                         }`}
                       >
-                        {cartLocal.map((item, index) => (
+                        {cartLocal.map((item: any, index) => (
                           <div
                             key={item.id}
                             className={`flex py-3 ${
                               index !== cartLocal.length - 1 ? "border-b" : ""
                             }`}
                           >
-                            <div className="w-16 h-16 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                            <div className="w-14 h-14 flex-shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                               <Image
                                 src={item.imageSrc}
                                 alt={item.name}
-                                width={64}
-                                height={64}
-                                className="object-cover w-full h-full"
+                                width={50}
+                                height={50}
+                                className="object-cover"
+                                priority
                               />
                             </div>
+
                             <div className="ml-3 flex-1 flex flex-col justify-between">
                               <div>
                                 <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
@@ -170,7 +170,7 @@ export default function Header() {
                                 <div className="text-[#0053E2] font-medium">
                                   {(item.price * item.quantity).toLocaleString(
                                     "vi-VN"
-                                  )}{" "}
+                                  )}
                                   đ
                                 </div>
                                 <span className="text-xs text-gray-500">
@@ -189,7 +189,7 @@ export default function Header() {
                       </div>
 
                       <Link href="/gio-hang" legacyBehavior>
-                        <a className="text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
+                        <a className="mt-4 text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
                           Xem giỏ hàng
                         </a>
                       </Link>
@@ -199,7 +199,6 @@ export default function Header() {
               </div>
             )}
           </div>
-
           {isAuthenticated ? (
             <>
               <div className="relative" ref={dropdownRef}>

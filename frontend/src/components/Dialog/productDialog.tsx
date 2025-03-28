@@ -5,7 +5,6 @@ import { StaticImageData } from "next/image";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
 import Link from "next/link";
-// import "react-toastify/dist/ReactToastify.css";
 
 interface ProductDialogProps {
   name: string;
@@ -53,6 +52,16 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
       id,
     });
   };
+  console.log(
+    "ProductDialog:",
+    name,
+    price,
+    discount,
+    originPrice,
+    imageSrc,
+    unit,
+    id
+  );
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
