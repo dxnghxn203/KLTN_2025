@@ -212,7 +212,7 @@ export default function Header() {
                     {user?.image ? (
                       <img
                         src={user?.image}
-                        alt={user.name || "User"}
+                        alt={"User"}
                         className="text-2xl rounded-full object-cover"
                       />
                     ) : (
@@ -222,7 +222,7 @@ export default function Header() {
 
                   <div className="ml-2 flex-1 overflow-hidden">
                     <p className="text-sm font-medium truncate">
-                      {user?.name || "hxn203"}
+                      {user?.name || user?.user_name || ""}
                     </p>
                     <p className="text-xs text-white/70 truncate">
                       {user?.email || ""}

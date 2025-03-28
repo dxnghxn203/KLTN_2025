@@ -12,7 +12,6 @@ import {
     logoutFailure,
 } from './authSlice';
 import { getSession, signIn, signOut } from 'next-auth/react';
-import { LoginCredentials } from '@/types/auth';
 import { PayloadAction } from '@reduxjs/toolkit';
 
 // Google Login
@@ -35,13 +34,22 @@ function* handleGoogleLogin(): Generator<any, void, any> {
 }
 
 // Login with credentials
-function* handleLogin(action: PayloadAction<LoginCredentials>): Generator<any, void, any> {
+function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
+    
+    const { payload } = action;
+    const {
+        onSuccess = () => { },
+        onFailed = () => { },
+        ...credentials
+    } = payload;
+    
+    const form = new FormData();
+    form.append('email', credentials.email);
+    form.append('password', credentials.password);
     try {
-        const response = yield call(authService.login, action.payload);
-
+        const response = yield call(authService.login, form);
         if (response.success) {
-            localStorage.setItem('token', response.token);
-
+            onSuccess();
             yield put(
                 loginSuccess({
                     user: response?.user || null,
@@ -50,9 +58,12 @@ function* handleLogin(action: PayloadAction<LoginCredentials>): Generator<any, v
             );
 
         } else {
+            console.log('Login failed:', response.message);
+            onFailed(response.message );
             yield put(loginFailure(response.message || 'Đăng nhập thất bại'));
         }
     } catch (error: any) {
+        onFailed(error?.message || 'Đăng nhập thất bại');
         yield put(loginFailure(error.message || 'Đăng nhập thất bại'));
     }
 }
@@ -69,9 +80,9 @@ function* handleLogout(): Generator<any, void, any> {
         localStorage.removeItem('token');
         yield put(logoutSuccess());
 
-        if (typeof window !== 'undefined') {
-            window.location.href = '/login';
-        }
+        // if (typeof window !== 'undefined') {
+        //     window.location.href = '/dang-nhap';
+        // }
     } catch (error: any) {
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
         // Still remove token and redirect even if server request fails

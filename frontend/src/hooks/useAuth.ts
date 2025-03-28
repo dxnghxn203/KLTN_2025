@@ -18,10 +18,16 @@
             dispatch(googleLoginStart());
         };
         
-        
-        const login = (credentials: any) => {
-            dispatch(loginStart(credentials));
-            console.log('login', credentials);
+        const login = (
+            credentials: any,
+            onSucess: ()=> void,
+            onFailed: (message: any)=> void,
+        ) => {
+            dispatch(loginStart({
+                ...credentials,
+                onSucess: onSucess,
+                onFailed: onFailed,
+            }));
         };
         
         const logout = () => {

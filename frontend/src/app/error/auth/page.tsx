@@ -7,7 +7,7 @@ import { HiArrowLeft } from "react-icons/hi";
 export default function AuthError(){
     const handleGoLogin = async (e: React.MouseEvent) => {
         e.preventDefault();
-        window.location.href = '/login';
+        window.location.href = '/dang-nhap';
     };
 
     return (

@@ -8,6 +8,7 @@ import { ToastType } from "@/components/Toast/toast";
 import { useAuth } from "@/hooks/useAuth";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { useRouter } from "next/navigation";
+import { on } from "events";
 
 const LoginForm: React.FC = () => {
   const { signInWithGoogle, login, isLoading, user, isAuthenticated } =
@@ -58,16 +59,18 @@ const LoginForm: React.FC = () => {
     }
 
     setLocalLoading(true);
-    try {
-      await login(formData);
-      toast.showToast("Đăng nhập thành công!", ToastType.SUCCESS);
-      // console.log("Login success", formData);
-      router.push("/");
-    } catch (error) {
-      toast.showToast("Đăng nhập thất bại", ToastType.ERROR);
-    } finally {
-      setLocalLoading(false);
-    }
+    login(
+      formData,
+      () => {
+        toast.showToast("Đăng nhập thành công", ToastType.SUCCESS);
+        setLocalLoading(false);
+        router.push("/");
+      },
+      (message: any) => {
+        toast.showToast(message, ToastType.ERROR);
+        setLocalLoading(false);
+      }
+    )
   };
 
   const loadingGG = () => {

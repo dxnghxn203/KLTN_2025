@@ -29,7 +29,7 @@ export const authSlice = createSlice({
             state.error = action.payload;
         },
         // Normal login actions
-        loginStart: (state) => {
+        loginStart: (state, action) => {
             state.loading = true;
             state.error = null;
         },
