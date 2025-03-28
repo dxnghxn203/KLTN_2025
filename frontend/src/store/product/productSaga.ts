@@ -18,6 +18,7 @@ function* fetchProductBySlug(action: any): Generator<any, void, any> {
         const product = yield call(productService.getProductBySlug, payload);
         if (product.status === 200) {
             yield put(fetchProductBySlugSuccess(product.data));
+            console.log("Product Sagaa:", product.data);
             return;
         }
         yield put(fetchProductBySlugFailed("Product not found"));

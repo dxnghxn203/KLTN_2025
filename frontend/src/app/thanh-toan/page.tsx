@@ -27,7 +27,7 @@ const ShoppingCart: React.FC = () => {
         originPrice: product.originPrice,
         quantity: product.quantity,
         unit: product.unit,
-        discount: (product.originPrice - product.price).toString(),
+        discount: product.originPrice - product.price,
       }));
   }, [cartLocal, cartSelected]);
 

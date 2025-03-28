@@ -95,7 +95,7 @@ const ProductsViewCard: React.FC<ProductData> = ({
       </div>
 
       {/* Dialog hiển thị khi isDialogOpen = true */}
-      {isDialogOpen && (
+      {/* {isDialogOpen && (
         <ProductDialog
           id={id}
           name={name}
@@ -106,7 +106,7 @@ const ProductsViewCard: React.FC<ProductData> = ({
           unit={unit}
           onClose={() => setIsDialogOpen(false)}
         />
-      )}
+      )} */}
     </>
   );
 };

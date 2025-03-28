@@ -5,16 +5,12 @@ const nextConfig = {
     config.watchOptions = {
       poll: 1000,
       aggregateTimeout: 300,
-    }
-    return config
+    };
+    return config;
   },
   images: {
-    domains: [
-      'kltn2025.s3.ap-southeast-2.amazonaws.com',
-      
-      // Giữ lại các domain hiện có nếu có
-    ],
+    domains: ["kltn2025.s3.ap-southeast-2.amazonaws.com"],
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

@@ -94,7 +94,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
         </div>
       </div>
 
-      {isDialogOpen && (
+      {/* {isDialogOpen && (
         <ProductDialog
           id={generateRandomId()}
           name={name}
@@ -105,7 +105,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
           unit={unit}
           onClose={() => setIsDialogOpen(false)}
         />
-      )}
+      )} */}
     </>
   );
 };

@@ -51,6 +51,7 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
       quantity,
       id,
     });
+    onClose();
   };
   console.log(
     "ProductDialog:",

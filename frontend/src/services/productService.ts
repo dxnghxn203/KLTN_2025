@@ -3,6 +3,8 @@ import axiosClient from "@/utils/configs/axiosClient";
 export const getProductBySlug = async (slug: string) => {
     try {
         const response = await axiosClient.get(`/v1/product/${slug}`);
+        console.log("Product by slug:", response.data);
+        // console.log(slug);
         return response;
     } catch (error) {
         // console.error("Error fetching child category:", error);

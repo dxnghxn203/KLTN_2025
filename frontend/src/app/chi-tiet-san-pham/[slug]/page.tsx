@@ -1,6 +1,4 @@
 "use client";
-import Footer from "@/components/Footer/footer";
-import Header from "@/components/Header/header";
 import ProductDetail from "@/components/Product/detailProduct";
 import ProductsRelatedList from "@/components/Product/productsRelatedList";
 import { useProduct } from "@/hooks/useProduct";
@@ -8,11 +6,13 @@ import React, { useEffect, useState } from "react";
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
-  const { getProductBySlug, productBySlug } = useProduct();
+  const { fetchProductBySlug, productBySlug } = useProduct();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getProductBySlug(slug);
+    fetchProductBySlug(slug);
+
+    console.log("ProductBySlvvvug:", slug);
   }, [slug]);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       setLoading(false);
     }
   }, [productBySlug]);
-
+  console.log("DUYENNNNNNNN:");
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
       {/* <Header /> */}

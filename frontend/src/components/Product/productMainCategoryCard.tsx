@@ -19,6 +19,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
   mainCategoryName,
 }) => {
   const params = useParams();
+  const slug = products?.slug; // Generate slug from product ID or fallback to a random ID
   // const { mainCategory, fetchMainCategory } = useCategory();
   // fetchMainCategory(params.mainCategory);
   console.log("Products:", products?.product_id);
@@ -27,9 +28,10 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
-          {/* Ảnh sản phẩm */}
-          <Link href="/chi-tiet-san-pham" legacyBehavior>
+        <Link href={`/chi-tiet-san-pham/${slug}`} legacyBehavior>
+          <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
+            {/* Ảnh sản phẩm */}
+
             <div className="py-4 flex flex-col items-center">
               <div className="flex justify-end w-full">
                 {products?.prices[0]?.discount !== 0 ? (
@@ -51,60 +53,60 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
                 priority
               />
             </div>
-          </Link>
 
-          {/* Thông tin sản phẩm */}
-          <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
-            {/* Category + Rating */}
-            <div className="flex justify-between text-[10px] mb-2">
-              <span className="font-normal text-[#A7A8B0]">
-                {mainCategoryName}
-              </span>
-              <div className="flex items-center gap-1">
-                <img
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/3fb1e163c165fc6375e283b0be8b64e20b1e971291ae656171dc64b8ec27a93e?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-                  className="object-contain w-3.5 aspect-square"
-                  alt=""
-                />
-                <span className="font-normal text-[#A7A8B0]">({4.5})</span>
+            {/* Thông tin sản phẩm */}
+            <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
+              {/* Category + Rating */}
+              <div className="flex justify-between text-[10px] mb-2">
+                <span className="font-normal text-[#A7A8B0] ">
+                  {mainCategoryName}
+                </span>
+                <div className="flex items-center gap-1">
+                  <img
+                    loading="lazy"
+                    src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/3fb1e163c165fc6375e283b0be8b64e20b1e971291ae656171dc64b8ec27a93e?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
+                    className="object-contain w-3.5 aspect-square"
+                    alt=""
+                  />
+                  <span className="font-normal text-[#A7A8B0]">({4.5})</span>
+                </div>
               </div>
-            </div>
 
-            {/* Tên sản phẩm */}
-            <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5]">
-              {products?.name_primary}
-            </div>
-
-            {/* Giá sản phẩm */}
-            <div className="mt-2">
-              <div
-                className={`text-sm text-zinc-400 line-through ${
-                  products?.prices[0]?.original_price ? "" : "invisible"
-                }`}
-              >
-                {(products?.prices[0]?.original_price || 0).toLocaleString(
-                  "vi-VN"
-                )}
-                đ
+              {/* Tên sản phẩm */}
+              <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] cursor-pointer">
+                {products?.name_primary}
               </div>
-              <div className="text-lg font-bold text-[#0053E2]">
-                {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
-                {products?.prices[0]?.unit}
-              </div>
-            </div>
 
-            {/* Nút chọn sản phẩm */}
-            <div className="mt-2 flex justify-center">
-              <button
-                className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
-                onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
-              >
-                + Chọn sản phẩm
-              </button>
+              {/* Giá sản phẩm */}
+              <div className="mt-2">
+                <div
+                  className={`text-sm text-zinc-400 line-through ${
+                    products?.prices[0]?.original_price ? "" : "invisible"
+                  }`}
+                >
+                  {(products?.prices[0]?.original_price || 0).toLocaleString(
+                    "vi-VN"
+                  )}
+                  đ
+                </div>
+                <div className="text-lg font-bold text-[#0053E2]">
+                  {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
+                  {products?.prices[0]?.unit}
+                </div>
+              </div>
+
+              {/* Nút chọn sản phẩm */}
+              <div className="mt-2 flex justify-center">
+                <button
+                  className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
+                  onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
+                >
+                  + Chọn sản phẩm
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Dialog hiển thị khi isDialogOpen = true */}

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer/footer";
 import Link from "next/link";
 import Filter from "@/components/Category/filter";
 import ProductPortfolioList from "@/components/Product/productMainCategoryList";
+import ProductMainCategoryList from "@/components/Product/productMainCategoryList";
 const BrandDetail = () => {
   const { brandName, brandImage, brandDescription } = useParams() as {
     brandName: string;
@@ -72,7 +73,8 @@ const BrandDetail = () => {
                 Giá giảm dần
               </button>
             </div>
-            <ProductPortfolioList />
+            {/* <ProductMainCategoryList data={mainCategory}
+            mainCategoryName={mainCategory?.main_category_name} /> */}
           </div>
         </div>
       </main>
