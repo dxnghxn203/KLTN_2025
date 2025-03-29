@@ -3,6 +3,7 @@ from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
     ItemProductRedisReq
+from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
 
@@ -20,7 +21,7 @@ async def get_all_product(page: int, pageSize: int):
         collection = db[collection_name]
         skip_count = (page - 1) * pageSize
         product_list = collection.find().skip(skip_count).limit(pageSize)
-        return [ItemProductDBReq(**product) for product in product_list]
+        return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
         raise e
