@@ -12,12 +12,12 @@ export default function MainCategoryPage() {
   const params = useParams();
   const { mainCategory, fetchMainCategory } = useCategory();
 
-  const  mainCategoryName  = params.mainCategory;
+  const mainCategoryName = params.mainCategory;
 
-  const data = useMemo(() => {
-    fetchMainCategory(mainCategoryName);
-    return mainCategory;
-  }, [mainCategoryName]);
+  // const data = useMemo(() => {
+  //   fetchMainCategory(mainCategoryName);
+  //   return mainCategory;
+  // }, [mainCategoryName]);
   console.log("MainCategory:", mainCategory);
 
   return (
@@ -28,11 +28,11 @@ export default function MainCategoryPage() {
             Trang chủ
           </Link>
           <span className="text-gray-500">
-            / {mainCategoryName}
+            / {mainCategory?.main_category_name}
           </span>
         </div>
         <div className="text-2xl font-bold p-4">
-          {mainCategoryName}
+          {mainCategory?.main_category_name}
         </div>
         <CategoryList data={mainCategory} />
         <div className="mt-6">

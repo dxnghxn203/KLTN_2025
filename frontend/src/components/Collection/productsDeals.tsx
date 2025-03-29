@@ -296,7 +296,7 @@ const ProductsDeals: React.FC = () => {
         </div>
       </div>
       <div className="self-center mt-5 w-full max-md:max-w-full">
-        <div className="grid grid-cols-4 gap-6 max-md:grid-cols-1">
+        <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
           {displayedProducts.map((product, index) => (
             <ProductDealsCard key={index} {...product} />
           ))}

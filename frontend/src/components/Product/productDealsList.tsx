@@ -56,6 +56,19 @@ const productData: ProductData[] = [
     originPrice: 180000,
     brand: "Dovev",
   },
+  {
+    id: generateRandomId(),
+    discount: "-20%",
+    imageSrc:
+      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+    category: "Dinh dưỡng",
+    rating: 4.5,
+    name: "NutriGrow Nutrimed...",
+    price: 150000,
+    unit: "Chai",
+    originPrice: 180000,
+    brand: "Dovev",
+  },
 ];
 
 const ProductDealsList: React.FC = () => {
@@ -76,7 +89,7 @@ const ProductDealsList: React.FC = () => {
       </Link>
 
       <div className="self-center mt-5 w-full max-md:max-w-full">
-        <div className="grid grid-cols-4 gap-6 max-md:grid-cols-1">
+        <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
           {productData.map((product, index) => (
             <ProductDealsCard key={index} {...product} />
           ))}

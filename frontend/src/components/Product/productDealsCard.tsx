@@ -20,7 +20,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] ">
+        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] w-full">
           {/* Ảnh sản phẩm */}
           <Link href="/chi-tiet-san-pham" legacyBehavior>
             <div className="py-6 flex flex-col items-center">
@@ -38,8 +38,8 @@ const ProductDealsCard: React.FC<ProductData> = ({
               <Image
                 src={imageSrc}
                 alt={name}
-                width={204}
-                height={204}
+                width={170}
+                height={170}
                 className="object-contain cursor-pointer"
                 priority
               />
@@ -47,7 +47,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
           </Link>
 
           {/* Thông tin sản phẩm */}
-          <div className="px-5 py-4 bg-white rounded-3xl border border-neutral-100">
+          <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
             {/* Category + Rating */}
             <div className="flex justify-between text-xs mb-5">
               <span className="font-normal text-[#A7A8B0]">{category}</span>
@@ -84,7 +84,7 @@ const ProductDealsCard: React.FC<ProductData> = ({
             {/* Nút chọn sản phẩm */}
             <div className="mt-2 flex justify-center">
               <button
-                className="px-14 py-3.5 text-sm text-white bg-blue-700 rounded-3xl"
+                className="w-full py-3.5 text-sm text-white bg-blue-700 rounded-3xl"
                 onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
               >
                 + Chọn sản phẩm
