@@ -7,8 +7,11 @@ import {
 
     fetchAddProductStart,
     fetchAddProductSuccess,
-    fetchAddProductFailed
+    fetchAddProductFailed,
 
+    fetchAllProductAdminStart,
+    fetchAllProductAdminSuccess,
+    fetchAllProductAdminFailed,
 } from './productSlice';
 
 // Fetch product by slug
@@ -64,7 +67,22 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
     }
 }
 
+function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const product = yield call(productService.getAllProductAdmin, payload);
+        if (product.status_code === 200) {
+            yield put(fetchAllProductAdminSuccess(product.data));
+            return;
+        }
+        yield put(fetchAllProductAdminFailed("Product not found"));
+    } catch (error) {
+        yield put(fetchAllProductAdminFailed("Failed to fetch product by slug"));
+    }
+}
+
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
     yield takeLatest(fetchAddProductStart.type, handlerAddProduct);
+    yield takeLatest(fetchAllProductAdminStart.type, handlerGetAllProductAdmin);
 }

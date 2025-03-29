@@ -37,3 +37,20 @@ export const addProduct = async (data : any) => {
         }
     }
 }
+
+export const getAllProductAdmin = async (params: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/all-product-admin`, {params});
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

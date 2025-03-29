@@ -22,3 +22,29 @@
     font-family: 'Oleo Script', cursive;
   }
 }
+
+/* Thêm CSS này vào file globals.css hoặc file CSS bạn đang dùng */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Đảm bảo container menu có vị trí relative để dropdown đúng vị trí */
+.menu-container {
+  position: relative;
+}
+
+/* Ẩn mega menu mặc định */
+.mega-menu-full-dropdown {
+  display: none;
+}
+
+/* Hiện mega menu khi hover vào menu item cha */
+.menu-item-with-dropdown:hover .mega-menu-full-dropdown {
+  display: block;
+}

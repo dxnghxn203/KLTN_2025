@@ -7,7 +7,11 @@ import {
 
     fetchCheckOrderStart,
     fetchCheckOrderSuccess,
-    fetchCheckOrderFailed
+    fetchCheckOrderFailed,
+
+    fetchGetAllOrderAdminStart,
+    fetchGetAllOrderAdminSuccess,
+    fetchGetAllOrderAdminFailed,
 } from './orderSlice';
 
 // Fetch all order
@@ -109,8 +113,22 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchGetAllOrderAdmin(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const product = yield call(orderService.getAllOrderAdmin, payload);
+        if (product.status_code === 200) {
+            yield put(fetchGetAllOrderAdminSuccess(product.data));
+            return;
+        }
+        yield put(fetchGetAllOrderAdminFailed());
+    } catch (error) {
+        yield put(fetchGetAllOrderAdminFailed());
+    }
+}
 // 
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
+    yield takeLatest(fetchGetAllOrderAdminStart.type, fetchGetAllOrderAdmin);
 }

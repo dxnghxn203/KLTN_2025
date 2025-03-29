@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime, timedelta
 
 import httpx
 from fastapi.responses import StreamingResponse
@@ -14,6 +15,66 @@ from app.helpers.constant import get_create_order_queue, get_create_tracking_que
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
 collection_name = "orders"
+
+async def get_total_orders():
+    try:
+        collection = database.db[collection_name]
+        total_orders = collection.count_documents({})
+        return total_orders
+    except Exception as e:
+        logger.error(f"Failed [get_total_orders]: {e}")
+        raise e
+
+async def get_total_orders_last_365_days():
+    try:
+        collection = database.db[collection_name]
+        one_year_ago = datetime.now() - timedelta(days=365)
+        total_orders = collection.count_documents({"created_date": {"$gte": one_year_ago}})
+        return total_orders
+    except Exception as e:
+        logger.error(f"Failed [get_total_orders_last_365_days]: {e}")
+        raise e
+
+async def get_new_orders_last_365_days():
+    try:
+        collection = database.db[collection_name]
+        one_year_ago = datetime.now() - timedelta(days=365)
+        new_orders = collection.count_documents({"status": "create_order", "created_date": {"$gte": one_year_ago}})
+        return new_orders
+    except Exception as e:
+        logger.error(f"Failed [get_new_orders_last_365_days]: {e}")
+        raise e
+
+async def get_completed_orders_last_365_days():
+    try:
+        collection = database.db[collection_name]
+        one_year_ago = datetime.now() - timedelta(days=365)
+        completed_orders = collection.count_documents({"status": "completed", "created_date": {"$gte": one_year_ago}})
+        return completed_orders
+    except Exception as e:
+        logger.error(f"Failed [get_completed_orders_last_365_days]: {e}")
+        raise e
+
+async def get_cancel_orders_last_365_days():
+    try:
+        collection = database.db[collection_name]
+        one_year_ago = datetime.now() - timedelta(days=365)
+        cancel_orders = collection.count_documents({"status": "canceled", "created_date": {"$gte": one_year_ago}})
+        return cancel_orders
+    except Exception as e:
+        logger.error(f"Failed [get_cancel_orders_last_365_days]: {e}")
+        raise e
+
+async def get_all_order(page: int, pageSize: int):
+    try:
+        collection = database.db[collection_name]
+        skip_count = (page - 1) * pageSize
+        order_list = collection.find().skip(skip_count).limit(pageSize)
+        logger.info(f"Order list: {order_list}")
+        return [ItemOrderRes(**prod) for prod in order_list]
+    except Exception as e:
+        logger.error(f"Failed [get_all_order]: {e}")
+        raise e
 
 async def check_order(item: ItemOrderInReq, user_id: str):
     try:

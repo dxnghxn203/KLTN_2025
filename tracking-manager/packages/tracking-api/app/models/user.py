@@ -6,6 +6,7 @@ from starlette import status
 
 from app.core import database, logger, response, mail
 from app.entities.user.request import ItemUserRegisReq
+from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware import middleware
 
@@ -14,6 +15,12 @@ collection_name = "users"
 async def get_by_email_and_auth_provider(email: str, auth_provider: str):
     collection = database.db[collection_name]
     return collection.find_one({"email": email, "auth_provider": auth_provider})
+
+async def get_all_user(page: int, pageSize: int):
+    collection = database.db[collection_name]
+    skip_count = (page - 1) * pageSize
+    user_list = collection.find().skip(skip_count).limit(pageSize)
+    return [ItemUserRes.from_mongo(user) for user in user_list]
 
 async def create_user(item: ItemUserRegisReq, auth_provider: str, password: str = None):
     collection = database.db[collection_name]
@@ -49,16 +56,21 @@ async def add_user_email(item: ItemUserRegisReq):
                 message="Email đã tồn tại."
             )
         user_id = await create_user(item, auth_provider="email", password=item.password)
+        try:
+            otp = middleware.generate_otp()
+            redis.save_otp_and_update_request_count(item.email, otp)
+            mail.send_otp_email(item.email, otp)
 
-        otp = middleware.generate_otp()
-        redis.save_otp_and_update_request_count(item.email, otp)
-        mail.send_otp_email(item.email, otp)
-
-        return response.BaseResponse(
-            status_code=status.HTTP_201_CREATED,
-            status="created",
-            message="Đã Đăng ký thành công"
-        )
+            return response.BaseResponse(
+                status_code=status.HTTP_201_CREATED,
+                status="created",
+                message="Đã Đăng ký thành công"
+            )
+        except Exception as e:
+            logger.error("Failed [add_user_email] :", error=e)
+            collection = database.db[collection_name]
+            collection.delete_one({"_id": user_id})
+            raise e
     except Exception as e:
         logger.error(f"Failed [add_user_email] :{e}")
         raise e
