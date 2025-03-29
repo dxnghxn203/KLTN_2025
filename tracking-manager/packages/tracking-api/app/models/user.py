@@ -56,16 +56,21 @@ async def add_user_email(item: ItemUserRegisReq):
                 message="Email đã tồn tại."
             )
         user_id = await create_user(item, auth_provider="email", password=item.password)
+        try:
+            otp = middleware.generate_otp()
+            redis.save_otp_and_update_request_count(item.email, otp)
+            mail.send_otp_email(item.email, otp)
 
-        otp = middleware.generate_otp()
-        redis.save_otp_and_update_request_count(item.email, otp)
-        mail.send_otp_email(item.email, otp)
-
-        return response.BaseResponse(
-            status_code=status.HTTP_201_CREATED,
-            status="created",
-            message="Đã Đăng ký thành công"
-        )
+            return response.BaseResponse(
+                status_code=status.HTTP_201_CREATED,
+                status="created",
+                message="Đã Đăng ký thành công"
+            )
+        except Exception as e:
+            logger.error("Failed [add_user_email] :", error=e)
+            collection = database.db[collection_name]
+            collection.delete_one({"_id": user_id})
+            raise e
     except Exception as e:
         logger.error(f"Failed [add_user_email] :{e}")
         raise e

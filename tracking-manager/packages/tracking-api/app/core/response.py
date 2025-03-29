@@ -10,7 +10,7 @@ class JsonException(Exception):
 
 class BaseResponse(BaseModel):
     status_code: int = 200
-    status: str = ""
+    status: str = "success"
     message: str = ""
     data: Any = None
 
