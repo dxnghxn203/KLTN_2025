@@ -1,8 +1,9 @@
-import { fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
-import { insertUserSelector } from "@/store/user/userSelector";
+import { fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
+import { insertUserSelector, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 export interface UserData {
   _id: string;
@@ -24,20 +25,21 @@ export function useUser() {
   const insertUser: any = useSelector(insertUserSelector);
   const { data: session } = useSession();
   const { user, setUser, isLoading } = useAuthContext();
+  const allUserAdmin = useSelector(selectAllUserAdmin);
 
-  // Lưu user data vào localStorage và state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const saveUser = (userData: UserData) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
-  // Xóa user data khỏi localStorage và state
   const clearUser = () => {
     localStorage.removeItem("user");
     setUser(null);
   };
 
-  // Cập nhật user data
   const updateUser = (updatedData: Partial<UserData>) => {
     if (user) {
       const newUserData = { ...user, ...updatedData };
@@ -46,7 +48,13 @@ export function useUser() {
     }
   };
 
-  // Hàm khởi động fetch dữ liệu cho tất cả danh mục
+  const getAllUser=() => {
+    dispatch(fetchGetAllUserAdminStart({
+      page: page,
+      pageSize: pageSize
+    }));
+  };
+
   const fetchInsertUser = ({
     param, onSuccess, onFailure
   }: {
@@ -102,6 +110,12 @@ export function useUser() {
     saveUser,
     clearUser,
     updateUser,
+    getAllUser,
+    allUserAdmin,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
   };
 }
 

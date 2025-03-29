@@ -4,11 +4,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface UserSliceState {
     responseInsertUser: any;
     loading: boolean;
+    allUserAdmin: any[];
 }
 
 const initialState: UserSliceState = {
     responseInsertUser: null,
     loading: false,
+    allUserAdmin: []
 };
 
 export const userSlice = createSlice({
@@ -46,7 +48,18 @@ export const userSlice = createSlice({
         },
         fetchSendOtpFailure: (state) => {
             state.loading = false;
-        }
+        },
+        // getAllUserAdmin:
+        fetchGetAllUserAdminStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchGetAllUserAdminSuccess: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.allUserAdmin = action.payload;
+        },
+        fetchGetAllUserAdminFailure: (state) => {
+            state.loading = false;
+        },
     },
 });
 
@@ -61,7 +74,11 @@ export const {
 
     fetchSendOtpStart,  
     fetchSendOtpSuccess,
-    fetchSendOtpFailure
+    fetchSendOtpFailure,
+
+    fetchGetAllUserAdminStart,
+    fetchGetAllUserAdminSuccess,
+    fetchGetAllUserAdminFailure,
 
 } = userSlice.actions;
 

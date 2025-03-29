@@ -42,3 +42,23 @@ export const sendOtp = async (params: any): Promise<any> => {
     }
 }
 
+export const getAllUserAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/users/all-user-admin";
+        const result: any = await axiosClient.get(url, { params });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error) {
+        return {
+            status_code: 500,
+            message: "Lỗi không xác định",
+            data: null
+        }
+
+    }
+}
+

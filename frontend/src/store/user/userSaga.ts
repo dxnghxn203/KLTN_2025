@@ -12,10 +12,13 @@ import {
 
     fetchSendOtpStart,
     fetchSendOtpSuccess,    
-    fetchSendOtpFailure
+    fetchSendOtpFailure,
+
+    fetchGetAllUserAdminStart,
+    fetchGetAllUserAdminSuccess,
+    fetchGetAllUserAdminFailure,
 } from "./userSlice";
-import { insertUser, sendOtp, verifyOtp } from "@/services/userService";
-import { on } from "events";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp } from "@/services/userService";
 
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -80,10 +83,24 @@ function* userSendOtpWorkerSaga(action: any): Generator<any, void, any> {
     }
 }
 
+function* userGetAllUserAdminWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    try {
+        const response = yield call(getAllUserAdmin, payload);
+        if (response.status_code === 200) {
+            yield put(fetchGetAllUserAdminSuccess(response.data));
+        } else {
+            yield put(fetchGetAllUserAdminFailure());
+        }
+    } catch (error: any) {
+        yield put(fetchGetAllUserAdminFailure());
+    }
+}
 
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
     yield takeLatest(fetchSendOtpStart.type, userSendOtpWorkerSaga);
+    yield takeLatest(fetchGetAllUserAdminStart.type, userGetAllUserAdminWorkerSaga);
 }
 
