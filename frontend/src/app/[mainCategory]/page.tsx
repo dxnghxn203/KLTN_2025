@@ -11,13 +11,10 @@ import CategoryList from "@/components/Category/categoryList";
 export default function MainCategoryPage() {
   const params = useParams();
   const { mainCategory, fetchMainCategory } = useCategory();
-
-  const mainCategoryName = params.mainCategory;
-
-  // const data = useMemo(() => {
-  //   fetchMainCategory(mainCategoryName);
-  //   return mainCategory;
-  // }, [mainCategoryName]);
+  useMemo(() => {
+    fetchMainCategory(params.mainCategory);
+    return params.mainCategory;
+  }, [params.mainCategory]);
   console.log("MainCategory:", mainCategory);
 
   return (

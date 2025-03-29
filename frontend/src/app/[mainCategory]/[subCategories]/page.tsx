@@ -7,7 +7,7 @@ import ProductPortfolioList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import SubSubCategory from "@/components/Category/subSubCategory";
 import { useCategory } from "@/hooks/useCategory";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import ProductSubCategoryList from "@/components/Product/productSubCategoryList";
 
 export default function CategoryPage() {
@@ -29,7 +29,7 @@ export default function CategoryPage() {
 
   const categoryTitle = mainCategory?.main_category_name || "Danh mục sản phẩm";
 
-  useEffect(() => {
+  useMemo(() => {
     fetchSubCategory(mainCategories, subCategories);
   }, []);
 

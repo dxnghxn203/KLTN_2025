@@ -22,7 +22,7 @@ export default function ProductSubCategoryList({
   const subCategories = Array.isArray(params.subCategories)
     ? params.subCategories[0]
     : params.subCategories;
-  console.log("SubCategory:", subCategories);
+  // console.log("SubCategory:", subCategories);
   // Hàm sắp xếp sản phẩm theo giá
   const sortedProducts = [...products].sort((a, b) => {
     if (sortOrder === "asc") return a.price - b.price;

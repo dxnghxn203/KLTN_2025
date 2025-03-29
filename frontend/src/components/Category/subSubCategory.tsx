@@ -14,10 +14,11 @@ export default function SubSubCategory({
 }) {
   return (
     <div>
-      {sub_category.child_category ? (
+      {sub_category.child_category.length > 0 ? (
         <div className="flex justify-start gap-6 flex-wrap px-5">
           {sub_category.child_category.map((child: any, index: any) => (
             <Link
+              // key={child.child_category_slug}
               href={`/${main_category.main_category_slug}/${sub_category.sub_category_slug}/${child.child_category_slug}`}
             >
               <div key={index} className="flex flex-col items-center">

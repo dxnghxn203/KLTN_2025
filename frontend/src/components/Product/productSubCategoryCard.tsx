@@ -2,9 +2,6 @@ import React, { useState } from "react";
 import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
-import { generateRandomId } from "@/utils/string";
-import { ProductData } from "@/types/product";
-import { useParams } from "next/navigation";
 
 interface ProductSubCategoryCardProps {
   subCategory: string;
@@ -17,7 +14,6 @@ const ProductSubCategoryCard: React.FC<ProductSubCategoryCardProps> = ({
   mainCategoryName,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const params = useParams();
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
