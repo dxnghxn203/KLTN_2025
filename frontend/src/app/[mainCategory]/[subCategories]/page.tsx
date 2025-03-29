@@ -55,7 +55,7 @@ export default function CategoryPage() {
             <span className="text-sm text-gray-500">{subCategoriesTitle}</span>
           </>
         </div>
-        <div className="text-2xl font-bold p-4">{subCategoriesTitle}</div>
+        <div className="text-2xl font-bold px-5 py-4">{subCategoriesTitle}</div>
         <SubSubCategory
           sub_category={subCategory}
           main_category={mainCategory}

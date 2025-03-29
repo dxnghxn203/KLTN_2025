@@ -41,6 +41,7 @@ interface Price {
     unitPrice: string;
     discount: number;
     unit: string[];
+    amount_per_unit: string;
 }
 
 interface Category {
@@ -50,8 +51,17 @@ interface Category {
 }
 
 interface ProductImage {
-    id: number;
-    url: string;
+    images_id: string;
+    images_url: string;
+}
+interface Manufacturer {
+    manufacture_name: string;
+    manufacture_address: string;
+    manufacture_contact: string;
+}
+interface Ingredient {
+    ingredient_name: string;
+    ingredient_amount: string;
 }
 interface Brand {
     name: string;

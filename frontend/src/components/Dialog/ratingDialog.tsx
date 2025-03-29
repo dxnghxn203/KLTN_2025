@@ -36,7 +36,7 @@ const RatingDialog: React.FC<RatingDialogProps> = ({ onClose }) => {
         <div className="w-full border-b border-gray-300"></div>
         <div className="flex space-x-2">
           <Image
-            src="https://cdn.nhathuoclongchau.com.vn/unsafe/375x0/filters:quality(90)/https://cms-prod.s3-sgn09.fptcloud.com/00032922_vien_uong_ho_tro_da_day_dr_sto_jpanwell_60v_9829_61aa_large_795f1629a2.jpg"
+            src=""
             alt=""
             width={60}
             height={60}

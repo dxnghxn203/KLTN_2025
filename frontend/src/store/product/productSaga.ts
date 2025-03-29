@@ -16,11 +16,11 @@ function* fetchProductBySlug(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
         const product = yield call(productService.getProductBySlug, payload);
-        if (product.status === 200) {
+        if (product.status_code === 200) {
             yield put(fetchProductBySlugSuccess(product.data));
-            console.log("Product Sagaa:", product.data);
             return;
         }
+        console.log("Product Sagaa:", product.data);
         yield put(fetchProductBySlugFailed("Product not found"));
 
     } catch (error) {

@@ -28,7 +28,7 @@ export default function MainCategoryPage() {
             / {mainCategory?.main_category_name}
           </span>
         </div>
-        <div className="text-2xl font-bold p-4">
+        <div className="text-2xl font-bold px-5 py-4">
           {mainCategory?.main_category_name}
         </div>
         <CategoryList data={mainCategory} />

@@ -5,62 +5,72 @@ import Image from "next/image";
 import returnbox from "@/images/return-box.png";
 import free from "@/images/free.png";
 import fastdelivery from "@/images/fast-delivery.png";
-import { Category, Price, ProductImage } from "@/types/product";
+import {
+  Category,
+  Price,
+  ProductImage,
+  Manufacturer,
+  Ingredient,
+} from "@/types/product";
 import DescribeProduct from "./describeProduct";
 import Guide from "./guide";
 import FeedBack from "./feedBack";
 
 interface DetailProductProps {
   product: {
-    id: string;
-    name: string;
-    namePrimary: string;
+    product_id: string;
+    product_name: string;
+    name_primary: string;
     prices: Price[];
     slug: string;
     description: string;
-    imagesPrimary: string;
+    images_primary: string;
     images: ProductImage[];
     category: Category;
+    dosage_form: string;
+    origin: string;
+    manufacturer: Manufacturer;
+    ingredients: Ingredient[];
   };
 }
 
 const DetailProduct = ({ product }: DetailProductProps) => {
   const [quantity, setQuantity] = useState(1);
-  const [selectedUnit, setSelectedUnit] = useState(product.prices[0].unit);
+  const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.unit);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
 
   const selectedPrice =
-    product.prices.find((price) => price.unit === selectedUnit) ||
-    product.prices[0];
+    product?.prices.find((price) => price.unit === selectedUnit) ||
+    product?.prices[0];
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 ">
       <div className="mx-auto bg-[#F5F7F9] px-5 rounded-lg">
-        <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-center mt-12">
-            <div className="relative w-96 h-96 overflow-hidden flex items-center justify-center">
-              <Image
-                src={
-                  selectedImage === 0
-                    ? product.imagesPrimary
-                    : product.images[selectedImage - 1].url
-                }
-                alt={product.name}
-                width={384} // 96 * 4 px
-                height={384}
-                className="object-contain cursor-pointer"
-                priority
-              />
-
+        <div className="flex gap-10">
+          <div className="w-[40%] flex flex-col items-center mt-12">
+            <div className="relative w-full h-[400px] flex items-center justify-center">
+              <div className="w-96 h-96">
+                <Image
+                  src={
+                    selectedImage === 0
+                      ? product?.images_primary
+                      : product?.images[selectedImage - 1]?.images_url
+                  }
+                  alt={""}
+                  width={390}
+                  height={390}
+                  className="object-contain cursor-pointer"
+                  priority
+                />
+              </div>
               {selectedImage > 0 && (
                 <button
                   className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md opacity-75 hover:opacity-100"
                   onClick={() =>
                     setSelectedImage(
-                      (selectedImage - 1 + product.images.length + 1) %
-                        (product.images.length + 1)
+                      (selectedImage - 1 + product?.images.length + 1) %
+                        (product?.images.length + 1)
                     )
                   }
                 >
@@ -80,12 +90,12 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                   </svg>
                 </button>
               )}
-              {selectedImage < product.images.length && (
+              {selectedImage < product?.images.length && (
                 <button
                   className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md opacity-75 hover:opacity-100"
                   onClick={() =>
                     setSelectedImage(
-                      (selectedImage + 1) % (product.images.length + 1)
+                      (selectedImage + 1) % (product?.images.length + 1)
                     )
                   }
                 >
@@ -107,7 +117,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
               )}
             </div>
 
-            <div className="flex space-x-2 mt-4">
+            <div className="flex w-full justify-between mt-8 gap-2">
               <div
                 className={`w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center ${
                   selectedImage === 0 ? "border-[#002E99]" : "border-gray-300"
@@ -115,7 +125,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                 onClick={() => setSelectedImage(0)}
               >
                 <Image
-                  src={product.imagesPrimary}
+                  src={product?.images_primary}
                   alt={`Ảnh chính`}
                   width={120}
                   height={120}
@@ -123,9 +133,9 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                 />
               </div>
 
-              {product.images.slice(0, 2).map((img, index) => (
+              {product?.images.slice(0, 2).map((img, index) => (
                 <div
-                  key={img.id}
+                  key={img?.images_id}
                   className={`w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center ${
                     selectedImage === index + 1
                       ? "border-[#002E99]"
@@ -134,7 +144,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                   onClick={() => setSelectedImage(index + 1)}
                 >
                   <Image
-                    src={img.url}
+                    src={img?.images_url}
                     alt={`Ảnh ${index + 1}`}
                     width={112}
                     height={112}
@@ -144,35 +154,34 @@ const DetailProduct = ({ product }: DetailProductProps) => {
               ))}
 
               {/* More images indicator */}
-              {product.images.length > 3 && (
+              {product?.images.length > 3 && (
                 <div
                   className="w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center relative cursor-pointer"
                   onClick={() => setSelectedImage(3)}
                 >
                   <Image
-                    src={product.images[2].url}
+                    src={product?.images[2]?.images_url}
                     alt="Ảnh cuối"
                     width={112}
                     height={112}
                     className="w-full h-full object-cover px-2 py-2 opacity-40"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-center text-white text-sm font-medium px-4 z-0">
-                    Xem thêm {product.images.length - 3} ảnh
+                    Xem thêm {product?.images.length - 3} ảnh
                   </div>
                 </div>
               )}
             </div>
           </div>
-
-          {/* Product information */}
-          <div className="space-y-4">
+          {/* Product details */}
+          <div className="space-y-4 ml-4 w-[60%]">
             <h2 className="text-lg font-normal text-[#4A4F63] mt-4">
               Thương hiệu:
               <span className="text-[#0053E2] font-semibold"> Royal Care</span>
             </h2>
-            <h1 className="text-3xl font-bold">{product.namePrimary}</h1>
+            <h1 className="text-3xl font-bold">{product?.name_primary}</h1>
             <div className="flex items-center space-x-2 text-gray-600 text-sm">
-              <span>{product.id}</span>
+              <span>{product?.product_id}</span>
               <span>•</span>
               <span>4.9</span>
               <span>★</span>
@@ -195,11 +204,11 @@ const DetailProduct = ({ product }: DetailProductProps) => {
             <div className="flex items-center space-x-16">
               <p className="text-[#4A4F63] font-normal">Chọn đơn vị tính</p>
               <div className="flex space-x-2">
-                {product.prices.map((price) => (
+                {product?.prices.map((price) => (
                   <button
                     key={price.id}
                     onClick={() => setSelectedUnit(price.unit)}
-                    className={`flex items-center justify-center px-6 py-2 rounded-full border text-lg font-medium
+                    className={`flex items-center justify-center px-6 py-2 rounded-full border text-lg font-normal
         ${
           selectedUnit === price.unit
             ? "border-blue-500 text-black font-semibold"
@@ -211,58 +220,118 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                 ))}
               </div>
             </div>
-
-            <div className="grid grid-cols-3 gap-4 items-stretch">
-              {/* Column 1: Titles */}
-              <div className="flex flex-col justify-between text-[#4A4F63] font-normal">
-                <div className="flex flex-col space-y-6 flex-1">
-                  <p>Danh mục</p>
-                  <p>Dạng bào chế</p>
-                  <p>Quy cách</p>
-                  <p>Xuất xứ thương hiệu</p>
-                  <p>Nhà sản xuất</p>
-                  <p>Mô tả ngắn</p>
-                  <p>Danh mục</p>
-                  <p>Chọn số lượng</p>
-                </div>
-              </div>
-
-              {/* Column 2: Information */}
-              <div className="col-span-2 flex flex-col justify-between">
-                <div className="flex flex-col space-y-6 flex-1">
-                  <p className="text-[#0053E2] font-semibold">
-                    {product.category.name}
-                  </p>
-                  <p>Viên nang cứng</p>
-                  <p>Hộp 10 Viên</p>
-                  <p>Việt Nam</p>
-                  <p>CÔNG TY CỔ PHẦN DƯỢC PHẨM MEBIPHAR</p>
-                  <p className="line-clamp-2">{product.description}</p>
-                  <p>{product.id}</p>
-                </div>
-
-                {/* Quantity selection */}
-                <div className="flex items-center mt-2">
-                  <div className="flex items-center border rounded-lg">
-                    <button
-                      className="px-3 py-2"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="px-4">{quantity}</span>
-                    <button
-                      className="px-3 py-2"
-                      onClick={() => setQuantity(quantity + 1)}
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full text-left">
+                <tbody>
+                  {/* Danh mục */}
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Danh mục</td>
+                    <td className="pl-0 py-3 w-2/3 text-[#0053E2] font-semibold">
+                      {product?.category?.name}
+                    </td>
+                  </tr>
+                  {/* Dạng bào chế */}
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                      Dạng bào chế
+                    </td>
+                    <td className="pl-0 py-3 w-2/3">{product?.dosage_form}</td>
+                  </tr>
+                  {/* Quy cách */}
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Quy cách</td>
+                    <td className="pl-0 py-3 w-2/3">
+                      {product?.prices[0]?.amount_per_unit}
+                    </td>
+                  </tr>
+                  {/* Xuất xứ thương hiệu */}
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                      Xuất xứ thương hiệu
+                    </td>
+                    <td className="pl-0 py-3 w-2/3">{product?.origin}</td>
+                  </tr>
+                  {/* Nhà sản xuất */}
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                      Nhà sản xuất
+                    </td>
+                    <td className="pl-0 py-3 w-2/3">
+                      {product?.manufacturer?.manufacture_name}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                      Nước sản xuất
+                    </td>
+                    <td className="pl-0 py-3 w-2/3">
+                      {product?.manufacturer?.manufacture_address}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                      Thành phần
+                    </td>
+                    <td className="pl-0 py-3 w-2/3">
+                      {product?.ingredients?.map(
+                        (ingredient: any, index: number) => (
+                          <span key={index}>
+                            {ingredient.ingredient_name.match(
+                              /Vitamin\s\w+/i
+                            ) ? (
+                              <span className="text-blue-600">
+                                {ingredient.ingredient_name}
+                              </span>
+                            ) : (
+                              ingredient.ingredient_name
+                            )}
+                            {index < product.ingredients.length - 1 && ", "}
+                          </span>
+                        )
+                      )}
+                    </td>
+                  </tr>
+                  {/* Mô tả ngắn */}
+                  <tr>
+                    <td className="pr-4 pt-4 pb-6 w-1/3 text-[#4A4F63]">
+                      Mô tả ngắn
+                    </td>
+                    <td className="pt-4 mb-6 line-clamp-2">
+                      {product?.description}
+                    </td>
+                  </tr>
+                  {/* Chọn số lượng */}
+                  <tr>
+                    <td className="pr-4 py-4 w-1/3 text-[#4A4F63]">
+                      Chọn số lượng
+                    </td>
+                    <td className="pl-0 py-4 w-2/3">
+                      <div className="flex items-center">
+                        <div className="flex items-center border rounded-lg">
+                          <button
+                            className="px-3 py-2"
+                            onClick={() =>
+                              setQuantity(Math.max(1, quantity - 1))
+                            }
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span className="px-4">{quantity}</span>
+                          <button
+                            className="px-3 py-2"
+                            onClick={() => setQuantity(quantity + 1)}
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
-            <button className="mt-6 w-full bg-blue-600 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800">
+            <button className="mt-6 w-full bg-blue-700 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800">
               Chọn mua
             </button>
 
@@ -346,7 +415,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
 
         {/* Nội dung Tab */}
         <div className="">
-          {activeTab === "details" && <DescribeProduct />}
+          {activeTab === "details" && <DescribeProduct product={product} />}
           {activeTab === "guide" && <Guide />}
           {activeTab === "reviews" && <FeedBack />}
         </div>

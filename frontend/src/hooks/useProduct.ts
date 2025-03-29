@@ -7,7 +7,6 @@ export function useProduct() {
 
     const fetchProductBySlug = async (slug: string) => {
         dispatch(fetchProductBySlugStart(slug));
-        console.log("SlugHook:", slug);
         
     }
     console.log("SlugHook:", productBySlug);

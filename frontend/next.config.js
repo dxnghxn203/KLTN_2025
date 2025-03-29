@@ -9,7 +9,10 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ["kltn2025.s3.ap-southeast-2.amazonaws.com"],
+    domains: [
+      "kltn2025.s3.ap-southeast-2.amazonaws.com",
+      "cdn.nhathuoclongchau.com.vn",
+    ],
   },
 };
 

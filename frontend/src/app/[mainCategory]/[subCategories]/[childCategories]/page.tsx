@@ -62,7 +62,7 @@ export default function CategoryPage() {
           <span className="text-gray-500"> / </span>
           <span className="text-sm text-gray-500">{childCategoryTitle}</span>
         </div>
-        <div className="text-2xl font-bold p-4">{childCategoryTitle}</div>
+        <div className="text-2xl font-bold px-5 py-4">{childCategoryTitle}</div>
         <ProductChildCategoryList
           data={childCategory}
           mainCategoryName={mainCategory?.main_category_name}

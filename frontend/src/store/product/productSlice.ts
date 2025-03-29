@@ -24,7 +24,7 @@ export const productSlice = createSlice({
             state.loading = true;
         },
         fetchProductBySlugSuccess(state, action: PayloadAction<any[]>) {
-            console.log("Fetching product by slug successful, data:", action.payload);
+            console.log("Action payload:", action.payload);
             state.product = action.payload;
             state.loading = false;
             state.error = null;
