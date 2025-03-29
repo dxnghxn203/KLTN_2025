@@ -6,6 +6,7 @@ from starlette import status
 
 from app.core import database, logger, response, mail
 from app.entities.user.request import ItemUserRegisReq
+from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware import middleware
 
@@ -14,6 +15,12 @@ collection_name = "users"
 async def get_by_email_and_auth_provider(email: str, auth_provider: str):
     collection = database.db[collection_name]
     return collection.find_one({"email": email, "auth_provider": auth_provider})
+
+async def get_all_user(page: int, pageSize: int):
+    collection = database.db[collection_name]
+    skip_count = (page - 1) * pageSize
+    user_list = collection.find().skip(skip_count).limit(pageSize)
+    return [ItemUserRes.from_mongo(user) for user in user_list]
 
 async def create_user(item: ItemUserRegisReq, auth_provider: str, password: str = None):
     collection = database.db[collection_name]

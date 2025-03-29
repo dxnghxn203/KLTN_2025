@@ -25,6 +25,20 @@ async def register_email(item: ItemUserRegisReq):
             message="Internal server error"
         )
 
+@router.get("/users/all-user-admin", response_model=BaseResponse)
+async def get_all_user_admin(page: int = 1, pageSize: int = 10):
+    try:
+        result = await user.get_all_user(page, pageSize)
+        return SuccessResponse(data=result)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting all user: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/users/otp")
 async def send_otp(item: ItemOtpReq):
     try:

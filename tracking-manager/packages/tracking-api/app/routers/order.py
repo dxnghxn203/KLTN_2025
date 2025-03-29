@@ -78,3 +78,28 @@ async def get_all_order(page: int = 1, pageSize: int = 10):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.get("/order/statistic-last-365-days", response_model=response.BaseResponse)
+async def get_total_orders_last_365_days():
+    try:
+        total = await order.get_total_orders_last_365_days()
+        new = await order.get_new_orders_last_365_days()
+        cancel = await order.get_cancel_orders_last_365_days()
+        completed = await order.get_completed_orders_last_365_days()
+        return response.BaseResponse(
+            message="Statistic orders in the last 365 days found",
+            data={
+                "total": total,
+                "new": new,
+                "cancel": cancel,
+                "completed": completed
+            }
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting total orders last 365 days", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
