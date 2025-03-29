@@ -1,16 +1,24 @@
-import { fetchAddProductStart, fetchProductBySlugStart, selectProductBySlug } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug } from "@/store";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useProduct() {
     const dispatch = useDispatch();
     const productBySlug = useSelector(selectProductBySlug);
+    const allProductAdmin = useSelector(selectProductAdmin);
+
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const fetchProductBySlug = async (slug: string) => {
         dispatch(fetchProductBySlugStart(slug));
-        console.log("SlugHook:", slug);
-        
     }
-    console.log("SlugHook:", productBySlug);
+    const getAllProductsAdmin = () => {
+        dispatch(fetchAllProductAdminStart({
+            page: page,
+            pageSize: pageSize,
+        }))
+    };
 
     const addProduct = async (
         product: any,
@@ -27,7 +35,13 @@ export function useProduct() {
     return {
         addProduct,
         productBySlug,
-        fetchProductBySlug
+        fetchProductBySlug,
+        getAllProductsAdmin,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        allProductAdmin
     };
 }
 

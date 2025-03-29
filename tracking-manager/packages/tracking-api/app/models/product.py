@@ -15,6 +15,16 @@ async def get_product_by_slug(slug: str):
     except Exception as e:
         raise e
 
+async def get_all_product(page: int, pageSize: int):
+    try:
+        collection = db[collection_name]
+        skip_count = (page - 1) * pageSize
+        product_list = collection.find().skip(skip_count).limit(pageSize)
+        return [ItemProductDBReq(**product) for product in product_list]
+    except Exception as e:
+        logger.error(f"Failed [get_all_product]: {e}")
+        raise e
+
 async def add_product_db(item: ItemProductDBInReq, images_primary, images):
     try:
         image_list = [

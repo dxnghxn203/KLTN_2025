@@ -15,6 +15,17 @@ PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
 collection_name = "orders"
 
+async def get_all_order(page: int, pageSize: int):
+    try:
+        collection = database.db[collection_name]
+        skip_count = (page - 1) * pageSize
+        order_list = collection.find().skip(skip_count).limit(pageSize)
+        logger.info(f"Order list: {order_list}")
+        return [ItemOrderRes(**prod) for prod in order_list]
+    except Exception as e:
+        logger.error(f"Failed [get_all_order]: {e}")
+        raise e
+
 async def check_order(item: ItemOrderInReq, user_id: str):
     try:
         order_id = generate_id("ORDER")

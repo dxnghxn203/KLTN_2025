@@ -61,3 +61,20 @@ async def get_order_by_user(token: str = Depends(middleware.verify_token)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.get("/order/all-orders-admin", response_model=response.BaseResponse)
+async def get_all_order(page: int = 1, pageSize: int = 10):
+    try:
+        result = await order.get_all_order(page, pageSize)
+        return response.BaseResponse(
+            message=f"orders found",
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error adding order", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

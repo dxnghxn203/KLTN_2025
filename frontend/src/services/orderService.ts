@@ -154,3 +154,20 @@ export const createOrder = async ( data: any): Promise<any> => {
         };
     }
 }
+
+export const getAllOrderAdmin = async (params: any) => {
+    try{
+        const response: any= await axiosClient.get('/v1/order/all-orders-admin', { params });
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lổi lấy danh sách đơn hàng',
+        }
+    }
+
+}
