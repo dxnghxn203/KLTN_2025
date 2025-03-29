@@ -1,6 +1,7 @@
 from typing import Optional, Union, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+
 
 class ItemProductRes(BaseModel):
     product_id: Optional[Union[str, None]] = None
@@ -27,10 +28,13 @@ class ItemImageDBRes(BaseModel):
 class ItemCategoryDBInRes(BaseModel):
     main_category_id: Optional[Union[str, None]] = None
     main_category_slug: Optional[Union[str, None]] = None
+    main_category_name: Optional[Union[str, None]] = None
     sub_category_id: Optional[Union[str, None]] = None
     sub_category_slug: Optional[Union[str, None]] = None
+    sub_category_name: Optional[Union[str, None]] = None
     child_category_id: Optional[Union[str, None]] = None
     child_category_slug: Optional[Union[str, None]] = None
+    child_category_name: Optional[Union[str, None]] = None
 
 class ItemIngredientDBRes(BaseModel):
     ingredient_name: Optional[Union[str, None]] = None

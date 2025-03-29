@@ -63,10 +63,13 @@ class ItemImageDBReq(BaseModel):
 class ItemCategoryDBInReq(BaseModel):
     main_category_id: str = ""
     main_category_slug: str = ""
+    main_category_name: str = ""
     sub_category_id: str = ""
     sub_category_slug: str = ""
+    sub_category_name: str = ""
     child_category_id: str = ""
     child_category_slug: str = ""
+    child_category_name: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -152,3 +155,9 @@ class ItemProductDBInReq(BaseModel):
     storage: Optional[str] = Field(default="")
     manufacturer: Optional[ItemManufacturerDBReq] = Field(None)
     dosage_form: Optional[str] = Field(default="")
+
+class UpdateCategoryReq(BaseModel):
+    product_id: str = ""
+    main_category_name: str = ""
+    sub_category_name: str = ""
+    child_category_name: str = ""

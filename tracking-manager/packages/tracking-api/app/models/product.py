@@ -1,8 +1,10 @@
-from app.core import logger
+from starlette import status
+
+from app.core import logger, response
 from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
-    ItemProductRedisReq
+    ItemProductRedisReq, UpdateCategoryReq
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
@@ -78,4 +80,33 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
 
     except Exception as e:
         logger.error(f"Lỗi khi thêm sản phẩm: {e}")
+        raise e
+
+
+async def update_product_category(item: UpdateCategoryReq):
+    try:
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": item.product_id})
+
+        if not product:
+            return response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found"
+            )
+
+        if "category" not in product:
+            product["category"] = {}
+
+        update_data = {
+            "category.main_category_name": item.main_category_name,
+            "category.sub_category_name": item.sub_category_name,
+            "category.child_category_name": item.child_category_name,
+        }
+
+        collection.update_one({"product_id": item.product_id}, {"$set": update_data})
+        logger.info(f"Updated category names for product_id: {item.product_id}")
+
+        return response.SuccessResponse(message="Product category updated successfully")
+    except Exception as e:
+        logger.error(f"Error updating product category: {str(e)}")
         raise e
