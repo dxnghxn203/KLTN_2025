@@ -64,6 +64,7 @@ class ItemProductDBRes(BaseModel):
     storage: Optional[Union[str, None]] = None
     manufacturer: Optional[Union[ItemManufacturerDBRes, None]] = None
     dosage_form: Optional[Union[str, None]] = None
+    brand: Optional[Union[str, None]] = None
 
     @classmethod
     def from_mongo(cls, data):
