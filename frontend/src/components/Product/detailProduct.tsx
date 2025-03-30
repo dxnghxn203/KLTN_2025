@@ -15,6 +15,7 @@ import {
 import DescribeProduct from "./describeProduct";
 import Guide from "./guide";
 import FeedBack from "./feedBack";
+import ImageDialog from "../Dialog/imageDialog";
 
 interface DetailProductProps {
   product: {
@@ -39,18 +40,20 @@ const DetailProduct = ({ product }: DetailProductProps) => {
   const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.unit);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
+  const [isOpenDialog, setIsDialogOpen] = useState(false);
+  const [selectedImageDialog, setSelectedImageDialog] = useState(0);
 
   const selectedPrice =
     product?.prices.find((price) => price.unit === selectedUnit) ||
     product?.prices[0];
 
   return (
-    <div className="space-y-12 ">
+    <div className="">
       <div className="mx-auto bg-[#F5F7F9] px-5 rounded-lg">
         <div className="flex gap-10">
           <div className="w-[40%] flex flex-col items-center mt-12">
             <div className="relative w-full h-[400px] flex items-center justify-center">
-              <div className="w-96 h-96">
+              <div className="">
                 <Image
                   src={
                     selectedImage === 0
@@ -60,7 +63,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                   alt={""}
                   width={390}
                   height={390}
-                  className="object-contain cursor-pointer"
+                  className="object-contain cursor-pointer overflow-hidden w-96 h-96 "
                   priority
                 />
               </div>
@@ -166,9 +169,14 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                     height={112}
                     className="w-full h-full object-cover px-2 py-2 opacity-40"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-center text-white text-sm font-medium px-4 z-0">
-                    Xem thêm {product?.images.length - 3} ảnh
-                  </div>
+                  {product?.images.length > 3 && (
+                    <div
+                      className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-center text-white text-sm font-medium px-4 cursor-pointer"
+                      onClick={() => setIsDialogOpen(true)}
+                    >
+                      Xem thêm {product?.images.length - 2} ảnh
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -201,7 +209,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
               </p>
             )}
 
-            <div className="flex items-center space-x-16">
+            <div className="flex items-center space-x-24">
               <p className="text-[#4A4F63] font-normal">Chọn đơn vị tính</p>
               <div className="flex space-x-2">
                 {product?.prices.map((price) => (
@@ -227,7 +235,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Danh mục</td>
                     <td className="pl-0 py-3 w-2/3 text-[#0053E2] font-semibold">
-                      {product?.category?.name}
+                      {product?.category?.child_category_name}
                     </td>
                   </tr>
                   {/* Dạng bào chế */}
@@ -393,7 +401,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
           </div>
         </div>
       </div>
-      <div className="mx-auto rounded-lg">
+      <div className="mx-auto rounded-lg mt-12">
         {/* Tab Bar */}
         <div className="flex">
           {[
@@ -420,6 +428,14 @@ const DetailProduct = ({ product }: DetailProductProps) => {
           {activeTab === "reviews" && <FeedBack />}
         </div>
       </div>
+      <ImageDialog
+        isOpen={isOpenDialog}
+        onClose={() => setIsDialogOpen(false)}
+        images={product?.images}
+        images_primary={product?.images_primary}
+        selectedImage={selectedImageDialog}
+        setSelectedImage={setSelectedImageDialog}
+      />
     </div>
   );
 };

@@ -45,9 +45,16 @@ interface Price {
 }
 
 interface Category {
-    id: number;
-    name: string;
-    slug: string;
+    main_category_id: string;
+    main_category_slug: string;
+    sub_category_id: string;
+    sub_category_slug: string;
+    child_category_id: string;
+    child_category_slug: string;
+    main_category_name: string;
+    sub_category_name: string;
+    child_category_name: string;
+
 }
 
 interface ProductImage {
