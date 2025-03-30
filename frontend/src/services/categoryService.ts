@@ -1,4 +1,5 @@
 import axiosClient from "@/utils/configs/axiosClient";
+import { message } from "antd";
 
 export const getAllCategory = async () : Promise<any>=> {
     try {
@@ -42,4 +43,20 @@ export const getChildCategory = async (main_slug:any, sub_slug:any, child_slug:a
         throw error;
     }
 };
+
+export const getAllCategoryForAdmin = async () : Promise<any>=> {
+    try {
+        const response: any = await axiosClient.get("/v1/categories/get-all-for-admin");
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
+        }
+    } catch (error) {
+        return {
+            error: true,
+            message: "Failed to fetch categories",
+        }
+    }
+}
 

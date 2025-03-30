@@ -34,36 +34,47 @@ function* fetchProductBySlug(action: any): Generator<any, void, any> {
 function* handlerAddProduct(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-
         const {
-            name,
-            price,
-            description,
-            category,
-            quantity,
-            images,
+            form,
             onsucces = () => { },
             onfailed = () => { }
-        } = payload
-        const form = new FormData();
-        form.append('name', name);
-        form.append('price', price);
-        form.append('description', description);
-        form.append('category', category);
-        form.append('quantity', quantity);
-        form.append('images', images);
+        } = payload;
+        
+        const formData = new FormData();
+        
+        Object.entries(form).forEach(([key, value]) => {
+            if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
+                formData.append(key, value as string);
+            }
+        });
+        
+        if (form.thumbnail instanceof File) {
+            formData.append('thumbnail', form.thumbnail);
+        }
+        
+        if (form.images && Array.isArray(form.images)) {
+            form.images.forEach((file: File, index: number) => {
+                if (file instanceof File) {
+                    formData.append(`images[${index}]`, file);
+                }
+            });
+        }
+        
+        if (form.attributes && typeof form.attributes === 'object') {
+            formData.append('attributes', JSON.stringify(form.attributes));
+        }
 
-        const product = yield call(productService.addProduct, form);
-        if (product.status === 200) {
-            onsucces("Product added successfully");
-            yield put(fetchAddProductSuccess(product.data));
+        const product = yield call(productService.addProduct, formData);
+        if (product.status_code === 200) {
+            onsucces(product.message);
+            yield put(fetchAddProductSuccess());
             return;
         }
-        onfailed("Failed to add product");
-        yield put(fetchAddProductFailed("Product not found"));
+        onfailed(product.message);
+        yield put(fetchAddProductFailed());
 
     } catch (error) {
-        yield put(fetchAddProductFailed("Failed to fetch product by slug"));
+        yield put(fetchAddProductFailed());
     }
 }
 

@@ -17,6 +17,10 @@ import {
     fetchGetChildCategorySuccess,
     fetchGetChildCategoryFailed,
 
+    fetchGetAllCategoryForAdminStart,
+    fetchGetAllCategoryForAdminSuccess,
+    fetchGetAllCategoryForAdminFailed,
+
     // fetchGetProductByMainSlugStart,
     // fetchGetProductByMainSlugSuccess,
     // fetchGetProductByMainSlugFailed
@@ -96,11 +100,28 @@ function* fetchGetChildCategory(action: any): Generator<any, void, any> {
 //         yield put(fetchGetProductByMainSlugFailed("Failed to fetch product"));
 //     }
 // }
+
+// Fetch all category for admin
+function* fetchGetAllCategoryForAdmin(action: any): Generator<any, void, any> {
+    try {
+        const category = yield call(categoryService.getAllCategoryForAdmin);
+        if (category.status_code === 200) {
+            yield put(fetchGetAllCategoryForAdminSuccess(category.data));
+            return;
+        }
+        yield put(fetchGetAllCategoryForAdminFailed("Category not found"));
+
+    } catch (error) {
+        yield put(fetchGetAllCategoryForAdminFailed("Failed to fetch order"));
+    }
+}
+
 export function* categorySaga() {
     yield takeLatest(fetchGetAllCategoryStart.type, fetchGetAllCategory);
     yield takeLatest(fetchGetMainCategoryStart.type, fetchGetMainCategory);
     yield takeLatest(fetchGetSubCategoryStart.type, fetchGetSubCategory);
     yield takeLatest(fetchGetChildCategoryStart.type, fetchGetChildCategory);
+    yield takeLatest(fetchGetAllCategoryForAdminStart.type, fetchGetAllCategoryForAdmin);
     // yield takeLatest(fetchGetProductByMainSlugStart.type, fetchGetProductByMainSlug);
 
 

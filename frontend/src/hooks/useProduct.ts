@@ -22,11 +22,11 @@ export function useProduct() {
 
     const addProduct = async (
         product: any,
-        onsucces: () => void,
-        onfailed: () => void
+        onsucces: (message: any) => void,
+        onfailed: (message: any) => void
     ) => {
         dispatch(fetchAddProductStart({
-            ...product,
+            form: product,
             onsucces: onsucces,
             onfailed: onfailed
         }));

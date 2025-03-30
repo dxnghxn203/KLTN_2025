@@ -34,6 +34,7 @@ export default function ProductDetails() {
     setCategories([...categories, newCategory]);
     setIsAddCategoriesDialogOpen(false);
   };
+  
   const handleAddProductTemplate = (newProductTemplate: string) => {
     setProductTemplate([...productTemplate, newProductTemplate]);
     setIsAddProductTemplateDialogOpen(false);

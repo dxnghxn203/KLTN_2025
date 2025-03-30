@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface CategoryState {
     categories: any[];
     products: any[];
+    categoryAdmin: any[];
     mainCategories: any[];
     subCategories: any[];
     childCategories:any[];
@@ -12,6 +13,7 @@ interface CategoryState {
 
 const initialState: CategoryState = {
     categories: [],
+    categoryAdmin: [],
     mainCategories: [],
     subCategories: [],
     childCategories:[],
@@ -100,11 +102,18 @@ export const categorySlice = createSlice({
             console.log("Fetching product by main slug failed, error:", action);
             state.loading = false;
             state.error = action.payload;
-        }
-
-
-       
-
+        },
+        // fetch all category for admin
+        fetchGetAllCategoryForAdminStart(state) {
+            state.loading = true;
+        },
+        fetchGetAllCategoryForAdminSuccess(state, action: PayloadAction<any[]>) {
+            state.categoryAdmin = action.payload
+            state.loading = false;
+        },
+        fetchGetAllCategoryForAdminFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+        },
     },
 });
 
@@ -127,7 +136,11 @@ export const {
 
     fetchGetProductByMainSlugStart,
     fetchGetProductByMainSlugSuccess,
-    fetchGetProductByMainSlugFailed
+    fetchGetProductByMainSlugFailed,
+
+    fetchGetAllCategoryForAdminStart,
+    fetchGetAllCategoryForAdminSuccess,
+    fetchGetAllCategoryForAdminFailed,
 } = categorySlice.actions;
 
 export default categorySlice.reducer;
