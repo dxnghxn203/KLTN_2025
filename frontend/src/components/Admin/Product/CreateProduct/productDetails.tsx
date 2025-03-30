@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import AddCategoryDialog from "../Dialog/addCategoryDialog";
-import AddProductTemplateDialog from "../Dialog/addProductTemplateDialog";
+import AddCategoryDialog from "../../Dialog/addCategoryDialog";
+import AddProductTemplateDialog from "../../Dialog/addProductTemplateDialog";
 
 export default function ProductDetails() {
   const [tags, setTags] = useState([]);

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import TipTapEditor from "../TextEditer.tsx/textEditer";
+import TipTapEditor from "../../TextEditer.tsx/textEditer";
 import { PlusCircle, Trash2, Plus } from "lucide-react";
 import { LuTrash2 } from "react-icons/lu";
 import { useDropzone } from "react-dropzone";
