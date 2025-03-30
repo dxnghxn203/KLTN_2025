@@ -12,6 +12,17 @@ from app.middleware.logging import logger
 collection_name = "categories"
 product_collection_name = "products"
 
+async def get_all_categories_admin():
+    try:
+        collection = db[collection_name]
+        logger.info(f"collection1:")
+        categories = collection.find({}, {"_id": 0})
+        logger.info(f"categories2: {categories}")
+        return list(categories)
+    except Exception as e:
+        logger.error(f"Error getting all categories: {str(e)}")
+        raise e
+
 async def get_all_categories():
     try:
         collection = db[collection_name]

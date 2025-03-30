@@ -21,6 +21,7 @@ async def get_categories():
             message="Internal server error"
         )
 
+
 @router.get("/category/{main_slug}", response_model=response.BaseResponse)
 async def get_category(main_slug: str):
     try:
@@ -205,6 +206,20 @@ async def update_default_image(image: UploadFile = File(...)):
         raise je
     except Exception as e:
         logger.error(f"Error updating default image: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/categories/get-all-for-admin", response_model=response.BaseResponse)
+async def get_all_categories_for_admin():
+    try:
+        data = await category.get_all_categories_admin()
+        return response.SuccessResponse(data=data)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting all categories for admin: {str(e)}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
