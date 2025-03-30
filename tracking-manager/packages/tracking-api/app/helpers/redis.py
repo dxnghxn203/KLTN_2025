@@ -97,6 +97,9 @@ def save_product(product: ItemProductRedisReq, id: str):
     })
     redis.persist(product_key(id))
 
+def delete_product(product_id: str):
+    redis.delete(product_key(product_id))
+
 # ==== ORDER MANAGEMENT ====
 
 def order_key(order_id: str) -> str:

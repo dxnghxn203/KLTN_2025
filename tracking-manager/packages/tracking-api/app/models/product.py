@@ -30,12 +30,14 @@ async def get_all_product(page: int, pageSize: int):
 
 async def add_product_db(item: ItemProductDBInReq, images_primary, images):
     try:
-        image_list = [
-            ItemImageDBReq(
-                images_id=generate_id("IMAGE"),
-                images_url=file_url,
-            ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images"))
-        ]
+        image_list = []
+        if images:
+            image_list = [
+                ItemImageDBReq(
+                    images_id=generate_id("IMAGE"),
+                    images_url=file_url,
+                ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images"))
+            ]
         logger.info(f"{image_list}")
 
         price_list = []
@@ -54,7 +56,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             ]
 
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
-        images_primary_url = upload_file(images_primary, "images_primary") or ""
+        images_primary_url = (upload_file(images_primary, "images_primary") or "") if images_primary else ""
 
         product_id = generate_id("PRODUCT")
 
@@ -82,7 +84,6 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
         logger.error(f"Lỗi khi thêm sản phẩm: {e}")
         raise e
 
-
 async def update_product_category(item: UpdateCategoryReq):
     try:
         collection = db[collection_name]
@@ -109,4 +110,33 @@ async def update_product_category(item: UpdateCategoryReq):
         return response.SuccessResponse(message="Product category updated successfully")
     except Exception as e:
         logger.error(f"Error updating product category: {str(e)}")
+        raise e
+
+async def delete_product(product_id: str):
+    try:
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": product_id})
+        if not product:
+            return response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found"
+            )
+
+        product = ItemProductDBRes(**product)
+
+        delete_result = collection.delete_one({"product_id": product.product_id})
+        if delete_result.deleted_count == 0:
+            return response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Failed to delete product"
+            )
+
+        for price in product.prices:
+            redis_id = f"{product.product_id}_{price.price_id}"
+            redis.delete_product(redis_id)
+            logger.info(f"Đã xóa sản phẩm vào Redis với key: {redis_id}")
+
+        return response.SuccessResponse(message="Product deleted successfully")
+    except Exception as e:
+        logger.error(f"Error deleting product: {str(e)}")
         raise e

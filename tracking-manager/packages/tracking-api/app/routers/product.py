@@ -6,7 +6,8 @@ from pyfa_converter_v2 import BodyDepends
 from app.core import logger, response
 from app.core.response import JsonException
 from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq
-from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category
+from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
+    delete_product
 
 router = APIRouter()
 
@@ -71,6 +72,19 @@ async def update_product_category_name(item: UpdateCategoryReq):
         raise je
     except Exception as e:
         logger.error("Error adding product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.delete("/product/update_name", response_model=response.BaseResponse)
+async def delete_product(product_id: str):
+    try:
+        return await delete_product(product_id)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error deleting product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
