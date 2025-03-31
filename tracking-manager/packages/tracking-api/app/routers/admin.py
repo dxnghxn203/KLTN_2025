@@ -1,55 +1,42 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form
 from starlette import status
 
 from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
-from app.entities.user.request import ItemUserRegisReq, ItemUserOtpReq, ItemUserVerifyEmailReq
+from app.entities.admin.request import ItemAdminRegisReq, ItemAdminOtpReq, ItemAdminVerifyEmailReq
+from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
-from app.models import user
+from app.models import auth, admin
 from app.models.auth import handle_otp_verification
 
 router = APIRouter()
 
-@router.post("/user/register_email")
-async def register_email(item: ItemUserRegisReq):
+@router.post("/admin/register")
+async def register_email(item: ItemAdminRegisReq):
     try:
-        return await user.add_user_email(item)
+        return await admin.create_admin(item)
     except JsonException as je:
         raise je
     except Exception as e:
-        logger.error(f"Error register email: {e}")
+        logger.error(f"Error register admin: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
 
-@router.get("/users/all-user-admin", response_model=BaseResponse)
-async def get_all_user_admin(page: int = 1, page_size: int = 10):
-    try:
-        result = await user.get_all_user(page, page_size)
-        return SuccessResponse(data=result)
-    except JsonException as je:
-        raise je
-    except Exception as e:
-        logger.error(f"Error getting all user: {e}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
-
-@router.post("/users/otp")
-async def send_otp(item: ItemUserOtpReq):
+@router.post("/admin/otp")
+async def send_otp(item: ItemAdminOtpReq):
     try:
         email = item.email
-        user_info = await user.get_by_email_and_auth_provider(email, "email")
-        if not user_info:
+        admin_info = await admin.get_by_email(email)
+        if not admin_info:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Người dùng không tồn tại."
+                message="Quản trị viên không tồn tại."
             )
-        if user_info.get("verified_email_at"):
+        if admin_info.get("verified_email_at"):
             raise response.JsonException(
                 status_code=status.HTTP_207_MULTI_STATUS,
                 message="Tài khoản đã được xác thực."
@@ -66,19 +53,19 @@ async def send_otp(item: ItemUserOtpReq):
             message="Internal server error"
         )
 
-@router.post("/users/verify-email", response_model=BaseResponse)
-async def verify_user(request: ItemUserVerifyEmailReq):
+@router.post("/admin/verify-email", response_model=BaseResponse)
+async def verify_user(request: ItemAdminVerifyEmailReq):
     try:
         email, otp = request.email, request.otp
-        user_info = await user.get_by_email_and_auth_provider(email, "email")
+        admin_info = await admin.get_by_email(email)
 
-        if not user_info:
+        if not admin_info:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Người dùng không tồn tại."
+                message="Quản trị viên không tồn tại."
             )
 
-        if user_info.get("verified_email_at"):
+        if admin_info.get("verified_email_at"):
             raise response.JsonException(
                 status_code=status.HTTP_207_MULTI_STATUS,
                 message="Tài khoản đã được xác thực."
@@ -92,7 +79,7 @@ async def verify_user(request: ItemUserVerifyEmailReq):
 
         delete_otp(email)
 
-        return await user.update_user_verification(email)
+        return await admin.update_admin_verification(email)
     except response.JsonException as je:
         raise je
     except Exception as e:
@@ -102,32 +89,42 @@ async def verify_user(request: ItemUserVerifyEmailReq):
             message="Internal server error"
         )
 
-@router.get("/users/current", response_model=BaseResponse)
-async def get_user(token: str = Depends(middleware.verify_token)):
+@router.post("/auth/login")
+async def login(email: str = Form(), password: str = Form()):
     try:
-        data = await user.get_current(token)
-        return SuccessResponse(data=data)
+        ad = await admin.get_by_email(email)
+        if not await auth.verify_user(ad, password):
+            raise JsonException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                message="Tên đăng nhập hoặc mật khẩu không đúng!"
+            )
+
+        if ad.get("verified_email_at") is None:
+            await handle_otp_verification(email)
+            return BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Tài khoản chưa xác thực. Vui lòng nhập OTP!"
+            )
+
+        jwt_token = await auth.get_token(str(ad.get("_id")), ad.get("role_id"))
+        res = ItemAdminRes.from_mongo(ad)
+        res.token = jwt_token
+        return SuccessResponse(data=res)
+    except JsonException as je:
+        raise je
     except Exception as e:
-        logger.error(f"Error getting current user: {e}")
-        raise response.JsonException(
+        logger.error(f"Error login email: {e}")
+        return BaseResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
 
-@router.put("/users/status", response_model=BaseResponse)
-async def update_status_user(user_id: str, status_user: bool, token: str = Depends(middleware.verify_token_admin)):
+@router.get("/admin/current", response_model=BaseResponse)
+async def get_admin(token: str = Depends(middleware.verify_token)):
     try:
-        user_info = await user.get_by_id(user_id)
-        if not user_info:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="User not found"
-            )
-        return await user.update_status(user_id, status_user)
-    except response.JsonException as je:
-        raise je
+        data = await admin.get_current(token)
+        return SuccessResponse(data=data)
     except Exception as e:
-        logger.error(f"Error getting current user: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

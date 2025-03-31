@@ -1,0 +1,68 @@
+import datetime
+
+from bson import ObjectId
+from starlette import status
+
+from app.core import database, logger, response
+from app.entities.comment.request import ItemCommentReq, ItemAnswerReq
+from app.entities.comment.response import ItemCommentRes
+from app.models import auth
+
+collection_name = "comments"
+
+
+async def create_comment(item: ItemCommentReq, token):
+    try:
+        user_info = await auth.get_current(token)
+        collection = database.db[collection_name]
+        item_dict = item.dict()
+        item_dict["user_id"] = user_info.id
+        item_dict["user_name"] = user_info.user_name
+        item_dict["created_at"] = datetime.datetime.now()
+        item_dict["answers"] = []
+        insert_result = collection.insert_one(item_dict)
+        logger.info(f"[create_comment] Đã thêm bình luận mới, ID: {insert_result.inserted_id}")
+        return response.BaseResponse(
+            status_code=status.HTTP_201_CREATED,
+            message="Tạo binh luận thành công"
+        )
+    except Exception as e:
+        raise e
+
+async def get_comment_by_product(product_id):
+    collection = database.db[collection_name]
+    comments = list(collection.find({"product_id": product_id}))
+
+    comment_list = [ItemCommentRes.from_mongo(comment) for comment in comments]
+    return comment_list
+
+async def answer_to_comment(item: ItemAnswerReq, token):
+    try:
+        user_info = await auth.get_current(token)
+        collection = database.db[collection_name]
+        comment_id = ObjectId(item.comment_id)
+        comment = collection.find_one({"_id": ObjectId(comment_id)})
+        if not comment:
+            return response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy bình luận"
+            )
+        answer = {
+            "user_id": user_info.id,
+            "user_name": user_info.user_name,
+            "comment": item.comment,
+            "created_at": datetime.datetime.now()
+        }
+
+        collection.update_one(
+            {"_id": comment_id},
+            {"$push": {"answers": answer}}
+        )
+
+        logger.info(f"[answer_to_comment] Thêm câu trả lời thành công vào comment_id: {item.comment_id}")
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            message="Thêm câu trả lời thành công"
+        )
+    except Exception as e:
+        raise e

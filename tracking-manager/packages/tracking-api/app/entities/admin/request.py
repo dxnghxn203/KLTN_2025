@@ -6,7 +6,7 @@ from pydantic import BaseModel, field_validator, model_validator
 from app.common import password
 
 
-class ItemUserRegisReq(BaseModel):
+class ItemAdminRegisReq(BaseModel):
     phone_number: Optional[str] = None
     user_name: Optional[str] = None
     email: Optional[str] = None
@@ -36,8 +36,6 @@ class ItemUserRegisReq(BaseModel):
 
     @field_validator("password", mode="before")
     def validate_password(cls, v):
-        if v and v != "Google@123":
-            password.validate_password(v)
         password.validate_password(v)
         return v
 
@@ -58,7 +56,7 @@ class ItemUserRegisReq(BaseModel):
             raise ValueError("Định dạng ngày tháng không hợp lệ, yêu cầu ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)")
 
 
-class ItemUserOtpReq(BaseModel):
+class ItemAdminOtpReq(BaseModel):
     email: str
 
     @field_validator('email', mode='before')
@@ -68,7 +66,7 @@ class ItemUserOtpReq(BaseModel):
 
         return v
 
-class ItemUserVerifyEmailReq(ItemUserOtpReq):
+class ItemAdminVerifyEmailReq(ItemAdminOtpReq):
     otp: str
     @field_validator('otp')
     def otp_length(cls, value):

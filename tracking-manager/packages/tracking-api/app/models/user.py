@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import bcrypt
 from bson import ObjectId
 from starlette import status
 
@@ -9,6 +8,7 @@ from app.entities.user.request import ItemUserRegisReq
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware import middleware
+from app.middleware.middleware import decode_jwt
 
 collection_name = "users"
 
@@ -109,15 +109,6 @@ async def update_user_verification(email: str):
     collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"verified_email_at": datetime.utcnow()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
-async def verify_user(us: any, p: str):
-    try:
-        if us and bcrypt.checkpw(p.encode('utf-8'), us['password'].encode('utf-8')) and us['active']:
-            logger.info("Đã đăng nhập thành công", username=us['user_name'])
-            return us
-        return None
-    except Exception as e:
-        raise e
-
 async def get_by_id(user_id: str):
     try:
         collection = database.db[collection_name]
@@ -139,4 +130,17 @@ async def update_status(user_id: str, status: bool):
         return response.SuccessResponse(message=f"Cập nhật trạng thái user thành {status}")
     except Exception as e:
         logger.error(f"Error updating user status: {str(e)}")
+        raise e
+
+async def get_current(token: str) -> ItemUserRes:
+    try:
+        payload = decode_jwt(token=token)
+        user_info = await get_by_id(payload.get("username"))
+        if user_info:
+            user_info['token'] = token
+            return ItemUserRes.from_mongo(user_info)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error get_current user: {str(e)}")
         raise e
