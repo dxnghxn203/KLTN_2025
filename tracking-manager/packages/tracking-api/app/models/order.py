@@ -55,6 +55,22 @@ async def get_completed_orders_last_365_days():
         logger.error(f"Failed [get_completed_orders_last_365_days]: {e}")
         raise e
 
+async def get_popular_products(top_n=3):
+    try:
+        orders_collection = database.db[collection_name]
+        pipeline = [
+            {"$unwind": "$product"},
+            {"$group": {"_id": "$product.product_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": top_n}
+        ]
+        logger.info(f"Pipeline: {pipeline}")
+        popular_products = list(orders_collection.aggregate(pipeline))
+        return [p["_id"] for p in popular_products]
+    except Exception as e:
+        logger.error(f"Failed [get_popular_products]: {e}")
+        raise e
+
 async def get_cancel_orders_last_365_days():
     try:
         collection = database.db[collection_name]

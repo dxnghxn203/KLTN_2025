@@ -6,6 +6,7 @@ from pyfa_converter_v2 import BodyDepends
 from app.core import logger, response
 from app.core.response import JsonException
 from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq
+from app.models import order
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product
 
@@ -72,6 +73,23 @@ async def update_product_category_name(item: UpdateCategoryReq):
         raise je
     except Exception as e:
         logger.error("Error adding product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/popular", response_model=response.BaseResponse)
+async def get_popular(top_n: int = 5):
+    try:
+        data = await order.get_popular_products(top_n)
+        return response.BaseResponse(
+            message="Popular products found",
+            data=data
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting popular product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

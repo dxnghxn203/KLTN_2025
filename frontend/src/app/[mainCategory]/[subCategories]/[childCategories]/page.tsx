@@ -35,7 +35,6 @@ export default function CategoryPage() {
 
   const subCategoriesTitle = subCategory?.sub_category_name || "Danh mục con";
   const childCategoryTitle = childCategory?.child_category_name;
-  console.log("rr", childCategoryTitle);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">

@@ -11,14 +11,14 @@ const MenuFullDropdown = ({ mainCategoryData }: MenuFullDropdownProps) => {
     const [categoryData, setCategoryData] = useState<any>(null);
     
     // Sử dụng useEffect thay vì useMemo để fetch dữ liệu khi mainCategoryData thay đổi
-    useEffect(() => {
-        const loadData = async () => {
-            await fetchMainCategory(mainCategoryData);
-            setCategoryData(mainCategory);
-        };
-        
-        loadData();
-    }, [mainCategoryData, fetchMainCategory]);
+    // useEffect(() => {
+    //     const loadData = async () => {
+    //         await fetchMainCategory(mainCategoryData);
+    //         setCategoryData(mainCategory);
+    //     };
+
+    //     loadData();
+    // }, [mainCategoryData, fetchMainCategory]);
     
     return (
         <>
