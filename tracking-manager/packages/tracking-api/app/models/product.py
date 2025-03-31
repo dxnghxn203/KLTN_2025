@@ -1,6 +1,6 @@
 from starlette import status
 
-from app.core import logger, response
+from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
@@ -27,6 +27,34 @@ async def get_all_product(page: int, pageSize: int):
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
         raise e
+
+async def get_product_top_selling(top_n):
+    try:
+        return recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+    except Exception as e:
+        logger.error(f"Failed [get_product_top_selling]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error",
+        )
+
+async def get_product_featured(main_category_id, sub_category_id=None, child_category_id=None,  top_n=5):
+    try:
+        params = {
+            "main_category_id": main_category_id,
+            "sub_category_id": sub_category_id,
+            "child_category_id": child_category_id,
+            "top_n": top_n
+        }
+        filtered_params = {k: v for k, v in params.items() if v is not None}
+
+        return recommendation.send_request("/v1/featured/", filtered_params)
+    except Exception as e:
+        logger.error(f"Failed [get_featured]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error",
+        )
 
 async def add_product_db(item: ItemProductDBInReq, images_primary, images):
     try:
