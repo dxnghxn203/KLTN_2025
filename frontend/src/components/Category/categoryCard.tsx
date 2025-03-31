@@ -61,7 +61,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
       <div className="flex-1 py-4 px-2">
         <div className="flex flex-col space-y-2">
-          {visibleSubSubCategories.map((sub: any, index: any) => (
+          {visibleSubSubCategories && visibleSubSubCategories.map((sub: any, index: any) => (
             <Link
               key={index}
               href={`/${mainCategory}/${subCategories?.sub_category_slug}/${sub.child_category_slug}`}

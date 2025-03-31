@@ -38,7 +38,6 @@ export default function CategoryPage() {
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-      {/* <Header /> */}
       <main className="flex flex-col pt-14">
         <div className="text-sm text-[#0053E2] px-5">
           <Link href="/" className="hover:underline text-blue-600">

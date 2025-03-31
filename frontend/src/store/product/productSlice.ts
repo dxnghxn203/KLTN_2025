@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface ProductState {
     products: any[];
     productsAdmin: any[];
+    productsTopSelling: any[];
     product: any;
     loading: boolean;
     error: string | null;
@@ -11,6 +12,7 @@ interface ProductState {
 const initialState: ProductState = {
     products: [],
     productsAdmin: [],
+    productsTopSelling: [],
     product: null,
     loading: false,
     error: null,
@@ -60,6 +62,19 @@ export const productSlice = createSlice({
         fetchAllProductAdminFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
+        },
+        // Fetch all product top selling
+        fetchAllProductTopSellingStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchAllProductTopSellingSuccess(state, action: PayloadAction<any[]>) {
+            state.productsTopSelling = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAllProductTopSellingFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
         }
     },
 });
@@ -76,6 +91,11 @@ export const {
     fetchAllProductAdminStart,
     fetchAllProductAdminSuccess,
     fetchAllProductAdminFailed,
+
+    fetchAllProductTopSellingStart,
+    fetchAllProductTopSellingSuccess,
+    fetchAllProductTopSellingFailed
+    
 } = productSlice.actions;
 
 export default productSlice.reducer;

@@ -66,3 +66,5 @@ const MenuFullDropdown = ({ mainCategoryData }: MenuFullDropdownProps) => {
         </>
     );
 }
+
+export default MenuFullDropdown;

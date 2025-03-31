@@ -17,7 +17,7 @@ export default function CategoryList({
 
   return (
     <div className="px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {sub_category.length > 0 ? (
+      {sub_category && sub_category.length > 0 ? (
         sub_category.map((categoryData: any, index: any) => (
           <CategoryCard
             key={index}
