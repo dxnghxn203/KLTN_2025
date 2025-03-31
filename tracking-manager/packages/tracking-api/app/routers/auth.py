@@ -36,6 +36,20 @@ async def login(request: GoogleAuthRequest):
             message="Internal server error"
         )
 
+@router.get("/auth/check-session", response_model=BaseResponse)
+async def check_session(session: str):
+    try:
+        user_info = await auth.get_current(token)
+        return SuccessResponse(data=user_info)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error check session", error=str(e))
+        return BaseResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/auth/login")
 async def login(email: str = Form(), password: str = Form()):
     try:
