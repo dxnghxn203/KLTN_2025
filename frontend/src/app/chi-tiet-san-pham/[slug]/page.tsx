@@ -22,6 +22,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       setLoading(false);
     }
   }, [productBySlug]);
+  // console.log("ProductBySlug:", productBySlug);
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
@@ -31,15 +32,23 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             Trang chủ
           </Link>
           <span> / </span>
-          <Link href={""} className="hover:underline text-blue-600">
-            ffff
+          <Link
+            href={`/${productBySlug?.category?.main_category_slug}`}
+            className="hover:underline text-blue-600"
+          >
+            {productBySlug?.category?.main_category_name}
           </Link>
           <span> / </span>
-          <Link href="" className="hover:underline text-blue-600">
-            ffff
+          <Link
+            href={`/${productBySlug?.category?.main_category_slug}/${productBySlug?.category?.sub_category_slug}`}
+            className="hover:underline text-blue-600"
+          >
+            {productBySlug?.category?.sub_category_name}
           </Link>
           <span className="text-gray-500"> / </span>
-          <span className="text-sm text-gray-500">fff</span>
+          <span className="text-sm text-gray-500">
+            {productBySlug?.category?.child_category_name}
+          </span>
         </div>
         {productBySlug ? (
           <>

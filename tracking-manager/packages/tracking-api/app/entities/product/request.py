@@ -138,6 +138,7 @@ class ItemProductDBReq(BaseModel):
     storage: str = ""
     manufacturer: ItemManufacturerDBReq = None
     dosage_form: str = ""
+    brand: str = ""
 
 class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")
@@ -155,6 +156,7 @@ class ItemProductDBInReq(BaseModel):
     storage: Optional[str] = Field(default="")
     manufacturer: Optional[ItemManufacturerDBReq] = Field(None)
     dosage_form: Optional[str] = Field(default="")
+    brand: Optional[str] = Field(default="")
 
 class UpdateCategoryReq(BaseModel):
     product_id: str = ""

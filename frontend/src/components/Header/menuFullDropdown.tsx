@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface MenuFullDropdownProps {
-    mainCategoryData: string
+  mainCategoryData: string;
 }
 
 const MenuFullDropdown = ({ mainCategoryData }: MenuFullDropdownProps) => {
@@ -66,5 +66,3 @@ const MenuFullDropdown = ({ mainCategoryData }: MenuFullDropdownProps) => {
         </>
     );
 }
-
-export default MenuFullDropdown;
