@@ -11,6 +11,7 @@ from app.middleware import middleware
 from app.models import order, auth
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id
+from app.models.user import get_current
 
 router = APIRouter()
 
@@ -206,7 +207,7 @@ async def get_recently_viewed_session(session: str):
 @router.get("/products/get-recently-viewed", response_model=response.BaseResponse)
 async def get_recently_viewed_token(token: str = Depends(middleware.verify_token)):
     try:
-        us = await auth.get_current(token)
+        us = await get_current(token)
         if not us:
             return response.BaseResponse(
                 status="error",
