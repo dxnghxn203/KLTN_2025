@@ -1,4 +1,3 @@
-from openpyxl.styles.builtins import currency
 from starlette import status
 
 from app.core import logger, response, recommendation
