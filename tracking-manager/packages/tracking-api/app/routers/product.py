@@ -72,7 +72,7 @@ async def get_product(slug: str, session_id: str = None):
 @router.get("/product/{slug}/", response_model=response.BaseResponse)
 async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
     try:
-        us = await auth.get_current(token)
+        us = await get_current(token)
         if not us:
             return response.BaseResponse(
                 status="error",
