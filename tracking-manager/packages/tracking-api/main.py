@@ -14,7 +14,8 @@ from app.routers import (
     location_router,
     category_router,
     review_router,
-    comment_router
+    comment_router,
+    cart_router
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -46,6 +47,7 @@ app.include_router(authen_router, prefix="/v1", tags=["Auth"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(product_router, prefix="/v1", tags=["Product"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])
+app.include_router(cart_router, prefix="/v1", tags=["Cart"])
 app.include_router(location_router, prefix="/v1", tags=["Location"])
 app.include_router(category_router, prefix="/v1", tags=["Category"])
 app.include_router(review_router, prefix="/v1", tags=["Review"])

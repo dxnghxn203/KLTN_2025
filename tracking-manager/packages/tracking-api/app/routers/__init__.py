@@ -6,7 +6,10 @@ from .location import router as location_router
 from .category import router as category_router
 from .review import router as review_router
 from .comment import router as comment_router
+from .cart import router as cart_router
+
 __all__ = [
+    'cart_router',
     'user_router',
     'authen_router',
     'order_router',

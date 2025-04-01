@@ -49,6 +49,7 @@ class ItemFullDescriptionDBRes(BaseModel):
     title: Optional[Union[str, None]] = None
     content: Optional[Union[str, None]] = None
 
+
 class ItemProductDBRes(BaseModel):
     product_id: Optional[Union[str, None]] = None
     product_name: Optional[Union[str, None]] = None

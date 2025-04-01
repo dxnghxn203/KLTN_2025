@@ -156,3 +156,31 @@ def save_recently_viewed(identifier: str, product_id: str, is_authenticated: boo
 
 def delete_recently_viewed(identifier: str):
     redis.delete(recently_viewed_key(identifier))
+
+# ==== CART MANAGEMENT ====
+def cart_key(identifier: str) -> str:
+    return f"cart:{identifier}"
+
+def get_cart(identifier: str):
+    data = redis.hgetall(cart_key(identifier))
+    return data
+
+def remove_cart_item(identifier: str, product_id: str):
+    redis.hdel(cart_key(identifier), product_id)
+
+def save_cart(identifier: str, product_id: str, price_id: str,  quantity: int):
+    key = cart_key(identifier)
+    cart_data = redis.hget(key, product_id)
+
+    if cart_data:
+        cart_item = json.loads(cart_data)
+        cart_item["quantity"] += quantity
+    else:
+        cart_item = {"price_id": price_id, "quantity": quantity}
+
+    redis.hset(key, product_id, json.dumps(cart_item))
+    redis.expire(key, SESSION_TTL)
+
+
+def delete_cart(identifier: str):
+    redis.delete(cart_key(identifier))
