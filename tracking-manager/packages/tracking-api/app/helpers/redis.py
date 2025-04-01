@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from app.core import redis_client
+from app.core import redis_client, logger
 from app.entities.order.request import ItemOrderReq
 from app.entities.product.request import ItemProductRedisReq
 
@@ -130,7 +130,9 @@ def save_session():
     return session_id
 
 def get_session(session_id: str):
-    return redis.get(session_key(session_id))
+    key = session_key(session_id)
+    logger.info(f"key: {key}")
+    return redis.get(key)
 
 def delete_session(session_id: str):
     redis.delete(session_key(session_id))

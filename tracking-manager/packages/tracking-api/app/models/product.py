@@ -41,6 +41,16 @@ async def get_product_top_selling(top_n):
             message="Internal server error",
         )
 
+async def get_related_product(product_id, top_n=5):
+    try:
+        return recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
+    except Exception as e:
+        logger.error(f"Failed [get_related_product]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error",
+        )
+
 async def get_product_by_list_id(product_ids):
     try:
         collection = db[collection_name]
