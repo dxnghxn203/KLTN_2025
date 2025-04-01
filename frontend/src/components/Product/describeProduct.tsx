@@ -12,7 +12,7 @@ const DescribeProduct = ({ product }: { product: any }) => {
         <div className="text-xl font-bold">Mô tả sản phẩm</div>
         <p>
           <div>
-            {product?.full_descriptions.map((item: any, index: any) => (
+            {product?.full_descriptions && product?.full_descriptions.map((item: any, index: any) => (
               <div key={index}>
                 <h2 className="font-semibold">{item.title}</h2>
                 <p className="mb-2 mt-2">{item.content}</p>

@@ -74,7 +74,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
   };
   console.log("discount", product.prices[0].original_price);
 
-  console.log("full_description", product.full_descriptions);
+  console.log("full_description", product?.full_descriptions);
 
   const selectedPrice =
     product?.prices.find((price) => price.unit === selectedUnit) ||
@@ -169,7 +169,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                 />
               </div>
 
-              {product?.images.slice(0, 2).map((img, index) => (
+              {product?.images && product?.images.slice(0, 2).map((img, index) => (
                 <div
                   key={img?.images_id}
                   className={`w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center ${
