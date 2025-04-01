@@ -1,40 +1,26 @@
 import os
 from datetime import datetime, timedelta
 
+import bcrypt
 import jwt
 from starlette import status
 
 from app.core import logger, response, mail
-from app.core.response import JsonException
-from app.entities.user.response import ItemUserRes
 from app.helpers import redis
-from app.middleware.middleware import get_private_key, decode_jwt, generate_otp
-from app.models import user
+from app.middleware.middleware import get_private_key, generate_otp
 
 TOKEN_EXPIRY_SECONDS = 86400
 collection_name = "authorizations"
 
 async def get_token(username: str, role_id: str):
+    token = redis.get_jwt_token(username)
+    if token:
+        return token
     expire = datetime.now() + timedelta(seconds=TOKEN_EXPIRY_SECONDS)
-    payload = {"exp": expire, "username": username}
-    if role_id == "admin":
-        payload["rold_id"] = role_id
+    payload = {"exp": expire, "username": username, "role_id": role_id}
     encoded_jwt = jwt.encode(payload, get_private_key(), algorithm=os.getenv("ALGORITHM"))
     redis.save_jwt_token(username, encoded_jwt)
     return encoded_jwt
-
-async def get_current(token: str) -> ItemUserRes:
-    try:
-        payload = decode_jwt(token=token)
-        user_info = await user.get_by_id(payload.get("username"))
-        if user_info:
-            user_info['token'] = token
-            return ItemUserRes.from_mongo(user_info)
-    except JsonException as je:
-        raise je
-    except Exception as e:
-        logger.error(f"Error get_current user: {str(e)}")
-        raise e
 
 async def handle_otp_verification(email: str):
     try:
@@ -57,4 +43,13 @@ async def handle_otp_verification(email: str):
         return otp
     except Exception as e:
         logger.error(f"Error handle_otp_verification: {e}")
+        raise e
+
+async def verify_user(us: any, p: str):
+    try:
+        if us and bcrypt.checkpw(p.encode('utf-8'), us['password'].encode('utf-8')) and us['active']:
+            logger.info("Đã đăng nhập thành công", username=us['user_name'])
+            return us
+        return None
+    except Exception as e:
         raise e

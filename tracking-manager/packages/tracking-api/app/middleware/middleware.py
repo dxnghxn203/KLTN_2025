@@ -46,7 +46,7 @@ def verify_token_optional(cred: Optional[HTTPAuthorizationCredentials] = Depends
 def verify_token_admin(cred: HTTPAuthorizationCredentials = Depends(security)):
     payload = validate_and_decode_token(cred)
 
-    if not payload.get("role") or payload.get("role") != "admin_account":
+    if not payload.get("role") or payload.get("role") != "admin":
         raise response.JsonException(status_code=status.HTTP_403_FORBIDDEN, message="Không có quyền truy cập")
 
     return cred.credentials
@@ -62,14 +62,14 @@ def decode_jwt(token: str) -> dict:
         logger.error("Token expired")
         raise response.JsonException(status_code=status.HTTP_403_FORBIDDEN, message="Token đã hết hạn")
     except(jwt.PyJWTError, ValidationError) as e:
-        logger.error("Token decoding", error=str(e))
+        logger.error(f"Token decoding error = {e}")
         raise response.JsonException(status_code=status.HTTP_403_FORBIDDEN, message="Không thể xác thực mã thông báo")
 
 def update_destroy_token(payload):
     try:
         redis_helper.delete_jwt_token(payload["username"])
     except Exception as e:
-        logger.error("Lỗi khi xóa JWT khỏi Redis")
+        logger.error(f"Lỗi khi xóa JWT khỏi Redis: {e}")
         raise response.JsonException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="Lỗi hệ thống")
 
 # ===== PASSWORD & OTP GENERATION =====

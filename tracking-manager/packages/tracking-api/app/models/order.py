@@ -55,6 +55,22 @@ async def get_completed_orders_last_365_days():
         logger.error(f"Failed [get_completed_orders_last_365_days]: {e}")
         raise e
 
+async def get_popular_products(top_n=3):
+    try:
+        orders_collection = database.db[collection_name]
+        pipeline = [
+            {"$unwind": "$product"},
+            {"$group": {"_id": "$product.product_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": top_n}
+        ]
+        logger.info(f"Pipeline: {pipeline}")
+        popular_products = list(orders_collection.aggregate(pipeline))
+        return [p["_id"] for p in popular_products]
+    except Exception as e:
+        logger.error(f"Failed [get_popular_products]: {e}")
+        raise e
+
 async def get_cancel_orders_last_365_days():
     try:
         collection = database.db[collection_name]
@@ -179,4 +195,50 @@ async def get_order_by_user(user_id: str):
         return [ItemOrderRes(**prod) for prod in order_list]
     except Exception as e:
         logger.error(f"Failed [get_order_by_user]: {e}")
+        raise e
+
+async def get_order_by_id(order_id: str):
+    try:
+        collection = database.db[collection_name]
+        order = collection.find_one({"order_id": order_id})
+
+        if not order:
+            return response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy đơn hàng"
+            )
+
+        return ItemOrderRes(**order)
+
+    except Exception as e:
+        logger.error(f"Failed [get_order_by_id]: {e}")
+        raise e
+
+
+async def cancel_order(order_id: str):
+    try:
+        order = await get_order_by_id(order_id)
+        if order.get("status") in ["completed", "canceled", "created"]:
+            return response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không thể hủy đơn hàng đã hoàn tất hoặc đã bị hủy hoặc chưa xuất kho"
+            )
+
+        collection = database.db[collection_name]
+        update_result = collection.update_one(
+            {"order_id": order_id},
+            {"$set": {"status": "canceled"}}
+        )
+
+        if update_result.modified_count == 0:
+            return response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Hủy đơn hàng thất bại"
+            )
+
+        logger.info(f"Đã hủy đơn hàng: {order_id}")
+        return response.SuccessResponse(message="Hủy đơn hàng thành công")
+
+    except Exception as e:
+        logger.error(f"Failed [cancel_order]: {e}")
         raise e

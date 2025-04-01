@@ -1,0 +1,32 @@
+from urllib.parse import quote_plus
+from core import logger
+import pymongo
+
+logger.set_pymongo_log_level()
+
+DB_NAME = "KLTN_2025"
+USERNAME = quote_plus("dxnghxn203")
+PASSWORD = quote_plus("2908203Hen@")
+CLUSTER = "kltn2025.qyu1q.mongodb.net"
+
+# Build connection string
+conn = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER}/{DB_NAME}"
+logger.info("Connecting to MongoDB...")
+logger.info("Url mongo : " + conn)
+try:
+    # Connect to MongoDB
+    client = pymongo.MongoClient(
+        conn,
+        serverSelectionTimeoutMS=5000,
+        connectTimeoutMS=5000
+    )
+
+    # Test connection
+    client.admin.command('ping')
+    # Connect to MongoDB
+    # Get database instance
+    db = client[DB_NAME]
+    logger.info("MongoDB connection successful!")
+
+except Exception as e:
+    logger.error("Lỗi khi kết nối MongoDB!", error=e)

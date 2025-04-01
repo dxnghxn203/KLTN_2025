@@ -8,7 +8,7 @@ from app.core import response, logger
 from app.core.response import JsonException
 from app.entities.review.request import ItemReviewReq, ItemReplyReq
 from app.middleware import middleware
-from app.models import review, auth
+from app.models import review
 
 router = APIRouter()
 

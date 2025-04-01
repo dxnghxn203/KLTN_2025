@@ -35,11 +35,9 @@ export default function CategoryPage() {
 
   const subCategoriesTitle = subCategory?.sub_category_name || "Danh mục con";
   const childCategoryTitle = childCategory?.child_category_name;
-  console.log("rr", childCategoryTitle);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-      {/* <Header /> */}
       <main className="flex flex-col pt-14">
         <div className="text-sm text-[#0053E2] px-5">
           <Link href="/" className="hover:underline text-blue-600">

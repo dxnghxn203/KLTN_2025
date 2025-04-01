@@ -6,4 +6,5 @@ export const selectProducts = (state: RootState) => state.product.products;
 export const selectProductBySlug = (state: RootState) => state.product.product;
 export const selectProductLoading = (state: RootState) => state.product.loading;
 export const selectProductError = (state: RootState) => state.product.error;
-export const selectProductAdmin = (state: RootState)=> state.product.productsAdmin
+export const selectProductAdmin = (state: RootState)=> state.product.productsAdmin;
+export const selectProductTopSelling = (state: RootState) => state.product.productsTopSelling;

@@ -15,7 +15,6 @@ export default function MainCategoryPage() {
     fetchMainCategory(params.mainCategory);
     return params.mainCategory;
   }, [params.mainCategory]);
-  console.log("MainCategory:", mainCategory);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">

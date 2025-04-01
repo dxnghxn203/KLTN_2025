@@ -16,8 +16,6 @@ import MenuHeader from "./menuHeader";
 import LocationDialog from "@/components/Dialog/locationDialog"; // Import from correct path
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
-import { Menu } from "antd";
-import MenuFullDropdown from "./menuFullDropdown";
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);

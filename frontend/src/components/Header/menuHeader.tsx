@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useCategory } from "@/hooks/useCategory";
 import { useEffect, useState } from "react";
-import MenuFullDropdown from "./menuFullDropdown";
 import { useRouter } from "next/navigation";
+import MenuFullDropdown from "./menuFullDropdown";
 
 export default function MenuHeader() {
   const { allCategory, fetchAllCategory } = useCategory();
@@ -43,9 +43,9 @@ export default function MenuHeader() {
                     className="mega-menu-full-dropdown w-full absolute left-0 top-full mt-1 z-50 hidden group-hover:block animate-fadeIn"
                   >
                     <div className="bg-white backdrop-blur-sm p-6 rounded-lg shadow-lg w-full">
-                      <MenuFullDropdown
+                      {/* <MenuFullDropdown
                         mainCategoryData={category.main_category_slug}
-                      />
+                      /> */}
                     </div>
                   </div>
                 </li>

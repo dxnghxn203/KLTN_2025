@@ -58,7 +58,7 @@ class ItemUserRegisReq(BaseModel):
             raise ValueError("Định dạng ngày tháng không hợp lệ, yêu cầu ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)")
 
 
-class ItemOtpReq(BaseModel):
+class ItemUserOtpReq(BaseModel):
     email: str
 
     @field_validator('email', mode='before')
@@ -68,7 +68,7 @@ class ItemOtpReq(BaseModel):
 
         return v
 
-class VerifyEmailReq(ItemOtpReq):
+class ItemUserVerifyEmailReq(ItemUserOtpReq):
     otp: str
     @field_validator('otp')
     def otp_length(cls, value):

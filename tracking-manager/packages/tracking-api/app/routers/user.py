@@ -3,11 +3,11 @@ from starlette import status
 
 from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
-from app.entities.user.request import ItemUserRegisReq, ItemOtpReq, VerifyEmailReq
+from app.entities.user.request import ItemUserRegisReq, ItemUserOtpReq, ItemUserVerifyEmailReq
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
-from app.models import user, auth
+from app.models import user
 from app.models.auth import handle_otp_verification
 
 router = APIRouter()
@@ -26,9 +26,9 @@ async def register_email(item: ItemUserRegisReq):
         )
 
 @router.get("/users/all-user-admin", response_model=BaseResponse)
-async def get_all_user_admin(page: int = 1, pageSize: int = 10):
+async def get_all_user_admin(page: int = 1, page_size: int = 10):
     try:
-        result = await user.get_all_user(page, pageSize)
+        result = await user.get_all_user(page, page_size)
         return SuccessResponse(data=result)
     except JsonException as je:
         raise je
@@ -40,7 +40,7 @@ async def get_all_user_admin(page: int = 1, pageSize: int = 10):
         )
 
 @router.post("/users/otp")
-async def send_otp(item: ItemOtpReq):
+async def send_otp(item: ItemUserOtpReq):
     try:
         email = item.email
         user_info = await user.get_by_email_and_auth_provider(email, "email")
@@ -67,7 +67,7 @@ async def send_otp(item: ItemOtpReq):
         )
 
 @router.post("/users/verify-email", response_model=BaseResponse)
-async def verify_user(request: VerifyEmailReq):
+async def verify_user(request: ItemUserVerifyEmailReq):
     try:
         email, otp = request.email, request.otp
         user_info = await user.get_by_email_and_auth_provider(email, "email")
@@ -105,7 +105,7 @@ async def verify_user(request: VerifyEmailReq):
 @router.get("/users/current", response_model=BaseResponse)
 async def get_user(token: str = Depends(middleware.verify_token)):
     try:
-        data = await auth.get_current(token)
+        data = await user.get_current(token)
         return SuccessResponse(data=data)
     except Exception as e:
         logger.error(f"Error getting current user: {e}")
@@ -115,7 +115,7 @@ async def get_user(token: str = Depends(middleware.verify_token)):
         )
 
 @router.put("/users/status", response_model=BaseResponse)
-async def get_user(user_id: str, status_user: str, token: str = Depends(middleware.verify_token_admin)):
+async def update_status_user(user_id: str, status_user: bool, token: str = Depends(middleware.verify_token_admin)):
     try:
         user_info = await user.get_by_id(user_id)
         if not user_info:
