@@ -13,6 +13,7 @@ import {
 } from './authSlice';
 import { getSession, signIn, signOut } from 'next-auth/react';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { removeToken, setToken, getToken } from '@/utils/cookie';
 
 // Google Login
 function* handleGoogleLogin(): Generator<any, void, any> {
@@ -50,6 +51,7 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
         const response = yield call(authService.login, form);
         if (response.success) {
             onSuccess();
+            setToken(response?.token);
             yield put(
                 loginSuccess({
                     user: response?.user || null,
@@ -71,13 +73,12 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 // Logout
 function* handleLogout(): Generator<any, void, any> {
     try {
-        const token = localStorage.getItem('token');
         const response = yield call(signOut, { redirect: false });
-
+        const token = getToken();
         if (token) {
             yield call(authService.logout, token);
+            removeToken();
         }
-        localStorage.removeItem('token');
         yield put(logoutSuccess());
 
         // if (typeof window !== 'undefined') {

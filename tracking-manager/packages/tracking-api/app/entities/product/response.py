@@ -52,6 +52,7 @@ class ItemProductDBRes(BaseModel):
     prices: List[Optional[Union[ItemPriceDBRes, None]]] = None
     slug: Optional[Union[str, None]] = None
     description: Optional[Union[str, None]] = None
+    full_description: Optional[Union[str, None]] = None
     images_primary: Optional[Union[str, None]] = None
     images: List[Optional[Union[ItemImageDBRes, None]]] = None
     category: Optional[Union[ItemCategoryDBInRes, None]] = None

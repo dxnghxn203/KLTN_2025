@@ -1,4 +1,6 @@
 import axios from "axios";
+import { removeToken } from "@/utils/cookie";
+
 const axiosClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
     headers: {
@@ -38,14 +40,16 @@ axiosClient.interceptors.request.use(
 );
 
 axiosClient.interceptors.response.use(
-    function (response) {
+    function (response: any) {
+        if (response?.status_code === 401 || response?.status_code === 403) {
+            removeToken();
+        }
         return response?.data;
     },
     function (error) {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            // debugger
+            removeToken();
         }
-        console.log(error);
         return Promise.reject(error);
     }
 );

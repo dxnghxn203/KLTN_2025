@@ -1,4 +1,4 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductTopSelling } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { select } from "redux-saga/effects";
@@ -8,6 +8,8 @@ export function useProduct() {
     const productBySlug = useSelector(selectProductBySlug);
     const allProductAdmin = useSelector(selectProductAdmin);
     const productsTopSelling = useSelector(selectProductTopSelling);
+    const productRelated = useSelector(selectProductRelated);
+    const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -42,6 +44,18 @@ export function useProduct() {
         }));
     }
 
+    const fetchProductRelated = async (product_id: any) => {
+        dispatch(fetchAllProductRelatedStart({
+            product_id: product_id,
+            top_n: top_n
+        }));
+    }
+    const fetchProductRecentlViewed = ()=>{
+        dispatch(fetchAllProductGetRecentlyViewedStart())
+    }
+
+
+
     return {
         addProduct,
         productBySlug,
@@ -53,7 +67,11 @@ export function useProduct() {
         setPageSize,
         allProductAdmin,
         getProductTopSelling,
-        productsTopSelling
+        productsTopSelling,
+        fetchProductRelated,
+        productRelated,
+        productGetRecentlyViewed,
+        fetchProductRecentlViewed,
     };
 }
 

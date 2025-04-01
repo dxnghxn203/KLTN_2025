@@ -11,7 +11,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
   return (
     <div className="">
       <div className="flex-1 bg-[#F5F7F9] rounded-xl">
-        {products.map((product, index) => (
+        {products.map((product: any, index: any) => (
           <div
             key={product.id}
             className={`flex items-center justify-between py-4 mx-4 text-sm ${

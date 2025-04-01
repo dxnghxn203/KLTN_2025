@@ -6,10 +6,12 @@ import orderReducer from './order/orderSlice';
 import { locationSlice } from './location/locationSlice';
 import categoryReducer from './category/categorySlice';
 import userReducer from "./user/userSlice";
+import { getToken } from '@/utils/cookie';
+import { setClientToken } from '@/utils/configs/axiosClient';
 
 // Import other reducers here
 
-const rootReducer = combineReducers({
+const reducer = combineReducers({
   auth: authReducer,
   cart: cartReducer,
   product: productReducer,
@@ -20,5 +22,18 @@ const rootReducer = combineReducers({
   // Add other reducers here
 });
 
-export type RootState = ReturnType<typeof rootReducer>;
+const rootReducer = (state: any, action: any) => {
+  if (action.type === "authen/fetchLogoutStart") {
+    return reducer(undefined, action); 
+  }   
+
+  const token = getToken();
+
+  if (token) {
+    setClientToken(token);
+  }
+
+  return reducer(state, action);
+};
+
 export default rootReducer;

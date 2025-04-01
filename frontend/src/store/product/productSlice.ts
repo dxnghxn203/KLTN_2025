@@ -4,6 +4,8 @@ interface ProductState {
     products: any[];
     productsAdmin: any[];
     productsTopSelling: any[];
+    productsRelated: any[];
+    productsGetRecentlyViewed: any[];
     product: any;
     loading: boolean;
     error: string | null;
@@ -13,6 +15,8 @@ const initialState: ProductState = {
     products: [],
     productsAdmin: [],
     productsTopSelling: [],
+    productsGetRecentlyViewed: [],
+    productsRelated: [],
     product: null,
     loading: false,
     error: null,
@@ -24,17 +28,14 @@ export const productSlice = createSlice({
     reducers: {
         // Fetch product by slug
         fetchProductBySlugStart(state, action: PayloadAction<string>) {
-            console.log("Fetching product by slug started");
             state.loading = true;
         },
         fetchProductBySlugSuccess(state, action: PayloadAction<any[]>) {
-            console.log("Action payload:", action.payload);
             state.product = action.payload;
             state.loading = false;
             state.error = null;
         },
         fetchProductBySlugFailed(state, action: PayloadAction<string>) {
-            console.log("Fetching product by slug failed, error:", action);
             state.loading = false;
             state.error = action.payload;
         },
@@ -75,6 +76,32 @@ export const productSlice = createSlice({
         fetchAllProductTopSellingFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
+        },
+        // Fetch all product related
+        fetchAllProductRelatedStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchAllProductRelatedSuccess(state, action: PayloadAction<any[]>) {
+            state.productsRelated = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAllProductRelatedFailed(state, action: PayloadAction<string>) {    
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        // Fetch all product get-recently-viewed
+        fetchAllProductGetRecentlyViewedStart(state) {
+            state.loading = true;
+        },
+        fetchAllProductGetRecentlyViewedSuccess(state, action: PayloadAction<any[]>) {
+            state.productsGetRecentlyViewed = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAllProductGetRecentlyViewedFailed(state) {
+            state.loading = false;
         }
     },
 });
@@ -94,7 +121,15 @@ export const {
 
     fetchAllProductTopSellingStart,
     fetchAllProductTopSellingSuccess,
-    fetchAllProductTopSellingFailed
+    fetchAllProductTopSellingFailed,
+    
+    fetchAllProductRelatedStart,
+    fetchAllProductRelatedSuccess,
+    fetchAllProductRelatedFailed,
+
+    fetchAllProductGetRecentlyViewedStart,
+    fetchAllProductGetRecentlyViewedSuccess,
+    fetchAllProductGetRecentlyViewedFailed,
     
 } = productSlice.actions;
 

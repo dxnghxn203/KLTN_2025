@@ -22,7 +22,6 @@ const AlreadyLoggedIn: React.FC = () => {
     }
   }, [countdown, router]);
 
-  console.log(user);
   return (
     <div className="w-[393px] mx-auto p-6 bg-white rounded-xl shadow-md">
       <div className="text-center mb-6">

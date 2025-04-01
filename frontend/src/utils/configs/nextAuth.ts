@@ -1,6 +1,7 @@
 import GoogleProvider from "next-auth/providers/google";
 import type { NextAuthOptions } from "next-auth";
 import { signInWithGoogle } from "@/services/authService";
+import { setToken } from "@/utils/cookie";
 
 const authOptions: NextAuthOptions = {
     providers: [
@@ -20,13 +21,16 @@ const authOptions: NextAuthOptions = {
         async signIn({ user, account }) {
             if (account?.provider === "google") {
                 try {
-                    const response = await signInWithGoogle({
+                    const response: any = await signInWithGoogle({
                         id_token: account.id_token as string,
-                        accessToken: account.accessToken as string,
                         email: user.email as string,
                     })
+                    if (response?.status_code === 200 && response?.token) {
+                        setToken(response?.token);
+                        return true;
+                    }
 
-                    return response.success || false;
+                    return false;
                 } catch (error) {
                     console.error("Error authenticating with backend:", error);
                     return false;

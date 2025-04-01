@@ -10,7 +10,7 @@ from app.helpers.redis import get_session, get_recently_viewed, save_recently_vi
 from app.middleware import middleware
 from app.models import order, auth
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
-    delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id
+    delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product
 from app.models.user import get_current
 
 router = APIRouter()
@@ -45,6 +45,7 @@ async def get_featured(main_category_id: str, sub_category_id: Optional[str] = N
 async def get_product(slug: str, session_id: str = None):
     try:
         check = get_session(session_id)
+        logger.info("check: "+str(check))
         product = await get_product_by_slug(slug)
         if not product:
             return response.JsonException(
@@ -174,6 +175,19 @@ async def delete_product(product_id: str):
         raise je
     except Exception as e:
         logger.error("Error deleting product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/get-relate/", response_model=response.BaseResponse)
+async def get_relate_product(product_id: str, top_n: int = 5):
+    try:
+        return await get_related_product(product_id, top_n)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting relate products", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
