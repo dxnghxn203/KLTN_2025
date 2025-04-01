@@ -11,8 +11,14 @@ const DescribeProduct = ({ product }: { product: any }) => {
       <div className="space-y-2">
         <div className="text-xl font-bold">Mô tả sản phẩm</div>
         <p>
-          Một dạ dày khỏe mạnh là nền tảng để duy trì sức khỏe tốt, vì 70% hệ
-          thống miễn dịch của chúng ta nằm ở ruột...
+          <div>
+            {product?.full_descriptions.map((item: any, index: any) => (
+              <div key={index}>
+                <h2 className="font-semibold">{item.title}</h2>
+                <p className="mb-2 mt-2">{item.content}</p>
+              </div>
+            ))}
+          </div>
         </p>
       </div>
 

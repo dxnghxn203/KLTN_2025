@@ -11,6 +11,7 @@ import {
   ProductImage,
   Manufacturer,
   Ingredient,
+  FullDescription,
 } from "@/types/product";
 import DescribeProduct from "./describeProduct";
 import Guide from "./guide";
@@ -37,6 +38,7 @@ interface DetailProductProps {
     ingredients: Ingredient[];
     brand: string;
     discount: number;
+    full_descriptions: FullDescription[];
   };
 }
 
@@ -71,6 +73,8 @@ const DetailProduct = ({ product }: DetailProductProps) => {
     }
   };
   console.log("discount", product.prices[0].original_price);
+
+  console.log("full_description", product.full_descriptions);
 
   const selectedPrice =
     product?.prices.find((price) => price.unit === selectedUnit) ||
