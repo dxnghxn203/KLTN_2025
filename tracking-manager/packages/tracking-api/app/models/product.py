@@ -1,4 +1,3 @@
-from grpc.framework.interfaces.base.utilities import full_subscription
 from starlette import status
 
 from app.core import logger, response, recommendation
