@@ -6,6 +6,7 @@ from app.core.response import BaseResponse, JsonException, SuccessResponse
 from app.entities.authen import GoogleAuthRequest
 from app.entities.user.request import ItemUserRegisReq
 from app.entities.user.response import ItemUserRes
+from app.helpers.redis import get_session, save_session
 from app.middleware import middleware
 from app.models import user, auth
 from app.models.auth import handle_otp_verification
@@ -31,20 +32,6 @@ async def login(request: GoogleAuthRequest):
         raise je
     except Exception as e:
         logger.error("Error google auth", error=str(e))
-        return BaseResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
-
-@router.get("/auth/check-session", response_model=BaseResponse)
-async def check_session(session: str):
-    try:
-        user_info = await auth.get_current(token)
-        return SuccessResponse(data=user_info)
-    except JsonException as je:
-        raise je
-    except Exception as e:
-        logger.error("Error check session", error=str(e))
         return BaseResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
@@ -87,6 +74,35 @@ async def logout(token: str = Depends(middleware.destroy_token)):
         return SuccessResponse(message="Đã đăng xuất")
     except Exception as e:
         logger.error("Error logout", error=str(e))
+        return BaseResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/auth/check-session", response_model=BaseResponse)
+async def check_session(session: str):
+    try:
+        check = get_session(session)
+        if not check:
+            return BaseResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                message="Session không hợp lệ"
+            )
+        return SuccessResponse(message="Session hợp lệ")
+    except Exception as e:
+        logger.error("Error check session", error=str(e))
+        return BaseResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/auth/new-session", response_model=BaseResponse)
+async def new_session():
+    try:
+        session = save_session()
+        return SuccessResponse(data=session)
+    except Exception as e:
+        logger.error("Error new session", error=str(e))
         return BaseResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

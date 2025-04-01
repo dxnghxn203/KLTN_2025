@@ -1,14 +1,16 @@
 from typing import Optional, List
 
-from fastapi import APIRouter, status, UploadFile, File
+from fastapi import APIRouter, status, UploadFile, File, Depends
 from pyfa_converter_v2 import BodyDepends
 
 from app.core import logger, response
 from app.core.response import JsonException
 from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq
-from app.models import order
+from app.helpers.redis import get_session, get_recently_viewed, save_recently_viewed, save_session
+from app.middleware import middleware
+from app.models import order, auth
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
-    delete_product, get_product_top_selling, get_product_featured
+    delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id
 
 router = APIRouter()
 
@@ -38,16 +40,58 @@ async def get_featured(main_category_id: str, sub_category_id: Optional[str] = N
             message="Internal server error"
         )
 
-@router.get("/product/{slug}")
-async def get_product(slug: str):
+@router.get("/product/session/{slug}", response_model=response.BaseResponse)
+async def get_product(slug: str, session_id: str = None):
     try:
+        check = get_session(session_id)
         product = await get_product_by_slug(slug)
         if not product:
             return response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
-        return response.BaseResponse(status="success",data={**product, "_id": str(product["_id"])})
+        logger.info(f"check: {check}")
+        cur_session = session_id if check else save_session()
+        save_recently_viewed(cur_session, product.product_id, False)
+
+        return response.BaseResponse(status="success",data={
+            "product": product,
+            "session_id": cur_session
+        })
+
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/product/{slug}/", response_model=response.BaseResponse)
+async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
+    try:
+        us = await auth.get_current(token)
+        if not us:
+            return response.BaseResponse(
+                status="error",
+                message="User not found",
+                data=None
+            )
+
+        product = await get_product_by_slug(slug)
+
+        if not product:
+            return response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found"
+            )
+        save_recently_viewed(us["username"],product.product_id, True)
+
+        return response.BaseResponse(status="success",data={
+                "product": product,
+                "session_id": None
+        })
     except JsonException as je:
         raise je
     except Exception as e:
@@ -129,6 +173,56 @@ async def delete_product(product_id: str):
         raise je
     except Exception as e:
         logger.error("Error deleting product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/get-recently-viewed/{session}", response_model=response.BaseResponse)
+async def get_recently_viewed_session(session: str):
+    try:
+        check = get_session(session)
+        if not check:
+            return response.BaseResponse(
+                status="error",
+                message="Session not found",
+                data=None
+            )
+        data = get_recently_viewed(session)
+        products = await get_product_by_list_id(data)
+        return response.BaseResponse(
+            message="Recently viewed products found",
+            data=products
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting recently viewed products", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/get-recently-viewed", response_model=response.BaseResponse)
+async def get_recently_viewed_token(token: str = Depends(middleware.verify_token)):
+    try:
+        us = await auth.get_current(token)
+        if not us:
+            return response.BaseResponse(
+                status="error",
+                message="User not found",
+                data=None
+            )
+        data = get_recently_viewed(us["username"])
+        products = await get_product_by_list_id(data)
+        return response.BaseResponse(
+            message="Recently viewed products found",
+            data=products
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting recently viewed products", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
