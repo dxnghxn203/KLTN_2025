@@ -1,8 +1,8 @@
 
 const routerAdmin = {
     DASHBOARD: '/dashboard',
-    USERS: '/users',
-    ORDERS: '/orders',
-    PRODUCTS: '/products',
-    LOGIN: '/login',
+    USERS: '/quan-ly-nguoi-dung',
+    ORDERS: '/quan-ly-don-hang',
+    PRODUCTS: '/san-pham',
+    LOGIN: '/dang-nhap-admin',
 }

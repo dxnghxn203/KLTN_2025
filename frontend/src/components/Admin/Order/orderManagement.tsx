@@ -190,18 +190,20 @@ const Order = () => {
           {statuses.map((status) => (
             <button
               key={status.label}
-              className={`flex items-center gap-1 px-2 py-2 rounded-2xl text-sm font-medium transition ${selectedTab === status.label
+              className={`flex items-center gap-1 px-2 py-2 rounded-2xl text-sm font-medium transition ${
+                selectedTab === status.label
                   ? "bg-[#1E4DB7] text-white"
                   : "bg-gray-200 text-gray-500 hover:bg-gray-300"
-                }`}
+              }`}
               onClick={() => setSelectedTab(status.label)}
             >
               {status.label}
               <span
-                className={`rounded-full w-4 h-4 text-xs font-semibold ${selectedTab === status.label
+                className={`rounded-full w-4 h-4 text-xs font-semibold ${
+                  selectedTab === status.label
                     ? "bg-white text-[#1E4DB7]"
                     : status.bgColor + " " + status.textColor
-                  }`}
+                }`}
               >
                 {status.count}
               </span>
@@ -209,7 +211,6 @@ const Order = () => {
           ))}
         </div>
         <TableOrdersAdmin />
-        
       </div>
       {isDrawerOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">

@@ -17,19 +17,29 @@ interface SidebarProps {
 // Danh sách menu cố định (không render lại)
 const menuItems = [
   {
-    id: "Analytical",
+    id: "Dashboard",
     icon: <FiPieChart />,
-    label: "Analytical",
+    label: "Dashboard",
     path: "/dashboard",
   },
-  { id: "User", icon: <LuUsersRound />, label: "User", path: "/users" },
+  {
+    id: "User",
+    icon: <LuUsersRound />,
+    label: "Quản lý người dùng",
+    path: "/quan-ly-nguoi-dung",
+  },
   {
     id: "Order",
     icon: <FiShoppingBag />,
-    label: "Order",
-    path: "/orders",
+    label: "Quản lý đơn hàng",
+    path: "/quan-ly-don-hang",
   },
-  { id: "Product", icon: <BsBox />, label: "Product", path: "/products" },
+  {
+    id: "Product",
+    icon: <BsBox />,
+    label: "Quản lý sản phẩm",
+    path: "/quan-ly-san-pham",
+  },
 ];
 
 const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
@@ -37,7 +47,7 @@ const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
     <aside
       className={clsx(
         "flex flex-col p-4  border-r border-gray-200 transition-all duration-500 bg-[#FAFBFB]",
-        isOpen ? "w-[270px]" : "w-[80px]"
+        isOpen ? "w-[250px]" : "w-[80px]"
       )}
     >
       {/* Logo */}

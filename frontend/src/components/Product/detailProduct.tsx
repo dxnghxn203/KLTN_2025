@@ -16,6 +16,9 @@ import DescribeProduct from "./describeProduct";
 import Guide from "./guide";
 import FeedBack from "./feedBack";
 import ImageDialog from "../Dialog/imageDialog";
+import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/providers/toastProvider";
+import { ToastType } from "@/components/Toast/toast";
 
 interface DetailProductProps {
   product: {
@@ -32,6 +35,7 @@ interface DetailProductProps {
     origin: string;
     manufacturer: Manufacturer;
     ingredients: Ingredient[];
+    brand: string;
   };
 }
 
@@ -42,6 +46,28 @@ const DetailProduct = ({ product }: DetailProductProps) => {
   const [activeTab, setActiveTab] = useState("details");
   const [isOpenDialog, setIsDialogOpen] = useState(false);
   const [selectedImageDialog, setSelectedImageDialog] = useState(0);
+  const { addToCart } = useCart();
+  const toast = useToast();
+  const handleAddToCart = () => {
+    try {
+      addToCart({
+        name: product.name_primary,
+        price: product.prices[0].price,
+        discount: product.prices[0].discount,
+        originPrice: product.prices[0].originalPrice,
+        imageSrc: product.images_primary,
+        unit: Array.isArray(product.prices[0].unit)
+          ? product.prices[0].unit[0]
+          : product.prices[0].unit,
+        quantity,
+        id: product.product_id,
+      });
+
+      toast.showToast("Thêm vào giỏ hàng thành công!", ToastType.SUCCESS);
+    } catch (error) {
+      toast.showToast("Thêm vào giỏ hàng thất bại!", ToastType.ERROR);
+    }
+  };
 
   const selectedPrice =
     product?.prices.find((price) => price.unit === selectedUnit) ||
@@ -184,8 +210,10 @@ const DetailProduct = ({ product }: DetailProductProps) => {
           {/* Product details */}
           <div className="space-y-4 ml-4 w-[60%]">
             <h2 className="text-lg font-normal text-[#4A4F63] mt-4">
-              Thương hiệu:
-              <span className="text-[#0053E2] font-semibold"> Royal Care</span>
+              Thương hiệu:{" "}
+              <span className="text-[#0053E2] font-semibold">
+                {product?.brand}
+              </span>
             </h2>
             <h1 className="text-3xl font-bold">{product?.name_primary}</h1>
             <div className="flex items-center space-x-2 text-gray-600 text-sm">
@@ -339,7 +367,10 @@ const DetailProduct = ({ product }: DetailProductProps) => {
               </table>
             </div>
 
-            <button className="mt-6 w-full bg-blue-700 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800">
+            <button
+              className="mt-6 w-full bg-blue-700 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800"
+              onClick={handleAddToCart}
+            >
               Chọn mua
             </button>
 

@@ -53,16 +53,16 @@ const ProductDialog: React.FC<ProductDialogProps> = ({
     });
     onClose();
   };
-  console.log(
-    "ProductDialog:",
-    name,
-    price,
-    discount,
-    originPrice,
-    imageSrc,
-    unit,
-    id
-  );
+  // console.log(
+  //   "ProductDialog:",
+  //   name,
+  //   price,
+  //   discount,
+  //   originPrice,
+  //   imageSrc,
+  //   unit,
+  //   id
+  // );
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
