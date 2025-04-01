@@ -126,6 +126,7 @@ class ItemProductDBReq(BaseModel):
     prices: List[ItemPriceDBReq] = None
     slug: str = ""
     description: str = ""
+    full_description: str = ""
     images_primary: str = ""
     images: List[ItemImageDBReq] = None
     category: ItemCategoryDBInReq
@@ -146,6 +147,7 @@ class ItemProductDBInReq(BaseModel):
     prices: Optional[ListPriceDBInReq] = Field(None)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
+    full_description: Optional[str] = Field(default="")
     category: Optional[ItemCategoryDBInReq] = Field(None)
     origin: Optional[str] = Field(default="")
     ingredients: Optional[ListIngredientDBReq] = Field(None)
