@@ -1,3 +1,4 @@
+from grpc.framework.interfaces.base.utilities import full_subscription
 from starlette import status
 
 from app.core import logger, response, recommendation
@@ -106,6 +107,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             ]
 
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
+        full_subscription_list = item.full_description.full_descriptions if item.full_description and item.full_description.full_descriptions else []
         images_primary_url = (upload_file(images_primary, "images_primary") or "") if images_primary else ""
 
         product_id = generate_id("PRODUCT")
@@ -115,6 +117,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             product_id=product_id,
             prices=price_list,
             images=image_list,
+            full_descriptions=full_subscription_list,
             ingredients=ingredients_list,
             images_primary=images_primary_url
         )
