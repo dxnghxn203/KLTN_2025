@@ -29,7 +29,6 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
     <>
       <div className="flex text-xs font-bold whitespace-normal">
         <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
-          {/* Ảnh sản phẩm */}
           <Link href={`/chi-tiet-san-pham/${slug}`} legacyBehavior>
             <div className="py-4 flex flex-col items-center">
               <div className="flex justify-end w-full">
@@ -80,13 +79,14 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
             <div className="mt-2">
               <div
                 className={`text-sm text-zinc-400 line-through ${
-                  products?.prices[0]?.original_price ? "" : "invisible"
+                  products?.prices[0]?.original_price &&
+                  products?.prices[0]?.original_price !==
+                    products?.prices[0]?.price
+                    ? "opacity-100"
+                    : "opacity-0"
                 }`}
               >
-                {(products?.prices[0]?.original_price || 0).toLocaleString(
-                  "vi-VN"
-                )}
-                đ
+                {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}đ
               </div>
               <div className="text-lg font-bold text-[#0053E2]">
                 {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/

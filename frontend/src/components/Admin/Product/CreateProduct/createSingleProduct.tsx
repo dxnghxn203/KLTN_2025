@@ -47,19 +47,25 @@ const CreateSingleProduct = () => {
   }
 
   const [prices, setPrices] = useState<PriceItem[]>([
-    { original_price: 0, unit_price: "", discount: 0, unit: "", amount: 0, amount_per_unit: "" }
+    {
+      original_price: 0,
+      unit_price: "",
+      discount: 0,
+      unit: "",
+      amount: 0,
+      amount_per_unit: "",
+    },
   ]);
 
   const [ingredients, setIngredients] = useState<IngredientItem[]>([
-    { ingredient_name: "", ingredient_amount: "" }
+    { ingredient_name: "", ingredient_amount: "" },
   ]);
 
   const [manufacturer, setManufacturer] = useState<Manufacturer>({
     manufacture_name: "",
     manufacture_address: "",
-    manufacture_contact: ""
+    manufacture_contact: "",
   });
-
 
   const [category, setCategory] = useState<Category>({
     main_category_name: "",
@@ -70,7 +76,7 @@ const CreateSingleProduct = () => {
     sub_category_slug: "",
     main_category_id: "",
     child_category_id: "",
-    sub_category_id: ""
+    sub_category_id: "",
   });
 
   const [productName, setProductName] = useState<string>("");
@@ -92,26 +98,29 @@ const CreateSingleProduct = () => {
     let slug = title.toLowerCase();
 
     //Đổi ký tự có dấu thành không dấu
-    slug = slug.replace(/á|à|ả|ạ|ã|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/gi, 'a');
-    slug = slug.replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/gi, 'e');
-    slug = slug.replace(/i|í|ì|ỉ|ĩ|ị/gi, 'i');
-    slug = slug.replace(/ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ/gi, 'o');
-    slug = slug.replace(/ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự/gi, 'u');
-    slug = slug.replace(/ý|ỳ|ỷ|ỹ|ỵ/gi, 'y');
-    slug = slug.replace(/đ/gi, 'd');
+    slug = slug.replace(/á|à|ả|ạ|ã|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/gi, "a");
+    slug = slug.replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/gi, "e");
+    slug = slug.replace(/i|í|ì|ỉ|ĩ|ị/gi, "i");
+    slug = slug.replace(/ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ/gi, "o");
+    slug = slug.replace(/ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự/gi, "u");
+    slug = slug.replace(/ý|ỳ|ỷ|ỹ|ỵ/gi, "y");
+    slug = slug.replace(/đ/gi, "d");
     //Xóa các ký tự đặt biệt
-    slug = slug.replace(/\`|\~|\!|\@|\#|\||\$|\%|\^|\&|\*|\(|\)|\+|\=|\,|\.|\/|\?|\>|\<|\'|\"|\:|\;|_/gi, '');
+    slug = slug.replace(
+      /\`|\~|\!|\@|\#|\||\$|\%|\^|\&|\*|\(|\)|\+|\=|\,|\.|\/|\?|\>|\<|\'|\"|\:|\;|_/gi,
+      ""
+    );
     //Đổi khoảng trắng thành ký tự gạch ngang
     slug = slug.replace(/ /gi, "-");
     //Đổi nhiều ký tự gạch ngang liên tiếp thành 1 ký tự gạch ngang
     //Phòng trường hợp người nhập vào quá nhiều ký tự trắng
-    slug = slug.replace(/\-\-\-\-\-/gi, '-');
-    slug = slug.replace(/\-\-\-\-/gi, '-');
-    slug = slug.replace(/\-\-\-/gi, '-');
-    slug = slug.replace(/\-\-/gi, '-');
+    slug = slug.replace(/\-\-\-\-\-/gi, "-");
+    slug = slug.replace(/\-\-\-\-/gi, "-");
+    slug = slug.replace(/\-\-\-/gi, "-");
+    slug = slug.replace(/\-\-/gi, "-");
     //Xóa các ký tự gạch ngang ở đầu và cuối
-    slug = '@' + slug + '@';
-    slug = slug.replace(/\@\-|\-\@|\@/gi, '');
+    slug = "@" + slug + "@";
+    slug = slug.replace(/\@\-|\-\@|\@/gi, "");
     return slug;
   };
 
@@ -122,37 +131,54 @@ const CreateSingleProduct = () => {
   }, [productName]);
 
   const addPriceItem = () => {
-    setPrices([...prices, {
-      original_price: 0,
-      unit_price: "",
-      discount: 0,
-      unit: "",
-      amount: 0,
-      amount_per_unit: ""
-    }]);
+    setPrices([
+      ...prices,
+      {
+        original_price: 0,
+        unit_price: "",
+        discount: 0,
+        unit: "",
+        amount: 0,
+        amount_per_unit: "",
+      },
+    ]);
   };
 
   const removePriceItem = (index: number) => {
     setPrices(prices.filter((_, i) => i !== index));
   };
 
-  const updatePriceItem = (index: number, field: keyof PriceItem, value: string | number) => {
+  const updatePriceItem = (
+    index: number,
+    field: keyof PriceItem,
+    value: string | number
+  ) => {
     const updatedPrices = [...prices];
     updatedPrices[index] = { ...updatedPrices[index], [field]: value };
     setPrices(updatedPrices);
   };
 
   const addIngredientItem = () => {
-    setIngredients([...ingredients, { ingredient_name: "", ingredient_amount: "" }]);
+    setIngredients([
+      ...ingredients,
+      { ingredient_name: "", ingredient_amount: "" },
+    ]);
   };
 
   const removeIngredientItem = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const updateIngredientItem = (index: number, field: keyof IngredientItem, value: string) => {
+  const updateIngredientItem = (
+    index: number,
+    field: keyof IngredientItem,
+    value: string
+  ) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index] = { ...updatedIngredients[index], [field]: value };
+    updatedIngredients[index] = {
+      ...updatedIngredients[index],
+      [field]: value,
+    };
     setIngredients(updatedIngredients);
   };
 
@@ -165,11 +191,11 @@ const CreateSingleProduct = () => {
       setImages(updatedImages);
 
       // Generate preview URLs for new files
-      fileArray.forEach(file => {
+      fileArray.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            setImagePreviewUrls(prev => [...prev, reader.result as string]);
+          if (typeof reader.result === "string") {
+            setImagePreviewUrls((prev) => [...prev, reader.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -204,18 +230,19 @@ const CreateSingleProduct = () => {
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const fileArray = Array.from(e.dataTransfer.files)
-        .filter(file => file.type.includes('image'));
+      const fileArray = Array.from(e.dataTransfer.files).filter((file) =>
+        file.type.includes("image")
+      );
 
       const updatedImages = [...images, ...fileArray];
       setImages(updatedImages);
 
       // Generate preview URLs
-      fileArray.forEach(file => {
+      fileArray.forEach((file) => {
         const reader = new FileReader();
         reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            setImagePreviewUrls(prev => [...prev, reader.result as string]);
+          if (typeof reader.result === "string") {
+            setImagePreviewUrls((prev) => [...prev, reader.result as string]);
           }
         };
         reader.readAsDataURL(file);
@@ -231,7 +258,7 @@ const CreateSingleProduct = () => {
       // Generate preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
+        if (typeof reader.result === "string") {
           setPrimaryImagePreview(reader.result);
         }
       };
@@ -263,7 +290,8 @@ const CreateSingleProduct = () => {
     if (!slug) newErrors.slug = "Slug is required";
 
     // Validate category selection
-    if (!category.main_category_id) newErrors.main_category = "Please select a main category";
+    if (!category.main_category_id)
+      newErrors.main_category = "Please select a main category";
 
     // Validate prices
     if (prices.length === 0) {
@@ -271,8 +299,12 @@ const CreateSingleProduct = () => {
     } else {
       const priceErrors: string[] = [];
       prices.forEach((price, index) => {
-        if (!price.unit) priceErrors.push(`Option ${index + 1}: Unit is required`);
-        if (price.original_price <= 0) priceErrors.push(`Option ${index + 1}: Original price must be greater than 0`);
+        if (!price.unit)
+          priceErrors.push(`Option ${index + 1}: Unit is required`);
+        if (price.original_price <= 0)
+          priceErrors.push(
+            `Option ${index + 1}: Original price must be greater than 0`
+          );
       });
       if (priceErrors.length > 0) {
         newErrors.prices = priceErrors.join("; ");
@@ -282,61 +314,78 @@ const CreateSingleProduct = () => {
     // Validate ingredients
     const ingredientErrors: string[] = [];
     ingredients.forEach((ingredient, index) => {
-      if (!ingredient.ingredient_name) ingredientErrors.push(`Ingredient ${index + 1}: Name is required`);
+      if (!ingredient.ingredient_name)
+        ingredientErrors.push(`Ingredient ${index + 1}: Name is required`);
     });
     if (ingredientErrors.length > 0) {
       newErrors.ingredients = ingredientErrors.join("; ");
     }
 
     // Validate manufacturer
-    if (!manufacturer.manufacture_name) newErrors.manufacture_name = "Manufacturer name is required";
+    if (!manufacturer.manufacture_name)
+      newErrors.manufacture_name = "Manufacturer name is required";
 
     // Validate product details
-    if (!document.querySelector<HTMLTextAreaElement>('textarea[name="description"]')?.value)
+    if (
+      !document.querySelector<HTMLTextAreaElement>(
+        'textarea[name="description"]'
+      )?.value
+    )
       newErrors.description = "Description is required";
-    if (!document.querySelector<HTMLTextAreaElement>('textarea[name="uses"]')?.value)
+    if (
+      !document.querySelector<HTMLTextAreaElement>('textarea[name="uses"]')
+        ?.value
+    )
       newErrors.uses = "Uses information is required";
-    if (!document.querySelector<HTMLInputElement>('input[name="dosage_form"]')?.value)
+    if (
+      !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
+        ?.value
+    )
       newErrors.dosage_form = "Dosage form is required";
 
     // Validate images
-    if (images.length === 0) newErrors.images = "Please upload at least one product image";
-    if (!primaryImage) newErrors.images_primary = "Please upload a primary product image";
+    if (images.length === 0)
+      newErrors.images = "Please upload at least one product image";
+    if (!primaryImage)
+      newErrors.images_primary = "Please upload a primary product image";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {    
+  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormSubmitted(true);
-    
+
     const isValid = validateForm();
     if (!isValid) {
       const firstErrorElement = document.querySelector('[data-error="true"]');
       if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }
       return;
     }
 
     const formData = new FormData(e.currentTarget);
 
-    formData.delete('images');
-    formData.delete('images_primary');
+    formData.delete("images");
+    formData.delete("images_primary");
 
-    images.forEach(image => {
-      formData.append('images', image);
+    images.forEach((image) => {
+      formData.append("images", image);
     });
 
     if (primaryImage) {
-      formData.append('images_primary', primaryImage);
+      formData.append("images_primary", primaryImage);
     }
 
-    formData.set('ingredients', JSON.stringify({ ingredients }));
-    formData.set('prices', JSON.stringify({ prices }));
-    formData.set('manufacturer', JSON.stringify(manufacturer));
-    formData.set('category', JSON.stringify(category));
+    formData.set("ingredients", JSON.stringify({ ingredients }));
+    formData.set("prices", JSON.stringify({ prices }));
+    formData.set("manufacturer", JSON.stringify(manufacturer));
+    formData.set("category", JSON.stringify(category));
 
     const formDataObj: Record<string, any> = {};
     formData.forEach((value, key) => {
@@ -351,22 +400,32 @@ const CreateSingleProduct = () => {
       },
       (message: any) => {
         toast.showToast(message, "error");
-      });
+      }
+    );
   };
 
   const resetForm = (form: HTMLFormElement) => {
     // Reset form element
     form.reset();
-    
+
     // Reset React state
     setProductName("");
     setSlug("");
-    setPrices([{ original_price: 0, unit_price: "", discount: 0, unit: "", amount: 0, amount_per_unit: "" }]);
+    setPrices([
+      {
+        original_price: 0,
+        unit_price: "",
+        discount: 0,
+        unit: "",
+        amount: 0,
+        amount_per_unit: "",
+      },
+    ]);
     setIngredients([{ ingredient_name: "", ingredient_amount: "" }]);
     setManufacturer({
       manufacture_name: "",
       manufacture_address: "",
-      manufacture_contact: ""
+      manufacture_contact: "",
     });
     setCategory({
       main_category_name: "",
@@ -377,38 +436,43 @@ const CreateSingleProduct = () => {
       sub_category_slug: "",
       main_category_id: "",
       child_category_id: "",
-      sub_category_id: ""
+      sub_category_id: "",
     });
-    
+
     // Reset category selections
     setSelectedMainCategory("");
     setSelectedSubCategory("");
     setSelectedChildCategory("");
     setAvailableSubCategories([]);
     setAvailableChildCategories([]);
-    
+
     // Reset images
     setImages([]);
     setPrimaryImage(null);
     setImagePreviewUrls([]);
     setPrimaryImagePreview("");
-    
+
     // Reset validation state
     setErrors({});
     setFormSubmitted(false);
-    
+
     // Scroll to top of form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
 
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedChildCategory, setSelectedChildCategory] = useState<string>("");
+  const [selectedChildCategory, setSelectedChildCategory] =
+    useState<string>("");
 
-  const [availableSubCategories, setAvailableSubCategories] = useState<any[]>([]);
-  const [availableChildCategories, setAvailableChildCategories] = useState<any[]>([]);
+  const [availableSubCategories, setAvailableSubCategories] = useState<any[]>(
+    []
+  );
+  const [availableChildCategories, setAvailableChildCategories] = useState<
+    any[]
+  >([]);
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -418,7 +482,9 @@ const CreateSingleProduct = () => {
   // Update sub-categories when main category changes
   useEffect(() => {
     if (selectedMainCategory && categoryAdmin) {
-      const mainCat = categoryAdmin.find((cat: any) => cat.main_category_id === selectedMainCategory);
+      const mainCat = categoryAdmin.find(
+        (cat: any) => cat.main_category_id === selectedMainCategory
+      );
       if (mainCat) {
         setAvailableSubCategories(mainCat.sub_category || []);
         setSelectedSubCategory("");
@@ -436,7 +502,7 @@ const CreateSingleProduct = () => {
           child_category_slug: "",
           sub_category_id: "",
           sub_category_name: "",
-          sub_category_slug: ""
+          sub_category_slug: "",
         });
       }
     }
@@ -445,7 +511,9 @@ const CreateSingleProduct = () => {
   // Update child-categories when sub-category changes
   useEffect(() => {
     if (selectedSubCategory && availableSubCategories.length > 0) {
-      const subCat = availableSubCategories.find((cat: any) => cat.sub_category_id === selectedSubCategory);
+      const subCat = availableSubCategories.find(
+        (cat: any) => cat.sub_category_id === selectedSubCategory
+      );
       if (subCat) {
         setAvailableChildCategories(subCat.child_category || []);
         setSelectedChildCategory("");
@@ -458,7 +526,7 @@ const CreateSingleProduct = () => {
           sub_category_slug: subCat.sub_category_slug,
           child_category_id: "",
           child_category_name: "",
-          child_category_slug: ""
+          child_category_slug: "",
         });
       }
     }
@@ -467,14 +535,16 @@ const CreateSingleProduct = () => {
   // Update category state when child category changes
   useEffect(() => {
     if (selectedChildCategory && availableChildCategories.length > 0) {
-      const childCat = availableChildCategories.find((cat: any) => cat.child_category_id === selectedChildCategory);
+      const childCat = availableChildCategories.find(
+        (cat: any) => cat.child_category_id === selectedChildCategory
+      );
       if (childCat) {
         // Update category state with child-category info
         setCategory({
           ...category,
           child_category_id: childCat.child_category_id,
           child_category_name: childCat.child_category_name,
-          child_category_slug: childCat.child_category_slug
+          child_category_slug: childCat.child_category_slug,
         });
       }
     }
@@ -509,9 +579,11 @@ const CreateSingleProduct = () => {
               {/* <General /> */}
 
               <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-3">Basic Information</h3>
+                <h3 className="text-lg font-semibold mb-3">
+                  Basic Information
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div data-error={hasError('product_name')}>
+                  <div data-error={hasError("product_name")}>
                     <label className="block text-sm font-medium mb-1">
                       Product Name <span className="text-red-500">*</span>
                     </label>
@@ -520,9 +592,13 @@ const CreateSingleProduct = () => {
                       name="product_name"
                       value={productName}
                       onChange={(e) => setProductName(e.target.value)}
-                      className={`border rounded-lg p-2 w-full ${hasError('product_name') ? 'border-red-500' : ''}`}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("product_name") ? "border-red-500" : ""
+                      }`}
                     />
-                    {hasError('product_name') && <ErrorMessage message={errors.product_name} />}
+                    {hasError("product_name") && (
+                      <ErrorMessage message={errors.product_name} />
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -531,11 +607,15 @@ const CreateSingleProduct = () => {
                     <input
                       type="text"
                       name="name_primary"
-                      className={`border rounded-lg p-2 w-full ${hasError('name_primary') ? 'border-red-500' : ''}`}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("name_primary") ? "border-red-500" : ""
+                      }`}
                     />
-                    {hasError('name_primary') && <ErrorMessage message={errors.name_primary} />}
+                    {hasError("name_primary") && (
+                      <ErrorMessage message={errors.name_primary} />
+                    )}
                   </div>
-                  <div data-error={hasError('slug')}>
+                  <div data-error={hasError("slug")}>
                     <label className="block text-sm font-medium mb-1">
                       Slug <span className="text-red-500">*</span>
                     </label>
@@ -544,11 +624,14 @@ const CreateSingleProduct = () => {
                       name="slug"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      className={`border rounded-lg p-2 w-full ${hasError('slug') ? 'border-red-500' : ''}`}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("slug") ? "border-red-500" : ""
+                      }`}
                     />
-                    {hasError('slug') && <ErrorMessage message={errors.slug} />}
+                    {hasError("slug") && <ErrorMessage message={errors.slug} />}
                     <p className="text-xs text-gray-500 mt-1">
-                      Automatically generated from product name. You can edit if needed.
+                      Automatically generated from product name. You can edit if
+                      needed.
                     </p>
                   </div>
                   <div>
@@ -558,51 +641,86 @@ const CreateSingleProduct = () => {
                     <input
                       type="text"
                       name="origin"
-                      className={`border rounded-lg p-2 w-full ${hasError('origin') ? 'border-red-500' : ''}`}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("origin") ? "border-red-500" : ""
+                      }`}
                     />
-                    {hasError('origin') && <ErrorMessage message={errors.origin} />}
+                    {hasError("origin") && (
+                      <ErrorMessage message={errors.origin} />
+                    )}
                   </div>
                 </div>
-                <div className="mt-3" data-error={hasError('description')}>
+                <div className="mt-3" data-error={hasError("description")}>
                   <label className="block text-sm font-medium mb-1">
                     Description <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="description"
-                    rows={4}
-                    className={`border rounded-lg p-2 w-full ${hasError('description') ? 'border-red-500' : ''}`}
+                    rows={3}
+                    className={`border rounded-lg p-2 w-full ${
+                      hasError("description") ? "border-red-500" : ""
+                    }`}
                   ></textarea>
-                  {hasError('description') && <ErrorMessage message={errors.description} />}
+                  {hasError("description") && (
+                    <ErrorMessage message={errors.description} />
+                  )}
                 </div>
+                {/* <div className="mt-3" data-error={hasError("fulldescription")}>
+                  <label className="block text-sm font-medium mb-1">
+                    Full Description <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="description"
+                    rows={5}
+                    className={`border rounded-lg p-2 w-full ${
+                      hasError("description") ? "border-red-500" : ""
+                    }`}
+                  ></textarea>
+                  {hasError("description") && (
+                    <ErrorMessage message={errors.description} />
+                  )}
+                </div> */}
               </div>
 
               {/* Category Information */}
               <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-3">Category Information</h3>
+                <h3 className="text-lg font-semibold mb-3">
+                  Category Information
+                </h3>
 
                 <div className="grid grid-cols-1 gap-4 mb-4">
-                  <div data-error={hasError('main_category')}>
+                  <div data-error={hasError("main_category")}>
                     <label className="block text-sm font-medium mb-1">
                       Main Category <span className="text-red-500">*</span>
                     </label>
                     <select
-                      className={`border rounded-lg p-2 w-full ${hasError('main_category') ? 'border-red-500' : ''}`}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("main_category") ? "border-red-500" : ""
+                      }`}
                       value={selectedMainCategory}
                       onChange={(e) => setSelectedMainCategory(e.target.value)}
                     >
                       <option value="">Select Main Category</option>
-                      {categoryAdmin && categoryAdmin.map((mainCat: any) => (
-                        <option key={mainCat.main_category_id} value={mainCat.main_category_id}>
-                          {mainCat.main_category_name}
-                        </option>
-                      ))}
+                      {categoryAdmin &&
+                        categoryAdmin.map((mainCat: any) => (
+                          <option
+                            key={mainCat.main_category_id}
+                            value={mainCat.main_category_id}
+                          >
+                            {mainCat.main_category_name}
+                          </option>
+                        ))}
                     </select>
-                    {hasError('main_category') && <ErrorMessage message={errors.main_category} />}
+                    {hasError("main_category") && (
+                      <ErrorMessage message={errors.main_category} />
+                    )}
                   </div>
 
                   {selectedMainCategory && (
                     <div>
-                      <label className="block text-sm font-medium mb-1">Sub Category</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Sub Category
+                      </label>
                       <select
                         className="border rounded-lg p-2 w-full"
                         value={selectedSubCategory}
@@ -610,7 +728,10 @@ const CreateSingleProduct = () => {
                       >
                         <option value="">Select Sub Category</option>
                         {availableSubCategories.map((subCat: any) => (
-                          <option key={subCat.sub_category_id} value={subCat.sub_category_id}>
+                          <option
+                            key={subCat.sub_category_id}
+                            value={subCat.sub_category_id}
+                          >
                             {subCat.sub_category_name}
                           </option>
                         ))}
@@ -620,15 +741,22 @@ const CreateSingleProduct = () => {
 
                   {selectedSubCategory && (
                     <div>
-                      <label className="block text-sm font-medium mb-1">Child Category</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Child Category
+                      </label>
                       <select
                         className="border rounded-lg p-2 w-full"
                         value={selectedChildCategory}
-                        onChange={(e) => setSelectedChildCategory(e.target.value)}
+                        onChange={(e) =>
+                          setSelectedChildCategory(e.target.value)
+                        }
                       >
                         <option value="">Select Child Category</option>
                         {availableChildCategories.map((childCat: any) => (
-                          <option key={childCat.child_category_id} value={childCat.child_category_id}>
+                          <option
+                            key={childCat.child_category_id}
+                            value={childCat.child_category_id}
+                          >
                             {childCat.child_category_name}
                           </option>
                         ))}
@@ -638,30 +766,71 @@ const CreateSingleProduct = () => {
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <h4 className="text-sm font-medium mb-2">Selected Category:</h4>
+                  <h4 className="text-sm font-medium mb-2">
+                    Selected Category
+                  </h4>
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div>
-                      <span className="font-medium">Main:</span> {category.main_category_name || "None"}
+                      <span className="font-medium">Main:</span>{" "}
+                      {category.main_category_name || "None"}
                     </div>
                     <div>
-                      <span className="font-medium">Sub:</span> {category.sub_category_name || "None"}
+                      <span className="font-medium">Sub:</span>{" "}
+                      {category.sub_category_name || "None"}
                     </div>
                     <div>
-                      <span className="font-medium">Child:</span> {category.child_category_name || "None"}
+                      <span className="font-medium">Child:</span>{" "}
+                      {category.child_category_name || "None"}
                     </div>
                   </div>
                 </div>
 
                 {/* Hidden inputs to store the category data - these will be handled by the JSON serialization in the submit handler */}
-                <input type="hidden" name="main_category_id" value={category.main_category_id} />
-                <input type="hidden" name="main_category_name" value={category.main_category_name} />
-                <input type="hidden" name="main_category_slug" value={category.main_category_slug} />
-                <input type="hidden" name="sub_category_id" value={category.sub_category_id} />
-                <input type="hidden" name="sub_category_name" value={category.sub_category_name} />
-                <input type="hidden" name="sub_category_slug" value={category.sub_category_slug} />
-                <input type="hidden" name="child_category_id" value={category.child_category_id} />
-                <input type="hidden" name="child_category_name" value={category.child_category_name} />
-                <input type="hidden" name="child_category_slug" value={category.child_category_slug} />
+                <input
+                  type="hidden"
+                  name="main_category_id"
+                  value={category.main_category_id}
+                />
+                <input
+                  type="hidden"
+                  name="main_category_name"
+                  value={category.main_category_name}
+                />
+                <input
+                  type="hidden"
+                  name="main_category_slug"
+                  value={category.main_category_slug}
+                />
+                <input
+                  type="hidden"
+                  name="sub_category_id"
+                  value={category.sub_category_id}
+                />
+                <input
+                  type="hidden"
+                  name="sub_category_name"
+                  value={category.sub_category_name}
+                />
+                <input
+                  type="hidden"
+                  name="sub_category_slug"
+                  value={category.sub_category_slug}
+                />
+                <input
+                  type="hidden"
+                  name="child_category_id"
+                  value={category.child_category_id}
+                />
+                <input
+                  type="hidden"
+                  name="child_category_name"
+                  value={category.child_category_name}
+                />
+                <input
+                  type="hidden"
+                  name="child_category_slug"
+                  value={category.child_category_slug}
+                />
               </div>
             </div>
 
@@ -670,7 +839,7 @@ const CreateSingleProduct = () => {
               <h3 className="text-lg font-semibold mb-3">
                 Prices & Units <span className="text-red-500">*</span>
               </h3>
-              {hasError('prices') && <ErrorMessage message={errors.prices} />}
+              {hasError("prices") && <ErrorMessage message={errors.prices} />}
 
               {prices.map((price, index) => (
                 <div key={index} className="mb-4 p-3 border rounded-lg">
@@ -694,25 +863,43 @@ const CreateSingleProduct = () => {
                       <input
                         type="number"
                         value={price.original_price}
-                        onChange={(e) => updatePriceItem(index, 'original_price', Number(e.target.value))}
+                        onChange={(e) =>
+                          updatePriceItem(
+                            index,
+                            "original_price",
+                            Number(e.target.value)
+                          )
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Unit Price</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Unit Price
+                      </label>
                       <input
                         type="text"
                         value={price.unit_price}
-                        onChange={(e) => updatePriceItem(index, 'unit_price', e.target.value)}
+                        onChange={(e) =>
+                          updatePriceItem(index, "unit_price", e.target.value)
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Discount</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Discount
+                      </label>
                       <input
                         type="number"
                         value={price.discount}
-                        onChange={(e) => updatePriceItem(index, 'discount', Number(e.target.value))}
+                        onChange={(e) =>
+                          updatePriceItem(
+                            index,
+                            "discount",
+                            Number(e.target.value)
+                          )
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
@@ -722,30 +909,50 @@ const CreateSingleProduct = () => {
                       </label>
                       <select
                         value={price.unit}
-                        onChange={(e) => updatePriceItem(index, 'unit', e.target.value)}
+                        onChange={(e) =>
+                          updatePriceItem(index, "unit", e.target.value)
+                        }
                         className="border rounded-lg p-2 w-full"
                       >
                         <option value="">Select a unit</option>
                         {unitOptions.map((unit, idx) => (
-                          <option key={idx} value={unit}>{unit}</option>
+                          <option key={idx} value={unit}>
+                            {unit}
+                          </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Amount</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Amount
+                      </label>
                       <input
                         type="number"
                         value={price.amount}
-                        onChange={(e) => updatePriceItem(index, 'amount', Number(e.target.value))}
+                        onChange={(e) =>
+                          updatePriceItem(
+                            index,
+                            "amount",
+                            Number(e.target.value)
+                          )
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Amount Per Unit</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Amount Per Unit
+                      </label>
                       <input
                         type="text"
                         value={price.amount_per_unit}
-                        onChange={(e) => updatePriceItem(index, 'amount_per_unit', e.target.value)}
+                        onChange={(e) =>
+                          updatePriceItem(
+                            index,
+                            "amount_per_unit",
+                            e.target.value
+                          )
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
@@ -766,7 +973,9 @@ const CreateSingleProduct = () => {
               <h3 className="text-lg font-semibold mb-3">
                 Ingredients <span className="text-red-500">*</span>
               </h3>
-              {hasError('ingredients') && <ErrorMessage message={errors.ingredients} />}
+              {hasError("ingredients") && (
+                <ErrorMessage message={errors.ingredients} />
+              )}
 
               {ingredients.map((ingredient, index) => (
                 <div key={index} className="mb-3 p-3 border rounded-lg">
@@ -784,20 +993,36 @@ const CreateSingleProduct = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Ingredient Name</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Ingredient Name
+                      </label>
                       <input
                         type="text"
                         value={ingredient.ingredient_name}
-                        onChange={(e) => updateIngredientItem(index, 'ingredient_name', e.target.value)}
+                        onChange={(e) =>
+                          updateIngredientItem(
+                            index,
+                            "ingredient_name",
+                            e.target.value
+                          )
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Ingredient Amount</label>
+                      <label className="block text-sm font-medium mb-1">
+                        Ingredient Amount
+                      </label>
                       <input
                         type="text"
                         value={ingredient.ingredient_amount}
-                        onChange={(e) => updateIngredientItem(index, 'ingredient_amount', e.target.value)}
+                        onChange={(e) =>
+                          updateIngredientItem(
+                            index,
+                            "ingredient_amount",
+                            e.target.value
+                          )
+                        }
                         className="border rounded-lg p-2 w-full"
                       />
                     </div>
@@ -816,33 +1041,56 @@ const CreateSingleProduct = () => {
             <div className="bg-white shadow-sm rounded-2xl p-5">
               <h3 className="text-lg font-semibold mb-3">Manufacturer</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div data-error={hasError('manufacture_name')}>
+                <div data-error={hasError("manufacture_name")}>
                   <label className="block text-sm font-medium mb-1">
                     Manufacturer Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={manufacturer.manufacture_name}
-                    onChange={(e) => setManufacturer({ ...manufacturer, manufacture_name: e.target.value })}
-                    className={`border rounded-lg p-2 w-full ${hasError('manufacture_name') ? 'border-red-500' : ''}`}
+                    onChange={(e) =>
+                      setManufacturer({
+                        ...manufacturer,
+                        manufacture_name: e.target.value,
+                      })
+                    }
+                    className={`border rounded-lg p-2 w-full ${
+                      hasError("manufacture_name") ? "border-red-500" : ""
+                    }`}
                   />
-                  {hasError('manufacture_name') && <ErrorMessage message={errors.manufacture_name} />}
+                  {hasError("manufacture_name") && (
+                    <ErrorMessage message={errors.manufacture_name} />
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Manufacturer Contact</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Manufacturer Contact
+                  </label>
                   <input
                     type="text"
                     value={manufacturer.manufacture_contact}
-                    onChange={(e) => setManufacturer({ ...manufacturer, manufacture_contact: e.target.value })}
+                    onChange={(e) =>
+                      setManufacturer({
+                        ...manufacturer,
+                        manufacture_contact: e.target.value,
+                      })
+                    }
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">Manufacturer Address</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Manufacturer Address
+                  </label>
                   <input
                     type="text"
                     value={manufacturer.manufacture_address}
-                    onChange={(e) => setManufacturer({ ...manufacturer, manufacture_address: e.target.value })}
+                    onChange={(e) =>
+                      setManufacturer({
+                        ...manufacturer,
+                        manufacture_address: e.target.value,
+                      })
+                    }
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
@@ -855,58 +1103,110 @@ const CreateSingleProduct = () => {
             <div className="bg-white shadow-sm rounded-2xl p-5">
               <h3 className="text-lg font-semibold mb-3">Product Details</h3>
               <div className="space-y-4">
-                <div data-error={hasError('uses')}>
+                <div data-error={hasError("uses")}>
                   <label className="block text-sm font-medium mb-1">
                     Uses <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="uses"
                     rows={3}
-                    className={`border rounded-lg p-2 w-full ${hasError('uses') ? 'border-red-500' : ''}`}
+                    className={`border rounded-lg p-2 w-full ${
+                      hasError("uses") ? "border-red-500" : ""
+                    }`}
                   ></textarea>
-                  {hasError('uses') && <ErrorMessage message={errors.uses} />}
+                  {hasError("uses") && <ErrorMessage message={errors.uses} />}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Dosage</label>
-                  <textarea name="dosage" rows={3} className="border rounded-lg p-2 w-full"></textarea>
+                  <label className="block text-sm font-medium mb-1">
+                    Dosage
+                  </label>
+                  <textarea
+                    name="dosage"
+                    rows={3}
+                    className="border rounded-lg p-2 w-full"
+                  ></textarea>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Dosage Form</label>
-                  <input type="text" name="dosage_form" className="border rounded-lg p-2 w-full" />
+                  <label className="block text-sm font-medium mb-1">
+                    Dosage Form
+                  </label>
+                  <input
+                    type="text"
+                    name="dosage_form"
+                    className="border rounded-lg p-2 w-full"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Side Effects</label>
-                  <textarea name="side_effects" rows={3} className="border rounded-lg p-2 w-full"></textarea>
+                  <label className="block text-sm font-medium mb-1">
+                    Side Effects
+                  </label>
+                  <textarea
+                    name="side_effects"
+                    rows={3}
+                    className="border rounded-lg p-2 w-full"
+                  ></textarea>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Precautions</label>
-                  <textarea name="precautions" rows={3} className="border rounded-lg p-2 w-full"></textarea>
+                  <label className="block text-sm font-medium mb-1">
+                    Precautions
+                  </label>
+                  <textarea
+                    name="precautions"
+                    rows={3}
+                    className="border rounded-lg p-2 w-full"
+                  ></textarea>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Storage Instructions</label>
-                  <textarea name="storage" rows={3} className="border rounded-lg p-2 w-full"></textarea>
+                  <label className="block text-sm font-medium mb-1">
+                    Storage Instructions
+                  </label>
+                  <textarea
+                    name="storage"
+                    rows={3}
+                    className="border rounded-lg p-2 w-full"
+                  ></textarea>
                 </div>
                 {/* Enhanced Product Images Section */}
-                <div data-error={hasError('images')}>
+                <div data-error={hasError("images")}>
                   <label className="block text-sm font-medium mb-1">
-                    Product Images <span className="text-red-500">*</span> <span className="text-blue-500">(Multiple images allowed)</span>
+                    Product Images <span className="text-red-500">*</span>{" "}
+                    <span className="text-blue-500">
+                      (Multiple images allowed)
+                    </span>
                   </label>
 
                   <div
-                    className={`border-2 border-dashed rounded-lg p-4 transition-colors ${isDragging ? 'border-blue-500 bg-blue-50' : hasError('images') ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                    className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
+                      isDragging
+                        ? "border-blue-500 bg-blue-50"
+                        : hasError("images")
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                     onDragEnter={handleDragEnter}
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                   >
                     <div className="text-center py-4">
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 48 48"
+                      >
+                        <path
+                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                        />
                       </svg>
 
                       <div className="flex flex-col items-center text-sm text-gray-600">
-                        <p className="font-medium">Drag and drop images here, or</p>
+                        <p className="font-medium">
+                          Drag and drop images here, or
+                        </p>
                         <label className="mt-2 cursor-pointer text-blue-600 hover:text-blue-800">
                           <span>Click to select files</span>
                           <input
@@ -925,12 +1225,15 @@ const CreateSingleProduct = () => {
                       </p>
                     </div>
                   </div>
-                  {hasError('images') && <ErrorMessage message={errors.images} />}
+                  {hasError("images") && (
+                    <ErrorMessage message={errors.images} />
+                  )}
                   {imagePreviewUrls.length > 0 && (
                     <div className="mt-3">
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-sm font-medium">
-                          {images.length} image{images.length !== 1 ? 's' : ''} selected
+                          {images.length} image{images.length !== 1 ? "s" : ""}{" "}
+                          selected
                         </p>
                         <button
                           type="button"
@@ -967,7 +1270,7 @@ const CreateSingleProduct = () => {
                 </div>
 
                 {/* Primary Image */}
-                <div data-error={hasError('images_primary')}>
+                <div data-error={hasError("images_primary")}>
                   <label className="block text-sm font-medium mb-1">
                     Primary Image <span className="text-red-500">*</span>
                   </label>
@@ -975,10 +1278,14 @@ const CreateSingleProduct = () => {
                     type="file"
                     name="images_primary"
                     onChange={handlePrimaryImageChange}
-                    className={`border rounded-lg p-2 w-full ${hasError('images_primary') ? 'border-red-500' : ''}`}
+                    className={`border rounded-lg p-2 w-full ${
+                      hasError("images_primary") ? "border-red-500" : ""
+                    }`}
                     accept="image/*"
                   />
-                  {hasError('images_primary') && <ErrorMessage message={errors.images_primary} />}
+                  {hasError("images_primary") && (
+                    <ErrorMessage message={errors.images_primary} />
+                  )}
                   {primaryImagePreview && (
                     <div className="mt-2 relative inline-block">
                       <img
@@ -1017,7 +1324,9 @@ const CreateSingleProduct = () => {
 
         {formSubmitted && Object.keys(errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600 font-medium text-sm">Please fix the following errors:</p>
+            <p className="text-red-600 font-medium text-sm">
+              Please fix the following errors:
+            </p>
             <ul className="list-disc pl-5 mt-1 text-xs text-red-500">
               {Object.values(errors).map((error, index) => (
                 <li key={index}>{error}</li>

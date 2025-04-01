@@ -37,7 +37,7 @@ interface ProductData {
 interface Price {
     id: string;
     price: number;
-    originalPrice: number;
+    original_price: number;
     unitPrice: string;
     discount: number;
     unit: string[];

@@ -6,7 +6,8 @@ import clsx from "clsx";
 import { Dispatch, SetStateAction, memo } from "react";
 import logo from "@/images/MM.png";
 import textlogo from "@/images/medicare2.png";
-import { LuUsersRound } from "react-icons/lu";
+import { TbCategory } from "react-icons/tb";
+import { FaRegUser } from "react-icons/fa";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ const menuItems = [
   },
   {
     id: "User",
-    icon: <LuUsersRound />,
+    icon: <FaRegUser />,
     label: "Quản lý người dùng",
     path: "/quan-ly-nguoi-dung",
   },
@@ -38,7 +39,13 @@ const menuItems = [
     id: "Product",
     icon: <BsBox />,
     label: "Quản lý sản phẩm",
-    path: "/quan-ly-san-pham",
+    path: "/san-pham",
+  },
+  {
+    id: "Category",
+    icon: <TbCategory />,
+    label: "Quản lý danh mục",
+    path: "/quan-ly-danh-muc",
   },
 ];
 
