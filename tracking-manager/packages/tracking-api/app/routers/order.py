@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, Depends
 from app.core import logger, response
 from app.entities.order.request import ItemOrderInReq, OrderRequest
 from app.middleware import middleware
-from app.models import order, auth
+from app.models import order, user
 
 router = APIRouter()
 
@@ -12,7 +12,7 @@ async def check_order(item: ItemOrderInReq, token: str = Depends(middleware.veri
     try:
         user_id = "guest"
         if token:
-            user_info = await auth.get_current(token)
+            user_info = await user.get_current(token)
             user_id = user_info.id
         return await order.check_order(item, user_id)
     except response.JsonException as je:
@@ -37,7 +37,7 @@ async def add_order(item: OrderRequest):
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error("Error adding order", error=str(e))
+        logger.error(f"Error adding order: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
@@ -46,7 +46,7 @@ async def add_order(item: OrderRequest):
 @router.get("/order/order", response_model=response.BaseResponse)
 async def get_order_by_user(token: str = Depends(middleware.verify_token)):
     try:
-        user_info = await auth.get_current(token)
+        user_info = await user.get_current(token)
         logger.info(f"user_info: {user_info}")
         result = await order.get_order_by_user(user_info.id)
         return response.BaseResponse(
@@ -56,16 +56,16 @@ async def get_order_by_user(token: str = Depends(middleware.verify_token)):
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error("Error adding order", error=str(e))
+        logger.error(f"Error getting order by user: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
 
 @router.get("/order/all-orders-admin", response_model=response.BaseResponse)
-async def get_all_order(page: int = 1, pageSize: int = 10):
+async def get_all_order(page: int = 1, page_size: int = 10):
     try:
-        result = await order.get_all_order(page, pageSize)
+        result = await order.get_all_order(page, page_size)
         return response.BaseResponse(
             message=f"orders found",
             data=result
@@ -73,7 +73,7 @@ async def get_all_order(page: int = 1, pageSize: int = 10):
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error("Error adding order", error=str(e))
+        logger.error(f"Error getting all order: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
@@ -98,7 +98,20 @@ async def get_total_orders_last_365_days():
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error("Error getting total orders last 365 days", error=str(e))
+        logger.error(f"Error getting total orders last 365 days: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.delete("/order/delete", response_model=response.BaseResponse)
+async def add_order(order_id: str):
+    try:
+        return await order.cancel_order(order_id)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error cancelling order: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

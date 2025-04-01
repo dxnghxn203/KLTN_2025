@@ -4,7 +4,6 @@ from app.core import logger
 from app.core.authGoogle import google_auth
 from app.core.response import BaseResponse, JsonException, SuccessResponse
 from app.entities.authen import GoogleAuthRequest
-from app.entities.user.request import ItemUserRegisReq
 from app.entities.user.response import ItemUserRes
 from app.helpers.redis import get_session, save_session
 from app.middleware import middleware
@@ -25,7 +24,7 @@ async def login(request: GoogleAuthRequest):
 
         user_info = await user.add_user_google(request.email, auth_google["name"])
 
-        jwt_token = await auth.get_token(user_info.data["user_id"])
+        jwt_token = await auth.get_token(user_info.data["user_id"], "user")
 
         return SuccessResponse(message=user_info.message, data={"token": jwt_token})
     except JsonException as je:
@@ -36,12 +35,11 @@ async def login(request: GoogleAuthRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
-
 @router.post("/auth/login")
 async def login(email: str = Form(), password: str = Form()):
     try:
         us = await user.get_by_email_and_auth_provider(email, "email")
-        if not await user.verify_user(us, password):
+        if not await auth.verify_user(us, password):
             raise JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Tên đăng nhập hoặc mật khẩu không đúng!"
