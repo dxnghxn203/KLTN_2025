@@ -2,27 +2,17 @@ import React, { useMemo, useState } from "react";
 import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
-import { generateRandomId } from "@/utils/string";
-import { ProductData } from "@/types/product";
-import { useCategory } from "@/hooks/useCategory";
-import { useParams } from "next/navigation";
 
 interface ProductMainCategoryCardProps {
-  mainCategory: string;
   products: any;
   mainCategoryName: string;
 }
 
 const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
-  mainCategory,
   products,
   mainCategoryName,
 }) => {
-  const params = useParams();
-  const slug = products?.slug; // Generate slug from product ID or fallback to a random ID
-  // const { mainCategory, fetchMainCategory } = useCategory();
-  // fetchMainCategory(params.mainCategory);
-  console.log("Products:", products?.product_id);
+  const slug = products?.slug; 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (

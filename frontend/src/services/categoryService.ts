@@ -34,7 +34,6 @@ export const getSubCategory = async (main_slug:any, sub_slug:any) : Promise<any>
 
 export const getChildCategory = async (main_slug:any, sub_slug:any, child_slug:any) : Promise<any>=> {
     try {
-        console.log("API request:", main_slug, sub_slug, child_slug); 
         const response = await axiosClient.get(`/v1/category/${main_slug}/sub-category/${sub_slug}/child-category/${child_slug}`);
 
         return response;

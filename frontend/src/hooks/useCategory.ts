@@ -8,20 +8,47 @@ export function useCategory() {
   const subCategory: any = useSelector(selectSubCategory);
   const childCategory: any = useSelector(selectChildCategory);
   const categoryAdmin: any = useSelector(selectCategoryAdmin);
-  
+
   const fetchAllCategory = () => {
     dispatch(fetchGetAllCategoryStart());
   };
 
-  const fetchMainCategory = (mainCategory: any) => {
-    dispatch(fetchGetMainCategoryStart(mainCategory));
+  const fetchMainCategory = (mainCategory: any,
+    onSuccess: () => void,
+    onFailure: () => void) => {
+    dispatch(fetchGetMainCategoryStart({
+      mainCategory: mainCategory,
+      onSuccess: onSuccess,
+      onFailure: onFailure,
+    }));
   };
 
-  const fetchSubCategory = (mainCategory: any, subCategory: any) => {
-    dispatch(fetchGetSubCategoryStart({ mainCategory, subCategory }));
+  const fetchSubCategory = (
+    mainCategory: any,
+    subCategory: any,
+    onSuccess: () => void,
+    onFailure: () => void) => {
+    dispatch(fetchGetSubCategoryStart({ 
+      mainCategory:mainCategory ,
+      subCategory:subCategory,
+      onSuccess: onSuccess,
+      onFailure: onFailure,}
+    ));
   };
-  const fetchChildCategory = (mainCategory: any, subCategory: any, childCategory:any) => {
-    dispatch(fetchGetChildCategoryStart({ mainCategory, subCategory, childCategory }));
+  const fetchChildCategory = (
+    mainCategory: any, 
+    subCategory: any, 
+    childCategory: any,
+    onSuccess: () => void,
+    onFailure: () => void
+  ) => {
+    dispatch(fetchGetChildCategoryStart({ 
+      mainCategory: mainCategory, 
+      subCategory: subCategory , 
+      childCategory:childCategory ,
+      onSuccess: onSuccess,
+      onFailure: onFailure,
+    }));
   }
 
   const fetchGetAllCategoryForAdmin = () => {
@@ -36,13 +63,13 @@ export function useCategory() {
 
     fetchSubCategory,
     subCategory,
-    
+
     fetchChildCategory,
     childCategory,
 
     categoryAdmin,
     fetchGetAllCategoryForAdmin
-    
+
   };
 }
 

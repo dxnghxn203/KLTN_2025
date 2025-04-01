@@ -107,3 +107,17 @@ export const getProductReviewToken = async () => {
         }
     }
 }
+
+
+export const getProductFeatured = async (params: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/featured`, { params });
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
