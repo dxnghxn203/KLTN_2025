@@ -15,18 +15,23 @@ export const cartSlice = createSlice({
     reducers: {
         // cart local
         addCartLocal: (state, action: PayloadAction<CartItem>) => {
+            
             if (!Array.isArray(state.cartlocal)) {
                 state.cartlocal = [];
             }
-
-            const existingItem = state.cartlocal.find(item => item.id === action.payload.id);
+            const existingItem = state.cartlocal.find(
+                item => item.id === action.payload.id && item.unit === action.payload.unit
+            );
+        
             if (existingItem) {
+                
                 existingItem.quantity += action.payload.quantity;
-                return;
+            } else {
+                
+                state.cartlocal.push(action.payload);
             }
-            
-            state.cartlocal = [...state.cartlocal, action.payload];
         },
+        
         updateQuantityCartLocal: (state, action: PayloadAction<{ id: string; quantity: number }>) => {
             if (!Array.isArray(state.cartlocal)) {
                 state.cartlocal = [];

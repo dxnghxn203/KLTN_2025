@@ -36,12 +36,14 @@ interface DetailProductProps {
     manufacturer: Manufacturer;
     ingredients: Ingredient[];
     brand: string;
+    discount: number;
   };
 }
 
 const DetailProduct = ({ product }: DetailProductProps) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.unit);
+
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
   const [isOpenDialog, setIsDialogOpen] = useState(false);
@@ -52,13 +54,13 @@ const DetailProduct = ({ product }: DetailProductProps) => {
     try {
       addToCart({
         name: product.name_primary,
-        price: product.prices[0].price,
-        discount: product.prices[0].discount,
-        originPrice: product.prices[0].originalPrice,
+        price: selectedPrice.price,
+        discount: selectedPrice.discount,
+        originPrice: selectedPrice.original_price,
         imageSrc: product.images_primary,
-        unit: Array.isArray(product.prices[0].unit)
-          ? product.prices[0].unit[0]
-          : product.prices[0].unit,
+        unit: Array.isArray(selectedPrice.unit)
+          ? selectedPrice.unit[0]
+          : selectedPrice.unit,
         quantity,
         id: product.product_id,
       });
@@ -68,6 +70,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
       toast.showToast("Thêm vào giỏ hàng thất bại!", ToastType.ERROR);
     }
   };
+  console.log("discount", product.prices[0].original_price);
 
   const selectedPrice =
     product?.prices.find((price) => price.unit === selectedUnit) ||
@@ -226,16 +229,26 @@ const DetailProduct = ({ product }: DetailProductProps) => {
               <span>•</span>
               <a className="text-[#0053E2] hover:underline">332 bình luận</a>
             </div>
-
-            <p className="text-[#0053E2] text-4xl font-bold mt-3">
-              {selectedPrice.price.toLocaleString("vi-VN")}đ/{" "}
-              {selectedPrice.unit}
-            </p>
-            {selectedPrice.originalPrice > selectedPrice.price && (
-              <p className="text-black/60 text-2xl font-semibold mt-3 line-through">
-                {selectedPrice.originalPrice.toLocaleString("vi-VN")}đ
-              </p>
-            )}
+            <div className="flex-col space-y-4 gap-2 mt-3 items-center">
+              {selectedPrice?.discount > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-2 text-sm font-medium text-black bg-amber-300 rounded-lg flex items-center justify-center">
+                    Giảm {selectedPrice.discount}%
+                  </span>
+                  {selectedPrice?.original_price && (
+                    <span className="text-2xl font-bold text-zinc-400 line-through flex items-center">
+                      {selectedPrice.original_price.toLocaleString("vi-VN")}đ
+                    </span>
+                  )}
+                </div>
+              )}
+              {selectedPrice?.price && (
+                <p className="text-[#0053E2] text-4xl font-bold">
+                  {selectedPrice.price.toLocaleString("vi-VN")}đ/{" "}
+                  {selectedPrice.unit}
+                </p>
+              )}
+            </div>
 
             <div className="flex items-center space-x-24">
               <p className="text-[#4A4F63] font-normal">Chọn đơn vị tính</p>
