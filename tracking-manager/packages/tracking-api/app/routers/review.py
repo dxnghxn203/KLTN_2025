@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends, UploadFile, File
 from pyfa_converter_v2 import BodyDepends
@@ -15,10 +15,10 @@ router = APIRouter()
 @router.post("/review/add", response_model=response.BaseResponse)
 async def create_review(
         item: ItemReviewReq = BodyDepends(ItemReviewReq),
-        image: Optional[UploadFile] = File(None),
+        images: Optional[List[UploadFile]] = File(None),
         token: str = Depends(middleware.verify_token)):
     try:
-        return await review.create_review(item, token, image)
+        return await review.create_review(item, token, images)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -48,10 +48,10 @@ async def get_review_by_product(product_id: str):
 @router.post("/review/reply", response_model=response.BaseResponse)
 async def reply_review(
         item: ItemReplyReq = BodyDepends(ItemReplyReq),
-        image: Optional[UploadFile] = File(None),
+        images: Optional[List[UploadFile]] = File(None),
         token: str = Depends(middleware.verify_token)):
     try:
-        return await review.reply_to_review(item, token, image)
+        return await review.reply_to_review(item, token, images)
     except JsonException as je:
         raise je
     except Exception as e:
