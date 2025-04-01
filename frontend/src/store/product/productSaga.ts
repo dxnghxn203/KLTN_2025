@@ -24,26 +24,82 @@ import {
     fetchAllProductGetRecentlyViewedStart,
     fetchAllProductGetRecentlyViewedSuccess,
     fetchAllProductGetRecentlyViewedFailed,
+
+    fetchAllProductGetProductFeaturedStart,
+    fetchAllProductGetProductFeaturedSuccess,
+    fetchAllProductGetProductFeaturedFailed,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
+// Fetch product Featured
+function* fetchProductFeatured(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            mainCategory,
+            subCategory,
+            childCategory,
+            top_n,
+            onSuccess = () => { },
+            onFailed = () => { }
+        } = payload;
+
+        interface ProductData {
+            main_category_id?: string | null;
+            sub_category_id?: string | null;
+            child_category_id?: string | null;
+            top_n?: number | null;
+        }
+        
+        const data: ProductData = {}
+        
+        if (mainCategory) {
+            data.main_category_id = mainCategory;
+        }
+        if (subCategory) {
+            data.sub_category_id = subCategory;
+        }
+        if (childCategory) {
+            data.child_category_id = childCategory;
+        }
+        data.top_n = top_n;
+
+        const product = yield call(productService.getProductFeatured, data);
+        if (product.status_code === 200) {
+            onSuccess();
+            yield put(fetchAllProductGetProductFeaturedSuccess(product.data));
+            return;
+        }
+        onFailed();
+        yield put(fetchAllProductGetProductFeaturedFailed());
+    } catch (error) {
+        yield put(fetchAllProductGetProductFeaturedFailed());
+    }
+}
 // Fetch product by slug
 function* fetchProductBySlug(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
+        const {
+            slug,
+            onSucces = () => { },
+            onFailed = () => { }
+        } = payload;
         const token: any= getToken();
         const session = getSession();
         const product = token ?
-            yield call(productService.getProductBySlug, payload) :
-            yield call(productService.getProductBySlugSession, payload, session)
+            yield call(productService.getProductBySlug, slug) :
+            yield call(productService.getProductBySlugSession, slug, session)
             ;
         if (product?.status_code === 200) {
+            onSucces();
             yield put(fetchProductBySlugSuccess(product?.data?.product));
             if (product?.data?.session_id && product?.data?.session_id !== session) {
                 setSession(product?.data?.session_id);
             }
             return;
         }
+        onFailed()
         yield put(fetchProductBySlugFailed("Product not found"));
 
     } catch (error) {
@@ -172,4 +228,5 @@ export function* productSaga() {
     yield takeLatest(fetchAllProductTopSellingStart.type, handlerGetAllProductTopSelling);
     yield takeLatest(fetchAllProductRelatedStart.type, handlerGetAllProductRelated);
     yield takeLatest(fetchAllProductGetRecentlyViewedStart.type, fetchGetProductGetRecentlyViewed);
+    yield takeLatest(fetchAllProductGetProductFeaturedStart.type, fetchProductFeatured);
 }

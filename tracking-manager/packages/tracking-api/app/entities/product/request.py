@@ -105,6 +105,31 @@ class ListIngredientDBReq(BaseModel):
             return data
         raise ValueError("Invalid ListIngredientDBReq format")
 
+class ItemFullDescriptionDBReq(BaseModel):
+    title: str = ""
+    content: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def to_py_dict(cls, data):
+        if isinstance(data, str):
+            return json.loads(data)
+        elif isinstance(data, dict):
+            return data
+        raise ValueError("Invalid ItemFullDescriptionDBReq format")
+
+class ListFullDescriptionDBReq(BaseModel):
+    full_descriptions: List[ItemFullDescriptionDBReq]
+
+    @model_validator(mode="before")
+    @classmethod
+    def to_py_dict(cls, data):
+        if isinstance(data, str):
+            return json.loads(data)
+        elif isinstance(data, dict):
+            return data
+        raise ValueError("Invalid ListIngredientDBReq format")
+
 class ItemManufacturerDBReq(BaseModel):
     manufacture_name: str = ""
     manufacture_address: str = ""
@@ -126,7 +151,7 @@ class ItemProductDBReq(BaseModel):
     prices: List[ItemPriceDBReq] = None
     slug: str = ""
     description: str = ""
-    full_description: str = ""
+    full_descriptions: List[ItemFullDescriptionDBReq] = None
     images_primary: str = ""
     images: List[ItemImageDBReq] = None
     category: ItemCategoryDBInReq
@@ -147,7 +172,7 @@ class ItemProductDBInReq(BaseModel):
     prices: Optional[ListPriceDBInReq] = Field(None)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
-    full_description: Optional[str] = Field(default="")
+    full_description: Optional[ListFullDescriptionDBReq] = Field(None)
     category: Optional[ItemCategoryDBInReq] = Field(None)
     origin: Optional[str] = Field(default="")
     ingredients: Optional[ListIngredientDBReq] = Field(None)

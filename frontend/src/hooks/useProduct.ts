@@ -1,4 +1,4 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { select } from "redux-saga/effects";
@@ -10,15 +10,41 @@ export function useProduct() {
     const productsTopSelling = useSelector(selectProductTopSelling);
     const productRelated = useSelector(selectProductRelated);
     const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
+    const productGetFeatured = useSelector(selectProductRelated);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
     const [top_n, setTopN] = useState(5);
 
-    const fetchProductBySlug = async (slug: string) => {
-        dispatch(fetchProductBySlugStart(slug));
+    const fetchProductBySlug = async (slug: string, onSuccess: () => void, onFailed: () => void) => {
+        dispatch(fetchProductBySlugStart({
+            slug: slug,
+            onSucces: onSuccess,
+            onFailed: onFailed
+        }));
     }
+    
+    const fetchProductFeatured = (
+        mainCategory: string | null,
+        subCategory: string | null,
+        childCategory: string | null,
+        top_n: number,
+        onSuccess: () => void,
+        onFailed: () => void,
+    ) => {
+        dispatch(fetchAllProductGetProductFeaturedStart(
+            {
+                mainCategory: mainCategory,
+                subCategory: subCategory,
+                childCategory: childCategory,
+                top_n: top_n,
+                onSuccess: onSuccess,
+                onFailed: onFailed
+            }
+        ))
+    }
+
     const getAllProductsAdmin = () => {
         dispatch(fetchAllProductAdminStart({
             page: page,
@@ -50,7 +76,7 @@ export function useProduct() {
             top_n: top_n
         }));
     }
-    const fetchProductRecentlViewed = ()=>{
+    const fetchProductRecentlViewed = () => {
         dispatch(fetchAllProductGetRecentlyViewedStart())
     }
 
@@ -72,6 +98,8 @@ export function useProduct() {
         productRelated,
         productGetRecentlyViewed,
         fetchProductRecentlViewed,
+        productGetFeatured,
+        fetchProductFeatured,
     };
 }
 

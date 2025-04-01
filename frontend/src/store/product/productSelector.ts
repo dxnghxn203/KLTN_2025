@@ -8,3 +8,4 @@ export const selectProductAdmin = (state: any)=> state.product.productsAdmin;
 export const selectProductTopSelling = (state: any) => state.product.productsTopSelling;
 export const selectProductRelated = (state: any) => state.product.productsRelated;
 export const selectProductGetRecentlyViewed = (state: any) => state.product.productsGetRecentlyViewed;
+export const selectProductProductFeatured = (state: any) => state.product.productProductFeatured;

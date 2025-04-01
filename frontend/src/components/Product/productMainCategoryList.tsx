@@ -1,33 +1,61 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Filter from "@/components/Category/filter";
 import shopping from "@/images/shopping.png";
 import Image from "next/image";
 import ProductMainCategoryCard from "./productMainCategoryCard";
 import { useParams } from "next/navigation";
+import { useProduct } from "@/hooks/useProduct";
 
 export default function ProductMainCategoryList({
-  data,
+  maincategoryId,
   mainCategoryName,
 }: {
-  data: { mainCategory: string; products: any } | null;
+  maincategoryId: string | null;
   mainCategoryName: string;
 }) {
-  const params = useParams();
-  const mainCategory =
-    data?.mainCategory ||
-    (Array.isArray(params.mainCategory)
-      ? params.mainCategory[0]
-      : params.mainCategory);
+  console.log("MainCategoryId:", maincategoryId);
+  // console.log("MainCategoryName:", mainCategoryName);
+
+  // const mainCategory =
+  //   data?.mainCategory ||
+  //   (Array.isArray(params.mainCategory)
+  //     ? params.mainCategory[0]
+  //     : params.mainCategory);
+
   // console.log("MainCategory:", mainCategory);
-  const products = data?.products || [];
+  // const products = ;
+  const { fetchProductFeatured, productRelated } = useProduct();
+  const [loading, setLoading] = useState(true);
+  const [topN, setTopN] = useState(5);
+
+  useEffect(() => {
+    if (maincategoryId) {
+      fetchProductFeatured(
+        maincategoryId,
+        null,
+        null,
+        topN,
+        () => {
+          setLoading(false);
+        },
+        () => {
+          setLoading(false);
+        }
+      );
+    }
+  }, []);
+
+  console.log("Product:", productRelated);
+
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
   const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({
     min: 0,
     max: Infinity,
   });
+
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const sortedAndFilteredProducts = [...products]
+  const sortedAndFilteredProducts = [...productRelated]
     .filter(
       (product) =>
         product.price >= priceFilter.min &&
@@ -39,6 +67,7 @@ export default function ProductMainCategoryList({
       if (sortOrder === "desc") return b.price - a.price;
       return 0;
     });
+
   return (
     <div className="grid grid-cols-6 gap-4">
       <Filter
@@ -50,34 +79,31 @@ export default function ProductMainCategoryList({
         <div className="flex space-x-4 items-center">
           <span className="">Sắp xếp theo</span>
           <button
-            className={`px-6 py-2 border rounded-lg text-semibold ${
-              sortOrder === "asc"
+            className={`px-6 py-2 border rounded-lg text-semibold ${sortOrder === "asc"
                 ? "border-blue-600 text-blue-600"
                 : "border-gray-300 text-black/50"
-            }`}
+              }`}
             onClick={() => setSortOrder("asc")}
           >
             Giá tăng dần
           </button>
           <button
-            className={`px-6 py-2 border rounded-lg text-semibold ${
-              sortOrder === "desc"
+            className={`px-6 py-2 border rounded-lg text-semibold ${sortOrder === "desc"
                 ? "border-blue-600 text-blue-600"
                 : "border-gray-300 text-black/50"
-            }`}
+              }`}
             onClick={() => setSortOrder("desc")}
           >
             Giá giảm dần
           </button>
         </div>
         <div className="w-full max-md:px-5 max-md:max-w-full">
-          {products.length > 0 ? (
+          {productRelated && productRelated.length > 0 ? (
             <>
               <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
-                {products.map((productData: any, index: any) => (
+                {productRelated && productRelated.map((productData: any, index: any) => (
                   <ProductMainCategoryCard
                     key={index}
-                    mainCategory={mainCategory}
                     products={productData}
                     mainCategoryName={mainCategoryName}
                   />

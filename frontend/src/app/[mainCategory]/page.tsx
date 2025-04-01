@@ -4,39 +4,57 @@ import { useParams } from "next/navigation";
 import ProductMainCategoryList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import { useCategory } from "@/hooks/useCategory";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import CategoryList from "@/components/Category/categoryList";
+import Loading from "../loading";
 
 export default function MainCategoryPage() {
   const params = useParams();
   const { mainCategory, fetchMainCategory } = useCategory();
-  useMemo(() => {
-    fetchMainCategory(params.mainCategory);
-    return params.mainCategory;
-  }, [params.mainCategory]);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    fetchMainCategory(
+      params.mainCategory,
+      () => {
+        setLoading(false);
+      },
+      () => {
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-      <main className="flex flex-col pt-14">
-        <div className="text-sm text-[#0053E2] px-5">
-          <Link href="/" className="hover:underline text-blue-600">
-            Trang chủ
-          </Link>
-          <span className="text-gray-500">
-            / {mainCategory?.main_category_name}
-          </span>
-        </div>
-        <div className="text-2xl font-bold px-5 py-4">
-          {mainCategory?.main_category_name}
-        </div>
-        <CategoryList data={mainCategory} />
-        <div className="mt-6">
-          <ProductMainCategoryList
-            data={mainCategory}
-            mainCategoryName={mainCategory?.main_category_name}
-          />
-        </div>
-      </main>
+      {
+        loading ? (
+          <Loading />
+        ) : (
+          <>
+            <main className="flex flex-col pt-14" >
+              <div className="text-sm text-[#0053E2] px-5">
+                <Link href="/" className="hover:underline text-blue-600">
+                  Trang chủ
+                </Link>
+                <span className="text-gray-500">
+                  / {mainCategory?.main_category_name}
+                </span>
+              </div>
+              <div className="text-2xl font-bold px-5 py-4">
+                {mainCategory?.main_category_name}
+              </div>
+              <CategoryList data={mainCategory} />
+              <div className="mt-6">
+                <ProductMainCategoryList
+                  // data={mainCategory}
+                  maincategoryId= {mainCategory?.main_category_id}
+                  mainCategoryName={mainCategory?.main_category_name}
+                />
+              </div>
+            </main>
+          </>
+        )
+      }
       <div className="text-2xl font-extrabold text-black px-5 pt-10">
         Sản phẩm vừa xem
       </div>

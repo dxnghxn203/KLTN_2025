@@ -25,6 +25,7 @@ import {
     // fetchGetProductByMainSlugSuccess,
     // fetchGetProductByMainSlugFailed
 } from './categorySlice';
+import { on } from 'events';
 
 // Fetch all category
 function* fetchGetAllCategory(action: any): Generator<any, void, any> {
@@ -44,11 +45,19 @@ function* fetchGetAllCategory(action: any): Generator<any, void, any> {
 function* fetchGetMainCategory(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const category = yield call(categoryService.getMainCategory, payload);
+        const {
+            mainCategory,
+            onSuccess = () => {},
+            onFailure = () => {},
+        } = payload;
+
+        const category = yield call(categoryService.getMainCategory, mainCategory);
         if (category.status_code === 200) {
+            onSuccess()
             yield put(fetchGetMainCategorySuccess(category.data));
             return;
         }
+        onFailure()
         yield put(fetchGetMainCategoryFailed("Category not found"));
 
     } catch (error) {
@@ -58,11 +67,19 @@ function* fetchGetMainCategory(action: any): Generator<any, void, any> {
 function* fetchGetSubCategory(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const category = yield call(categoryService.getSubCategory, payload.mainCategory, payload.subCategory);
+        const {
+            mainCategory,
+            subCategory,
+            onSuccess = () => {},
+            onFailure = () => {},
+        } = payload;
+        const category = yield call(categoryService.getSubCategory, mainCategory,subCategory);
         if (category.status_code === 200) {
+            onSuccess()
             yield put(fetchGetSubCategorySuccess(category.data));
             return;
         }
+        onFailure()
         yield put(fetchGetSubCategoryFailed("Category not found")); 
     }
     catch (error) {
@@ -73,11 +90,20 @@ function* fetchGetSubCategory(action: any): Generator<any, void, any> {
 function* fetchGetChildCategory(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const category = yield call(categoryService.getChildCategory, payload.mainCategory, payload.subCategory, payload.childCategory);
+        const {
+            mainCategory,
+            subCategory,
+            childCategory,
+            onSuccess = () => {},
+            onFailure = () => {},
+        } = payload;
+        const category = yield call(categoryService.getChildCategory, mainCategory, subCategory, childCategory);
         if (category.status_code === 200) {
+            onSuccess()
             yield put(fetchGetChildCategorySuccess(category.data));
             return;
         }
+        onFailure()
         yield put(fetchGetChildCategoryFailed("Category not found")); 
     }
     catch (error) {

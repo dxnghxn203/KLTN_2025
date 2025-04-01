@@ -7,14 +7,14 @@ from app.core import database, logger, response
 from app.core.s3 import upload_file
 from app.entities.review.request import ItemReviewReq, ItemReplyReq
 from app.entities.review.response import ItemReviewRes
-from app.models import auth
+from app.models import auth, user
 
 collection_name = "reviews"
 
 
 async def create_review(item: ItemReviewReq, token, image):
     try:
-        user_info = await auth.get_current(token)
+        user_info = await user.get_current(token)
         collection = database.db[collection_name]
         item_dict = item.dict()
         item_dict["user_id"] = user_info.id
@@ -43,7 +43,7 @@ async def get_review_by_product(product_id):
 
 async def reply_to_review(item: ItemReplyReq, token, image):
     try:
-        user_info = await auth.get_current(token)
+        user_info = await user.get_current(token)
         collection = database.db[collection_name]
         review_id = ObjectId(item.review_id)
         review = collection.find_one({"_id": ObjectId(review_id)})

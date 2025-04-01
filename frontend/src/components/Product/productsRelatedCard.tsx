@@ -14,7 +14,7 @@ const ProductsRelatedCard = ({ product }: any) => {
         product && (
           <div className="flex text-xs font-bold whitespace-normal">
             <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] w-full">
-              <Link href="/chi-tiet-san-pham" legacyBehavior>
+              <Link href={`/chi-tiet-san-pham/${product?.slug}`} legacyBehavior>
                 <div className="py-6 flex flex-col items-center">
                   <div className="flex justify-end w-full">
                     {product?.prices[0]?.discount !== undefined ? (

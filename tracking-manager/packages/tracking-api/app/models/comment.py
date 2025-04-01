@@ -6,14 +6,14 @@ from starlette import status
 from app.core import database, logger, response
 from app.entities.comment.request import ItemCommentReq, ItemAnswerReq
 from app.entities.comment.response import ItemCommentRes
-from app.models import auth
+from app.models import user
 
 collection_name = "comments"
 
 
 async def create_comment(item: ItemCommentReq, token):
     try:
-        user_info = await auth.get_current(token)
+        user_info = await user.get_current(token)
         collection = database.db[collection_name]
         item_dict = item.dict()
         item_dict["user_id"] = user_info.id
@@ -38,7 +38,7 @@ async def get_comment_by_product(product_id):
 
 async def answer_to_comment(item: ItemAnswerReq, token):
     try:
-        user_info = await auth.get_current(token)
+        user_info = await user.get_current(token)
         collection = database.db[collection_name]
         comment_id = ObjectId(item.comment_id)
         comment = collection.find_one({"_id": ObjectId(comment_id)})

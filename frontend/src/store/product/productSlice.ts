@@ -6,6 +6,7 @@ interface ProductState {
     productsTopSelling: any[];
     productsRelated: any[];
     productsGetRecentlyViewed: any[];
+    productProductFeatured: any[];
     product: any;
     loading: boolean;
     error: string | null;
@@ -16,6 +17,7 @@ const initialState: ProductState = {
     productsAdmin: [],
     productsTopSelling: [],
     productsGetRecentlyViewed: [],
+    productProductFeatured: [],
     productsRelated: [],
     product: null,
     loading: false,
@@ -27,7 +29,7 @@ export const productSlice = createSlice({
     initialState,
     reducers: {
         // Fetch product by slug
-        fetchProductBySlugStart(state, action: PayloadAction<string>) {
+        fetchProductBySlugStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
         fetchProductBySlugSuccess(state, action: PayloadAction<any[]>) {
@@ -102,6 +104,19 @@ export const productSlice = createSlice({
         },
         fetchAllProductGetRecentlyViewedFailed(state) {
             state.loading = false;
+        },
+        // Fetch all product getProductFeatured
+        fetchAllProductGetProductFeaturedStart(state, action:PayloadAction< any>) {
+            state.loading = true;
+        },
+        fetchAllProductGetProductFeaturedSuccess(state, action: PayloadAction<any[]>) {
+            state.productProductFeatured = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAllProductGetProductFeaturedFailed(state) {
+            state.productProductFeatured = [];
+            state.loading = false;
         }
     },
 });
@@ -130,6 +145,10 @@ export const {
     fetchAllProductGetRecentlyViewedStart,
     fetchAllProductGetRecentlyViewedSuccess,
     fetchAllProductGetRecentlyViewedFailed,
+
+    fetchAllProductGetProductFeaturedStart,
+    fetchAllProductGetProductFeaturedSuccess,
+    fetchAllProductGetProductFeaturedFailed,
     
 } = productSlice.actions;
 
