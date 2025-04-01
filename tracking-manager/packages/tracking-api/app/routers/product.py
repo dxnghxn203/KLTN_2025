@@ -87,7 +87,7 @@ async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
-        save_recently_viewed(us["username"],product.product_id, True)
+        save_recently_viewed(us.id,product.product_id, True)
 
         return response.BaseResponse(status="success",data={
                 "product": product,
@@ -214,8 +214,11 @@ async def get_recently_viewed_token(token: str = Depends(middleware.verify_token
                 message="User not found",
                 data=None
             )
-        data = get_recently_viewed(us["username"])
+        logger.info(f"us: {us}")
+        data = get_recently_viewed(us.id)
+        logger.info(f"data: {data}")
         products = await get_product_by_list_id(data)
+        logger.info(f"products: {products}")
         return response.BaseResponse(
             message="Recently viewed products found",
             data=products
