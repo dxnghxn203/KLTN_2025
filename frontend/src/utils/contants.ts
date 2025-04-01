@@ -6,3 +6,4 @@ const routerAdmin = {
     PRODUCTS: '/products',
     LOGIN: '/login',
 }
+
