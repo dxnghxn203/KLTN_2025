@@ -332,9 +332,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                     <td className="pr-4 pt-4 pb-6 w-1/3 text-[#4A4F63]">
                       Mô tả ngắn
                     </td>
-                    <td className="pt-4 mb-6 line-clamp-2">
-                      {product?.description}
-                    </td>
+                    <td className="pt-4 mb-6">{product?.description}</td>
                   </tr>
                   {/* Chọn số lượng */}
                   <tr>
