@@ -75,3 +75,7 @@ interface Brand {
     imageSrc: string;
     description: string;
 }
+interface FullDescription {
+    title: string;
+    content: string;
+}
