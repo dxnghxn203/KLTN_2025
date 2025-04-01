@@ -17,7 +17,8 @@ const UserManagement = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
 
-  const { allUserAdmin, getAllUser, page, setPage, setPageSize, pageSize } = useUser();
+  const { allUserAdmin, getAllUser, page, setPage, setPageSize, pageSize } =
+    useUser();
 
   useEffect(() => {
     getAllUser();
@@ -36,14 +37,14 @@ const UserManagement = () => {
   return (
     <div>
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-black">User Management</h2>
+        <h2 className="text-2xl font-bold text-black">Quản lý người dùng</h2>
         <div className="my-2 text-sm">
           <Link href="/dashboard" className="hover:underline text-blue-600">
-            Home
+            Trang chủ
           </Link>
           <span> / </span>
           <Link href="/users" className="text-gray-800">
-            User management
+            Quản lý người dùng
           </Link>
         </div>
         <div className="flex justify-between">
@@ -61,11 +62,11 @@ const UserManagement = () => {
               onClick={() => setDialogOpen(true)}
             >
               <HiOutlinePlusSmall className="text-lg" />
-              Add new
+              Thêm mới
             </button>
             <button className="text-sm flex items-center gap-1 px-2 py-2 bg-[#1E4DB7] text-white rounded-lg shadow-md hover:bg-[#173F98] transition">
               <IoMdArrowUp />
-              Export
+              Xuất file
             </button>
           </div>
         </div>
@@ -73,13 +74,14 @@ const UserManagement = () => {
           <FilterBar onFilterChange={(filters) => console.log(filters)} />
         )}
 
-        <TableUser 
+        <TableUser
           users={allUserAdmin}
-          currentPage={page} 
+          currentPage={page}
           pageSize={pageSize}
           totalUsers={0}
           onPageChange={setPage}
-          onPageSizeChange={setPageSize} />
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       <AddUserDialog

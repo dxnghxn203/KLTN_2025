@@ -62,8 +62,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         className="fixed right-4 top-4 flex flex-col items-end z-[50]"
         style={{ pointerEvents: "none" }}
       >
-        <div className="mt-8 ">
-          <div className="flex flex-col items-end">
+        <div className="mt-8">
+          <div className="flex flex-col items-end text-sm">
             {toasts.map((toast, index) => (
               <div key={toast.id}>
                 <Toast

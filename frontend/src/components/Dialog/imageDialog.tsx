@@ -106,8 +106,6 @@ const ImageDialog: React.FC<ImageDialogProps> = ({
             </button>
           )}
         </div>
-
-        {/* Nút Zoom In/Out */}
         <div className="mb-8 absolute bottom-24 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
           <button
             className="bg-black/30 p-2 rounded-full shadow-md text-white "

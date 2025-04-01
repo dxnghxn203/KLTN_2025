@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { BsBox, BsBarChart } from "react-icons/bs";
 import { LuUsers, LuRefreshCcw } from "react-icons/lu";
 import { useState, useEffect } from "react";
@@ -39,7 +39,7 @@ const ManagerProducts = () => {
       </div>
 
       <div className="flex space-x-4">
-        <div className="bg-white rounded-3xl flex w-full items-center justify-between shadow-sm">
+        {/* <div className="bg-white rounded-3xl flex w-full items-center justify-between shadow-sm">
           <div className="flex-1 py-6 flex flex-col items-center space-y-3">
             <div className="bg-[#EFF9FF] rounded-full h-16 w-16 flex justify-center items-center">
               <LuUsers className="text-[#1A97F5] text-3xl" />
@@ -85,7 +85,7 @@ const ManagerProducts = () => {
               <span className="text-sm text-[#9297A0]">Refunds</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       <div className="flex justify-between items-center">
         <button
@@ -93,21 +93,21 @@ const ManagerProducts = () => {
           onClick={() => setShowFilter(!showFilter)}
         >
           <IoFilter className="text-lg" />
-          Filter
+          Lọc
         </button>
         <div className="flex gap-2">
           <AddNewDropdown />
 
           <button className="border border-[#1E4DB7] text-[#1E4DB7] px-2 py-2 rounded-lg hover:bg-blue-100 text-sm flex items-center gap-1">
             <IoMdArrowUp className="text-lg" />
-            Export
+            Xuất file
           </button>
         </div>
       </div>
       {showFilter && (
         <FilterBar onFilterChange={(filters) => console.log(filters)} />
       )}
-      <TableProduct/>
+      <TableProduct />
     </div>
   );
 };
