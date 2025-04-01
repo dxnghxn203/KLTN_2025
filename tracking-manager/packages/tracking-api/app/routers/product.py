@@ -8,7 +8,7 @@ from app.core.response import JsonException
 from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq
 from app.helpers.redis import get_session, get_recently_viewed, save_recently_viewed, save_session
 from app.middleware import middleware
-from app.models import order, auth
+from app.models import order
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product
 from app.models.user import get_current
@@ -167,8 +167,8 @@ async def get_popular(top_n: int = 5):
             message="Internal server error"
         )
 
-@router.delete("/product/update_name", response_model=response.BaseResponse)
-async def delete_product(product_id: str):
+@router.delete("/product/delete", response_model=response.BaseResponse)
+async def delete_product_id(product_id: str):
     try:
         return await delete_product(product_id)
     except JsonException as je:
