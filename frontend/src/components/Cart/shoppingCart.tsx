@@ -32,12 +32,12 @@ const ShoppingCart: React.FC = () => {
       .filter((product: { id: string }) =>
         selectedProducts.includes(product.id)
       )
-      .reduce((total, product) => total + product.price * product.quantity, 0);
+      .reduce((total: any, product: any) => total + product.price * product.quantity, 0);
   }, [cartLocal, selectedProducts]);
 
   const totalOriginPrice = useMemo(() => {
     return selectedProducts.reduce((total, productId) => {
-      const product = cartLocal.find((p) => p.id === productId);
+      const product = cartLocal.find((p: any) => p.id === productId);
       if (product) {
         total += product.originPrice * product.quantity;
       }
@@ -49,7 +49,7 @@ const ShoppingCart: React.FC = () => {
   const totalSave = totalDiscount;
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedProducts(e.target.checked ? cartLocal.map((p) => p.id) : []);
+    setSelectedProducts(e.target.checked ? cartLocal.map((p: any) => p.id) : []);
   };
 
   const handleSelectProduct = (id: string) => {
@@ -119,7 +119,7 @@ const ShoppingCart: React.FC = () => {
           <div className="w-[15%] text-center"></div>
         </div>
 
-        {cartLocal?.map((product, index) => (
+        {cartLocal?.map((product: any, index: any) => (
           <div
             key={product.id}
             className={`flex items-center justify-between py-4 mx-5 text-sm ${

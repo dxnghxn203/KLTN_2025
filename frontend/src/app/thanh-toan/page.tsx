@@ -18,8 +18,8 @@ const ShoppingCart: React.FC = () => {
 
   const products: Product[] = useMemo(() => {
     return cartLocal
-      .filter((product) => cartSelected.includes(product.id.toString()))
-      .map((product) => ({
+      .filter((product: any) => cartSelected.includes(product.id.toString()))
+      .map((product: any) => ({
         id: product.id,
         name: product.name,
         imageSrc: product.imageSrc,

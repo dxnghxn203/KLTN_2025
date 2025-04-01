@@ -90,7 +90,7 @@ const ProductDealsList: React.FC = () => {
 
       <div className="self-center mt-5 w-full max-md:max-w-full">
         <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
-          {productData.map((product, index) => (
+          {productData.map((product: any, index: any) => (
             <ProductDealsCard key={index} {...product} />
           ))}
         </div>

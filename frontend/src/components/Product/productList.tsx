@@ -29,7 +29,7 @@ const ProductList: React.FC = () => {
       </Link>
       <div className="self-center mt-5 w-full max-md:max-w-full">
         <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
-          { productsTopSelling && productsTopSelling.map((product, index) => (
+          { productsTopSelling && productsTopSelling.map((product: any, index: any) => (
             <ProductCard key={index} product= {product} />
           ))}
         </div>

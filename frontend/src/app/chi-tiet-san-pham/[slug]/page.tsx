@@ -16,13 +16,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   useEffect(() => {
     fetchProductBySlug(slug);
-  }, [slug]);
+  }, []);
+
   useEffect(() => {
     if (productBySlug) {
       setLoading(false);
     }
   }, [productBySlug]);
-  // console.log("ProductBySlug:", productBySlug);
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
@@ -75,8 +75,15 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         )}
       </main>
       <div className="self-start text-2xl font-extrabold text-black px-5 mt-6">
-        Những sản phẩm liên quan
-        <ProductsRelatedList />
+        {
+          productBySlug && (
+            <>
+              Những sản phẩm liên quan
+              <ProductsRelatedList product={productBySlug} />
+            </>
+          )
+        }
+
       </div>
     </div>
   );

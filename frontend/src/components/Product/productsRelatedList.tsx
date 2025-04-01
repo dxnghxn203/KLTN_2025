@@ -1,59 +1,18 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import ProductsViewCard from "./productsRelatedCard";
-import { ProductData } from "@/types/product";
-import medicine1 from "@/images/medicinee.png";
-import { generateRandomId } from "@/utils/string";
+import { useProduct } from "@/hooks/useProduct";
 
-const productData: ProductData[] = [
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: ""
-  },
-  {
-    id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: ""
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: ""
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: ""
-  },
-];
+const ProductsRelatedList=({product}:any) => {
+  const { productRelated , fetchProductRelated} = useProduct();
 
-const ProductsRelatedList: React.FC = () => {
+  useEffect(() => {
+    const product_id =product?.product_id ;
+    if (product_id) {
+      fetchProductRelated(product_id);
+    }
+  }
+  , []);
+
   return (
     <div className="w-full max-md:px-5 max-md:max-w-full mt-6">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black mt-[-30px]">
@@ -69,8 +28,8 @@ const ProductsRelatedList: React.FC = () => {
       </div>
       <div className="self-center mt-5 w-full max-md:max-w-full">
         <div className="grid grid-cols-4 gap-6 max-md:grid-cols-1">
-          {productData.map((product, index) => (
-            <ProductsViewCard key={index} {...product} />
+          {productRelated && productRelated.map((product: any, index: any) => (
+            <ProductsViewCard key={index} product={product} />
           ))}
         </div>
       </div>

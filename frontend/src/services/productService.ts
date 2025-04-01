@@ -54,3 +54,56 @@ export const getAllProductAdmin = async (params: any) => {
         }
     }
 }
+
+export const getProductBySlugSession = async (slug: any, session_id: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/product/session/${slug}`, { params: { session_id } });
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
+export const getProductsRelated = async (params: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/get-relate/`, { params });
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+
+}
+
+export const getProductReviewSession = async (params: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/get-recently-viewed/${params}`, {  });
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
+export const getProductReviewToken = async () => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/get-recently-viewed`, {  });
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

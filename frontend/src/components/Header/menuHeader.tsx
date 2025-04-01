@@ -18,7 +18,7 @@ export default function MenuHeader() {
     router.push(`/${category.main_category_slug}`);
   };
 
-  console.log(allCategory);
+  // console.log(allCategory);
   return (
     <>
       <nav className="bg-[#F0F5FF] text-[#002E99] py-3 flex justify-center items-center relative">

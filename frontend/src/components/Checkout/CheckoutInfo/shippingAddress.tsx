@@ -63,7 +63,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
             className={`${buttonClass} appearance-none`}
           >
             <option value="" disabled>Chọn tỉnh/ thành phố</option>
-            {cities.map((city) => (
+            {cities.map((city: any) => (
               <option key={city.code} value={city.code}>
                 {city.name}
               </option>
@@ -83,7 +83,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
             className={`${buttonClass} appearance-none`}
           >
             <option value="" disabled>Chọn quận/ huyện</option>
-            {districts.map((district) => (
+            {districts.map((district:any) => (
               <option key={district.code} value={district.code}>
                 {district.name}
               </option>
@@ -102,7 +102,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
             className={`${buttonClass} appearance-none`}
           >
             <option value="" disabled>Chọn phường/ xã</option>
-            {wards.map((ward) => (
+            {wards.map((ward: any) => (
               <option key={ward.code} value={ward.code}>
                 {ward.name}
               </option>

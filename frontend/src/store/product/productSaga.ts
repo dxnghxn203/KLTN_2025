@@ -15,23 +15,62 @@ import {
 
     fetchAllProductTopSellingStart,
     fetchAllProductTopSellingSuccess,
-    fetchAllProductTopSellingFailed
+    fetchAllProductTopSellingFailed,
+
+    fetchAllProductRelatedStart,
+    fetchAllProductRelatedSuccess,
+    fetchAllProductRelatedFailed,
+
+    fetchAllProductGetRecentlyViewedStart,
+    fetchAllProductGetRecentlyViewedSuccess,
+    fetchAllProductGetRecentlyViewedFailed,
 } from './productSlice';
+import { getSession, getToken, setSession } from '@/utils/cookie';
 
 // Fetch product by slug
 function* fetchProductBySlug(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const product = yield call(productService.getProductBySlug, payload);
-        if (product.status_code === 200) {
-            yield put(fetchProductBySlugSuccess(product.data));
+        const token: any= getToken();
+        const session = getSession();
+        const product = token ?
+            yield call(productService.getProductBySlug, payload) :
+            yield call(productService.getProductBySlugSession, payload, session)
+            ;
+        if (product?.status_code === 200) {
+            yield put(fetchProductBySlugSuccess(product?.data?.product));
+            if (product?.data?.session_id && product?.data?.session_id !== session) {
+                setSession(product?.data?.session_id);
+            }
             return;
         }
-        console.log("Product Sagaa:", product.data);
         yield put(fetchProductBySlugFailed("Product not found"));
 
     } catch (error) {
         yield put(fetchProductBySlugFailed("Failed to fetch product by slug"));
+    }
+}
+
+// Add product reviewed
+function* fetchGetProductGetRecentlyViewed(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const token: any = getToken();
+        const session = getSession();
+
+        const product:any = token ?
+            yield call(productService.getProductReviewToken) :
+            yield call(productService.getProductReviewSession, session)
+            ;
+
+        if (product?.status_code === 200) {
+            yield put(fetchAllProductGetRecentlyViewedSuccess(product?.data));
+            return;
+        }
+        yield put(fetchAllProductGetRecentlyViewedFailed());
+    }
+    catch (error) {
+        yield put(fetchAllProductGetRecentlyViewedFailed());
     }
 }
 
@@ -43,19 +82,19 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
             onsucces = () => { },
             onfailed = () => { }
         } = payload;
-        
+
         const formData = new FormData();
-        
+
         Object.entries(form).forEach(([key, value]) => {
             if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
                 formData.append(key, value as string);
             }
         });
-        
+
         if (form.thumbnail instanceof File) {
             formData.append('thumbnail', form.thumbnail);
         }
-        
+
         if (form.images && Array.isArray(form.images)) {
             form.images.forEach((file: File, index: number) => {
                 if (file instanceof File) {
@@ -63,7 +102,7 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
                 }
             });
         }
-        
+
         if (form.attributes && typeof form.attributes === 'object') {
             formData.append('attributes', JSON.stringify(form.attributes));
         }
@@ -111,9 +150,26 @@ function* handlerGetAllProductTopSelling(action: any): Generator<any, void, any>
     }
 }
 
+// Fetch all product related
+function* handlerGetAllProductRelated(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const product = yield call(productService.getProductsRelated, payload);
+        if (product.status_code === 200) {
+            yield put(fetchAllProductRelatedSuccess(product.data));
+            return;
+        }
+        yield put(fetchAllProductRelatedFailed("Product not found"));
+    }
+    catch (error) {
+        yield put(fetchAllProductRelatedFailed("Failed to fetch product by slug"));
+    }
+}
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
     yield takeLatest(fetchAddProductStart.type, handlerAddProduct);
     yield takeLatest(fetchAllProductAdminStart.type, handlerGetAllProductAdmin);
     yield takeLatest(fetchAllProductTopSellingStart.type, handlerGetAllProductTopSelling);
+    yield takeLatest(fetchAllProductRelatedStart.type, handlerGetAllProductRelated);
+    yield takeLatest(fetchAllProductGetRecentlyViewedStart.type, fetchGetProductGetRecentlyViewed);
 }

@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Footer from "@/components/Footer/footer";
 import ProductMainCategoryList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import { useCategory } from "@/hooks/useCategory";

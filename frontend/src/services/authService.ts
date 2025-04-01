@@ -1,17 +1,17 @@
+
 import axiosClient from "@/utils/configs/axiosClient";
-import { AuthResponse, GoogleSignInData, LoginData } from "@/types/auth";
-import { message } from "antd";
+import { AuthResponse } from "@/types/auth";
 
-export const signInWithGoogle = async (data: GoogleSignInData): Promise<AuthResponse> => {
+export const signInWithGoogle = async (data: any) => {
     try {
-        const response = await axiosClient.post('/v1/auth/google-auth', data);
-        
+        const response: any= await axiosClient.post('/v1/auth/google-auth', data);
         return {
-            success: true,
-            message: response.data || 'Đăng nhập bằng Google thành công',
-        };
-
+            status_code: response?.status_code || 200,
+            message: response?.message || 'Đăng nhập bằng Google thành công',
+            token: response?.data?.token || null,
+        }
     } catch (error: any) {
+        console.error('Google login error:', error);
         return {
             success: false,
             message: error.response?.data?.message || 'Đăng nhập bằng Google thất bại'
@@ -79,3 +79,6 @@ export const getUserProfile = async (token: string) => {
         throw error;
     }
 };
+
+
+
