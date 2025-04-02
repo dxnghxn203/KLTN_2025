@@ -43,7 +43,7 @@ async def answer_to_comment(item: ItemAnswerReq, token):
         comment_id = ObjectId(item.comment_id)
         comment = collection.find_one({"_id": ObjectId(comment_id)})
         if not comment:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không tìm thấy bình luận"
             )

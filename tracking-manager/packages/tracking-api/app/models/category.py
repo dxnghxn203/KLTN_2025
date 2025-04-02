@@ -103,7 +103,7 @@ async def add_category(item: MainCategoryInReq):
         collection = db[collection_name]
         existing = collection.find_one({"main_category_slug": item.main_category_slug})
         if existing:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Danh mục chính đã tồn tại"
             )
@@ -149,7 +149,7 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
         category = collection.find_one({"main_category_slug": main_slug})
 
         if not category:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Danh mục chính không tồn tại"
             )
@@ -160,7 +160,7 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
             None
         )
         if existing_sub:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Danh mục con đã tồn tại"
             )
@@ -193,7 +193,7 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
         category = collection.find_one({"main_category_slug": main_slug})
 
         if not category:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Danh mục chính không tồn tại"
             )
@@ -206,7 +206,7 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
                     None
                 )
                 if existing_child:
-                    return response.JsonException(
+                    raise response.JsonException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         message="Danh mục con cấp 2 đã tồn tại"
                     )
@@ -224,7 +224,7 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
                 )
                 return
 
-        return response.JsonException(
+        raise response.JsonException(
             status_code=status.HTTP_400_BAD_REQUEST,
             message="Danh mục con không tồn tại"
         )
@@ -243,7 +243,7 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
             update_data["main_category_slug"] = main_category_slug
 
         if not update_data:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có dữ liệu để cập nhật"
             )
@@ -254,7 +254,7 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
         )
 
         if result.modified_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có danh mục chính nào được cập nhật"
             )
@@ -280,7 +280,7 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
             update_data["sub_category.$.sub_category_slug"] = sub_category_slug
 
         if not update_data:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có dữ liệu để cập nhật"
             )
@@ -291,7 +291,7 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
         )
 
         if result.modified_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có danh mục con nào được cập nhật"
             )
@@ -317,7 +317,7 @@ async def update_child_category(child_category_id: str, child_category_name: str
             update_data["sub_category.$[].child_category.$[child].child_category_slug"] = child_category_slug
 
         if not update_data:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có dữ liệu để cập nhật"
             )
@@ -329,7 +329,7 @@ async def update_child_category(child_category_id: str, child_category_name: str
         )
 
         if result.modified_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có danh mục con cấp 2 nào được cập nhật"
             )
@@ -354,7 +354,7 @@ async def update_sub_category_image(sub_category_id: str, image: str):
             {"$set": {"sub_category.$.sub_image_url": image_url}}
         )
         if result.modified_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có danh mục con nào được cập nhật"
             )
@@ -373,7 +373,7 @@ async def update_child_category_image(child_category_id: str, image: str):
             array_filters=[{"child.child_category_id": child_category_id}]
         )
         if result.modified_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có danh mục con cấp 2 nào được cập nhật"
             )
@@ -417,7 +417,7 @@ async def update_all_categories_image(image_url):
                 updated_count += 1
 
         if updated_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có danh mục nào được cập nhật"
             )

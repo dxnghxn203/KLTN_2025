@@ -164,7 +164,7 @@ async def update_product_category(item: UpdateCategoryReq):
         product = collection.find_one({"product_id": item.product_id})
 
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
@@ -191,7 +191,7 @@ async def delete_product(product_id: str):
         collection = db[collection_name]
         product = collection.find_one({"product_id": product_id})
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
@@ -200,7 +200,7 @@ async def delete_product(product_id: str):
 
         delete_result = collection.delete_one({"product_id": product.product_id})
         if delete_result.deleted_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 message="Failed to delete product"
             )

@@ -48,7 +48,7 @@ async def get_product(slug: str, session_id: str = None):
         logger.info("check: "+str(check))
         product = await get_product_by_slug(slug)
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
@@ -84,7 +84,7 @@ async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
         product = await get_product_by_slug(slug)
 
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
