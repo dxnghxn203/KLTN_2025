@@ -174,6 +174,7 @@ def save_cart(identifier: str, product_id: str, price_id: str,  quantity: int):
 
     if cart_data:
         cart_item = json.loads(cart_data)
+        cart_item['price_id'] = price_id
         cart_item["quantity"] += quantity
     else:
         cart_item = {"price_id": price_id, "quantity": quantity}
