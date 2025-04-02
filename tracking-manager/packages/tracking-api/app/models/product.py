@@ -65,7 +65,7 @@ async def get_product_by_cart_id(product_ids, cart):
 
                 matching_price = next((p for p in product["prices"] if p["price_id"] == price_id), None)
                 if matching_price:
-                    detailed_cart.append({"product": ItemProductDBRes(**product), "quantity": quantity})
+                    detailed_cart.append({"product": ItemProductDBRes(**product), "price_id": price_id, "quantity": quantity})
 
         return detailed_cart
 
