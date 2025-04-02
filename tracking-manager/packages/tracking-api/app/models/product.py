@@ -8,6 +8,8 @@ from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, Ite
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
+from app.models.comment import count_comments
+from app.models.review import count_reviews, average_rating
 
 collection_name = "products"
 
@@ -16,16 +18,22 @@ async def get_product_by_slug(slug: str):
         collection = db[collection_name]
         cur = collection.find_one({"slug": slug})
         if cur:
-            return ItemProductDBRes(**cur)
+            count_review = await count_reviews(cur["product_id"])
+            count_comment = await count_comments(cur["product_id"])
+            avg_rating = await average_rating(cur["product_id"])
+            return ItemProductDBRes(**cur,
+                                   count_review=count_review,
+                                   count_comment=count_comment,
+                                   rating=avg_rating)
         return None
     except Exception as e:
         raise e
 
-async def get_all_product(page: int, pageSize: int):
+async def get_all_product(page: int, page_size: int):
     try:
         collection = db[collection_name]
-        skip_count = (page - 1) * pageSize
-        product_list = collection.find().skip(skip_count).limit(pageSize)
+        skip_count = (page - 1) * page_size
+        product_list = collection.find().skip(skip_count).limit(page_size)
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
@@ -164,7 +172,7 @@ async def update_product_category(item: UpdateCategoryReq):
         product = collection.find_one({"product_id": item.product_id})
 
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
@@ -191,7 +199,7 @@ async def delete_product(product_id: str):
         collection = db[collection_name]
         product = collection.find_one({"product_id": product_id})
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
@@ -200,7 +208,7 @@ async def delete_product(product_id: str):
 
         delete_result = collection.delete_one({"product_id": product.product_id})
         if delete_result.deleted_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 message="Failed to delete product"
             )

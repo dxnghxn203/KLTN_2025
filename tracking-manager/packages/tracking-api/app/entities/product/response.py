@@ -71,6 +71,9 @@ class ItemProductDBRes(BaseModel):
     manufacturer: Optional[Union[ItemManufacturerDBRes, None]] = None
     dosage_form: Optional[Union[str, None]] = None
     brand: Optional[Union[str, None]] = None
+    count_review: Optional[Union[int, None]] = None
+    count_comment: Optional[Union[int, None]] = None
+    rating: Optional[Union[float, None]] = None
 
     @classmethod
     def from_mongo(cls, data):

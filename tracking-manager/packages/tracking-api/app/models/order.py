@@ -9,8 +9,10 @@ from starlette import status
 from app.core import logger, response, rabbitmq, database
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.entities.order.response import ItemOrderRes
+from app.entities.product.request import ItemProductRedisReq
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id, PAYMENT_COD, BANK_IDS
+from app.helpers.redis import get_product_transaction, save_product
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -39,7 +41,7 @@ async def get_new_orders_last_365_days():
     try:
         collection = database.db[collection_name]
         one_year_ago = datetime.now() - timedelta(days=365)
-        new_orders = collection.count_documents({"status": "create_order", "created_date": {"$gte": one_year_ago}})
+        new_orders = collection.count_documents({"status": "created", "created_date": {"$gte": one_year_ago}})
         return new_orders
     except Exception as e:
         logger.error(f"Failed [get_new_orders_last_365_days]: {e}")
@@ -105,7 +107,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             logger.info(f"Product data from Redis: {data}")
 
             if not data:
-                return response.JsonException(
+                raise response.JsonException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     message="Không tìm thấy sản phẩm"
                 )
@@ -116,7 +118,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             total_requested = product.quantity + sell
 
             if total_requested > inventory:
-                return response.JsonException(
+                raise response.JsonException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     message="Sản phẩm không đủ hàng"
                 )
@@ -187,7 +189,7 @@ async def save_order_to_redis(item: ItemOrderInReq,order_id, tracking_id, user_i
         item_data = ItemOrderReq(**dict(item),
                                  order_id=order_id,
                                  tracking_id=tracking_id,
-                                 status="create_order",
+                                 status="created",
                                  created_by=user_id)
         logger.info("item", json=item_data)
 
@@ -200,7 +202,7 @@ async def add_order(item: OrderRequest):
     try:
         order_data = redis.get_order(item.order_id)
         if not order_data:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không tìm thấy thông tin đơn hàng"
             )
@@ -233,7 +235,7 @@ async def get_order_by_id(order_id: str):
         order = collection.find_one({"order_id": order_id})
 
         if not order:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Không tìm thấy đơn hàng"
             )
@@ -248,10 +250,15 @@ async def get_order_by_id(order_id: str):
 async def cancel_order(order_id: str):
     try:
         order = await get_order_by_id(order_id)
-        if order.get("status") in ["completed", "canceled", "created"]:
-            return response.JsonException(
+        if not order:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy đơn hàng"
+            )
+        if order.status in ["completed", "canceled"]:
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Không thể hủy đơn hàng đã hoàn tất hoặc đã bị hủy hoặc chưa xuất kho"
+                message="Không thể hủy đơn hàng đã hoàn tất hoặc đã bị hủy"
             )
 
         collection = database.db[collection_name]
@@ -261,10 +268,24 @@ async def cancel_order(order_id: str):
         )
 
         if update_result.modified_count == 0:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 message="Hủy đơn hàng thất bại"
             )
+
+        for product in order.product:
+            product_key_redis = f"{product.product_id}_{product.price_id}"
+            redis_data = get_product_transaction(product_key_redis)
+
+            if redis_data:
+                new_sell = max(0, redis_data["sell"] - product.quantity)
+                save_product(ItemProductRedisReq(
+                    inventory=redis_data["inventory"],
+                    sell=new_sell,
+                    delivery=redis_data.get("delivery", 0)
+                ), product_key_redis)
+
+                logger.info(f"Đã cập nhật Redis cho sản phẩm {product.product_id}: giảm {product.quantity} đã bán")
 
         logger.info(f"Đã hủy đơn hàng: {order_id}")
         return response.SuccessResponse(message="Hủy đơn hàng thành công")
