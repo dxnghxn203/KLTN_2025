@@ -30,7 +30,7 @@ class ItemOrderReq(BaseModel):
     receiver_commune_code: int
     created_by: str
     delivery_instruction: str = ""
-    payment_type: str
+    payment_type: str = ""
 
 class ItemOrderInReq(BaseModel):
     product: List[ItemProductReq]
@@ -43,7 +43,7 @@ class ItemOrderInReq(BaseModel):
     receiver_district_code: int
     receiver_commune_code: int
     delivery_instruction: str = ""
-    payment_type: str
+    payment_type: str = ""
 
 class OrderRequest(BaseModel):
     order_id: str

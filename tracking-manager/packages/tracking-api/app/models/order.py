@@ -2,6 +2,7 @@ import base64
 import json
 import os
 from datetime import datetime, timedelta
+from typing import Optional
 
 import httpx
 from starlette import status
@@ -124,65 +125,60 @@ async def check_order(item: ItemOrderInReq, user_id: str):
                 )
 
         logger.info(f"Total price: {total_price}")
-        type = item.payment_type
-        if type and type != PAYMENT_COD :
-            qr_payload = {
-                "bank_id": BANK_IDS.get(type),
-                "order_id": order_id,
-                "amount": total_price
-            }
 
-            logger.info(f"QR Payload: {qr_payload}")
-            logger.info(f"{PAYMENT_API_URL}api/v1/payment/qr")
+        if not await save_order_to_redis(item, order_id, tracking_id, user_id):
+            return response.BaseResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Không thể lưu đơn hàng"
+            )
 
-            async with httpx.AsyncClient() as client:
-                qr_response = await client.post(
-                    f"{PAYMENT_API_URL}/api/v1/payment/qr",
-                    headers={"accept": "application/json", "Content-Type": "application/json"},
-                    json=qr_payload
-                )
-
-            logger.info(f"QR Response: {qr_response}")
-
-            if qr_response.status_code != 200:
-                logger.error(f"Failed to generate QR: {qr_response.text}")
+        qr_code = None
+        if item.payment_type and item.payment_type != PAYMENT_COD:
+            qr_code = await generate_qr_code(order_id, total_price, item.payment_type)
+            if not qr_code:
                 return response.BaseResponse(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    message="Không thể tạo đơn hàng"
+                    message="Không thể tạo QR thanh toán"
                 )
-            await save_order_to_redis(item, order_id, tracking_id, user_id)
-            image_base64 = base64.b64encode(qr_response.content).decode("utf-8")
-            return response.BaseResponse(
-                status="success",
-                message="Đơn hàng đã được tạo",
-                data={
-                    "order_id": order_id,
-                    "qr_code": image_base64
-                }
-            )
-            # return (
-            #     StreamingResponse(
-            #     status_code=status.HTTP_200_OK,
-            #     content=iter([qr_response.content]),
-            #     media_type="image/png",
-            #     headers={
-            #         "Content-Disposition": f'attachment; filename=sepay_qr_{order_id}.png'
-            #     }
-            # ))
-        created = await save_order_to_redis(item, order_id, tracking_id, user_id)
-        if type == PAYMENT_COD and created:
+
+        if item.payment_type == PAYMENT_COD:
             await add_order(OrderRequest(order_id=order_id))
 
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,
             status="success",
             message="Đơn hàng đã được tạo",
-            data={"order_id": order_id}
+            data={"order_id": order_id, "qr_code": qr_code} if qr_code else {"order_id": order_id}
         )
 
     except Exception as e:
         logger.error(f"Failed [check_order]: {e}")
         raise e
+
+async def generate_qr_code(order_id: str, total_price: float, payment_type: str) -> Optional[str]:
+    try:
+        qr_payload = {
+            "bank_id": BANK_IDS.get(payment_type),
+            "order_id": order_id,
+            "amount": total_price
+        }
+
+        async with httpx.AsyncClient() as client:
+            qr_response = await client.post(
+                f"{PAYMENT_API_URL}/api/v1/payment/qr",
+                headers={"accept": "application/json", "Content-Type": "application/json"},
+                json=qr_payload
+            )
+
+        if qr_response.status_code == 200:
+            return base64.b64encode(qr_response.content).decode("utf-8")
+
+        logger.error(f"Failed to generate QR: {qr_response.text}")
+        return None
+
+    except Exception as e:
+        logger.error(f"Error generating QR code: {e}")
+        return None
 
 async def save_order_to_redis(item: ItemOrderInReq,order_id, tracking_id, user_id):
     try:
@@ -196,6 +192,7 @@ async def save_order_to_redis(item: ItemOrderInReq,order_id, tracking_id, user_i
         redis.save_order(item_data)
         return True
     except Exception as e:
+        logger.error(f"Failed [save_order_to_redis]: {e}")
         return False
 
 async def add_order(item: OrderRequest):
