@@ -1,16 +1,16 @@
+import base64
 import json
 import os
 from datetime import datetime, timedelta
 
 import httpx
-from fastapi.responses import StreamingResponse
 from starlette import status
 
 from app.core import logger, response, rabbitmq, database
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.entities.order.response import ItemOrderRes
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id
+from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id, PAYMENT_COD, BANK_IDS
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -122,28 +122,68 @@ async def check_order(item: ItemOrderInReq, user_id: str):
                 )
 
         logger.info(f"Total price: {total_price}")
+        type = item.payment_type
+        if type and type != PAYMENT_COD :
+            qr_payload = {
+                "bank_id": BANK_IDS.get(type),
+                "order_id": order_id,
+                "amount": total_price
+            }
 
-        qr_payload = {
-            "bank_id": "TPB",
-            "order_id": order_id,
-            "amount": total_price
-        }
+            logger.info(f"QR Payload: {qr_payload}")
+            logger.info(f"{PAYMENT_API_URL}api/v1/payment/qr")
 
-        logger.info(f"QR Payload: {qr_payload}")
-        logger.info(f"{PAYMENT_API_URL}api/v1/payment/qr")
+            async with httpx.AsyncClient() as client:
+                qr_response = await client.post(
+                    f"{PAYMENT_API_URL}/api/v1/payment/qr",
+                    headers={"accept": "application/json", "Content-Type": "application/json"},
+                    json=qr_payload
+                )
 
-        async with httpx.AsyncClient() as client:
-            qr_response = await client.post(
-                f"{PAYMENT_API_URL}/api/v1/payment/qr",
-                headers={"accept": "application/json", "Content-Type": "application/json"},
-                json=qr_payload
+            logger.info(f"QR Response: {qr_response}")
+
+            if qr_response.status_code != 200:
+                logger.error(f"Failed to generate QR: {qr_response.text}")
+                return response.BaseResponse(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    message="Không thể tạo đơn hàng"
+                )
+            await save_order_to_redis(item, order_id, tracking_id, user_id)
+            image_base64 = base64.b64encode(qr_response.content).decode("utf-8")
+            return response.BaseResponse(
+                status="success",
+                message="Đơn hàng đã được tạo",
+                data={
+                    "order_id": order_id,
+                    "qr_code": image_base64
+                }
             )
+            # return (
+            #     StreamingResponse(
+            #     status_code=status.HTTP_200_OK,
+            #     content=iter([qr_response.content]),
+            #     media_type="image/png",
+            #     headers={
+            #         "Content-Disposition": f'attachment; filename=sepay_qr_{order_id}.png'
+            #     }
+            # ))
+        created = await save_order_to_redis(item, order_id, tracking_id, user_id)
+        if type == PAYMENT_COD and created:
+            await add_order(OrderRequest(order_id=order_id))
 
-        logger.info(f"QR Response: {qr_response}")
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            status="success",
+            message="Đơn hàng đã được tạo",
+            data={"order_id": order_id}
+        )
 
-        if qr_response.status_code != 200:
-            logger.error(f"Failed to generate QR: {qr_response.text}")
+    except Exception as e:
+        logger.error(f"Failed [check_order]: {e}")
+        raise e
 
+async def save_order_to_redis(item: ItemOrderInReq,order_id, tracking_id, user_id):
+    try:
         item_data = ItemOrderReq(**dict(item),
                                  order_id=order_id,
                                  tracking_id=tracking_id,
@@ -152,19 +192,9 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         logger.info("item", json=item_data)
 
         redis.save_order(item_data)
-
-        return StreamingResponse(
-            status_code=status.HTTP_200_OK,
-            content=iter([qr_response.content]),
-            media_type="image/png",
-            headers={
-                "Content-Disposition": f'attachment; filename=sepay_qr_{order_id}.png'
-            }
-        )
-
+        return True
     except Exception as e:
-        logger.error(f"Failed [check_order]: {e}")
-        raise e
+        return False
 
 async def add_order(item: OrderRequest):
     try:
