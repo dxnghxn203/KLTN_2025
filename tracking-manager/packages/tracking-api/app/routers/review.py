@@ -29,9 +29,9 @@ async def create_review(
         )
 
 @router.get("/review/product/{product_id}", response_model=response.BaseResponse)
-async def get_review_by_product(product_id: str):
+async def get_review_by_product(product_id: str, page: int = 1, page_size: int = 5):
     try:
-        result = await review.get_review_by_product(product_id)
+        result = await review.get_review_by_product(product_id, page, page_size)
         return response.SuccessResponse(
             message="Lấy đánh giá theo sản phẩm thành công",
             data=result

@@ -41,7 +41,7 @@ async def get_new_orders_last_365_days():
     try:
         collection = database.db[collection_name]
         one_year_ago = datetime.now() - timedelta(days=365)
-        new_orders = collection.count_documents({"status": "create_order", "created_date": {"$gte": one_year_ago}})
+        new_orders = collection.count_documents({"status": "created", "created_date": {"$gte": one_year_ago}})
         return new_orders
     except Exception as e:
         logger.error(f"Failed [get_new_orders_last_365_days]: {e}")

@@ -29,9 +29,10 @@ async def create_comment(item: ItemCommentReq, token):
     except Exception as e:
         raise e
 
-async def get_comment_by_product(product_id):
+async def get_comment_by_product(product_id: str, page: int, page_size: int):
     collection = database.db[collection_name]
-    comments = list(collection.find({"product_id": product_id}))
+    skip_count = (page - 1) * page_size
+    comments = list(collection.find({"product_id": product_id}).skip(skip_count).limit(page_size))
 
     comment_list = [ItemCommentRes.from_mongo(comment) for comment in comments]
     return comment_list
@@ -66,3 +67,7 @@ async def answer_to_comment(item: ItemAnswerReq, token):
         )
     except Exception as e:
         raise e
+
+async def count_comments(product_id: str) -> int:
+    collection = database.db[collection_name]
+    return collection.count_documents({"product_id": product_id, "comment": {"$exists": True, "$ne": ""}})
