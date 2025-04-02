@@ -3,14 +3,15 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.core.response import BaseResponse
-from app.entities.payment import GeneratePaymentQr
+from app.core.sepay import logger
+from app.entities.payment import GeneratePaymentQr, ItemCallBackReq
 from app.models.payment import PaymentModel
+from app.models.transaction import create_transaction
 
 router = APIRouter()
 
 @router.post("/payment/qr")
 async def generate_sepay_qr(request: GeneratePaymentQr):
-    """Generate QR code using SePay"""
     try:
         qr_data = await PaymentModel.generate_sepay_qr(**request.dict())
         if not qr_data:
@@ -28,12 +29,11 @@ async def generate_sepay_qr(request: GeneratePaymentQr):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/payment/callback")
-async def payment_callback(request: str):
-    """Payment callback"""
+async def payment_callback(request: ItemCallBackReq):
     try:
-        result = await PaymentModel.call_add_order_api(request)
-        if result.status_code != 200:
-            return BaseResponse(status_code=500, message=result.message)
+        logger.info(f"request: {request}")
+        created = await create_transaction(request.dict())
+        result = await PaymentModel.call_add_order_api(request.content)
         return BaseResponse(status_code=200, message=result.message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
