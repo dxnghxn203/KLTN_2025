@@ -232,13 +232,13 @@ const RatingDialog: React.FC<RatingDialogProps> = ({
                   key={star}
                   size={32}
                   className={`cursor-pointer ${
-                    star <= rating ? "text-orange-500" : "text-gray-400"
+                    star <= rating ? "text-[#FCD53F]" : "text-gray-400"
                   }`}
                   onClick={() => setRating(star)}
                 />
               ))}
             </div>
-            <p className="text-orange-500">
+            <p className="text-[#FCD53F]">
               {rating > 0 ? ratingTexts[rating - 1] : "Chưa đánh giá"}
             </p>
           </div>

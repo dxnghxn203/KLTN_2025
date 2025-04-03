@@ -12,13 +12,13 @@ export default function RatingBar() {
       {ratings.map((rating) => (
         <div key={rating.stars} className="flex items-center space-x-2">
           <span className="w-16">{rating.stars} sao</span>
-          <div className="w-[250px] bg-gray-300 rounded-full relative">
+          <div className="w-[250px] bg-gray-200 rounded-full relative">
             <div
-              className="bg-orange-400 h-2 rounded-full"
+              className="bg-[#FCD53F] h-2 rounded-full"
               style={{ width: `${rating.percent}%` }}
             ></div>
           </div>
-          <div className="flex w-[80px]  whitespace-nowrap">
+          <div className="flex w-[80px] whitespace-nowrap">
             <span className="text-sm text-start">
               {rating.percent}%({rating.count})
             </span>

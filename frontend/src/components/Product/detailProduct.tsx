@@ -39,13 +39,15 @@ interface DetailProductProps {
     brand: string;
     discount: number;
     full_descriptions: FullDescription[];
+    rating: number;
+    count_review: number;
+    count_comment: number;
   };
 }
 
 const DetailProduct = ({ product }: DetailProductProps) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.unit);
-
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
   const [isOpenDialog, setIsDialogOpen] = useState(false);
@@ -227,12 +229,16 @@ const DetailProduct = ({ product }: DetailProductProps) => {
             <div className="flex items-center space-x-2 text-gray-600 text-sm">
               <span>{product?.product_id}</span>
               <span>•</span>
-              <span>4.9</span>
-              <span>★</span>
+              <span>{product?.rating}</span>
+              <span>⭐</span>
               <span>•</span>
-              <a className="text-[#0053E2] hover:underline">32 đánh giá</a>
+              <a className="text-[#0053E2] hover:underline">
+                {product?.count_review} đánh giá
+              </a>
               <span>•</span>
-              <a className="text-[#0053E2] hover:underline">332 bình luận</a>
+              <a className="text-[#0053E2] hover:underline">
+                {product?.count_comment} bình luận
+              </a>
             </div>
             <div className="flex-col space-y-4 gap-2 mt-3 items-center">
               {selectedPrice?.discount > 0 && (
