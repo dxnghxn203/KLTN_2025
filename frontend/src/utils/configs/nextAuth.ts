@@ -20,23 +20,18 @@ const authOptions: NextAuthOptions = {
     callbacks: {
         async signIn({ user, account }) {
             if (account?.provider === "google") {
-                try {
-                    const response: any = await signInWithGoogle({
-                        id_token: account.id_token as string,
-                        email: user.email as string,
-                    })
-                    if (response?.status_code === 200 && response?.token) {
-                        setToken(response?.token);
-                        return true;
-                    }
-
-                    return false;
-                } catch (error) {
-                    console.error("Error authenticating with backend:", error);
+                const response: any = await signInWithGoogle({
+                    id_token: account.id_token as string,
+                    email: user?.email as string,
+                });
+                if (response?.status_code === 200) {
+                    setToken(response?.data?.token);
+                    return true;
+                } else {
                     return false;
                 }
             }
-            return true;
+            return false;
         },
         async jwt({ token, account, user }) {
             if (account && user) {
@@ -44,7 +39,7 @@ const authOptions: NextAuthOptions = {
                 token.userId = user.id;
             }
             return token;
-        },
+        },  
         async session({ session, token }) {
             session.accessToken = token.accessToken as string;
             session.user.id = token.userId as string;

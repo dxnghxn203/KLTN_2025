@@ -44,13 +44,20 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             "quantity": quantity
         }
         collection = db[collection_name]
-        cart_data = collection.find_one({"user_id": user_id})
-        if cart_data:
-            cart_data["products"].append(item)
-            collection.update_one({"user_id": user_id}, {"$set": {"products": cart_data["products"]}})
+        filter_query = {"user_id": user_id, "products.product_id": product_id}
+
+        existing_product = collection.find_one(filter_query)
+
+        if existing_product:
+            update_query = {
+                "$set": {"products.$.price_id": price_id},
+                "$inc": {"products.$.quantity": quantity}
+            }
         else:
-            new_cart = CartResponse(user_id=user_id, products=[item])
-            collection.insert_one(new_cart.dict())
+            update_query = {
+                "$push": {"products": item}
+            }
+        collection.update_one({"user_id": user_id}, update_query, upsert=True)
         return response.BaseResponse(
             status="success",
             message="Product added to cart successfully"

@@ -6,8 +6,6 @@ import CommentDialog from "../Dialog/commentDialog";
 import { useReview } from "@/hooks/useReview";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
 
 const FeedBack = ({ product, productId }: { product: any; productId: any }) => {
   const [visibleReviews, setVisibleReviews] = useState(2); // Hiển thị 2 bình luận mặc định

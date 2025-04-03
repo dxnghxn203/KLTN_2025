@@ -15,7 +15,6 @@ import slider3 from "@/images/slider3.webp";
 import slider from "@/images/slider.png";
 
 const images = [slider1, slider2, slider3, slider];
-console.log(images);
 
 const ProductCatalog: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

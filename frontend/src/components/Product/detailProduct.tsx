@@ -20,6 +20,7 @@ import ImageDialog from "../Dialog/imageDialog";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
+import { getPriceFromProduct } from "@/utils/price";
 
 interface DetailProductProps {
   product: {
@@ -180,7 +181,7 @@ const DetailProduct = ({ product }: any) => {
               </div>
 
               {product?.images &&
-                product?.images.slice(0, 2).map((img, index) => (
+                product?.images.slice(0, 2).map((img: any, index: any) => (
                   <div
                     key={img?.images_id}
                     className={`w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center ${

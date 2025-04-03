@@ -8,7 +8,7 @@ export const signInWithGoogle = async (data: any) => {
         return {
             status_code: response?.status_code || 200,
             message: response?.message || 'Đăng nhập bằng Google thành công',
-            token: response?.data?.token || null,
+            data: response?.data || null,
         }
     } catch (error: any) {
         console.error('Google login error:', error);

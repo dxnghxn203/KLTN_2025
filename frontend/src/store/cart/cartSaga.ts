@@ -72,13 +72,14 @@ function* handleGetCart(action: any): Generator<any, void, any> {
         const session = getSession();
         const token = getToken()
 
-        const response = yield call(cartService.getCartSession, { session });
+        const response = token ?
+            yield call(cartService.getCartToken, { session })
+            : yield call(cartService.getCartSession, { session });
         if (response?.status_code === 200) {
             onSuccess();
             if (response?.data?.session_id && response?.data?.session_id !== session) {
                 setSession(response?.data?.session_id);
             }
-            console.log('response', response?.data?.products);
             yield put(getCartSuccess(response?.data?.products));
             return;
         }
@@ -109,7 +110,9 @@ function* handleAddToCart(action: any): Generator<any, void, any> {
             price_id: price_id,
             quantity: quantity,
         }
-        const response = yield call(cartService.addToCartSession, data);
+        const response = token ?
+            yield call(cartService.addToCartToken, data)
+            : yield call(cartService.addToCartSession, data);
 
         if (response?.status_code === 200) {
             onSuccess();

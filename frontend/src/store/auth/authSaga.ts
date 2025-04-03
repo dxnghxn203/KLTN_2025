@@ -23,10 +23,10 @@ function* handleGoogleLogin(): Generator<any, void, any> {
             prompt: "select_account"
         });
 
-        const session = yield call(getSession);
-        if (!session) {
+        if (signInGG?.error ) {
             yield put(googleLoginFailure('Đăng nhập bằng Google thất bại'));
         } else {
+            const session = yield call(getSession)
             yield put(googleLoginSuccess(session.user));
         }
     } catch (error: any) {
@@ -36,14 +36,14 @@ function* handleGoogleLogin(): Generator<any, void, any> {
 
 // Login with credentials
 function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
-    
+
     const { payload } = action;
     const {
         onSuccess = () => { },
         onFailed = () => { },
         ...credentials
     } = payload;
-    
+
     const form = new FormData();
     form.append('email', credentials.email);
     form.append('password', credentials.password);
@@ -61,7 +61,7 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 
         } else {
             console.log('Login failed:', response.message);
-            onFailed(response.message );
+            onFailed(response.message);
             yield put(loginFailure(response.message || 'Đăng nhập thất bại'));
         }
     } catch (error: any) {

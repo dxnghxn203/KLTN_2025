@@ -47,8 +47,11 @@ export const deleteCookie = (name: string) => {
 
 // Token Management
 export const setToken = (token: string) => {
+    console.log('Setting token:1', token);
     try {
-        if (!isBrowser) return;
+
+        // if (!isBrowser) return;
+        console.log('Setting token:2', token);
         setCookie(COOKIE_TOKEN_KEY, token, COOKIE_TOKEN_EXPIRED);
     } catch (error) {
         console.error('Error setting token:', error);
