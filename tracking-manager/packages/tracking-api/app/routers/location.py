@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from starlette import status
 
 from app.core import response, logger
+from app.entities.location.request import ItemLocationReq
+from app.middleware import middleware
 from app.models import location
 
 router = APIRouter()
@@ -132,6 +134,45 @@ async def get_all_regions():
         return response.SuccessResponse(data=await location.get_regions())
     except Exception as e:
         logger.error(f"Error getting all regions: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/location/add", response_model=response.BaseResponse)
+async def create_location(item: ItemLocationReq, token: str = Depends(middleware.verify_token)):
+    try:
+        return await location.create_location(item, token)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error create location: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/location/update/{location_id}", response_model=response.BaseResponse)
+async def update_location(location_id: str, item: ItemLocationReq, token: str = Depends(middleware.verify_token)):
+    try:
+        return await location.update_location(token, location_id, item)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error update location: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.delete("/location/delete/{location_id}", response_model=response.BaseResponse)
+async def delete_location(location_id: str, token: str = Depends(middleware.verify_token)):
+    try:
+        return await location.delete_location(token, location_id)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error delete location: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
