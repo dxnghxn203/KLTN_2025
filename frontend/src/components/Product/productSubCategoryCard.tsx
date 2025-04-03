@@ -100,13 +100,7 @@ const ProductSubCategoryCard: React.FC<ProductSubCategoryCardProps> = ({
       {/* Dialog hiển thị khi isDialogOpen = true */}
       {isDialogOpen && (
         <ProductDialog
-          name={products?.name_primary}
-          price={products?.prices[0]?.price}
-          discount={products?.prices[0]?.discount}
-          originPrice={products?.prices[0]?.original_price}
-          imageSrc={products?.images_primary}
-          unit={products?.prices[0]?.unit}
-          id={products?.id}
+        product={products}
           onClose={() => setIsDialogOpen(false)}
         />
       )}

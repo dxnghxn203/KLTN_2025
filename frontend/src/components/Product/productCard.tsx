@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ProductData } from "@/types/product";
 
-const ProductCard = ({  product }: { product: any }) => {
+const ProductCard = ({ product }: { product: any }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -86,13 +86,7 @@ const ProductCard = ({  product }: { product: any }) => {
 
       {isDialogOpen && (
         <ProductDialog
-          id={product?.product_id}
-          name={product?.product_name}
-          price={product?.prices[0]?.price ?? 0}
-          discount={ product?.prices[0]?.discount ?? ""}
-          originPrice={product?.prices[0]?.originPrice ?? 0}
-          imageSrc={product?.images_primary}
-          unit={product?.prices[0]?.unit ?? ""}
+          product={product}
           onClose={() => setIsDialogOpen(false)}
         />
       )}

@@ -13,6 +13,8 @@ import {
     fetchGetAllOrderAdminSuccess,
     fetchGetAllOrderAdminFailed,
 } from './orderSlice';
+import { get } from 'http';
+import { getSession } from '@/utils/cookie';
 
 // Fetch all order
 function* fetchGetAllOrder(action: any): Generator<any, void, any> {
@@ -36,23 +38,26 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
         const {
             onSuccess = () => { },
             onFailed = () => { },
-            ...orderData
+            orderData
         } = payload;
 
-        const addressInfo = orderData.addressInfo || {};
-        const product = orderData.product || {};
-        
+        const session = getSession();
+
+        const addressInfo = orderData.addressInfo;
+        const ordererInfo = orderData.ordererInfo;
+        const products = () => {
+            return orderData.product.map((item: any) => ({
+                product_id: item.product_id,
+                price_id: item.price_id,
+                product_name: item.products_name,
+                unit: item.unit,
+                quantity: item.quantity,
+                price: item.price.price
+            }))
+        }   
+    
         const apiPayload = {
-            product: [
-                {
-                    "product_id": "PRODUCTL4A1742438024",
-                    "price_id": "PRICEGXM1742438022",
-                    "product_name": "NutriGrow Nutrimed",
-                    "unit": "Hộp",
-                    "quantity": 1,
-                    "price": 480000
-                }
-            ],
+            product: products(),
             pick_from: {
                 "name": "medicare",
                 "phone_number": "string",
@@ -65,9 +70,9 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
                 }
             },
             pick_to: {
-                "name": "Hên",
-                "phone_number": "0799699159",
-                "email": "null",
+                "name": ordererInfo.fullName || "",
+                "phone_number": ordererInfo.phone || "",
+                "email": ordererInfo.email || "",
                 "address": {
                     "address": addressInfo.address || "",
                     "ward": addressInfo.ward || "",
@@ -81,31 +86,32 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
             "receiver_province_code": addressInfo.cityCode || 0,
             "receiver_district_code": addressInfo.districtCode || 0,
             "receiver_commune_code": addressInfo.wardCode || 0,
-            "delivery_instruction": ""
+            "delivery_instruction": addressInfo.note || "",
+            "payment_type": orderData.paymentMethod,
         };
 
-        console.log(apiPayload);
-        const rs = yield call(orderService.checkOrder, apiPayload);
-        
-        // Check if response is an image (QR code)
-        // if (rs.headers && 
-        //     rs.headers['content-type'] === 'image/png' && 
-        //     rs.headers['content-disposition']?.includes('attachment')) {
-        //     onSuccess(rs.data);
-        //     yield put(fetchCheckOrderSuccess({}));
-        //     return;
-        // }
-        
-        onSuccess(rs.data);
-        yield put(fetchCheckOrderSuccess({}));
-        // Check for regular success response
-        // if (rs.status === 'success') {
-        //     onSuccess(rs.data);
-        //     yield put(fetchCheckOrderSuccess({}));
-        //     return;
-        // }
-        // onFailed();
-        // yield put(fetchCheckOrderFailed("Order not found"));
+        const rs = yield call(orderService.checkOrder, apiPayload, session);
+        if (rs.status_code === 200) {
+            yield put(fetchCheckOrderSuccess(rs.data));
+            if (rs?.data?.qr_code && rs?.data?.qr_code !== "") {
+                onSuccess({
+                    "isQR": true,
+                    "message": rs.message,
+                    "qr_code": rs.data.qr_code,
+                    "order_id": rs.data.order_id,
+                });
+                return;
+            }
+            onSuccess({
+                "isQR": false,
+                "message": rs.message,
+                "order_id": rs.data.order_id,
+            });
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchCheckOrderSuccess(""));
+        onFailed("test");
     }
     catch (error) {
         console.log(error);

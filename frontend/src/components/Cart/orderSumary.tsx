@@ -7,7 +7,7 @@ interface OrderSummaryProps {
   totalOriginPrice: number;
   totalDiscount: number;
   totalSave: number;
-  checkout: ()=> void;
+  checkout: () => void;
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -63,9 +63,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="flex gap-5 justify-between items-center mt-3 ml-2.5 max-w-full w-[337px]">
           <div className="text-xl text-black">Thành tiền</div>
           <div className="flex gap-2 whitespace-nowrap">
-            <div className="text-[16px] pt-1 text-gray-500 line-through">
-              {totalOriginPrice.toLocaleString("vi-VN")}đ
-            </div>
+            {
+              totalDiscount > 0 && (
+                <div className="text-[16px] pt-1 text-gray-500 line-through">
+                  {totalOriginPrice.toLocaleString("vi-VN")}đ
+                </div>
+              )
+            }
             <div className="text-xl font-bold text-blue-700">
               {" "}
               {totalAmount.toLocaleString("vi-VN")}đ
@@ -73,17 +77,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </div>
         </div>
         <div className="flex justify-center w-full">
-            <button
-              className={`w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white rounded-3xl ${
-                totalAmount === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-700 hover:bg-[#002E99]"
+          <button
+            className={`w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white rounded-3xl ${totalAmount === 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-700 hover:bg-[#002E99]"
               }`}
-              onClick={checkout}
-              disabled={totalAmount === 0}
-            >
-              Mua hàng
-            </button>
+            onClick={checkout}
+            disabled={totalAmount === 0}
+          >
+            Mua hàng
+          </button>
         </div>
         {totalAmount === 0 && (
           <div className="mt-2 text-center text-red-500">

@@ -16,7 +16,7 @@ export function useOrder() {
         }));
     }, []);
 
-    const checkOrder = async (data: any, onSuccess: (data: any) => void, onFailed: () => void) => {
+    const checkOrder = async (data: any, onSuccess: (data: any) => void, onFailed: (data: any) => void) => {
         dispatch(fetchCheckOrderStart({
             ...data,
             onSuccess: onSuccess,

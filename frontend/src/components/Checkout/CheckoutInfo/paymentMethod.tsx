@@ -1,4 +1,5 @@
 "use client";
+import { PAYMENT_COD, PAYMENT_TP_BANK_QR } from "@/utils/constants";
 import React from "react";
 
 type PaymentType = "cash" | "qr" | "bank";
@@ -14,12 +15,12 @@ export const PaymentMethod: React.FC<PaymentMethodProps> = ({
 }) => {
   const methods = [
     {
-      type: "cash",
+      type: PAYMENT_COD,
       label: "Thanh toán tiền mặt khi nhận hàng",
       icon: "https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/c45480d681035faa4f9b86501e16701cdb31af935aacbb052f6225c8ee6448b7?placeholderIfAbsent=true",
     },
     {
-      type: "qr",
+      type: PAYMENT_TP_BANK_QR,
       label: "Thanh toán bằng chuyển khoản (QR Code)",
       icon: "https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/ef2a528bd3ff354fc1498a931df4f4010b4ef9f868879479a670ea309caca048?placeholderIfAbsent=true",
     },

@@ -16,6 +16,9 @@ import MenuHeader from "./menuHeader";
 import LocationDialog from "@/components/Dialog/locationDialog"; // Import from correct path
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
+import { getPriceFromProduct } from "@/utils/price";
+import { useToast } from "@/providers/toastProvider";
+import DeleteProductDialog from "../Dialog/deleteProductDialog";
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -25,8 +28,12 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, logout } = useAuth();
-  const { cartLocal, removeFromCart } = useCart();
-
+  const { removeProductFromCart, getProductFromCart, cart } = useCart();
+  const [loadingGetCart, setLoadingGetCart] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const toast = useToast();
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -52,6 +59,51 @@ export default function Header() {
   const handleLogout = () => {
     logout();
     setShowDropdown(false);
+  };
+
+  const getCart = () => {
+    setLoadingGetCart(true);
+    getProductFromCart(
+      () => {
+        setLoadingGetCart(false);
+      }
+      , (error: string) => {
+        setLoadingGetCart(false);
+      }
+    )
+  }
+
+  useEffect(() => {
+    getCart();
+  }, [])
+
+  const renderCartItems = (product: any, price_id: any, quantity: any) => {
+    const price = getPriceFromProduct(product, price_id);
+    return (
+      <>
+        <div className="flex ml-auto items-center justify-between w-full">
+          <div className="text-[#0053E2] font-medium">
+            {price.price.toLocaleString(
+              "vi-VN"
+            )}
+            đ
+          </div>
+          <span className="text-xs text-gray-500">
+            x{quantity} {price.unit}
+          </span>
+        </div>
+      </>
+    )
+  }
+
+  const handlRemoveFromCart = (product_id: any) => {
+    setSelectedProductId(product_id);
+    setIsDeleteDialogOpen(true);
+  }
+
+  const handleCloseDialog = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedProductId(null);
   };
 
   return (
@@ -116,9 +168,9 @@ export default function Header() {
                 >
                   <div className="relative">
                     <AiOutlineShoppingCart className="text-2xl" />
-                    {cartLocal && cartLocal.length > 0 && (
+                    {cart && cart?.length > 0 && (
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                        {cartLocal.length}
+                        {cart?.length}
                       </span>
                     )}
                   </div>
@@ -131,25 +183,25 @@ export default function Header() {
                   <div className="p-4">
                     <h3 className="text-black font-semibold">Giỏ hàng của bạn</h3>
 
-                    {!cartLocal || cartLocal.length === 0 ? (
+                    {!cart || cart.length === 0 ? (
                       <div className="py-6 text-center text-gray-500">
                         Giỏ hàng trống
                       </div>
                     ) : (
                       <>
                         <div
-                          className={`max-h-[250px] overflow-y-auto ${cartLocal.length > 3 ? "scrollbar-thin" : ""
+                          className={`max-h-[250px] overflow-y-auto ${cart.length > 3 ? "scrollbar-thin" : ""
                             }`}
                         >
-                          {cartLocal.map((item: any, index: any) => (
+                          {cart && cart.map((item: any, index: any) => (
                             <div
                               key={item.id}
-                              className={`flex py-3 ${index !== cartLocal.length - 1 ? "border-b" : ""
+                              className={`flex py-3 ${index !== cart?.length - 1 ? "border-b" : ""
                                 }`}
                             >
                               <div className="w-14 h-14 flex-shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                                 <Image
-                                  src={item.imageSrc}
+                                  src={item.product?.images_primary}
                                   alt={item.name}
                                   width={50}
                                   height={50}
@@ -161,24 +213,14 @@ export default function Header() {
                               <div className="ml-3 flex-1 flex flex-col justify-between">
                                 <div>
                                   <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
-                                    {item.name}
+                                    {item.product?.product_name}
                                   </h4>
                                 </div>
-                                <div className="flex ml-auto items-center justify-between w-full">
-                                  <div className="text-[#0053E2] font-medium">
-                                    {(item.price * item.quantity).toLocaleString(
-                                      "vi-VN"
-                                    )}
-                                    đ
-                                  </div>
-                                  <span className="text-xs text-gray-500">
-                                    x{item.quantity} {item.unit}
-                                  </span>
-                                </div>
+                                {renderCartItems(item.product, item.price_id, item.quantity)}
                               </div>
                               <button
                                 className="ml-3 text-black/50 hover:text-red-800"
-                                onClick={() => removeFromCart(item.id)}
+                                onClick={() => handlRemoveFromCart(item.product?.product_id)}
                               >
                                 <ImBin className="text-lg hover:text-black/70" />
                               </button>
@@ -270,6 +312,25 @@ export default function Header() {
           </div>
         </header>
         <MenuHeader />
+        {isDeleteDialogOpen && selectedProductId !== null && (
+          <DeleteProductDialog
+            productId={selectedProductId}
+            onClose={handleCloseDialog}
+            onConfirm={() => {
+              removeProductFromCart(
+                selectedProductId,
+                () => {
+                  toast.showToast("Xóa sản phẩm thành công", "success");
+                  getCart();
+                },
+                (error: string) => {
+                  toast.showToast("Xóa sản phẩm thất bại", "error");
+                }
+              )
+              handleCloseDialog();
+            }}
+          />
+        )}
         <LocationDialog
           isOpen={isDialogOpen}
           onClose={() => setIsDialogOpen(false)}

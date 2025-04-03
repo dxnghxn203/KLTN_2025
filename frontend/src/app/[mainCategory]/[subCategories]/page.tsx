@@ -1,13 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Header from "@/components/Header/header";
-import Footer from "@/components/Footer/footer";
-import ProductPortfolioList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import SubSubCategory from "@/components/Category/subSubCategory";
 import { useCategory } from "@/hooks/useCategory";
-import { useEffect, useMemo, useState } from "react";
+import {  useMemo, useState } from "react";
 import ProductSubCategoryList from "@/components/Product/productSubCategoryList";
 import Loading from "@/app/loading";
 
@@ -44,7 +41,6 @@ export default function CategoryPage() {
 
   return (
     <div className="flex flex-col pb-12 bg-white pt-[80px]">
-      {/* <Header /> */}
       {
         loading ? (
           <Loading />
@@ -56,7 +52,7 @@ export default function CategoryPage() {
               </Link>
               <span> / </span>
               <Link
-                href={`/${mainCategory?.main_category_slug}`}
+                href={`/${mainCategories}`}
                 className="hover:underline text-blue-600"
               >
                 {categoryTitle}
@@ -69,7 +65,7 @@ export default function CategoryPage() {
             <div className="text-2xl font-bold px-5 py-4">{subCategoriesTitle}</div>
             <SubSubCategory
               sub_category={subCategory}
-              main_category={mainCategory}
+              mainCategories={mainCategories}
             />
             <div className="mt-6">
               <ProductSubCategoryList

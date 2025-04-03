@@ -68,14 +68,14 @@ export default function CategoryPage() {
               </Link>
               <span> / </span>
               <Link
-                href={`/${mainCategory?.main_category_slug}`}
+                href={`/${mainCategories}`}
                 className="hover:underline text-blue-600"
               >
                 {categoryTitle}
               </Link>
               <span> / </span>
               <Link
-                href={`/${mainCategory?.main_category_slug}/${subCategory?.sub_category_slug}`}
+                href={`/${mainCategories}/${subCategories}`}
                 className="hover:underline text-blue-600"
               >
                 {subCategoriesTitle}

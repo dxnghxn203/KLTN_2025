@@ -8,9 +8,9 @@ from app.models import order, user
 router = APIRouter()
 
 @router.post("/order/check", response_model=response.BaseResponse)
-async def check_order(item: ItemOrderInReq, token: str = Depends(middleware.verify_token_optional)):
+async def check_order(item: ItemOrderInReq, session: str= None, token: str = Depends(middleware.verify_token_optional)):
     try:
-        user_id = "guest"
+        user_id = session
         if token:
             user_info = await user.get_current(token)
             user_id = user_info.id

@@ -15,7 +15,7 @@ export function useProduct() {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
-    const [top_n, setTopN] = useState(5);
+    const [top_n, setTopN] = useState(10);
 
     const fetchProductBySlug = async (slug: string, onSuccess: () => void, onFailed: () => void) => {
         dispatch(fetchProductBySlugStart({
