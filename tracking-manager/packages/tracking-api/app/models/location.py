@@ -1,12 +1,18 @@
+import datetime
 import os
 
 import pandas as pd
+from starlette import status
 
-from app.core import elasticsearch
+from app.core import elasticsearch, database, logger, response
+from app.entities.location.request import ItemLocationReq
 from app.entities.location.response import City, District, Ward, Region
-from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX
+from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX, generate_id
 from app.helpers.es_location import insert_es_cities, delete_index, insert_es_districts, insert_es_wards, \
     insert_es_regions
+from app.models import user
+
+collection_name = "locations"
 
 INDEX_MAPPING = {
     CITY_INDEX: insert_es_cities,
@@ -74,3 +80,82 @@ async def get_wards_by_district(district_code: str):
 
 async def get_regions():
     return await query_es_data(REGION_INDEX, {"query": {"match_all": {}}, "size": 65})
+
+async def create_location(item: ItemLocationReq, token: str):
+    try:
+        user_info = await user.get_current(token)
+        collection = database.db[collection_name]
+
+        item_dict = item.dict()
+        item_dict["location_id"] = generate_id("LOCATION")
+        item_dict["user_id"] = user_info.id
+        item_dict["created_at"] = datetime.datetime.now()
+        item_dict["updated_at"] = datetime.datetime.now()
+
+        insert_result = collection.insert_one(item_dict)
+
+        logger.info(f"[create_location] Thêm địa chỉ thành công cho user {user_info.id}")
+        return response.BaseResponse(
+            status_code=status.HTTP_201_CREATED,
+            message="Thêm địa chỉ thành công"
+        )
+    except Exception as e:
+        logger.error(f"Error create location: {str(e)}")
+        raise e
+
+async def update_location(token: str, location_id: str, item: ItemLocationReq):
+    try:
+        user_info = await user.get_current(token)
+        collection = database.db[collection_name]
+
+        updated_data = item.dict()
+        updated_data["updated_at"] = datetime.datetime.now()
+
+        result = collection.update_one(
+            {"user_id": user_info.id, "location_id": location_id},
+            {"$set": updated_data}
+        )
+
+        logger.info(f"[update_location] Matched: {result.matched_count}, Modified: {result.modified_count}")
+
+        if result.matched_count == 0:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy địa chỉ để cập nhật"
+            )
+
+        if result.modified_count == 0:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không có thay đổi trong dữ liệu"
+            )
+
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            message="Cập nhật địa chỉ thành công"
+        )
+    except Exception as e:
+        logger.error(f"Error update location: {str(e)}")
+        raise e
+
+async def delete_location(token: str, location_id: str):
+    try:
+        user_info = await user.get_current(token)
+        collection = database.db[collection_name]
+
+        result = collection.delete_one({"user_id": user_info.id, "location_id": location_id})
+
+        if result.deleted_count > 0:
+            return response.BaseResponse(
+                status_code=status.HTTP_200_OK,
+                message="Xóa địa chỉ thành công"
+            )
+
+        raise response.JsonException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            message="Không tìm thấy địa chỉ để xóa"
+        )
+
+    except Exception as e:
+        logger.error(f"Error delete location: {str(e)}")
+        raise e

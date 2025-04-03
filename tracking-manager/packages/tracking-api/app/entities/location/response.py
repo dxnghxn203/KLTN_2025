@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 
-
 class City(BaseModel):
     name: str
     code: int
@@ -13,7 +12,6 @@ class City(BaseModel):
     domestic_name: str
     domestic_name_en: str
 
-
 class District(BaseModel):
     name: str
     code: int
@@ -23,7 +21,6 @@ class District(BaseModel):
     unit_id: int
     unit_name: str
     city_code: int
-
 
 class Ward(BaseModel):
     name: str
@@ -44,3 +41,16 @@ class Region(BaseModel):
     code_name_en: str
     domestic_name: str
     domestic_name_en: str
+
+class ItemLocationrRes(BaseModel):
+    user_id: str
+    address: str
+    ward: str
+    district:  str
+    province: str
+    sender_province_code: int
+    sender_district_code: int
+    sender_commune_code: int
+    receiver_province_code: int
+    receiver_district_code: int
+    receiver_commune_code: int
