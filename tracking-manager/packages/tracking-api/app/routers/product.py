@@ -45,10 +45,16 @@ async def get_featured(main_category_id: str, sub_category_id: Optional[str] = N
 async def get_product(slug: str, session_id: str = None):
     try:
         check = get_session(session_id)
+        if not check:
+            return response.BaseResponse(
+                status="error",
+                message="Session not found",
+                data=None
+            )
         logger.info("check: "+str(check))
         product = await get_product_by_slug(slug)
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
@@ -84,7 +90,7 @@ async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
         product = await get_product_by_slug(slug)
 
         if not product:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )

@@ -54,6 +54,7 @@ type Orders struct {
 	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
 	CreatedBy            string              `json:"created_by" bson:"created_by"`
 	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
+	PaymentType          string              `json:"payment_type" bson:"payment_type"`
 }
 
 type ProductInfo struct {

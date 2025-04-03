@@ -89,7 +89,7 @@ async def verify_user(request: ItemAdminVerifyEmailReq):
             message="Internal server error"
         )
 
-@router.post("/auth/login")
+@router.post("/admin/login")
 async def login(email: str = Form(), password: str = Form()):
     try:
         ad = await admin.get_by_email(email)

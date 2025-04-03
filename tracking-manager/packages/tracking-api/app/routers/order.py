@@ -105,7 +105,7 @@ async def get_total_orders_last_365_days():
         )
 
 @router.delete("/order/delete", response_model=response.BaseResponse)
-async def add_order(order_id: str):
+async def cancel_order(order_id: str):
     try:
         return await order.cancel_order(order_id)
     except response.JsonException as je:

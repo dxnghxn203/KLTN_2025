@@ -35,9 +35,10 @@ async def create_review(item: ItemReviewReq, token, images):
     except Exception as e:
         raise e
 
-async def get_review_by_product(product_id):
+async def get_review_by_product(product_id: str, page: int, page_size: int):
     collection = database.db[collection_name]
-    reviews = list(collection.find({"product_id": product_id}))
+    skip_count = (page - 1) * page_size
+    reviews = list(collection.find({"product_id": product_id}).skip(skip_count).limit(page_size))
 
     review_list = [ItemReviewRes.from_mongo(review) for review in reviews]
     return review_list
@@ -49,7 +50,7 @@ async def reply_to_review(item: ItemReplyReq, token, images):
         review_id = ObjectId(item.review_id)
         review = collection.find_one({"_id": ObjectId(review_id)})
         if not review:
-            return response.JsonException(
+            raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không tìm thấy đánh giá"
             )
@@ -77,3 +78,18 @@ async def reply_to_review(item: ItemReplyReq, token, images):
         )
     except Exception as e:
         raise e
+
+async def count_reviews(product_id: str) -> int:
+    collection = database.db[collection_name]
+    return collection.count_documents({"product_id": product_id, "rating": {"$exists": True}})
+
+
+async def average_rating(product_id: str) -> float:
+    collection = database.db[collection_name]
+    pipeline = [
+        {"$match": {"product_id": product_id, "rating": {"$exists": True}}},
+        {"$group": {"_id": None, "avg_rating": {"$avg": "$rating"}}}
+    ]
+
+    result = list(collection.aggregate(pipeline))
+    return result[0]["avg_rating"] if result else 0.0

@@ -23,3 +23,12 @@ CITY_INDEX = f"{prefix}_cities"
 DISTRICT_INDEX = f"{prefix}_districts"
 WARD_INDEX = f"{prefix}_wards"
 REGION_INDEX = f"{prefix}_regions"
+
+PAYMENT_COD = "COD"
+PAYMENT_TP_BANK_QR = "TPBANK_QR"
+PAYMENT_BIDV_BANK_QR = "BIDV_QR"
+BANK_IDS = {
+    PAYMENT_TP_BANK_QR: "TPB",
+    PAYMENT_BIDV_BANK_QR: "BIDV"
+}
+

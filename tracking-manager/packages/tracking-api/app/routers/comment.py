@@ -23,9 +23,9 @@ async def create_comment(item: ItemCommentReq, token: str = Depends(middleware.v
         )
 
 @router.get("/comment/product/{product_id}", response_model=response.BaseResponse)
-async def get_comment_by_product(product_id: str):
+async def get_comment_by_product(product_id: str, page: int = 1, page_size: int = 5):
     try:
-        result = await comment.get_comment_by_product(product_id)
+        result = await comment.get_comment_by_product(product_id, page, page_size)
         return response.SuccessResponse(
             message="Lấy bình luận theo sản phẩm thành công",
             data=result
