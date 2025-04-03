@@ -58,6 +58,27 @@ async def get_related_product(product_id, top_n=5):
             status="failed",
             message="Internal server error",
         )
+async def get_product_by_cart_mongo(product_ids, cart):
+    try:
+        collection = db[collection_name]
+        products = list(collection.find({"product_id": {"$in": product_ids}}, {"_id": 0}))
+        detailed_cart = []
+        for product in products:
+            product_id = product["product_id"]
+            cart_item = cart.get(product_id)
+            if cart_item:
+                price_id = cart_item["price_id"]
+                quantity = cart_item["quantity"]
+
+                matching_price = next((p for p in product["prices"] if p["price_id"] == price_id), None)
+                if matching_price:
+                    detailed_cart.append({"product": ItemProductDBRes(**product), "price_id": price_id, "quantity": quantity})
+
+        return detailed_cart
+
+    except Exception as e:
+        logger.error(f"Failed [get_product_by_cart_mongo]: {e}")
+        return []
 
 async def get_product_by_cart_id(product_ids, cart):
     try:
