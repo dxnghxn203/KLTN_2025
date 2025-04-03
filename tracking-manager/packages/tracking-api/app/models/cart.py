@@ -1,6 +1,6 @@
 
 from app.core import logger, response, recommendation
-from app.core.database import db
+from app.core.database import db, collections
 from app.entities.cart.response import CartResponse, ItemCartReq
 
 collection_name = "carts"
@@ -44,20 +44,22 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             "quantity": quantity
         }
         collection = db[collection_name]
-        filter_query = {"user_id": user_id, "products.product_id": product_id}
+        if not collection.find_one({"user_id": user_id}):
+            collection.insert_one({"user_id": user_id, "products": []})
 
-        existing_product = collection.find_one(filter_query)
-
-        if existing_product:
-            update_query = {
+        result = collection.update_one(
+            {"user_id": user_id, "products.product_id": product_id},
+            {
                 "$set": {"products.$.price_id": price_id},
                 "$inc": {"products.$.quantity": quantity}
             }
-        else:
-            update_query = {
-                "$push": {"products": item}
-            }
-        collection.update_one({"user_id": user_id}, update_query, upsert=True)
+        )
+
+        if result.modified_count == 0:
+            collection.update_one(
+                {"user_id": user_id},
+                {"$push": {"products": item}}
+            )
         return response.BaseResponse(
             status="success",
             message="Product added to cart successfully"
