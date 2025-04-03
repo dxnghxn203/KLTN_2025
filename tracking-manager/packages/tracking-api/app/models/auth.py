@@ -9,7 +9,7 @@ from app.core import logger, response, mail
 from app.helpers import redis
 from app.middleware.middleware import get_private_key, generate_otp
 
-TOKEN_EXPIRY_SECONDS = 86400
+TOKEN_EXPIRY_SECONDS = 31536000
 collection_name = "authorizations"
 
 async def get_token(username: str, role_id: str):
