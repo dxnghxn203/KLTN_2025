@@ -87,13 +87,7 @@ const ProductsRelatedCard = ({ product }: any) => {
       {/* Dialog hiển thị khi isDialogOpen = true */}
       {isDialogOpen && (
         <ProductDialog
-          id={product?.product_id}
-          name={product?.product_name}
-          price={ product?.prices[0]?.price ?? 0}
-          discount={ product?.prices[0]?.discount ?? ""}
-          originPrice={product?.prices[0]?.originPrice ?? 0}
-          imageSrc={product?.images_primary ??""}
-          unit={product?.prices[0]?.unit}
+        product={product}
           onClose={() => setIsDialogOpen(false)}
         />
       )}

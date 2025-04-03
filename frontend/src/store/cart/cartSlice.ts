@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const initialState: CartState = {
     cartlocal: [] as CartItem[],  
-    cart: [] as CartItem[],      
+    cart: [],      
     cartSelected: [],
     loading: false,
     error: null,
@@ -93,6 +93,42 @@ export const cartSlice = createSlice({
         addCartFailure: (state, action: PayloadAction<any>) => {
             state.loading = false;
             state.error = action.payload;
+        },
+        // get cart
+        getCartStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+        },
+        getCartSuccess: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.cart = action.payload;
+            state.error = null;
+        },
+        getCartFailure: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        // add to cart session
+        addToCartStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+        },  
+        addToCartSuccess: (state) => {
+            state.loading = false;
+        },
+        addToCartFailure: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // remove cart session
+        removeCartStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+        },
+        removeCartSuccess: (state) => {
+            state.loading = false;
+        },
+        removeCartFailure: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload;
         }
     },
 });
@@ -110,6 +146,18 @@ export const {
     addCartStart,
     addCartSuccess,
     addCartFailure,
+
+    getCartStart,
+    getCartSuccess,
+    getCartFailure,
+
+    addToCartStart,
+    addToCartSuccess,
+    addToCartFailure,
+
+    removeCartStart,
+    removeCartSuccess,
+    removeCartFailure,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

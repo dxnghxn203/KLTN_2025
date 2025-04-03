@@ -33,7 +33,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
         <h3>Địa chỉ nhận hàng</h3>
       </header>
 
-      <div className="flex gap-5 text-sm">
+      {/* <div className="flex gap-5 text-sm">
         <input
           type="text"
           value={address.fullName}
@@ -48,7 +48,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
           placeholder="Số điện thoại"
           className={inputClass}
         />
-      </div>
+      </div> */}
 
       <div className="flex gap-5 text-sm">
         <div className="relative flex-1">

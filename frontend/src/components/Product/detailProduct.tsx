@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Plus, Minus } from "lucide-react";
 import Image from "next/image";
 import returnbox from "@/images/return-box.png";
@@ -45,42 +45,50 @@ interface DetailProductProps {
   };
 }
 
-const DetailProduct = ({ product }: DetailProductProps) => {
+const DetailProduct = ({ product }: any) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.unit);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
   const [isOpenDialog, setIsDialogOpen] = useState(false);
   const [selectedImageDialog, setSelectedImageDialog] = useState(0);
-  const { addToCart } = useCart();
+  const { addProductTocart, getProductFromCart } = useCart();
   const toast = useToast();
+
+  const [loadingToAddToCart, setLoadingToAddToCart] = useState(false);
+
   const handleAddToCart = () => {
-    try {
-      addToCart({
-        name: product.name_primary,
-        price: selectedPrice.price,
-        discount: selectedPrice.discount,
-        originPrice: selectedPrice.original_price,
-        imageSrc: product.images_primary,
-        unit: Array.isArray(selectedPrice.unit)
-          ? selectedPrice.unit[0]
-          : selectedPrice.unit,
-        quantity,
-        id: product.product_id,
-      });
-
-      toast.showToast("Thêm vào giỏ hàng thành công!", ToastType.SUCCESS);
-    } catch (error) {
-      toast.showToast("Thêm vào giỏ hàng thất bại!", ToastType.ERROR);
+    if (!selectedUnit) {
+      toast.showToast("Vui lòng chọn đơn vị tính!", ToastType.ERROR);
+      return;
     }
+    if (quantity <= 0) {
+      toast.showToast("Vui lòng chọn số lượng!", ToastType.ERROR);
+      return;
+    }
+    setLoadingToAddToCart(true);
+    addProductTocart(
+      product?.product_id,
+      selectedUnit,
+      quantity,
+      () => {
+        setLoadingToAddToCart(false);
+        toast.showToast("Thêm vào giỏ hàng thành công!", ToastType.SUCCESS);
+        getProductFromCart(
+          () => {},
+          (error: string) => {}
+        );
+      },
+      (error: string) => {
+        setLoadingToAddToCart(false);
+        toast.showToast(error, ToastType.ERROR);
+      }
+    );
   };
-  console.log("discount", product.prices[0].original_price);
 
-  console.log("full_description", product?.full_descriptions);
-
-  const selectedPrice =
-    product?.prices.find((price) => price.unit === selectedUnit) ||
-    product?.prices[0];
+  const selectedPrice: any = useMemo(() => {
+    return getPriceFromProduct(product, selectedUnit);
+  }, [selectedUnit]);
 
   return (
     <div className="">
@@ -264,54 +272,53 @@ const DetailProduct = ({ product }: DetailProductProps) => {
             <div className="flex items-center space-x-24">
               <p className="text-[#4A4F63] font-normal">Chọn đơn vị tính</p>
               <div className="flex space-x-2">
-                {product?.prices.map((price) => (
-                  <button
-                    key={price.id}
-                    onClick={() => setSelectedUnit(price.unit)}
-                    className={`flex items-center justify-center px-6 py-2 rounded-full border text-lg font-normal
+                {product?.prices.map((price: any) => (
+                  <>
+                    <button
+                      key={price.id}
+                      onClick={() => {
+                        setSelectedUnit(price?.price_id);
+                      }}
+                      className={`flex items-center justify-center px-6 py-2 rounded-full border text-lg font-normal
         ${
-          selectedUnit === price.unit
+          selectedUnit === price?.price_id
             ? "border-blue-500 text-black font-semibold"
             : "border-gray-300 text-gray-500"
         }`}
-                  >
-                    {price.unit}
-                  </button>
+                    >
+                      {price.unit}
+                    </button>
+                  </>
                 ))}
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="table-auto w-full text-left">
                 <tbody>
-                  {/* Danh mục */}
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Danh mục</td>
                     <td className="pl-0 py-3 w-2/3 text-[#0053E2] font-semibold">
                       {product?.category?.child_category_name}
                     </td>
                   </tr>
-                  {/* Dạng bào chế */}
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
                       Dạng bào chế
                     </td>
                     <td className="pl-0 py-3 w-2/3">{product?.dosage_form}</td>
                   </tr>
-                  {/* Quy cách */}
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Quy cách</td>
                     <td className="pl-0 py-3 w-2/3">
                       {product?.prices[0]?.amount_per_unit}
                     </td>
                   </tr>
-                  {/* Xuất xứ thương hiệu */}
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
                       Xuất xứ thương hiệu
                     </td>
                     <td className="pl-0 py-3 w-2/3">{product?.origin}</td>
                   </tr>
-                  {/* Nhà sản xuất */}
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
                       Nhà sản xuất
@@ -351,14 +358,12 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                       )}
                     </td>
                   </tr>
-                  {/* Mô tả ngắn */}
                   <tr>
                     <td className="pr-4 pt-4 pb-6 w-1/3 text-[#4A4F63]">
                       Mô tả ngắn
                     </td>
                     <td className="pt-4 mb-6">{product?.description}</td>
                   </tr>
-                  {/* Chọn số lượng */}
                   <tr>
                     <td className="pr-4 py-4 w-1/3 text-[#4A4F63]">
                       Chọn số lượng
@@ -392,6 +397,7 @@ const DetailProduct = ({ product }: DetailProductProps) => {
             <button
               className="mt-6 w-full bg-blue-700 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800"
               onClick={handleAddToCart}
+              disabled={loadingToAddToCart}
             >
               Chọn mua
             </button>
@@ -405,7 +411,6 @@ const DetailProduct = ({ product }: DetailProductProps) => {
               </span>
             </p>
 
-            {/* Footer benefits */}
             <div className="mt-4 flex pb-4 font-medium items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Image
@@ -455,7 +460,6 @@ const DetailProduct = ({ product }: DetailProductProps) => {
         </div>
       </div>
       <div className="mx-auto rounded-lg mt-12">
-        {/* Tab Bar */}
         <div className="flex">
           {[
             { id: "details", label: "Chi tiết sản phẩm" },
@@ -474,7 +478,6 @@ const DetailProduct = ({ product }: DetailProductProps) => {
           ))}
         </div>
 
-        {/* Nội dung Tab */}
         <div className="">
           {activeTab === "details" && <DescribeProduct product={product} />}
           {activeTab === "guide" && <Guide />}

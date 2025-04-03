@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CartItem } from '@/types/cart';
-import { addCartSelected, addCartLocal, clearCartLocal, removeCartLocal, selectCartError, selectCartLoading, selectCartLocal, updateQuantityCartLocal, updateUnitCartLocal, selectCartSelected, removeCartSelected } from '@/store';
+import { addCartSelected, addCartLocal, clearCartLocal, removeCartLocal, selectCartError, selectCartLoading, selectCartLocal, updateQuantityCartLocal, updateUnitCartLocal, selectCartSelected, removeCartSelected, addToCartStart, getCartStart, selectCart, removeCartStart } from '@/store';
 
 export function useCart() {
     const dispatch = useDispatch();
@@ -9,9 +9,49 @@ export function useCart() {
     const cartLocal = useSelector(selectCartLocal);
     const isLoading = useSelector(selectCartLoading);
     const error = useSelector(selectCartError);
+    const cart = useSelector(selectCart);
 
     const addToCart = (item: CartItem) => {
         dispatch(addCartLocal(item));
+    };
+
+    const getProductFromCart = (
+        onSuccess: () => void,
+        onFailure: (error: string) => void
+    ) => {
+        dispatch(getCartStart({
+            onSuccess: onSuccess,
+            onFailure: onFailure
+        }));
+        
+    }
+
+    const addProductTocart = (
+        product_id: any, 
+        price_id: any, 
+        quantity: number,
+        onSuccess: () => void,
+        onFailure: (error: string) => void
+    ) => {
+        dispatch(addToCartStart({
+            product_id: product_id,
+            price_id: price_id,
+            quantity: quantity,
+            onSuccess: onSuccess,
+            onFailure: onFailure
+        }));
+    };
+
+    const removeProductFromCart = (
+        product_id: any,
+        onSuccess: () => void,
+        onFailure: (error: string) => void
+    ) => {
+        dispatch(removeCartStart({
+            product_id: product_id,
+            onSuccess: onSuccess,
+            onFailure: onFailure
+        }));
     };
     
     const updateQuantity = (id: string, quantity: number) => {
@@ -39,6 +79,7 @@ export function useCart() {
     }
     const cartSelected = useSelector(selectCartSelected);
 
+
     return {
         cartLocal,
         isLoading,
@@ -50,7 +91,11 @@ export function useCart() {
         clearCart,
         cartSelected,
         addCartSelectedLocal,
-        removeCartSelectedLocal
+        removeCartSelectedLocal,
+        addProductTocart,
+        cart,
+        getProductFromCart,
+        removeProductFromCart
     };
 }
 

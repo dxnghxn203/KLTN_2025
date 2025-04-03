@@ -13,7 +13,7 @@ from app.entities.order.response import ItemOrderRes
 from app.entities.product.request import ItemProductRedisReq
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id, PAYMENT_COD, BANK_IDS
-from app.helpers.redis import get_product_transaction, save_product
+from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -143,6 +143,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
         if item.payment_type == PAYMENT_COD:
             await add_order(OrderRequest(order_id=order_id))
+            await remove_item_cart_by_order(item, user_id)
 
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,
@@ -154,6 +155,15 @@ async def check_order(item: ItemOrderInReq, user_id: str):
     except Exception as e:
         logger.error(f"Failed [check_order]: {e}")
         raise e
+
+async def remove_item_cart_by_order(orders:ItemOrderInReq, identifier: str):
+    try:
+        for product in orders.product:
+            remove_cart_item(identifier, product.product_id)
+        return True
+    except Exception as e:
+        logger.error(f"Failed [remove_item_cart_by_order]: {e}")
+        return False
 
 async def generate_qr_code(order_id: str, total_price: float, payment_type: str) -> Optional[str]:
     try:

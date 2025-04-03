@@ -13,6 +13,7 @@ import {
 } from "../ProductInfo/types";
 import { PharmaInfo } from "./pharmaInfo";
 import ReceiveDialog from "@/components/Dialog/receiveDialog";
+import { PAYMENT_COD } from "@/utils/constants";
 
 interface DeliveryProps {
   setData: (data: any) => void;
@@ -22,6 +23,7 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
   const [deliveryMethod, setDeliveryMethod] = useState<"delivery" | "pickup">(
     "delivery"
   );
+
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfoType>({
     fullName: "",
     phone: "",
@@ -41,15 +43,14 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
     wardCode: "",
   });
 
+  const [paymentMethod, setPaymentMethod] = useState<any>(PAYMENT_COD);
+
   useEffect(() => {
-    setData({ ordererInfo, addressInfo, deliveryMethod });
+    setData({ ordererInfo, addressInfo, deliveryMethod, paymentMethod });
   }
-    , [ordererInfo, addressInfo, deliveryMethod]);
+    , [ordererInfo, addressInfo, deliveryMethod, paymentMethod]);
 
   const [requireInvoice, setRequireInvoice] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "qr" | "bank">(
-    "cash"
-  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (

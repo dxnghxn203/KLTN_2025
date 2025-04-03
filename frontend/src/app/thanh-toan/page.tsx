@@ -3,8 +3,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import OrderSummary from "@/components/Checkout/ProductInfo/orderSumary";
-import Footer from "@/components/Footer/footer";
-import Header from "@/components/Header/header";
 import Image, { StaticImageData } from "next/image";
 import Delivery from "@/components/Checkout/CheckoutInfo/pickupPharma";
 import ProductList from "@/components/Checkout/ProductInfo/productList";
@@ -14,7 +12,7 @@ import { useOrder } from "@/hooks/useOrder";
 import sepay_qr_ORDER7NS1742504401 from "@/images/sepay_qr_ORDER7NS1742504401.png";
 
 const ShoppingCart: React.FC = () => {
-  const { cartLocal, cartSelected } = useCart();
+  const { cartLocal, cartSelected,  } = useCart();
 
   const products: Product[] = useMemo(() => {
     return cartLocal

@@ -122,15 +122,14 @@ export const getAllOrder = async (slug: string) => {
 }
 
 
-export const checkOrder = async ( data: any): Promise<any> => {
+export const checkOrder = async ( data: any, session: any): Promise<any> => {
     try {
-        console.log("call api check order");
-        const response = await axiosClient.post('/v1/order/check', data);
-        console.log("check order response");
+        const url = session ? `/v1/order/check?session=${session}` : '/v1/order/check';
+        const response: any = await axiosClient.post(url, data);
         return {
-            status: response?.status,
-            message: 'Kiểm tra đơn hàng thành công',
-            data: response
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
         };
     } catch (error: any) {
         return {

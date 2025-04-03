@@ -1,13 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Header from "@/components/Header/header";
-import Footer from "@/components/Footer/footer";
-import ProductPortfolioList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
 import SubSubCategory from "@/components/Category/subSubCategory";
 import { useCategory } from "@/hooks/useCategory";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ProductSubCategoryList from "@/components/Product/productSubCategoryList";
 import Loading from "@/app/loading";
 import ProductFeaturedList from "@/components/Product/productFeaturedList";

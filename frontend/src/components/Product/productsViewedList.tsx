@@ -1,58 +1,6 @@
 import React, { use, useEffect } from "react";
 import ProductsViewCard from "./productsViewedCard";
-import { ProductData } from "@/types/product";
-import medicine1 from "@/images/medicinee.png";
-import { generateRandomId } from "@/utils/string";
 import { useProduct } from "@/hooks/useProduct";
-
-const productData: ProductData[] = [
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: ""
-  },
-  {
-    id: generateRandomId(),
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: ""
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: ""
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc: "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: ""
-  },
-];
 
 const ProductsViewedList: React.FC = () => {
 
@@ -62,6 +10,7 @@ const ProductsViewedList: React.FC = () => {
     fetchProductRecentlViewed();
   }
   , []);
+  
   return (
     <div className="w-full max-md:px-5 max-md:max-w-full mt-6">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black mt-[-30px]">

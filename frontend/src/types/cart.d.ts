@@ -11,7 +11,7 @@ interface ItemCart {
 }
 
 interface CartState {
-    cart: Product[];
+    cart: any[];
     cartlocal: Product[];
     cartSelected: string[];
     loading: boolean;
