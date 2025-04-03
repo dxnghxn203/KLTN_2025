@@ -169,25 +169,26 @@ const DetailProduct = ({ product }: DetailProductProps) => {
                 />
               </div>
 
-              {product?.images && product?.images.slice(0, 2).map((img, index) => (
-                <div
-                  key={img?.images_id}
-                  className={`w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center ${
-                    selectedImage === index + 1
-                      ? "border-[#002E99]"
-                      : "border-gray-300"
-                  }`}
-                  onClick={() => setSelectedImage(index + 1)}
-                >
-                  <Image
-                    src={img?.images_url}
-                    alt={`Ảnh ${index + 1}`}
-                    width={112}
-                    height={112}
-                    className="w-full h-full object-cover px-2 py-2"
-                  />
-                </div>
-              ))}
+              {product?.images &&
+                product?.images.slice(0, 2).map((img, index) => (
+                  <div
+                    key={img?.images_id}
+                    className={`w-28 h-28 rounded-lg overflow-hidden border flex items-center justify-center ${
+                      selectedImage === index + 1
+                        ? "border-[#002E99]"
+                        : "border-gray-300"
+                    }`}
+                    onClick={() => setSelectedImage(index + 1)}
+                  >
+                    <Image
+                      src={img?.images_url}
+                      alt={`Ảnh ${index + 1}`}
+                      width={112}
+                      height={112}
+                      className="w-full h-full object-cover px-2 py-2"
+                    />
+                  </div>
+                ))}
 
               {/* More images indicator */}
               {product?.images.length > 3 && (
@@ -471,7 +472,9 @@ const DetailProduct = ({ product }: DetailProductProps) => {
         <div className="">
           {activeTab === "details" && <DescribeProduct product={product} />}
           {activeTab === "guide" && <Guide />}
-          {activeTab === "reviews" && <FeedBack />}
+          {activeTab === "reviews" && (
+            <FeedBack product={product} productId={product?.product_id} />
+          )}
         </div>
       </div>
       <ImageDialog

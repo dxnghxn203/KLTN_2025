@@ -3,12 +3,12 @@ import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
 
-interface ProductMainCategoryCardProps {
+interface ProductFeaturedCardProps {
   products: any;
   mainCategoryName: string;
 }
 
-const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
+const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
   products,
   mainCategoryName,
 }) => {
@@ -19,7 +19,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] w-full ">
+        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
           <Link href={`/chi-tiet-san-pham/${slug}`} legacyBehavior>
             <div className="py-4 flex flex-col items-center">
               <div className="flex justify-end w-full">
@@ -36,8 +36,8 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
               <Image
                 src={products?.images_primary}
                 alt={""}
-                width={170}
-                height={170}
+                width={120}
+                height={120}
                 className="object-contain cursor-pointer"
                 priority
               />
@@ -115,4 +115,4 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
   );
 };
 
-export default ProductMainCategoryCard;
+export default ProductFeaturedCard;

@@ -13,7 +13,7 @@ const CommentDialog: React.FC<CommentDialogProps> = ({ onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div
         className="bg-white gap-4 py-6 rounded-lg flex flex-col items-center justify-center relative 
-  max-h-full overflow-y-auto"
+  max-h-full overflow-y-auto w-[600px]"
       >
         <button
           onClick={onClose}
@@ -26,41 +26,16 @@ const CommentDialog: React.FC<CommentDialogProps> = ({ onClose }) => {
         </div>
 
         {/* Thêm gạch ngang */}
-        <div className="w-full border-b border-gray-300"></div>
+        {/* <div className="w-full border-b border-gray-300"></div> */}
 
         <form className="w-full space-y-4">
-          <div className="flex gap-4 w-full px-6">
-            <input
-              type="text"
-              placeholder="Nhập họ và tên"
-              className="w-full px-5 py-4 rounded-xl border border-black/10 
-    focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
-    outline-none placeholder:text-[14px] placeholder:font-normal"
-            />
-            <input
-              type="tel"
-              placeholder="Nhập số điện thoại"
-              className="w-full px-5 py-4 rounded-xl border border-black/10 
-    focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
-    outline-none placeholder:text-[14px] placeholder:font-normal"
-            />
-          </div>
-          <div className="px-6 w-full">
-            <input
-              type="email"
-              placeholder="Nhập email (Không bắt buộc)"
-              className="w-full px-5 py-4 rounded-xl border border-black/10 
-    focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
-    outline-none placeholder:text-[14px] placeholder:font-normal"
-            />
-          </div>
           <div className="px-6 w-full">
             <textarea
               placeholder="Nội dung đánh giá (Vui lòng gõ tiếng Việt có dấu)"
               className="w-full px-5 py-4 rounded-xl border border-black/10 
     focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
     outline-none placeholder:text-[14px] placeholder:font-normal resize-none"
-              rows={4}
+              rows={6}
             />
           </div>
           <div className="px-6 w-full">

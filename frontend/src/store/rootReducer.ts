@@ -6,6 +6,7 @@ import orderReducer from './order/orderSlice';
 import { locationSlice } from './location/locationSlice';
 import categoryReducer from './category/categorySlice';
 import userReducer from "./user/userSlice";
+import reviewReducer from "./review/reviewSlice";
 import { getToken } from '@/utils/cookie';
 import { setClientToken } from '@/utils/configs/axiosClient';
 
@@ -19,6 +20,7 @@ const reducer = combineReducers({
   location: locationSlice.reducer,
   category: categoryReducer,
   user:userReducer,
+  review: reviewReducer,
   // Add other reducers here
 });
 

@@ -1,114 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { Check } from "lucide-react";
 import RatingBar from "./ratingBar";
 import RatingDialog from "../Dialog/ratingDialog";
 import CommentDialog from "../Dialog/commentDialog";
+import { useReview } from "@/hooks/useReview";
+import { useParams } from "next/navigation";
+import { useProduct } from "@/hooks/useProduct";
 
-const reviews = [
-  {
-    id: 1,
-    user: "CHỊ QUYỀN",
-    rating: "17 tuổi uống được k ạ",
-    time: "Hôm qua",
-    stars: 5,
-    reply: {
-      name: "Quỳnh Chu",
-      message: [
-        "Chào chị Quyền,",
-        "Dạ Nước Collagen5000 Đông Trùng Hạ Thảo Biokh hỗ trợ ngăn ngừa quá trình lão hóa, tăng cường đề kháng không phù hợp cho người 17 tuổi ạ.",
-        "Nhà thuốc thông tin đến bạn.",
-        "Thân mến!",
-      ],
-      time: "Hôm kia",
-    },
-  },
-  {
-    id: 2,
-    user: "Chị Mai",
-    rating: "Sản phẩm rất tốt, mình rất thích",
-    time: "2 ngày trước",
-    stars: 4,
-    reply: {
-      name: "Hồng Anh",
-      message: [
-        "Chào chị Mai,",
-        "Cảm ơn chị đã tin dùng sản phẩm của chúng tôi.",
-        "Chúc chị có một ngày tốt lành!",
-      ],
-      time: "1 ngày trước",
-    },
-  },
-  {
-    id: 3,
-    user: "Anh Bình",
-    rating: "Có ship COD không ạ?",
-    time: "3 ngày trước",
-    stars: 5,
-    reply: {
-      name: "Hồng Anh",
-      message: [
-        "Dạ có ạ!",
-        "Anh có thể đặt hàng và chọn thanh toán khi nhận hàng nhé.",
-      ],
-      time: "2 ngày trước",
-    },
-  },
-];
-const questionsanswers = [
-  {
-    id: 1,
-    user: "CHỊ QUYỀN",
-    rating: "17 tuổi uống được k ạ",
-    time: "Hôm qua",
-    reply: {
-      name: "Quỳnh Chu",
-      message: [
-        "Chào chị Quyền,",
-        "Dạ Nước Collagen5000 Đông Trùng Hạ Thảo Biokh hỗ trợ ngăn ngừa quá trình lão hóa, tăng cường đề kháng không phù hợp cho người 17 tuổi ạ.",
-        "Nhà thuốc thông tin đến bạn.",
-        "Thân mến!",
-      ],
-      time: "Hôm kia",
-    },
-  },
-  {
-    id: 2,
-    user: "Chị Mai",
-    rating: "Sản phẩm rất tốt, mình rất thích",
-    time: "2 ngày trước",
-    reply: {
-      name: "Hồng Anh",
-      message: [
-        "Chào chị Mai,",
-        "Cảm ơn chị đã tin dùng sản phẩm của chúng tôi.",
-        "Chúc chị có một ngày tốt lành!",
-      ],
-      time: "1 ngày trước",
-    },
-  },
-  {
-    id: 3,
-    user: "Anh Bình",
-    rating: "Có ship COD không ạ?",
-    time: "3 ngày trước",
-    reply: {
-      name: "Hồng Anh",
-      message: [
-        "Dạ có ạ!",
-        "Anh có thể đặt hàng và chọn thanh toán khi nhận hàng nhé.",
-      ],
-      time: "2 ngày trước",
-    },
-  },
-];
-
-const FeedBack = () => {
+const FeedBack = ({ product, productId }: { product: any; productId: any }) => {
   const [visibleReviews, setVisibleReviews] = useState(2); // Hiển thị 2 bình luận mặc định
   const [visibleAQ, setVisibleAQ] = useState(2); // Hiển thị 2 bình luận mặc định
   const [selected, setSelected] = useState("newest");
   const [isDialogRatingOpen, setIsDialogRatingOpen] = useState(false);
   const [isDialogCommentOpen, setIsDialogCommentOpen] = useState(false);
+  const { allReview, fetchGetAllReview } = useReview();
+  const { productBySlug, fetchProductBySlug } = useProduct();
+  const params = useParams();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (productId) {
+      fetchGetAllReview(
+        productId,
+        () => {
+          setLoading(false);
+        },
+        () => {
+          setLoading(false);
+        }
+      );
+    }
+  }, [productId]);
+
+  console.log(allReview, "allReview");
 
   return (
     <div className="">
@@ -142,10 +66,11 @@ const FeedBack = () => {
         <div className="mt-6 border-t border-gray-300"></div>
 
         <div className="mt-6 space-y-4">
-          {reviews.slice(0, visibleReviews).map((review) => (
-            <div key={review.id} className="pb-4 space-y-4">
+          {allReview.slice(0, visibleReviews).map((review: any) => (
+            <div key={review?._id} className="pb-4 space-y-4">
+              {/* Rating & Thời gian */}
               <div className="flex items-center">
-                {Array(review.stars)
+                {Array(review.rating)
                   .fill(0)
                   .map((_, index) => (
                     <Star
@@ -155,17 +80,20 @@ const FeedBack = () => {
                     />
                   ))}
 
-                <div className="ml-2 text-sm text-gray-500">{review.time}</div>
+                <div className="ml-2 text-sm text-gray-500">
+                  {review?.created_at}
+                </div>
               </div>
 
+              {/* Thông tin người dùng & Comment */}
               <div className="mt-4 flex space-x-2">
                 <div className="w-10 h-10 bg-blue-500 text-white flex items-center justify-center rounded-full font-bold">
-                  {review.user.charAt(0)}
+                  {review?.user_name?.charAt(0)}
                 </div>
                 <div className="space-y-2">
-                  <div className="font-bold">{review.user}</div>
+                  <div className="font-bold">{review?.user_name}</div>
                   <div className="flex space-x-6">
-                    <span>{review.rating}</span>
+                    <span>{review?.comment}</span>
                     <div className="text-blue-500 text-sm cursor-pointer flex items-center space-x-1">
                       <span>Trả lời</span>
                     </div>
@@ -173,51 +101,53 @@ const FeedBack = () => {
                 </div>
               </div>
 
-              <div className="mt-4 flex space-x-2 mx-12">
-                <div className="w-10 h-10 bg-blue-500 text-white flex items-center justify-center rounded-full font-bold">
-                  {review.reply.name.charAt(0)}
-                </div>
-                <div className="space-y-2">
-                  <div className="font-bold">{review.reply.name}</div>
-                  <div>
-                    {review.reply.message.map((line, index) => (
-                      <p key={index}>{line}</p>
-                    ))}
-                  </div>
-                  <div className="flex space-x-6">
-                    <div className="text-sm text-gray-500">
-                      {review.reply.time}
+              {/* Danh sách trả lời */}
+              {review?.replies?.length > 0 && (
+                <div className="mt-4 space-y-4 mx-12">
+                  {review?.replies.map((reply: any, index: any) => (
+                    <div key={index} className="flex space-x-2">
+                      {/* Avatar của người trả lời */}
+                      <div className="w-10 h-10 bg-gray-400 text-white flex items-center justify-center rounded-full font-bold">
+                        {reply?.user_name?.charAt(0)}
+                      </div>
+                      {/* Nội dung trả lời */}
+                      <div className="space-y-1">
+                        <div className="font-bold">{reply?.user_name}</div>
+                        <p>{reply?.comment || "Không có nội dung"}</p>
+                        <div className="text-sm text-gray-500">
+                          {reply?.created_at}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-blue-500 text-sm cursor-pointer">
-                      Trả lời
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
 
         {/* Nút Xem thêm / Thu gọn */}
         <div className="mt-6 text-center">
-          {visibleReviews < reviews.length ? (
+          {visibleReviews < allReview.length ? (
             <button
-              onClick={() => setVisibleReviews(reviews.length)}
+              onClick={() => setVisibleReviews(allReview.length)}
               className="text-[#002E99] cursor-pointer"
             >
-              Xem thêm {reviews.length - visibleReviews} bình luận
+              Xem thêm {allReview.length - visibleReviews} bình luận
             </button>
           ) : (
-            <button
-              onClick={() => setVisibleReviews(2)}
-              className="text-[#002E99] cursor-pointer"
-            >
-              Thu gọn
-            </button>
+            allReview.length > 2 && (
+              <button
+                onClick={() => setVisibleReviews(2)}
+                className="text-[#002E99] cursor-pointer"
+              >
+                Thu gọn
+              </button>
+            )
           )}
         </div>
       </div>
-      <div className="mt-6 mx-auto bg-[#F5F7F9] p-5 rounded-lg space-y-4">
+      {/* <div className="mt-6 mx-auto bg-[#F5F7F9] p-5 rounded-lg space-y-4">
         <div className="flex items-center space-x-2">
           <div className="text-xl font-bold">Hỏi và đáp</div>
           <div className="text-black/50">(127 bình luận)</div>
@@ -314,7 +244,7 @@ const FeedBack = () => {
             </button>
           )}
         </div>
-      </div>
+      </div> */}
       {isDialogRatingOpen && (
         <RatingDialog onClose={() => setIsDialogRatingOpen(false)} />
       )}

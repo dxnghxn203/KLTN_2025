@@ -3,30 +3,23 @@ import Filter from "@/components/Category/filter";
 import shopping from "@/images/shopping.png";
 import Image from "next/image";
 import ProductMainCategoryCard from "./productMainCategoryCard";
-import { useParams } from "next/navigation";
 import { useProduct } from "@/hooks/useProduct";
 
 export default function ProductMainCategoryList({
+  data,
   maincategoryId,
   mainCategoryName,
 }: {
+  data: { subCategory: string; products: any };
   maincategoryId: string | null;
   mainCategoryName: string;
 }) {
   console.log("MainCategoryId:", maincategoryId);
-  // console.log("MainCategoryName:", mainCategoryName);
-
-  // const mainCategory =
-  //   data?.mainCategory ||
-  //   (Array.isArray(params.mainCategory)
-  //     ? params.mainCategory[0]
-  //     : params.mainCategory);
-
-  // console.log("MainCategory:", mainCategory);
-  // const products = ;
   const { fetchProductFeatured, productRelated } = useProduct();
   const [loading, setLoading] = useState(true);
   const [topN, setTopN] = useState(5);
+  const products = data.products || [];
+  console.log("product", products?.length);
 
   useEffect(() => {
     if (maincategoryId) {
@@ -79,35 +72,38 @@ export default function ProductMainCategoryList({
         <div className="flex space-x-4 items-center">
           <span className="">Sắp xếp theo</span>
           <button
-            className={`px-6 py-2 border rounded-lg text-semibold ${sortOrder === "asc"
+            className={`px-6 py-2 border rounded-lg text-semibold ${
+              sortOrder === "asc"
                 ? "border-blue-600 text-blue-600"
                 : "border-gray-300 text-black/50"
-              }`}
+            }`}
             onClick={() => setSortOrder("asc")}
           >
             Giá tăng dần
           </button>
           <button
-            className={`px-6 py-2 border rounded-lg text-semibold ${sortOrder === "desc"
+            className={`px-6 py-2 border rounded-lg text-semibold ${
+              sortOrder === "desc"
                 ? "border-blue-600 text-blue-600"
                 : "border-gray-300 text-black/50"
-              }`}
+            }`}
             onClick={() => setSortOrder("desc")}
           >
             Giá giảm dần
           </button>
         </div>
         <div className="w-full max-md:px-5 max-md:max-w-full">
-          {productRelated && productRelated.length > 0 ? (
+          {products && products.length > 0 ? (
             <>
               <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
-                {productRelated && productRelated.map((productData: any, index: any) => (
-                  <ProductMainCategoryCard
-                    key={index}
-                    products={productData}
-                    mainCategoryName={mainCategoryName}
-                  />
-                ))}
+                {products &&
+                  products.map((productData: any, index: any) => (
+                    <ProductMainCategoryCard
+                      key={index}
+                      products={productData}
+                      mainCategoryName={mainCategoryName}
+                    />
+                  ))}
               </div>
               {showAll && (
                 <div className="text-center mt-5">
