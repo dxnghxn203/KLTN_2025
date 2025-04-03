@@ -8,9 +8,12 @@ import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/providers/toastProvider";
 import { getPriceFromProduct } from "@/utils/price";
 
-
-const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrder }: any) => {
-
+const ShoppingCart = ({
+  cart,
+  setIsCheckout,
+  setProductForCheckOut,
+  setPriceOrder,
+}: any) => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -18,7 +21,8 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
     null
   );
 
-  const { addProductTocart, getProductFromCart, removeProductFromCart } = useCart();
+  const { addProductTocart, getProductFromCart, removeProductFromCart } =
+    useCart();
   const toast = useToast();
 
   const [loadingGetCart, setLoadingGetCart] = useState(false);
@@ -28,22 +32,22 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
     getProductFromCart(
       () => {
         setLoadingGetCart(false);
-      }
-      , (error: string) => {
+      },
+      (error: string) => {
         setLoadingGetCart(false);
       }
-    )
-  }
+    );
+  };
   const getPrice = (product: any, price_id: any) => {
     return getPriceFromProduct(product, price_id);
-  }
+  };
 
-  const getProductForCheckOut = ()=>{
+  const getProductForCheckOut = () => {
     const selectedProductsData = cart.filter((item: any) =>
       selectedProducts.includes(item.product.product_id)
     );
 
-    let products: any []= []
+    let products: any[] = [];
     selectedProductsData.forEach((item: any) => {
       const price = getPrice(item.product, item.price_id);
       if (price) {
@@ -55,25 +59,32 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
           quantity: item.quantity,
           price: price,
           unit_price: price.unit_price,
-          unit: price.unit
+          unit: price.unit,
         });
       }
     });
     return products;
-  }
+  };
 
   const calculateCartTotals = useMemo(() => {
     let total_original_price = 0;
     let total_price = 0;
     let total_discount = 0;
     cart.forEach((item: any) => {
-      if (selectedProducts && selectedProducts.includes(item.product.product_id)) {
+      if (
+        selectedProducts &&
+        selectedProducts.includes(item.product.product_id)
+      ) {
         const price = getPrice(item.product, item.price_id);
         if (price) {
           total_original_price += price?.original_price * item.quantity;
           total_price += price?.price * item.quantity;
-          if (price.discount < price?.price && price.price <= price?.original_price) {
-            total_discount += (price?.original_price - price.price) * item.quantity;
+          if (
+            price.discount < price?.price &&
+            price.price <= price?.original_price
+          ) {
+            total_discount +=
+              (price?.original_price - price.price) * item.quantity;
           }
         }
       }
@@ -82,18 +93,20 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
     setPriceOrder({
       total_original_price,
       total_price,
-      total_discount
+      total_discount,
     });
 
     return {
       total_original_price,
       total_price,
-      total_discount
+      total_discount,
     };
-  }, [selectedProducts, cart])
+  }, [selectedProducts, cart]);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedProducts(e.target.checked ? cart && cart.map((p: any) => p.product.product_id) : []);
+    setSelectedProducts(
+      e.target.checked ? cart && cart.map((p: any) => p.product.product_id) : []
+    );
   };
 
   const handleSelectProduct = (id: string) => {
@@ -101,7 +114,6 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
   };
-
 
   const handleDeleteClick = (product_id: string) => {
     setSelectedProductId(product_id);
@@ -113,7 +125,11 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
     setSelectedProductId(null);
   };
 
-  const handleQuantityChange = (id: string, price_id: string, change: number) => {
+  const handleQuantityChange = (
+    id: string,
+    price_id: string,
+    change: number
+  ) => {
     addProductTocart(
       id,
       price_id,
@@ -125,7 +141,7 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
       (error: string) => {
         toast.showToast("Cập nhật thất bại", "error");
       }
-    )
+    );
   };
 
   const handleUnitChange = (id: string, newUnit: string, quantity: any) => {
@@ -140,7 +156,7 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
       (error: string) => {
         toast.showToast("Cập nhật thất bại", "error");
       }
-    )
+    );
   };
 
   const checkout = () => {
@@ -154,18 +170,23 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
       <>
         <div className="w-[15%] text-center flex flex-col items-center">
           <span className="text-lg font-semibold text-[#0053E2]">
-            {price.price.toLocaleString('vi-VN')} {price?.unit_price}
+            {price.price.toLocaleString("vi-VN")} {price?.unit_price}
           </span>
           {price.original_price !== price.price && price.original_price > 0 && (
             <span className="text-sm text-gray-500 line-through">
-              {price?.original_price.toLocaleString('vi-VN')} {price?.unit_price}
+              {price?.original_price.toLocaleString("vi-VN")}{" "}
+              {price?.unit_price}
             </span>
           )}
         </div>
         <div className="w-[15%] text-center flex items-center justify-center gap-2">
           <button
             onClick={() => {
-              handleQuantityChange(product.product.product_id, product.price_id, -1);
+              handleQuantityChange(
+                product.product.product_id,
+                product.price_id,
+                -1
+              );
             }}
             className="px-2 py-1 border rounded disabled:cursor-not-allowed"
             disabled={product.quantity === 1}
@@ -175,7 +196,11 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
           {product.quantity}
           <button
             onClick={() => {
-              handleQuantityChange(product.product.product_id, product.price_id, 1);
+              handleQuantityChange(
+                product.product.product_id,
+                product.price_id,
+                1
+              );
             }}
             className="px-2 py-1 border rounded"
           >
@@ -186,19 +211,25 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
           <select
             className="border rounded px-2 py-1"
             value={price?.price_id}
-            onChange={(e) => handleUnitChange(product.product.product_id, e.target.value, product.quantity)}
+            onChange={(e) =>
+              handleUnitChange(
+                product.product.product_id,
+                e.target.value,
+                product.quantity
+              )
+            }
           >
-            {product?.product?.prices && product?.product?.prices.map((price: any) => (
-              <option key={price?.price_id} value={price?.price_id}>
-                {price?.unit}
-              </option>
-            ))}
+            {product?.product?.prices &&
+              product?.product?.prices.map((price: any) => (
+                <option key={price?.price_id} value={price?.price_id}>
+                  {price?.unit}
+                </option>
+              ))}
           </select>
         </div>
-
       </>
-    )
-  }
+    );
+  };
 
   return (
     <>
@@ -233,52 +264,64 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
             <div className="w-[15%] text-center"></div>
           </div>
 
-          <div className={` ${loadingGetCart ? "pointer-events-none opacity-50" : ""
-            }`} >
-            {cart && cart?.map((product: any, index: any) => (
-              <div
-                key={product.product.product_id}
-                className={`flex items-center justify-between py-4 mx-5 text-sm ${index !== cart?.length - 1 ? "border-b border-gray-300" : ""
+          <div
+            className={` ${
+              loadingGetCart ? "pointer-events-none opacity-50" : ""
+            }`}
+          >
+            {cart &&
+              cart?.map((product: any, index: any) => (
+                <div
+                  key={product.product.product_id}
+                  className={`flex items-center justify-between py-4 mx-5 text-sm ${
+                    index !== cart?.length - 1 ? "border-b border-gray-300" : ""
                   }`}
-              >
-                <div className="w-[55%] flex items-center px-4 py-2">
-                  <label
-                    htmlFor={`product-${product.product.product_id}`}
-                    className="flex items-center justify-center w-5 h-5 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      id={`product-${product.product.product_id}`}
-                      className="peer hidden"
-                      checked={selectedProducts.includes(product.product.product_id)}
-                      onChange={() => handleSelectProduct(product.product.product_id)}
+                >
+                  <div className="w-[55%] flex items-center px-4 py-2">
+                    <label
+                      htmlFor={`product-${product.product.product_id}`}
+                      className="flex items-center justify-center w-5 h-5 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`product-${product.product.product_id}`}
+                        className="peer hidden"
+                        checked={selectedProducts.includes(
+                          product.product.product_id
+                        )}
+                        onChange={() =>
+                          handleSelectProduct(product.product.product_id)
+                        }
+                      />
+                      <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2] peer-checked:text-white">
+                        ✓
+                      </span>
+                    </label>
+                    <Image
+                      src={product?.product?.images_primary}
+                      alt={product.product?.product_name || "Product Image"}
+                      width={55}
+                      height={55}
+                      className="ml-4 p-1 rounded-lg border border-stone-300"
                     />
-                    <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2] peer-checked:text-white">
-                      ✓
+                    <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis">
+                      {product?.product?.product_name}
                     </span>
-                  </label>
-                  <Image
-                    src={product?.product?.images_primary}
-                    alt={product.product?.product_name || "Product Image"}
-                    width={55}
-                    height={55}
-                    className="ml-4 rounded-lg border border-stone-300"
-                  />
-                  <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis">
-                    {product?.product?.product_name}
-                  </span>
-                </div>
-                {renderPrice(product, product.price_id)}
+                  </div>
+                  {renderPrice(product, product.price_id)}
 
-                <div className="w-[15%] text-center text-black/50 hover:text-black transition-colors">
-                  <button onClick={() => handleDeleteClick(product.product.product_id)}>
-                    <ImBin size={18} />
-                  </button>
+                  <div className="w-[15%] text-center text-black/50 hover:text-black transition-colors">
+                    <button
+                      onClick={() =>
+                        handleDeleteClick(product.product.product_id)
+                      }
+                    >
+                      <ImBin size={18} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
-
         </div>
 
         <OrderSummary
@@ -303,7 +346,7 @@ const ShoppingCart = ({ cart, setIsCheckout, setProductForCheckOut, setPriceOrde
                 (error: string) => {
                   toast.showToast("Xóa sản phẩm thất bại", "error");
                 }
-              )
+              );
               handleCloseDialog();
             }}
           />

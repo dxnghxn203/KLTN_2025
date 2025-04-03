@@ -10,8 +10,7 @@ import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { useRouter } from "next/navigation";
 
 const LoginForm: React.FC = () => {
-  const { signInWithGoogle, login, isLoading } =
-    useAuth();
+  const { signInWithGoogle, login, isLoading } = useAuth();
   const [localLoading, setLocalLoading] = useState(false);
   const [localLoadingGG, setLocalLoadingGG] = useState(false);
   const toast = useToast();
@@ -54,7 +53,6 @@ const LoginForm: React.FC = () => {
       setErrors(errors);
       return;
     }
-
     setLocalLoading(true);
     login(
       formData,
@@ -67,7 +65,7 @@ const LoginForm: React.FC = () => {
         toast.showToast(message, ToastType.ERROR);
         setLocalLoading(false);
       }
-    )
+    );
   };
 
   const loadingGG = () => {

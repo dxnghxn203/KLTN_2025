@@ -2,12 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface ReviewState {
     reviews: any[];
+    comments: any[];
     loading: boolean;
     error: string | null;
 }
 
 const initialState: ReviewState = {
     reviews: [],
+    comments: [],
     loading: false,
     error: null,
 };
@@ -32,6 +34,23 @@ export const reviewSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // Fetch comments by product ID
+        fetchGetAllCommentStart(state, action: PayloadAction<any>) {
+            console.log("fetchGetAllCommentStart reducer: ", action.payload);
+            state.loading = true;
+        },
+        fetchGetAllCommentSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchGetAllCommentSuccess", action.payload);
+            state.comments = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchGetAllCommentFailed(state, action: PayloadAction<string>) {
+            console.log("fetchGetAllCommentFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        }  
+
         
     },
 });
@@ -40,6 +59,9 @@ export const {
     fetchGetAllReviewStart,
     fetchGetAllReviewSuccess,
     fetchGetAllReviewFailed,
+    fetchGetAllCommentStart,
+    fetchGetAllCommentSuccess,
+    fetchGetAllCommentFailed,
 } = reviewSlice.actions;
 
 export default reviewSlice.reducer;
