@@ -8,8 +8,7 @@ from app.entities.product.request import ItemProductRedisReq
 redis = redis_client.redis
 REQUEST_COUNT_MAX=5
 MAX_ITEM_REVIEW=5
-# SESSION_TTL=1800 # 30 minutes
-SESSION_TTL=300*6 # 5 minutes
+SESSION_TTL=1800 # 30 minutes
 TOKEN_TTL=86400
 BLOCK_TTL=1800
 OTP_TTL=300
