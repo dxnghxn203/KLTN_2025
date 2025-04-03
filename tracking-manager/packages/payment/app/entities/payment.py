@@ -9,15 +9,15 @@ class GeneratePaymentQr(BaseModel):
 
 class ItemCallBackReq(BaseModel):
     gateway: str = None
-    transaction_date: str = None
-    account_number: str = None
-    sub_account: Optional[str] = None
+    transactionDate: str = None
+    accountNumber: str = None
+    subAccount: Optional[str] = None
     code: Optional[str] = None
     content: str = None
-    transfer_type: str = None
+    transferType: str = None
     description: str = None
-    transfer_amount: int = None
-    reference_code: str = None
+    transferAmount: int = None
+    referenceCode: str = None
     accumulated: int = None
     id: int = None
     created_at: datetime = datetime.now()

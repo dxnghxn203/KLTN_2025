@@ -34,7 +34,7 @@ async def payment_callback(request: ItemCallBackReq):
     try:
         logger.info(f"request: {request}")
         created = await create_transaction(request.dict())
-        result = await PaymentModel.call_add_order_api(request.content)
+        result = await PaymentModel.call_add_order_api(request.code)
         logger.info(f"result: {result}")
         return BaseResponse(status_code=200, message="success")
     except Exception as e:
