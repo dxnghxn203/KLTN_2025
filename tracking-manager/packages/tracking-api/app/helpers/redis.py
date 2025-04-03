@@ -111,7 +111,7 @@ def order_key(order_id: str) -> str:
     return f"order:{order_id}"
 
 def save_order(order: ItemOrderReq):
-    redis.set(order_key(order.order_id), json.dumps(order.dict(), ensure_ascii=False))
+    redis.set(order_key(order.order_id), json.dumps(order.dict(), ensure_ascii=False), 6000)
     redis.persist(order_key(order.order_id))
 
 def get_order(order_id: str):
