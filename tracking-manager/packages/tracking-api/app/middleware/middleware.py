@@ -27,7 +27,7 @@ def validate_and_decode_token(cred: HTTPAuthorizationCredentials):
     token = cred.credentials
     payload = decode_jwt(token)
 
-    if not redis_helper.get_jwt_token(payload["username"]):
+    if not redis_helper.get_jwt_token(payload["username"], payload["device_id"]):
         raise response.JsonException(status_code=status.HTTP_401_UNAUTHORIZED, message="Phiên đăng nhập đã hết hạn")
 
     return payload
@@ -67,7 +67,7 @@ def decode_jwt(token: str) -> dict:
 
 def update_destroy_token(payload):
     try:
-        redis_helper.delete_jwt_token(payload["username"])
+        redis_helper.delete_jwt_token(payload["username"], payload["device_id"])
     except Exception as e:
         logger.error(f"Lỗi khi xóa JWT khỏi Redis: {e}")
         raise response.JsonException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, message="Lỗi hệ thống")

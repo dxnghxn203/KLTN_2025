@@ -90,7 +90,7 @@ async def verify_user(request: ItemAdminVerifyEmailReq):
         )
 
 @router.post("/admin/login")
-async def login(email: str = Form(), password: str = Form()):
+async def login(email: str = Form(), password: str = Form(), device_id  : str = Form("web")):
     try:
         ad = await admin.get_by_email(email)
         if not await auth.verify_user(ad, password):
@@ -106,7 +106,10 @@ async def login(email: str = Form(), password: str = Form()):
                 message="Tài khoản chưa xác thực. Vui lòng nhập OTP!"
             )
 
-        jwt_token = await auth.get_token(str(ad.get("_id")), ad.get("role_id"))
+        jwt_token = await auth.get_token(
+            username=str(ad.get("_id")),
+            role_id=ad.get("role_id"),
+            device_id=device_id)
         res = ItemAdminRes.from_mongo(ad)
         res.token = jwt_token
         return SuccessResponse(data=res)

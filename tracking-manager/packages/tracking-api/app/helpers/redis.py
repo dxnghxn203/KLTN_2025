@@ -70,18 +70,20 @@ def delete_otp(username: str):
 
 # ==== JWT TOKEN MANAGEMENT ====
 
-def jwt_token_key(username: str) -> str:
-    return f"jwt_token:{username}"
+def jwt_token_key(username: str, device_id: str) -> str:
+    logger.info(f"jwt_token_key: {device_id}")
+    return f"{device_id}_jwt_token:{username}"
 
-def get_jwt_token(username: str):
-    token = redis.get(jwt_token_key(username))
+def get_jwt_token(username: str, device_id: str = "web"):
+    logger.info(f"get_jwt_token: {device_id}")
+    token = redis.get(jwt_token_key(username, device_id))
     return token.decode() if isinstance(token, bytes) else token
 
-def save_jwt_token(username: str, token: str):
-    redis.set(jwt_token_key(username), token)
+def save_jwt_token(username: str, token: str, device_id: str = "web"):
+    redis.set(jwt_token_key(username, device_id), token)
 
-def delete_jwt_token(username: str):
-    redis.delete(jwt_token_key(username))
+def delete_jwt_token(username: str, device_id: str = "web"):
+    redis.delete(jwt_token_key(username, device_id))
 
 # ==== PRODUCT MANAGEMENT ====
 

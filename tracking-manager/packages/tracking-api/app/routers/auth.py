@@ -24,7 +24,10 @@ async def login(request: GoogleAuthRequest):
 
         user_info = await user.add_user_google(request.email, auth_google["name"])
 
-        jwt_token = await auth.get_token(user_info.data["user_id"], "user")
+        jwt_token = await auth.get_token(
+            username=user_info.data["user_id"],
+            role_id="user",
+            device_id="web")
 
         return SuccessResponse(message=user_info.message, data={"token": jwt_token})
     except JsonException as je:
@@ -36,7 +39,7 @@ async def login(request: GoogleAuthRequest):
             message="Internal server error"
         )
 @router.post("/auth/login")
-async def login(email: str = Form(), password: str = Form()):
+async def login(email: str = Form(), password: str = Form(), device_id  : str = Form("web")):
     try:
         us = await user.get_by_email_and_auth_provider(email, "email")
         if not await auth.verify_user(us, password):
@@ -51,8 +54,11 @@ async def login(email: str = Form(), password: str = Form()):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Tài khoản chưa xác thực. Vui lòng nhập OTP!"
             )
-
-        jwt_token = await auth.get_token(str(us.get("_id")), us.get("role_id"))
+        logger.info(f"router: {device_id}")
+        jwt_token = await auth.get_token(
+            username=str(us.get("_id")),
+            role_id=us.get("role_id"),
+            device_id=device_id)
         res = ItemUserRes.from_mongo(us)
         res.token = jwt_token
         return SuccessResponse(data=res)

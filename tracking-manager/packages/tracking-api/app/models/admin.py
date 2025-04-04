@@ -16,10 +16,10 @@ async def get_by_email(email: str):
     collection = database.db[collection_name]
     return collection.find_one({"email": email})
 
-async def get_all_admin(page: int, pageSize: int):
+async def get_all_admin(page: int, page_size: int):
     collection = database.db[collection_name]
-    skip_count = (page - 1) * pageSize
-    admin_list = collection.find().skip(skip_count).limit(pageSize)
+    skip_count = (page - 1) * page_size
+    admin_list = collection.find().skip(skip_count).limit(page_size)
     return [ItemAdminRes.from_mongo(admin) for admin in admin_list]
 
 async def create_admin(item: ItemAdminRegisReq):

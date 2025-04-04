@@ -12,14 +12,15 @@ from app.middleware.middleware import get_private_key, generate_otp
 TOKEN_EXPIRY_SECONDS = 31536000
 collection_name = "authorizations"
 
-async def get_token(username: str, role_id: str):
-    token = redis.get_jwt_token(username)
+async def get_token(username: str, role_id: str, device_id: str = "web"):
+    logger.info(f"model: {device_id}")
+    token = redis.get_jwt_token(username, device_id)
     if token:
         return token
     expire = datetime.now() + timedelta(seconds=TOKEN_EXPIRY_SECONDS)
-    payload = {"exp": expire, "username": username, "role_id": role_id}
+    payload = {"exp": expire, "username": username, "role_id": role_id, "device_id": device_id}
     encoded_jwt = jwt.encode(payload, get_private_key(), algorithm=os.getenv("ALGORITHM"))
-    redis.save_jwt_token(username, encoded_jwt)
+    redis.save_jwt_token(username, encoded_jwt, device_id)
     return encoded_jwt
 
 async def handle_otp_verification(email: str):
