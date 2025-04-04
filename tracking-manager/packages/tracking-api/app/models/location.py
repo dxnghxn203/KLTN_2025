@@ -81,6 +81,27 @@ async def get_wards_by_district(district_code: str):
 async def get_regions():
     return await query_es_data(REGION_INDEX, {"query": {"match_all": {}}, "size": 65})
 
+async def get_all_locations_by_user(token: str):
+    try:
+        user_info = await user.get_current(token)
+        collection = database.db[collection_name]
+        locations = collection.find({"user_id": user_info.id})
+        locations_list = []
+        for location in locations:
+            location["_id"] = str(location["_id"])
+            location["created_at"] = location["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+            location["updated_at"] = location["updated_at"].strftime("%Y-%m-%d %H:%M:%S")
+            locations_list.append(location)
+
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            message="Lấy danh sách địa chỉ thành công",
+            data=locations_list
+        )
+    except Exception as e:
+        logger.error(f"Error getting all locations: {str(e)}")
+        raise e
+
 async def create_location(item: ItemLocationReq, token: str):
     try:
         user_info = await user.get_current(token)

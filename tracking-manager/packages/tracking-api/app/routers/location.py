@@ -139,6 +139,16 @@ async def get_all_regions():
             message="Internal server error"
         )
 
+@router.get("/location/", response_model=response.BaseResponse)
+async def get_all_location(token: str = Depends(middleware.verify_token)):
+    try:
+        return await location.get_all_locations_by_user(token)
+    except Exception as e:
+        logger.error(f"Error getting all location: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 @router.post("/location/add", response_model=response.BaseResponse)
 async def create_location(item: ItemLocationReq, token: str = Depends(middleware.verify_token)):
     try:
