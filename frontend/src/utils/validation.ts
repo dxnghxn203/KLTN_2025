@@ -1,3 +1,6 @@
+import { comment } from "postcss";
+import { race } from "redux-saga/effects";
+
 // Kiểm tra mật khẩu
 export const validatePassword = (value: string): string | null => {
     if (!/[A-Z]/.test(value)) {
@@ -37,6 +40,8 @@ export const validatePassword = (value: string): string | null => {
       gender: "Giới tính",
       dateOfBirth: "Ngày sinh",
       confirmPassword: "Xác nhận mật khẩu",
+      comment: "Nội dung bình luận",
+      rating: "Đánh giá",
     };
     
   

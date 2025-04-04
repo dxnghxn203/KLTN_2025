@@ -9,7 +9,7 @@ import Loading from "@/app/loading";
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const { fetchProductBySlug, productBySlug } = useProduct();
-  console.log("ProductBySlug:", productBySlug);
+  // console.log("ProductBySlug:", productBySlug);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);

@@ -7,6 +7,14 @@ import {
     fetchGetAllCommentStart,
     fetchGetAllCommentSuccess,
     fetchGetAllCommentFailed,
+
+    fetchReviewStart,
+    fetchReviewSuccess,
+    fetchReviewFailure,
+
+    fetchCommentStart,
+    fetchCommentSuccess,
+    fetchCommentFailure,
 } from './reviewSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 import * as reviewService from '@/services/reviewService';
@@ -47,7 +55,7 @@ function* fetchGetAllComment(action: any): Generator<any, void, any> {
         if (comment.status_code === 200) {
             onSuccess();
             yield put(fetchGetAllCommentSuccess(comment.data));
-            console.log(comment.data, "comment.data");
+            // console.log(comment.data, "comment.data");
         } else {
             // Nếu status_code không phải 200
             onFailure();
@@ -61,9 +69,59 @@ function* fetchGetAllComment(action: any): Generator<any, void, any> {
     }
 }
 
+function* reviewWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+        const {
+            onSuccess =()=> {},
+            onFailure =()=> {},
+        } = payload; 
+        
+        try {
+            const response = yield call(reviewService.insertReview, payload);
+            if (response.status_code === 201) {
+                yield put(fetchReviewSuccess());
+                console.log("response: ", response);
+                onSuccess(response.message);
+            } else {
+                yield put(fetchReviewFailure());
+                console.log("response: ", response);
+                onFailure(response.message);
+            }
+        } catch (error: any) {
+            onFailure(error?.response?.data?.message);
+            yield put(fetchReviewFailure());
+        }
+}
+
+function* commentWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+        const {
+            onSuccess =()=> {},
+            onFailure =()=> {},
+        } = payload; 
+        
+        try {
+            const response = yield call(reviewService.insertComment, payload);
+            console.log("payload: ", payload);
+            if (response.status_code === 201) {
+                yield put(fetchCommentSuccess());
+                console.log("response: ", response);
+                onSuccess(response.message);
+            } else {
+                yield put(fetchCommentFailure());
+                console.log("response: ", response);
+                onFailure(response.message);
+            }
+            console.log("response: ", response);
+        } catch (error: any) {
+            yield put(fetchCommentFailure());
+        }
+}
 export function* reviewSaga() {
     yield takeLatest(fetchGetAllReviewStart.type, fetchGetAllReview);
     yield takeLatest(fetchGetAllCommentStart.type, fetchGetAllComment);
+    yield takeLatest(fetchReviewStart.type, reviewWorkerSaga);
+    yield takeLatest(fetchCommentStart.type, commentWorkerSaga);
     
     
 

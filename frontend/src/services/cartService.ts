@@ -22,7 +22,7 @@ export const addToCartSession = async (params: any)=>{
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi thêm vào giỏ hàng',
+            message: 'Lỗi thêm vào giỏ hàng',
         };
     }
 }
@@ -34,7 +34,7 @@ export const addToCartToken = async (params: any)=>{
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi thêm vào giỏ hàng',
+            message: 'Lỗi thêm vào giỏ hàng',
         };
     }
 }
@@ -46,7 +46,7 @@ export const getCartSession = async (params: any)=>{
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi thêm vào giỏ hàng',
+            message: 'Lỗi thêm vào giỏ hàng',
         };
     }
 }
@@ -58,7 +58,7 @@ export const getCartToken = async (params: any)=>{
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi thêm vào giỏ hàng',
+            message: 'Lỗi thêm vào giỏ hàng',
         };
     }
 }
@@ -70,7 +70,7 @@ export const removeCartSession = async (params: any)=>{
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi thêm vào giỏ hàng',
+            message: 'Lỗi thêm vào giỏ hàng',
         };
     }
 }
@@ -82,7 +82,7 @@ export const removeCartToken = async (params: any)=>{
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi thêm vào giỏ hàng',
+            message: 'Lỗi thêm vào giỏ hàng',
         };
     }
 }
