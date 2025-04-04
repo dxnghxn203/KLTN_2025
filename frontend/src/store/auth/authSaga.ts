@@ -14,6 +14,7 @@ import {
 import { getSession, signIn, signOut } from 'next-auth/react';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { removeToken, setToken, getToken } from '@/utils/cookie';
+import { getDeviceId } from '@/utils/deviceId';
 
 // Google Login
 function* handleGoogleLogin(): Generator<any, void, any> {
@@ -44,9 +45,13 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
         ...credentials
     } = payload;
 
+    const device_id = getDeviceId();
+
     const form = new FormData();
     form.append('email', credentials.email);
     form.append('password', credentials.password);
+    form.append('device_id', device_id);
+
     try {
         const response = yield call(authService.login, form);
         if (response.success) {

@@ -50,7 +50,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
         />
       </div> */}
 
-      <div className="flex gap-5 text-sm">
+      <div className="flex gap-2 text-sm">
         <div className="relative flex-1">
           <select
             value={address.cityCode || ""}
@@ -119,8 +119,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
         className={inputClass}
       />
 
-      {/* Ghi chú */}
-      <div className="bg-white flex flex-col items-start pt-5 pr-20 pb-12 pl-5 rounded-3xl border border-black/10">
+      {/* <div className="bg-white flex flex-col items-start pt-5 pr-20 pb-12 pl-5 rounded-3xl border border-black/10">
         <label className="text-xs">Ghi chú (không bắt buộc)</label>
         <textarea
           value={address.notes}
@@ -128,7 +127,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
           placeholder="Ví dụ: Hãy gọi cho tôi 15 phút trước khi giao hàng"
           className="w-full mt-3.5 text-sm bg-transparent outline-none resize-none placeholder:text-[14px] placeholder:font-normal"
         />
-      </div>
+      </div> */}
     </section>
   );
 };

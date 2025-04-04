@@ -59,7 +59,7 @@ const Toast: React.FC<ToastProps> = ({
     setIsVisible(false);
     setTimeout(() => {
       if (onClose) onClose();
-    }, 300); // Match the animation duration
+    }, 300); 
   };
 
   const getToastConfig = () => {
@@ -128,7 +128,7 @@ const Toast: React.FC<ToastProps> = ({
 
   return (
     <div
-      className={`fixed z-50 ${positionClasses[position]} w-80 rounded-lg shadow-lg ${config.bgColor} border-l-4 ${config.borderColor} overflow-hidden  transition-all duration-300 ease-in-out`}
+      className={`${positionClasses[position]} w-80 rounded-lg ${config.bgColor} overflow-hidden  transition-all duration-300 ease-in-out`}
       style={{
         animation: isVisible 
           ? "fadeIn 0.3s ease-out forwards, slideIn 0.3s ease-out forwards" 
@@ -153,7 +153,9 @@ const Toast: React.FC<ToastProps> = ({
             </div>
           </div>
           <button 
-            onClick={handleClose}
+            onClick={() => {
+              handleClose()
+            }}
             className="ml-4 text-gray-400 hover:text-gray-700 transition-colors focus:outline-none"
             aria-label="Close"
           >
@@ -162,7 +164,6 @@ const Toast: React.FC<ToastProps> = ({
         </div>
       </div>
       
-      {/* Progress bar */}
       {duration > 0 && (
         <div 
           className={`h-1 ${config.progressColor} transition-all duration-100 ease-linear`}
@@ -170,7 +171,6 @@ const Toast: React.FC<ToastProps> = ({
         />
       )}
       
-      {/* CSS Animations */}
       <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; }

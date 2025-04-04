@@ -8,6 +8,7 @@ import React, {
   useEffect,
 } from "react";
 import Toast, { ToastType } from "@/components/Toast/toast";
+import { message } from "antd";
 
 interface ToastContextType {
   showToast: (message: string, type: ToastType | string) => void;
@@ -59,22 +60,17 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div
-        className="fixed right-4 top-4 flex flex-col items-end z-[50]"
-        style={{ pointerEvents: "none" }}
+        className="fixed z-[50] top-5 right-5 flex flex-col gap-2"
       >
-        <div className="mt-8">
-          <div className="flex flex-col items-end text-sm">
-            {toasts.map((toast, index) => (
-              <div key={toast.id}>
-                <Toast
-                  message={toast.message}
-                  type={toast.type}
-                  onClose={() => removeToast(toast.id)}
-                />
-              </div>
-            ))}
+        {toasts.map((toast, index) => (
+          <div key={toast.id}>
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onClose={() => removeToast(toast.id)}
+            />
           </div>
-        </div>
+        ))}
       </div>
 
       <style jsx global>{`

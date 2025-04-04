@@ -7,10 +7,20 @@ const Dashboard = () => {
 
   const showtext = () => {
     toast.showToast("Hello, this is a sdsge dvcddfdf", "success");
-    toast.showToast("Hello, this is a sdsge", "error");
-    toast.showToast("Hello, this is a sdsge", "warning");
-    toast.showToast("Hello, this is a sdsge", "info");
-    toast.showToast("Hello, this is a sdsge cdcd ", "default");
+
+    setTimeout(function () {
+      toast.showToast("Hello, this is a sdsge", "error");
+    }, 1000);
+    setTimeout(function () {
+      toast.showToast("Hello, this is a sdsge", "warning");
+    }
+    , 2000);
+    setTimeout(function () {
+      toast.showToast("Hello, this is a sdsge", "info");
+    }, 3000);
+    setTimeout(function () {
+      toast.showToast("Hello, this is a sdsge cdcd ", "default");
+    }, 4000);
     //chỉnh UI tại frontend/src/components/Toast/toast.tsx
   };
 

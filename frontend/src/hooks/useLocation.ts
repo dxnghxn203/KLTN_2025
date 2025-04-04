@@ -1,4 +1,4 @@
-import { fetchGetAllCitiesStart, fetchGetDistrictsByCityIdStart, fetchGetWardsByDistrictIdStart, selectCities, selectDistricts, selectWards } from "@/store";
+import { fetchAddLocationStart, fetchGetAllCitiesStart, fetchGetDistrictsByCityIdStart, fetchGetLocationStart, fetchGetWardsByDistrictIdStart, fetchUpdateLocationStart, selectCities, selectDistricts, selectLocationData, selectWards } from "@/store";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useLocation() {
@@ -6,6 +6,7 @@ export function useLocation() {
     const cities = useSelector(selectCities);
     const districts = useSelector(selectDistricts);
     const wards = useSelector(selectWards);
+    const allLocation = useSelector(selectLocationData)
 
     const getCities = async () => {
         dispatch(fetchGetAllCitiesStart());
@@ -17,13 +18,44 @@ export function useLocation() {
         dispatch(fetchGetWardsByDistrictIdStart(districtId));
     }
 
+    const getAllLocation = async (onSuccess: () => void, onFailed: () => void) => {
+        dispatch(fetchGetLocationStart({
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
+    const addLocation = async (location: any, onSuccess: () => void, onFailed: () => void) => {
+        dispatch(fetchAddLocationStart({
+            location: location,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+    const updateLocation = async (
+        location_id: any,
+        location: any,
+        onSuccess: () => void,
+        onFailed: () => void) => {
+        dispatch(fetchUpdateLocationStart({
+            location_id: location_id,
+            location: location,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
     return {
         cities,
         districts,
         wards,
         getDistrictsByCityId,
         getCities,
-        getWardsByDistrictId
+        getWardsByDistrictId,
+        getAllLocation,
+        allLocation,
+        addLocation,
+        updateLocation
     }
 }
 

@@ -154,16 +154,16 @@ export default function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-white">
+          <div className="flex items-center gap-2 text-white h-full">
             <div
-              className="relative"
+              className="relative h-full "
               ref={cartDropdownRef}
               onMouseEnter={() => setShowCartDropdown(true)}
               onMouseLeave={() => setShowCartDropdown(false)}
             >
-              <Link href="/gio-hang" className="focus:outline-none">
+              <Link href="/gio-hang" className="focus:outline-none h-full flex items-center">
                 <div
-                  className={`relative flex items-center cursor-pointer px-3 py-1 ml-4 rounded-full w-[120px] h-[48px] transition ${pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                  className={`relative flex items-center cursor-pointer px-3 ml-4 rounded-full w-[120px] h-[48px] transition ${pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
                     }`}
                 >
                   <div className="relative">
@@ -179,7 +179,7 @@ export default function Header() {
               </Link>
 
               {showCartDropdown && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-[60]">
+                <div className="absolute right-0 w-80 bg-white rounded-lg shadow-lg z-[51]">
                   <div className="p-4">
                     <h3 className="text-black font-semibold">Giỏ hàng của bạn</h3>
 
