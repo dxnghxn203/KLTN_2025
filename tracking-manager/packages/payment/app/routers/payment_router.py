@@ -29,7 +29,7 @@ async def generate_sepay_qr(request: GeneratePaymentQr):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/payment/callback")
+@router.post("/payment/callback", dependencies=[Depends(middleware.verify_api_key)])
 async def payment_callback(request: ItemCallBackReq):
     try:
         logger.info(f"request: {request}")
