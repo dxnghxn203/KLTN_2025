@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Form
 from starlette import status
 
@@ -90,7 +92,7 @@ async def verify_user(request: ItemAdminVerifyEmailReq):
         )
 
 @router.post("/admin/login")
-async def login(email: str = Form(), password: str = Form(), device_id  : str = Form("web")):
+async def login(email: str = Form(), password: str = Form(), device_id: Optional[str] = Form(None)):
     try:
         ad = await admin.get_by_email(email)
         if not await auth.verify_user(ad, password):
@@ -105,6 +107,8 @@ async def login(email: str = Form(), password: str = Form(), device_id  : str = 
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Tài khoản chưa xác thực. Vui lòng nhập OTP!"
             )
+
+        device_id = device_id if device_id else "web"
 
         jwt_token = await auth.get_token(
             username=str(ad.get("_id")),

@@ -13,7 +13,6 @@ TOKEN_EXPIRY_SECONDS = 31536000
 collection_name = "authorizations"
 
 async def get_token(username: str, role_id: str, device_id: str = "web"):
-    logger.info(f"model: {device_id}")
     token = redis.get_jwt_token(username, device_id)
     if token:
         return token

@@ -1,5 +1,6 @@
 from .user import router as user_router
 from .auth import router as authen_router
+from .admin import router as admin_router
 from .order import router as order_router
 from .product import router as product_router
 from .location import router as location_router
@@ -12,6 +13,7 @@ __all__ = [
     'cart_router',
     'user_router',
     'authen_router',
+    'admin_router',
     'order_router',
     'product_router',
     'location_router',

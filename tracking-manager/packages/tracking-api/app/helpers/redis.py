@@ -71,11 +71,9 @@ def delete_otp(username: str):
 # ==== JWT TOKEN MANAGEMENT ====
 
 def jwt_token_key(username: str, device_id: str) -> str:
-    logger.info(f"jwt_token_key: {device_id}")
     return f"{device_id}_jwt_token:{username}"
 
 def get_jwt_token(username: str, device_id: str = "web"):
-    logger.info(f"get_jwt_token: {device_id}")
     token = redis.get(jwt_token_key(username, device_id))
     return token.decode() if isinstance(token, bytes) else token
 

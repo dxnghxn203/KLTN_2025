@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, status, Form, Depends
 
 from app.core import logger
@@ -39,7 +41,7 @@ async def login(request: GoogleAuthRequest):
             message="Internal server error"
         )
 @router.post("/auth/login")
-async def login(email: str = Form(), password: str = Form(), device_id  : str = Form("web")):
+async def login(email: str = Form(), password: str = Form(), device_id: Optional[str] = Form(None)):
     try:
         us = await user.get_by_email_and_auth_provider(email, "email")
         if not await auth.verify_user(us, password):
@@ -54,7 +56,9 @@ async def login(email: str = Form(), password: str = Form(), device_id  : str = 
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Tài khoản chưa xác thực. Vui lòng nhập OTP!"
             )
-        logger.info(f"router: {device_id}")
+
+        device_id = device_id if device_id else "web"
+
         jwt_token = await auth.get_token(
             username=str(us.get("_id")),
             role_id=us.get("role_id"),

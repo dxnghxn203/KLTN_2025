@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core import response, exception
 from app.routers import (
     user_router,
+    admin_router,
     authen_router,
     order_router,
     product_router,
@@ -45,6 +46,7 @@ app.add_exception_handler(RequestValidationError, exception.validation_exception
 
 # Routers
 app.include_router(authen_router, prefix="/v1", tags=["Auth"])
+app.include_router(admin_router, prefix="/v1", tags=["Admin"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(product_router, prefix="/v1", tags=["Product"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])

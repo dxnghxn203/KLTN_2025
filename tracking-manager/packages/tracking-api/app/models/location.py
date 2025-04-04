@@ -106,7 +106,12 @@ async def create_location(item: ItemLocationReq, token: str):
     try:
         user_info = await user.get_current(token)
         collection = database.db[collection_name]
-
+        location_count = await collection.count_documents({"user_id": user_info.id})
+        if location_count >= 5:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Bạn chỉ có thể lưu tối đa 5 địa chỉ"
+            )
         item_dict = item.dict()
         item_dict["location_id"] = generate_id("LOCATION")
         item_dict["user_id"] = user_info.id
