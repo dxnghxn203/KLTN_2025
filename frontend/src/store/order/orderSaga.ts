@@ -14,7 +14,7 @@ import {
     fetchGetAllOrderAdminFailed,
 } from './orderSlice';
 import { get } from 'http';
-import { getSession } from '@/utils/cookie';
+import { getSession, getToken } from '@/utils/cookie';
 
 // Fetch all order
 function* fetchGetAllOrder(action: any): Generator<any, void, any> {
@@ -42,7 +42,6 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
         } = payload;
 
         const session = getSession();
-
         const addressInfo = orderData.addressInfo;
         const ordererInfo = orderData.ordererInfo;
         const products = () => {
@@ -55,7 +54,7 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
                 price: item.price.price
             }))
         }   
-    
+        
         const apiPayload = {
             product: products(),
             pick_from: {
@@ -86,7 +85,7 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
             "receiver_province_code": addressInfo.cityCode || 0,
             "receiver_district_code": addressInfo.districtCode || 0,
             "receiver_commune_code": addressInfo.wardCode || 0,
-            "delivery_instruction": addressInfo.note || "",
+            "delivery_instruction": orderData?.note || "",
             "payment_type": orderData.paymentMethod,
         };
 

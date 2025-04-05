@@ -78,9 +78,9 @@ function* fetchAddLocation(action: any): Generator<any, void, any> {
         } = action.payload;
 
         const response = yield call(locationService.addLocation,location);
-        if (response.status_code === 201) {
+        if (response.status_code === 200) {
             yield put(fetchAddLocationSuccess(response));
-            onSuccess(response);
+            onSuccess();
         }
         else {
             yield put(fetchAddLocationFailed());

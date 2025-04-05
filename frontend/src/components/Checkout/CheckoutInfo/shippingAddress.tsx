@@ -11,7 +11,7 @@ interface ShippingAddressProps {
 
 export const ShippingAddress: React.FC<ShippingAddressProps> = ({
   address,
-  onChange,
+  onChange
 }) => {
   const inputClass =
     "w-full px-5 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none placeholder:text-[14px] placeholder:font-normal";
@@ -118,16 +118,6 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
         placeholder="Địa chỉ cụ thể"
         className={inputClass}
       />
-
-      {/* <div className="bg-white flex flex-col items-start pt-5 pr-20 pb-12 pl-5 rounded-3xl border border-black/10">
-        <label className="text-xs">Ghi chú (không bắt buộc)</label>
-        <textarea
-          value={address.notes}
-          onChange={(e) => onChange({ ...address, notes: e.target.value })}
-          placeholder="Ví dụ: Hãy gọi cho tôi 15 phút trước khi giao hàng"
-          className="w-full mt-3.5 text-sm bg-transparent outline-none resize-none placeholder:text-[14px] placeholder:font-normal"
-        />
-      </div> */}
     </section>
   );
 };

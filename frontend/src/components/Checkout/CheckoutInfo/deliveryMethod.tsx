@@ -14,7 +14,7 @@ export const DeliveryMethod: React.FC<DeliveryMethodProps> = ({
     <div className="flex flex-wrap justify-between text-sm font-medium">
       <h2 className="my-auto text-black">Chọn hình thức nhận hàng</h2>
       <div className="flex rounded-lg bg-[#F5F7F9]">
-        <button
+        {/* <button
           onClick={() => onMethodChange("delivery")}
           className={`px-4 py-2 rounded-lg ${
             selectedMethod === "delivery"
@@ -33,7 +33,7 @@ export const DeliveryMethod: React.FC<DeliveryMethodProps> = ({
           }`}
         >
           Nhận tại nhà thuốc
-        </button>
+        </button> */}
       </div>
     </div>
   );

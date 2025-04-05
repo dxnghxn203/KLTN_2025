@@ -2,16 +2,13 @@
 import React, { use, useEffect, useState } from "react";
 import { DeliveryMethod } from "./deliveryMethod";
 import { OrdererInfo } from "@/components/Checkout/CheckoutInfo/infoDelivery";
-import { OrdererInfoPickup } from "./orderPickupPharma";
 import { ShippingAddress } from "@/components/Checkout/CheckoutInfo/shippingAddress";
 import { PaymentMethod } from "./paymentMethod";
 import { Toggle } from "@/components/toggle/toggle";
-import { FaTruckFast } from "react-icons/fa6";
 import {
   OrdererInfo as OrdererInfoType,
   AddressFormData,
 } from "../ProductInfo/types";
-import { PharmaInfo } from "./pharmaInfo";
 import ReceiveDialog from "@/components/Dialog/receiveDialog";
 import { PAYMENT_COD } from "@/utils/constants";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,16 +44,43 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<any>(PAYMENT_COD);
+  const [dataLocation, setDataLocation] = useState<any | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
-    setData({ ordererInfo, addressInfo, deliveryMethod, paymentMethod });
+    if (dataLocation) {
+      console.log("dataLocation add order", dataLocation);
+      setData({
+        ordererInfo: {
+          fullName: dataLocation?.name,
+          phone: dataLocation?.phone_number,
+          email: ordererInfo.email,
+        },
+        note: note,
+        addressInfo: {
+          fullName: dataLocation?.name,
+          phone: dataLocation?.phone_number,
+          email: ordererInfo.email,
+          city: dataLocation?.province,
+          district: dataLocation?.district,
+          ward: dataLocation?.ward,
+          address: dataLocation?.address,
+          notes: "",
+          cityCode: dataLocation?.province_code,
+          districtCode: dataLocation?.district_code,
+          wardCode: dataLocation?.ward_code,
+        },
+        deliveryMethod,
+        paymentMethod,
+      })
+    } else {
+      setData({ ordererInfo, addressInfo, "note": note, deliveryMethod, paymentMethod });
+    }
   }
-    , [ordererInfo, addressInfo, deliveryMethod, paymentMethod]);
+    , [ordererInfo, addressInfo, deliveryMethod, paymentMethod, note, dataLocation]);
 
   const [requireInvoice, setRequireInvoice] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const [dataLocation, setDataLocation] = useState<any | null>(null);
 
   const { isAuthenticated } = useAuth();
   return (
@@ -80,14 +104,22 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
         )} */}
 
         {
-          isAuthenticated ?  (
+          isAuthenticated ? (
             <>
-              <LocationCheckout setDataLocation={setDataLocation}/>
+              <LocationCheckout setDataLocation={setDataLocation} setNote={setNote} />
             </>
-          ):(
+          ) : (
             <>
               <OrdererInfo info={ordererInfo} onChange={setOrdererInfo} />
               <ShippingAddress address={addressInfo} onChange={setAddressInfo} />
+              <div className="bg-white mt-5 flex flex-col items-start pt-5 pr-20 pb-12 pl-5 rounded-3xl border border-black/10">
+                <label className="text-xs">Ghi chú (không bắt buộc)</label>
+                <textarea
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Ví dụ: Hãy gọi cho tôi 15 phút trước khi giao hàng"
+                  className="w-full mt-3.5 text-sm bg-transparent outline-none resize-none placeholder:text-[14px] placeholder:font-normal"
+                />
+              </div>
             </>
           )
         }

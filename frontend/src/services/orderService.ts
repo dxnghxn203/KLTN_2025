@@ -138,6 +138,7 @@ export const checkOrder = async ( data: any, session: any): Promise<any> => {
         };
     }
 }
+
 export const createOrder = async ( data: any): Promise<any> => {
     try {
         const response = await axiosClient.post('/v1/order/add', data);
