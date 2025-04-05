@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -11,4 +12,5 @@ class ItemLocationReq(BaseModel):
     province_code: int
     district_code: int
     ward_code: int
+    is_default: Optional[bool] = False
 

@@ -54,3 +54,20 @@ class ItemLocationrRes(BaseModel):
     receiver_province_code: int
     receiver_district_code: int
     receiver_commune_code: int
+
+class ItemLocationUser(BaseModel):
+    location_id: str
+    name: str
+    phone_number: str
+    address: str
+    ward: str
+    district:  str
+    province: str
+    province_code: int
+    district_code: int
+    ward_code: int
+
+class LocationUserRes(BaseModel):
+    user_id: str
+    default_location: str
+    locations: list[ItemLocationrRes] = []

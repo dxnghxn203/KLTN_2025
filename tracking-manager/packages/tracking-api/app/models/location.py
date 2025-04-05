@@ -2,11 +2,12 @@ import datetime
 import os
 
 import pandas as pd
+from pyparsing import Empty
 from starlette import status
 
 from app.core import elasticsearch, database, logger, response
 from app.entities.location.request import ItemLocationReq
-from app.entities.location.response import City, District, Ward, Region
+from app.entities.location.response import City, District, Ward, Region, ItemLocationUser
 from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX, generate_id
 from app.helpers.es_location import insert_es_cities, delete_index, insert_es_districts, insert_es_wards, \
     insert_es_regions
@@ -85,18 +86,14 @@ async def get_all_locations_by_user(token: str):
     try:
         user_info = await user.get_current(token)
         collection = database.db[collection_name]
-        locations = collection.find({"user_id": user_info.id})
-        locations_list = []
-        for location in locations:
-            location["_id"] = str(location["_id"])
-            location["created_at"] = location["created_at"].strftime("%Y-%m-%d %H:%M:%S")
-            location["updated_at"] = location["updated_at"].strftime("%Y-%m-%d %H:%M:%S")
-            locations_list.append(location)
-
+        location = collection.find_one({"user_id": user_info.id})
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,
             message="Lấy danh sách địa chỉ thành công",
-            data=locations_list
+            data={
+                "default_location": location["default_location"] if location else None,
+                "locations": location["locations"] if location else []
+            }
         )
     except Exception as e:
         logger.error(f"Error getting all locations: {str(e)}")
@@ -106,25 +103,50 @@ async def create_location(item: ItemLocationReq, token: str):
     try:
         user_info = await user.get_current(token)
         collection = database.db[collection_name]
-        location_count = collection.count_documents({"user_id": user_info.id})
-        if location_count >= 5:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Bạn chỉ có thể lưu tối đa 5 địa chỉ"
+        location = collection.find_one({"user_id": user_info.id})
+        location_id = generate_id("LOCATION")
+
+        n_location = {
+            "location_id": location_id,
+            "name": item.name,
+            "phone_number": item.phone_number,
+            "address": item.address,
+            "ward": item.ward,
+            "district": item.district,
+            "province": item.province,
+            "province_code": item.province_code,
+            "district_code": item.district_code,
+            "ward_code": item.ward_code,
+            "created_at": datetime.datetime.now()
+        }
+        if not location:
+            collection.insert_one({
+                "user_id": user_info.id,
+                "default_location": location_id,
+                "locations": [n_location]
+            })
+            return response.BaseResponse(
+                status_code=status.HTTP_200_OK,
+                message="Thêm địa chỉ thành công"
             )
-        item_dict = item.dict()
-        item_dict["location_id"] = generate_id("LOCATION")
-        item_dict["user_id"] = user_info.id
-        item_dict["created_at"] = datetime.datetime.now()
-        item_dict["updated_at"] = datetime.datetime.now()
-
-        insert_result = collection.insert_one(item_dict)
-
-        logger.info(f"[create_location] Thêm địa chỉ thành công cho user {user_info.id}")
+        data_locations = location["locations"]
+        if len(data_locations) >= 5:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Đã đạt giới hạn địa chỉ"
+            )
+        data_locations.append(n_location)
+        if item.is_default or len(data_locations) == 1:
+            collection.update_one({"user_id": user_info.id},
+                              {"$set": {"locations": data_locations,
+                                "default_location": location_id}})
+        else:
+            collection.update_one({"user_id": user_info.id},
+                              {"$set": {"locations": data_locations}})
         return response.BaseResponse(
-            status_code=status.HTTP_201_CREATED,
-            message="Thêm địa chỉ thành công"
-        )
+                status_code=status.HTTP_200_OK,
+                message="Thêm địa chỉ thành công"
+            )
     except Exception as e:
         logger.error(f"Error create location: {str(e)}")
         raise e
@@ -133,28 +155,30 @@ async def update_location(token: str, location_id: str, item: ItemLocationReq):
     try:
         user_info = await user.get_current(token)
         collection = database.db[collection_name]
-
-        updated_data = item.dict()
-        updated_data["updated_at"] = datetime.datetime.now()
-
-        result = collection.update_one(
-            {"user_id": user_info.id, "location_id": location_id},
-            {"$set": updated_data}
-        )
-
-        logger.info(f"[update_location] Matched: {result.matched_count}, Modified: {result.modified_count}")
-
-        if result.matched_count == 0:
-            raise response.JsonException(
+        location = collection.find_one({"user_id": user_info.id})
+        updated = False
+        new_locations = []
+        is_default = item.is_default
+        item.dict(exclude={"is_default"})
+        for loc in location["locations"]:
+            if loc["location_id"] == location_id:
+                loc.update({k: v for k, v in item.dict().items() if v is not None})
+                updated = True
+            new_locations.append(loc)
+        if not updated:
+            return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không tìm thấy địa chỉ để cập nhật"
             )
 
-        if result.modified_count == 0:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Không có thay đổi trong dữ liệu"
-            )
+        if is_default:
+            collection.update_one({"user_id": user_info.id},
+                                  {"$set": {"default_location": location_id}})
+
+        collection.update_one({"user_id": user_info.id},
+                              {"$set":{
+                                    "locations": new_locations,
+                             }})
 
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,
@@ -169,17 +193,27 @@ async def delete_location(token: str, location_id: str):
         user_info = await user.get_current(token)
         collection = database.db[collection_name]
 
-        result = collection.delete_one({"user_id": user_info.id, "location_id": location_id})
-
-        if result.deleted_count > 0:
+        result = collection.find_one({"user_id": user_info.id})
+        locations = result["locations"]
+        updated_locations = [loc for loc in locations if loc["location_id"] != location_id]
+        if len(updated_locations) == len(locations):
             return response.BaseResponse(
-                status_code=status.HTTP_200_OK,
-                message="Xóa địa chỉ thành công"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy địa chỉ để xóa"
             )
 
-        raise response.JsonException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            message="Không tìm thấy địa chỉ để xóa"
+        update_data = {"locations": updated_locations}
+        if result["default_location"] == location_id:
+            if updated_locations:
+                update_data["default_location"] = updated_locations[0]["location_id"]
+            else:
+                update_data["default_location"] = None
+
+        collection.update_one({"user_id": user_info.id}, {"$set": update_data})
+
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            message="Xóa địa chỉ thành công"
         )
 
     except Exception as e:
