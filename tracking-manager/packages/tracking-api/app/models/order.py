@@ -84,11 +84,11 @@ async def get_cancel_orders_last_365_days():
         logger.error(f"Failed [get_cancel_orders_last_365_days]: {e}")
         raise e
 
-async def get_all_order(page: int, pageSize: int):
+async def get_all_order(page: int, page_size: int):
     try:
         collection = database.db[collection_name]
-        skip_count = (page - 1) * pageSize
-        order_list = collection.find().skip(skip_count).limit(pageSize)
+        skip_count = (page - 1) * page_size
+        order_list = collection.find().skip(skip_count).limit(page_size)
         logger.info(f"Order list: {order_list}")
         return [ItemOrderRes(**prod) for prod in order_list]
     except Exception as e:
@@ -98,8 +98,10 @@ async def get_all_order(page: int, pageSize: int):
 async def check_order(item: ItemOrderInReq, user_id: str):
     try:
         order_id = generate_id("ORDER")
-        tracking_id = generate_id("TRACKING")
 
+        version_formatted = f"{1:03}"
+        tracking_id = generate_id("TRACKING")
+        tracking_id = f"{tracking_id}_V{version_formatted}"
         total_price = 0
 
         for product in item.product:

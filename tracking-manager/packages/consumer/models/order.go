@@ -1,12 +1,12 @@
 package models
 
 import (
+	"consumer/pkg/database"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
-	"tracking-consumer/pkg/database"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -86,6 +86,12 @@ type OrderRes struct {
 	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
+type OrderToUpdate struct {
+	OrderId             string `json:"order_id" bson:"order_id"`
+	Status              string `json:"status" bson:"status"`
+	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
+}
+
 func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	js, err := json.Marshal(o)
 	if err != nil {
@@ -99,15 +105,14 @@ func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	o.UpdatedDate = o.CreatedDate
 
 	res, err := collection.InsertOne(ctx, o)
-	// res.InsertedID
 	_id := ""
 	if oid, ok := res.InsertedID.(primitive.ObjectID); ok {
 		_id = oid.Hex()
 	}
 
-	slog.Info("insert order has successfully", "order_code", o.OrderId, "order", o, "id", _id, "res", string(js))
+	slog.Info("insert order has successfully", "order_id", o.OrderId, "order", o, "id", _id, "res", string(js))
 	if err != nil {
-		slog.Error("Insert status failed", "order_code", o.OrderId, "order", o, "err", err)
+		slog.Error("Insert status failed", "order_id", o.OrderId, "order", o, "err", err)
 	}
 	return false, _id, nil
 }
@@ -138,8 +143,27 @@ func GetOrderById(ctx context.Context, id string) (*OrderRes, error) {
 	return &res, nil
 }
 
-func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
+func GetOrderByOrderId(ctx context.Context, order_id string) (*OrderRes, error) {
+	db := database.GetDatabase()
+	collection := db.Collection("orders")
 
+	result := collection.FindOne(ctx, bson.M{"order_id": order_id})
+	slog.Info("Findone order ", "res", result)
+	if result.Err() != nil {
+		slog.Error("Cannot get order by order_id ", "order_id", order_id, "err", result.Err())
+		return nil, result.Err()
+	}
+
+	res := OrderRes{}
+	if err := result.Decode(&res); err != nil {
+		slog.Error("Cannot decode data ", "err", err)
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
 	err := database.DeleteOrder(ctx, order.OrderId)
 	if err != nil {
 		slog.Error("Không thể xóa order trong Redis", "order_id", order.OrderId, "err", err)
@@ -156,4 +180,39 @@ func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
 
 	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
 	return true, nil
+}
+
+func (o *OrderToUpdate) Update(ctx context.Context, id string) (bool, string, error) {
+	js, err := json.Marshal(o)
+	if err != nil {
+		slog.Error("Cannot parse to object", "body", string(js), "err", err.Error())
+		return false, "", err
+	}
+
+	db := database.GetDatabase()
+	collection := db.Collection("orders")
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		slog.Error("Invalid document ID format", "documentID", id, "err", err.Error())
+		return false, "", fmt.Errorf("invalid document ID format: %w", err)
+	}
+
+	filter := bson.M{"_id": objID}
+	update := bson.M{"$set": o}
+
+	result := collection.FindOneAndUpdate(ctx, filter, update)
+	if result.Err() != nil {
+		slog.Error("Update failed", "documentID", id, "order", o, "err", result.Err())
+		return false, "", result.Err()
+	}
+
+	var order OrderRes
+	if err := result.Decode(&order); err != nil {
+		slog.Error("Failed to decode updated order", "documentID", id, "order", o, "err", err)
+		return false, "", err
+	}
+
+	slog.Info("Update successful", "documentID", id, "order", o, "singleResult", order)
+	return true, order.Id.Hex(), nil
 }

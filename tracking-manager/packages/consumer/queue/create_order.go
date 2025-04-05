@@ -1,11 +1,11 @@
 package queue
 
 import (
+	"consumer/models"
+	"consumer/statics"
 	"context"
 	"encoding/json"
 	"log/slog"
-	"tracking-consumer/models"
-	"tracking-consumer/statics"
 
 	"github.com/streadway/amqp"
 )

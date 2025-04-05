@@ -1,15 +1,14 @@
 package queue
 
 import (
+	"consumer/models"
+	"consumer/statics"
 	"context"
 	"encoding/json"
-	"tracking-consumer/models"
-	"tracking-consumer/statics"
 
 	"github.com/streadway/amqp"
 )
 
-// ExampleQueue ExampleQueue
 type CreateTrackingQueue struct {
 }
 

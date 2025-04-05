@@ -1,14 +1,14 @@
 package queue
 
 import (
+	"consumer/pkg/rabbitmq"
+	"consumer/statics"
 	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
 	"sync"
-	"tracking-consumer/pkg/rabbitmq"
-	"tracking-consumer/statics"
 
 	"github.com/streadway/amqp"
 )

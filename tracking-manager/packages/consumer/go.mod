@@ -1,4 +1,4 @@
-module tracking-consumer
+module consumer
 
 go 1.21
 

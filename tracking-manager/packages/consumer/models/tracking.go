@@ -1,11 +1,11 @@
 package models
 
 import (
+	"consumer/pkg/database"
 	"context"
 	"encoding/json"
 	"log/slog"
 	"time"
-	"tracking-consumer/pkg/database"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -17,6 +17,22 @@ type Tracking struct {
 	CreatedDate         time.Time `json:"created_date" bson:"created_date"`
 	UpdatedDate         time.Time `json:"updated_date" bson:"updated_date"`
 	DeliveryInstruction string    `json:"delivery_instruction" bson:"delivery_instruction"`
+}
+
+type TrackingReq struct {
+	OrderId             string `json:"order_id" bson:"order_id"`
+	TrackingId          string `json:"tracking_id" bson:"tracking_id"`
+	Status              string `json:"status" bson:"status"`
+	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
+}
+
+func (r *TrackingReq) Mapping(trackingId string) *Tracking {
+	return &Tracking{
+		TrackingId:          trackingId,
+		OrderId:             r.OrderId,
+		Status:              r.Status,
+		DeliveryInstruction: r.DeliveryInstruction,
+	}
 }
 
 func (t *Tracking) Create(ctx context.Context) (bool, string, error) {

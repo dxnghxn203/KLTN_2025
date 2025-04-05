@@ -1,6 +1,8 @@
 package main
 
 import (
+	"consumer/pkg/database"
+	"consumer/queue"
 	"context"
 	"fmt"
 	"log/slog"
@@ -9,8 +11,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"tracking-consumer/pkg/database"
-	"tracking-consumer/queue"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/subosito/gotenv"
@@ -49,6 +49,7 @@ func main() {
 		&wg,
 		queue.NewCreateOrderQueue(),
 		queue.NewCreateTrackingQueue(),
+		queue.NewUpdateStatusQueue(),
 	)
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
