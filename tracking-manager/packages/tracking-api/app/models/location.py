@@ -2,7 +2,6 @@ import datetime
 import os
 
 import pandas as pd
-from pyparsing import Empty
 from starlette import status
 
 from app.core import elasticsearch, database, logger, response
