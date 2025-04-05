@@ -44,7 +44,7 @@ func NewRouter() *gin.Engine {
 	})
 
 	router.GET("/", func(c *gin.Context) {
-		c.String(200, "%s", "utrans/spx-hook")
+		c.String(200, "%s", "medicare-hook")
 	})
 
 	apiKeyMiddleware := func(c *gin.Context) {
