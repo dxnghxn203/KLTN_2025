@@ -44,3 +44,14 @@ data/db/
 
 # Logs
 *.log
+
+#flutter
+*.iml
+*.ipr
+*.iws
+*.hprof
+*.lock
+*.jks
+*.keystore
+./build/
+.dart_tool/
