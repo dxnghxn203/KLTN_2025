@@ -16,7 +16,9 @@ from app.routers import (
     category_router,
     review_router,
     comment_router,
-    cart_router
+    cart_router,
+    fee_router,
+    time_router
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -55,7 +57,8 @@ app.include_router(location_router, prefix="/v1", tags=["Location"])
 app.include_router(category_router, prefix="/v1", tags=["Category"])
 app.include_router(review_router, prefix="/v1", tags=["Review"])
 app.include_router(comment_router, prefix="/v1", tags=["Comment"])
-
+app.include_router(fee_router, prefix="/v1", tags=["Fee"])
+app.include_router(time_router, prefix="/v1", tags=["Time"])
 @app.get("/read-root")
 def read_root():
     return {

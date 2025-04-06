@@ -2,22 +2,8 @@ import pandas as pd
 from opensearchpy import helpers
 
 from app.core import elasticsearch, logger
+from app.core.elasticsearch import create_index, index_data
 from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX
-
-def index_data(index_name, data):
-    helpers.bulk(
-        elasticsearch.es_client,
-        [{"_index": index_name, "_source": value} for value in data]
-    )
-
-async def create_indices():
-    try:
-        for index in [CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX]:
-            if not elasticsearch.es_client.indices.exists(index):
-                elasticsearch.es_client.indices.create(index=index)
-        logger.info("Successfully [create_indices]")
-    except Exception as e:
-        logger.error("Failed [create_indices] :", error=e)
 
 def get_all_locations(df, columns_map):
     try:
@@ -29,7 +15,7 @@ def get_all_locations(df, columns_map):
 
 async def insert_es_data(index, data_func, df):
     try:
-        await create_indices()
+        await create_index(index)
         index_data(index, data_func(df))
         logger.info(f"Inserted data into {index} successfully")
     except helpers.BulkIndexError as e:
@@ -90,13 +76,3 @@ async def insert_es_cities(df): await insert_es_data(CITY_INDEX, get_all_cities,
 async def insert_es_districts(df): await insert_es_data(DISTRICT_INDEX, get_all_districts, df)
 async def insert_es_wards(df): await insert_es_data(WARD_INDEX, get_all_wards, df)
 async def insert_es_regions(df): await insert_es_data(REGION_INDEX, get_all_regions, df)
-
-def delete_index(index_name):
-    try:
-        if elasticsearch.es_client.indices.exists(index=index_name):
-            elasticsearch.es_client.indices.delete(index=index_name)
-            logger.info(f"Successfully deleted index: {index_name}")
-        else:
-            logger.info(f"Index {index_name} does not exist.")
-    except Exception as e:
-        logger.error("Failed to delete index:", error=e)

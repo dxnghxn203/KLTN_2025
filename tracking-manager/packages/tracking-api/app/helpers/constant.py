@@ -23,6 +23,8 @@ CITY_INDEX = f"{prefix}_cities"
 DISTRICT_INDEX = f"{prefix}_districts"
 WARD_INDEX = f"{prefix}_wards"
 REGION_INDEX = f"{prefix}_regions"
+FEE_INDEX = f"{prefix}_fee"
+TIME_INDEX = f"{prefix}_time"
 
 PAYMENT_COD = "COD"
 PAYMENT_TP_BANK_QR = "TPBANK_QR"

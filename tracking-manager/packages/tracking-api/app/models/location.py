@@ -6,9 +6,9 @@ from starlette import status
 
 from app.core import elasticsearch, database, logger, response
 from app.entities.location.request import ItemLocationReq
-from app.entities.location.response import City, District, Ward, Region, ItemLocationUser
+from app.entities.location.response import City, District, Ward, Region
 from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX, generate_id
-from app.helpers.es_location import insert_es_cities, delete_index, insert_es_districts, insert_es_wards, \
+from app.helpers.es_location import insert_es_cities, insert_es_districts, insert_es_wards, \
     insert_es_regions
 from app.models import user
 
@@ -34,11 +34,14 @@ def read_excel_file(filename):
 
 async def insert_into_elasticsearch(index_name, filename):
     if index_name in INDEX_MAPPING:
+        if await elasticsearch.index_has_data(index_name):
+            logger.info(f"Index {index_name} đã có dữ liệu, bỏ qua insert!")
+            return
         df = read_excel_file(filename)
         await INDEX_MAPPING[index_name](df)
 
 async def delete_index_by_name(index_name):
-    delete_index(index_name)
+    elasticsearch.delete_index(index_name)
 
 async def query_es_data(index_name, query):
     es_response = elasticsearch.es_client.search(index=index_name, body=query)

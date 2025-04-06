@@ -8,7 +8,8 @@ from .category import router as category_router
 from .review import router as review_router
 from .comment import router as comment_router
 from .cart import router as cart_router
-
+from .fee import router as fee_router
+from .time import router as time_router
 __all__ = [
     'cart_router',
     'user_router',
@@ -19,5 +20,7 @@ __all__ = [
     'location_router',
     'category_router',
     'review_router',
-    'comment_router'
+    'comment_router',
+    'fee_router',
+    'time_router'
 ]
