@@ -15,32 +15,46 @@ type CreateOrderQueue struct {
 }
 
 func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Context) (bool, error) {
-	var raw models.Orders
-	err := json.Unmarshal(msg, &raw)
+	var orderRaw models.Orders
+	err := json.Unmarshal(msg, &orderRaw)
 	if err != nil {
 		return false, err
 	}
 
-	model := raw
+	var trackingRaw models.Tracking
+	err = json.Unmarshal(msg, &trackingRaw)
+	if err != nil {
+		return false, err
+	}
 
-	res, _id, err := model.Create(ctx)
+	err = models.CheckInventoryAndUpdateOrder(ctx, &orderRaw)
+	if err != nil {
+		slog.Warn("Inventory không đủ, vẫn tạo đơn với trạng thái canceled", "err", err)
+	}
+
+	res, _id, err := orderRaw.Create(ctx)
 	if err != nil {
 		return res, err
 	}
 
-	if _id != "" {
-		order, err := models.GetOrderById(ctx, _id)
+	if _id != "" && orderRaw.Status != "canceled" {
+		err = models.UpdateProductSellCount(ctx, orderRaw.Product)
 		if err != nil {
-			slog.Error("Cannot get order by id", "id", _id, "err", err)
-			return res, nil
+			slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
 		}
-		res, err = order.DeleteOrderRedis(ctx)
+		err = orderRaw.DeleteOrderRedis(ctx)
 		if err != nil {
 			slog.Error("Failed to delete order from redis", "id", _id, "err", err)
-			return res, nil
 		}
+	} else {
+		trackingRaw.Status = orderRaw.Status
+		trackingRaw.DeliveryInstruction = orderRaw.DeliveryInstruction
 	}
-	return res, err
+	res, _, err = trackingRaw.Create(ctx)
+	if err != nil {
+		return res, err
+	}
+	return res, nil
 }
 
 func (e *CreateOrderQueue) queueName() string {

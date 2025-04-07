@@ -30,7 +30,9 @@ class ItemPriceDBReq(BaseModel):
     unit_price: str = ""
     discount: float = 0
     unit: str = ""
-    amount: int
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
     amount_per_unit: str = ""
     weight: float = 0
 
@@ -39,7 +41,7 @@ class ItemPriceDBInReq(BaseModel):
     unit_price: str
     discount: float
     unit: str
-    amount: int
+    inventory: int = 0
     amount_per_unit: str = ""
     weight: float = 0
 

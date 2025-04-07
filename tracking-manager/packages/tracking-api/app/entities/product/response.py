@@ -18,7 +18,9 @@ class ItemPriceDBRes(BaseModel):
     unit_price: Optional[Union[str, None]] = None
     discount: float = 0
     unit: Optional[Union[str, None]] = None
-    amount: int = 0
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
     amount_per_unit: Optional[Union[str, None]] = None
     weight: float = 0
 

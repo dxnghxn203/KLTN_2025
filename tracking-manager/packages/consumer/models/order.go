@@ -63,6 +63,19 @@ type ProductInfo struct {
 	Unit        string  `json:"unit" bson:"unit"`
 	Quantity    int     `json:"quantity" bson:"quantity"`
 	Price       float64 `json:"price" bson:"price"`
+	Weight      float64 `json:"weight" bson:"weight"`
+}
+
+type PriceRes struct {
+	PriceId   string `json:"price_id" bson:"price_id"`
+	Inventory int    `json:"inventory" bson:"inventory"`
+	Sell      int    `json:"sell" bson:"sell"`
+	Delivery  int    `json:"delivery" bson:"delivery"`
+}
+
+type ProductRes struct {
+	ProductId string     `json:"product_id" bson:"product_id"`
+	Prices    []PriceRes `json:"prices" bson:"prices"`
 }
 
 type OrderRes struct {
@@ -122,30 +135,53 @@ func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	return false, _id, nil
 }
 
-func GetOrderById(ctx context.Context, id string) (*OrderRes, error) {
+func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 	db := database.GetDatabase()
-	collection := db.Collection("orders")
+	collection := db.Collection("products")
 
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		slog.Error("Cannot convert object id ", "id", id, "err", err)
-		return nil, err
+	var insufficientProducts []string
+
+	for _, p := range order.Product {
+		result := collection.FindOne(ctx, bson.M{"product_id": p.ProductId})
+		if result.Err() != nil {
+			slog.Error("Không tìm thấy sản phẩm", "product_id", p.ProductId, "err", result.Err())
+			continue
+		}
+
+		var product ProductRes
+		if err := result.Decode(&product); err != nil {
+			slog.Error("Lỗi giải mã sản phẩm", "product_id", p.ProductId, "err", err)
+			continue
+		}
+
+		for _, price := range product.Prices {
+			if price.PriceId == p.PriceId {
+				if price.Inventory < price.Sell+p.Quantity {
+					insufficientProducts = append(insufficientProducts, p.ProductName)
+				}
+				break
+			}
+		}
 	}
-
-	result := collection.FindOne(ctx, bson.M{"_id": oid})
-	slog.Info("Findone order ", "res", result)
-	if result.Err() != nil {
-		slog.Error("Cannot get order by id ", "id", id, "err", result.Err())
-		return nil, result.Err()
+	if len(insufficientProducts) > 0 {
+		order.Status = "canceled"
+		message := fmt.Sprintf("Các sản phẩm sau không đủ hàng: %s", stringJoin(insufficientProducts, ", "))
+		order.DeliveryInstruction = message
+		slog.Info("Đơn hàng bị hủy do không đủ tồn kho", "order_id", order.OrderId, "products", insufficientProducts)
+		return fmt.Errorf("%s", message)
 	}
+	return nil
+}
 
-	res := OrderRes{}
-	if err := result.Decode(&res); err != nil {
-		slog.Error("Cannot decode data ", "err", err)
-		return nil, err
+func stringJoin(items []string, sep string) string {
+	if len(items) == 0 {
+		return ""
 	}
-
-	return &res, nil
+	result := items[0]
+	for i := 1; i < len(items); i++ {
+		result += sep + items[i]
+	}
+	return result
 }
 
 func GetOrderByOrderId(ctx context.Context, order_id string) (*OrderRes, error) {
@@ -168,11 +204,34 @@ func GetOrderByOrderId(ctx context.Context, order_id string) (*OrderRes, error) 
 	return &res, nil
 }
 
-func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
+func UpdateProductSellCount(ctx context.Context, products []ProductInfo) error {
+	db := database.GetDatabase()
+	collection := db.Collection("products")
+
+	for _, p := range products {
+		filter := bson.M{
+			"product_id":      p.ProductId,
+			"prices.price_id": p.PriceId,
+		}
+		update := bson.M{
+			"$inc": bson.M{"prices.$.sell": p.Quantity},
+		}
+
+		_, err := collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			slog.Error("Không thể cập nhật số lượng đã bán", "product_id", p.ProductId, "err", err)
+			return fmt.Errorf("lỗi cập nhật số lượng bán cho sản phẩm %s: %w", p.ProductId, err)
+		}
+	}
+
+	return nil
+}
+
+func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 	err := database.DeleteOrder(ctx, order.OrderId)
 	if err != nil {
 		slog.Error("Không thể xóa order trong Redis", "order_id", order.OrderId, "err", err)
-		return true, err
+		return err
 	}
 
 	for _, product := range order.Product {
@@ -184,10 +243,10 @@ func (order *OrderRes) DeleteOrderRedis(ctx context.Context) (bool, error) {
 	}
 
 	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
-	return true, nil
+	return nil
 }
 
-func (o *OrderToUpdate) Update(ctx context.Context, id string) (bool, string, error) {
+func (o *OrderToUpdate) Update(ctx context.Context) (bool, string, error) {
 	js, err := json.Marshal(o)
 	if err != nil {
 		slog.Error("Cannot parse to object", "body", string(js), "err", err.Error())
@@ -197,27 +256,21 @@ func (o *OrderToUpdate) Update(ctx context.Context, id string) (bool, string, er
 	db := database.GetDatabase()
 	collection := db.Collection("orders")
 
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		slog.Error("Invalid document ID format", "documentID", id, "err", err.Error())
-		return false, "", fmt.Errorf("invalid document ID format: %w", err)
-	}
-
-	filter := bson.M{"_id": objID}
+	filter := bson.M{"order_id": o.OrderId}
 	update := bson.M{"$set": o}
 
 	result := collection.FindOneAndUpdate(ctx, filter, update)
 	if result.Err() != nil {
-		slog.Error("Update failed", "documentID", id, "order", o, "err", result.Err())
+		slog.Error("Update failed", "order_id", o.OrderId, "order", o, "err", result.Err())
 		return false, "", result.Err()
 	}
 
 	var order OrderRes
 	if err := result.Decode(&order); err != nil {
-		slog.Error("Failed to decode updated order", "documentID", id, "order", o, "err", err)
+		slog.Error("Failed to decode updated order", "order_id", o.OrderId, "order", o, "err", err)
 		return false, "", err
 	}
 
-	slog.Info("Update successful", "documentID", id, "order", o, "singleResult", order)
+	slog.Info("Update successful", "order_id", o.OrderId, "order", o, "singleResult", order)
 	return true, order.Id.Hex(), nil
 }

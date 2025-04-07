@@ -48,7 +48,6 @@ func main() {
 		cancelF,
 		&wg,
 		queue.NewCreateOrderQueue(),
-		queue.NewCreateTrackingQueue(),
 		queue.NewUpdateStatusQueue(),
 	)
 	sigs := make(chan os.Signal, 1)

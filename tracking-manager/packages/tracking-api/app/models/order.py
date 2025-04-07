@@ -12,7 +12,7 @@ from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderReques
 from app.entities.order.response import ItemOrderRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id, PAYMENT_COD, BANK_IDS, \
+from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX
 from app.helpers.es_helpers import search_es
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
@@ -301,7 +301,6 @@ async def add_order(item: OrderRequest):
         order_json = json.dumps(order_dict, ensure_ascii=False)
 
         rabbitmq.send_message(get_create_order_queue(), order_json)
-        rabbitmq.send_message(get_create_tracking_queue(), order_json)
 
         await remove_item_cart_by_order(ItemOrderReq(**order_dict), order_dict["created_by"])
         return item.order_id
@@ -314,11 +313,8 @@ async def get_order_by_user(user_id: str):
         collection = database.db[collection_name]
         order_list = collection.find({"created_by": user_id})
         logger.info(f"Order list: {order_list}")
-<<<<<<< Updated upstream
-        return [{**prod, '_id': str(prod['_id'])} for prod in order_list]
-=======
+
         return [ItemOrderRes.from_mongo(order) for order in order_list]
->>>>>>> Stashed changes
     except Exception as e:
         logger.error(f"Failed [get_order_by_user]: {e}")
         raise e

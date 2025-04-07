@@ -144,7 +144,7 @@ async def update_product_category_name(item: UpdateCategoryReq):
     except JsonException as je:
         raise je
     except Exception as e:
-        logger.error("Error adding product", error=str(e))
+        logger.error("Error updating product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

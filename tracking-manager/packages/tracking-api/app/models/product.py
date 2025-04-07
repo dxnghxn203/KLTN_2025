@@ -151,7 +151,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
                     unit_price=price.unit_price,
                     discount=price.discount,
                     unit=price.unit,
-                    amount=price.amount,
+                    inventory=price.inventory,
                     amount_per_unit=price.amount_per_unit,
                     weight=price.weight
                 ) for idx, price in enumerate(item.prices.prices)
@@ -180,7 +180,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
 
         for price in price_list:
             redis_id = f"{product_id}_{price.price_id}"
-            redis_product = ItemProductRedisReq(inventory=price.amount)
+            redis_product = ItemProductRedisReq(inventory=price.inventory)
             redis.save_product(redis_product, redis_id)
             logger.info(f"Đã lưu sản phẩm vào Redis với key: {redis_id}")
 

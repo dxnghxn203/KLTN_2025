@@ -40,7 +40,7 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 		DeliveryInstruction: trackingReq.DeliveryInstruction,
 	}
 
-	res, id, err := orderToUpdate.Update(ctx, orderRes.Id.Hex())
+	res, id, err := orderToUpdate.Update(ctx)
 	if err != nil {
 		slog.Error("Failed to update order", "orderId", orderRes.OrderId, "err", err)
 		return false, err
