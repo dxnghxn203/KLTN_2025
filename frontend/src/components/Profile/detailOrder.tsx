@@ -73,7 +73,7 @@ const OrderDetailPage = () => {
         <LuChevronLeft className="text-xl cursor-pointer" />
         <button
           className="font-semibold text-lg"
-          onClick={() => router.push("/personal/order-history")}
+          onClick={() => router.push("/ca-nhanh/lich-su-don-hang")}
         >
           Chi tiết đơn hàng
         </button>

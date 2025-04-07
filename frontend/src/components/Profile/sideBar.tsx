@@ -13,9 +13,9 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen p-5">
-      <div className="w-1/4">
-        <div className="bg-[#F5F7F9] h-40 p-6 rounded-lg flex flex-col items-center justify-center">
+    <div className="flex w-1/4 p-5">
+      <div className="w-full">
+        <div className="bg-[#F5F7F9] w-full h-40 rounded-lg flex flex-col items-center justify-center">
           {user?.image ? (
             <img
               src={user?.image}
@@ -30,13 +30,13 @@ const Sidebar = () => {
           </h2>
           <p className="text-gray-500 text-sm">{user?.email}</p>
         </div>
-        <div className="bg-[#F5F7F9] mt-2 rounded-lg">
+        <div className="bg-[#F5F7F9] w-full mt-2 rounded-lg">
           <div>
             <Link href="/ca-nhan/thong-tin-ca-nhan">
               <button
                 className={`font-medium px-4 py-4 w-full text-left flex items-center rounded-lg cursor-pointer 
       ${
-        pathname === "/personal" || pathname === "/personal/personal-infomation"
+        pathname === "/ca-nhan" || pathname === "/ca-nhan/thong-tin-ca-nhan"
           ? "bg-[#F0F5FF] text-[#0053E2]"
           : "text-gray-800 hover:bg-[#EBEBEB]"
       }`}
@@ -50,7 +50,7 @@ const Sidebar = () => {
               <button
                 className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
                 ${
-                  pathname === "/personal/order-history"
+                  pathname === "/ca-nhan/lich-su-don-hang"
                     ? "bg-[#F0F5FF] text-[#0053E2]"
                     : "text-gray-800 hover:bg-[#EBEBEB]"
                 }`}
@@ -71,13 +71,13 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className="flex-1 px-5">
-        {(pathname === "/personal" ||
-          pathname === "/personal/personal-infomation") && (
+      {/* <div className="flex-1">
+        {(pathname === "/ca-nhan" ||
+          pathname === "/ca-nhan/thong-tin-ca-nhan") && (
           <PersonalInfomation />
         )}
-        {pathname === "/personal/order-history" && <HistoryOrder />}
-      </div>
+        {pathname === "/ca-nhan/lich-su-don-hang" && <HistoryOrder />}
+      </div> */}
     </div>
   );
 };

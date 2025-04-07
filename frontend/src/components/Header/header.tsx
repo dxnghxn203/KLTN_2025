@@ -183,7 +183,7 @@ export default function Header() {
                   <div className="p-4">
                     <h3 className="text-black font-semibold">Giỏ hàng của bạn</h3>
 
-                    {!cart || cart.length === 0 ? (
+                    {!cart ?(
                       <div className="py-6 text-center text-gray-500">
                         Giỏ hàng trống
                       </div>

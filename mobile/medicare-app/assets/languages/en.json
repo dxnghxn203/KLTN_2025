@@ -34,5 +34,8 @@
   "save": "Save",
   "delete": "Delete",
   "edit": "Edit",
-  "search": "Search"
+  "search": "Search",
+  "medicine": "Medicine",
+  "orders": "Orders"
+
 }
