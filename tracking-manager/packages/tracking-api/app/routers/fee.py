@@ -1,15 +1,15 @@
 from fastapi import APIRouter, status
 
-from app.core import response
-from app.helpers.constant import FEE_INDEX
-from app.models import fee
 from app.core import logger
+from app.core import response
+from app.models import fee
+
 router = APIRouter()
 
 @router.post("/fee")
 async def insert_fee():
     try:
-        await fee.insert_fee_into_elasticsearch('pricing.json', FEE_INDEX)
+        await fee.insert_fee_into_elasticsearch()
     except Exception as e:
         logger.error(f"Error inserting fee: {str(e)}")
         raise response.JsonException(
@@ -20,7 +20,7 @@ async def insert_fee():
 @router.delete("/fee")
 async def delete_fee():
     try:
-        await fee.delete_fee(FEE_INDEX)
+        await fee.delete_fee()
     except Exception as e:
         logger.error(f"Error deleting fee: {str(e)}")
         raise response.JsonException(
@@ -31,7 +31,7 @@ async def delete_fee():
 @router.get("/fee", response_model=response.SuccessResponse)
 async def get_all_fee():
     try:
-        return await fee.get_fee(FEE_INDEX)
+        return await fee.get_fee()
     except Exception as e:
         logger.error("Error getting current", error=str(e))
         raise response.JsonException(

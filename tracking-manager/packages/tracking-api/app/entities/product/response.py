@@ -20,6 +20,7 @@ class ItemPriceDBRes(BaseModel):
     unit: Optional[Union[str, None]] = None
     amount: int = 0
     amount_per_unit: Optional[Union[str, None]] = None
+    weight: float = 0
 
 class ItemImageDBRes(BaseModel):
     images_id: Optional[Union[str, None]] = None

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
 from app.entities.product.response import ItemProductRes
@@ -17,6 +17,7 @@ class InfoAddressOrderRes(BaseModel):
     address:  AddressOrderRes
 
 class ItemOrderRes(BaseModel):
+    id: str = Field(..., alias='_id')
     order_id: Optional[Union[str, None]] = None
     tracking_id: Optional[Union[str, None]] = None
     status: Optional[Union[str, None]] = None
@@ -31,6 +32,8 @@ class ItemOrderRes(BaseModel):
     receiver_commune_code: int = 0
     created_by: Optional[Union[str, None]] = None
     delivery_instruction: Optional[Union[str, None]] = None
+    payment_type: Optional[Union[str, None]] = None
+    weight: float = 0
 
     @classmethod
     def from_mongo(cls, data):

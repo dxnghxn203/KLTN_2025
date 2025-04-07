@@ -16,12 +16,6 @@ func GetCurrentTime() time.Time {
 	return time.Now()
 }
 
-type TimeRange struct {
-	Session   string    `json:"session" bson:"session"`
-	StartTime time.Time `json:"start_time" bson:"start_time"`
-	EndTime   time.Time `json:"end_time" bson:"end_time"`
-}
-
 type addressOrderReq struct {
 	Address  string `json:"address" bson:"address"`
 	Ward     string `json:"ward" bson:"ward"`
@@ -53,8 +47,13 @@ type Orders struct {
 	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
 	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
 	CreatedBy            string              `json:"created_by" bson:"created_by"`
+	DeliveryTime         time.Time           `json:"delivery_time" bson:"delivery_time"`
 	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
 	PaymentType          string              `json:"payment_type" bson:"payment_type"`
+	Weight               float64             `json:"weight" bson:"weight"`
+	ShippingFee          float64             `json:"shipping_fee" bson:"shipping_fee"`
+	ProductFee           float64             `json:"product_fee" bson:"product_fee"`
+	TotalFee             float64             `json:"total_fee" bson:"total_fee"`
 }
 
 type ProductInfo struct {
@@ -83,7 +82,13 @@ type OrderRes struct {
 	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
 	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
 	CreatedBy            string              `json:"created_by" bson:"created_by"`
+	DeliveryTime         time.Time           `json:"delivery_time" bson:"delivery_time"`
 	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
+	PaymentType          string              `json:"payment_type" bson:"payment_type"`
+	Weight               float64             `json:"weight" bson:"weight"`
+	ShippingFee          float64             `json:"shipping_fee" bson:"shipping_fee"`
+	ProductFee           float64             `json:"product_fee" bson:"product_fee"`
+	TotalFee             float64             `json:"total_fee" bson:"total_fee"`
 }
 
 type OrderToUpdate struct {

@@ -152,7 +152,8 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
                     discount=price.discount,
                     unit=price.unit,
                     amount=price.amount,
-                    amount_per_unit=price.amount_per_unit
+                    amount_per_unit=price.amount_per_unit,
+                    weight=price.weight
                 ) for idx, price in enumerate(item.prices.prices)
             ]
 
@@ -242,4 +243,29 @@ async def delete_product(product_id: str):
         return response.SuccessResponse(message="Product deleted successfully")
     except Exception as e:
         logger.error(f"Error deleting product: {str(e)}")
+        raise e
+
+async def get_product_by_id(product_id: str, price_id: str):
+    try:
+        collection = db[collection_name]
+
+        product = collection.find_one(
+            {"product_id": product_id, "prices.price_id": price_id},
+            {"_id": 0}
+        )
+
+        if not product:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found"
+            )
+
+        product["prices"] = [
+            price for price in product.get("prices", [])
+            if price.get("price_id") == price_id
+        ]
+
+        return ItemProductDBRes(**product)
+    except Exception as e:
+        logger.error(f"Error getting product by id: {str(e)}")
         raise e

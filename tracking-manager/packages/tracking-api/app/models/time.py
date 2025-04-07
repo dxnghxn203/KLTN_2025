@@ -1,36 +1,45 @@
-import json
-import os
+from datetime import datetime, timedelta, timezone
+from typing import Union
 
-from app.core import elasticsearch
-from app.core import response, logger
-from app.core.elasticsearch import delete_index
-from app.entities.time.request import TimeReq
-from app.entities.time.response import TimeRes
-from app.helpers.es_time import insert_es_time
+from starlette.status import HTTP_400_BAD_REQUEST
+
+from app.core import logger
+from app.core import response
+from app.helpers.constant import TIME_INDEX
+from app.helpers.es_helpers import insert_es_common, delete_index, query_es_data, search_es
 
 
-async def insert_time_into_elasticsearch(file, index):
-    if await elasticsearch.index_has_data(index):
-        logger.info(f"Index {index} đã có dữ liệu, bỏ qua insert!")
-        return
-    json_file = os.path.join('app/static', file)
-    print("json_file:", json_file)
-    try:
-        with open(json_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        print(data)
-        time_data = [TimeReq(**item) for item in data]
-        await insert_es_time(time_data, index)
-        print(f"Inserted {index} into Elasticsearch successfully.")
+async def insert_time_into_elasticsearch():
+    await insert_es_common(TIME_INDEX, 'time.json')
 
-    except Exception as e:
-        print(f"Error reading or inserting time data: {e}")
+async def delete_time():
+    delete_index(TIME_INDEX)
 
-async def delete_time(index):
-    delete_index(index)
-
-async def get_time(index):
-    query = {"query": {"match_all": {}}, "size": 1000}
-    es_response = elasticsearch.es_client.search(index=index, body=query)
-    data = [TimeRes(**hit["_source"]) for hit in es_response["hits"]["hits"]]
+async def get_time():
+    data = await query_es_data(TIME_INDEX, {"query": {"match_all": {}}, "size": 1000})
     return response.SuccessResponse(data=data)
+
+async def get_range_time(route_code: str) -> Union[str, response.JsonException]:
+    result = await search_es(TIME_INDEX, {"route_code": route_code})
+    if isinstance(result, response.JsonException):
+        return result
+
+    range_time = result.get("range_time")
+    logger.info(f"Range time of {TIME_INDEX}: {range_time}")
+
+    if range_time is None:
+        raise response.JsonException(
+            status_code=HTTP_400_BAD_REQUEST,
+            message="Không tìm thấy thời gian giao hàng"
+        )
+    if not isinstance(range_time, (float, int)):
+        raise response.JsonException(
+            status_code=HTTP_400_BAD_REQUEST,
+            message="Dữ liệu thời gian giao hàng không hợp lệ"
+        )
+
+    days = int(range_time)
+    seconds = (range_time % 1) * 86400
+    delivery_time = (datetime.utcnow() + timedelta(days=days, seconds=seconds)).replace(tzinfo=timezone.utc)
+
+    return delivery_time.isoformat()

@@ -2,7 +2,6 @@ from fastapi import APIRouter, status
 
 from app.core import logger
 from app.core import response
-from app.helpers.constant import TIME_INDEX
 from app.models import time
 
 router = APIRouter()
@@ -10,7 +9,7 @@ router = APIRouter()
 @router.post("/time")
 async def insert_time():
     try:
-        await time.insert_time_into_elasticsearch('time.json', TIME_INDEX)
+        await time.insert_time_into_elasticsearch()
     except Exception as e:
         logger.error(f"Error inserting time: {str(e)}")
         raise response.JsonException(
@@ -21,7 +20,7 @@ async def insert_time():
 @router.delete("/time")
 async def delete_time():
     try:
-        await time.delete_time(TIME_INDEX)
+        await time.delete_time()
     except Exception as e:
         logger.error(f"Error deleting time: {str(e)}")
         raise response.JsonException(
@@ -32,7 +31,7 @@ async def delete_time():
 @router.get("/time", response_model=response.SuccessResponse)
 async def get_all_time():
     try:
-        return await time.get_time(TIME_INDEX)
+        return await time.get_time()
     except Exception as e:
         logger.error("Error getting current", error=str(e))
         raise response.JsonException(

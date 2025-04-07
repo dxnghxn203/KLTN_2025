@@ -1,76 +1,41 @@
+import asyncio
 import datetime
-import os
+from typing import Union
 
-import pandas as pd
 from starlette import status
+from starlette.status import HTTP_400_BAD_REQUEST
 
-from app.core import elasticsearch, database, logger, response
+from app.core import database, logger, response
 from app.entities.location.request import ItemLocationReq
-from app.entities.location.response import City, District, Ward, Region
-from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX, generate_id
-from app.helpers.es_location import insert_es_cities, insert_es_districts, insert_es_wards, \
-    insert_es_regions
+from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX, generate_id, special_cities
+from app.helpers.es_helpers import delete_index, insert_es_common, query_es_data, search_es
 from app.models import user
 
 collection_name = "locations"
 
-INDEX_MAPPING = {
-    CITY_INDEX: insert_es_cities,
-    DISTRICT_INDEX: insert_es_districts,
-    WARD_INDEX: insert_es_wards,
-    REGION_INDEX: insert_es_regions,
-}
-
-MODEL_MAPPING = {
-    CITY_INDEX: City,
-    DISTRICT_INDEX: District,
-    WARD_INDEX: Ward,
-    REGION_INDEX: Region,
-}
-
-def read_excel_file(filename):
-    excel_path = os.path.join('app/static', filename)
-    return pd.read_excel(excel_path, engine='openpyxl')
-
-async def insert_into_elasticsearch(index_name, filename):
-    if index_name in INDEX_MAPPING:
-        if await elasticsearch.index_has_data(index_name):
-            logger.info(f"Index {index_name} đã có dữ liệu, bỏ qua insert!")
-            return
-        df = read_excel_file(filename)
-        await INDEX_MAPPING[index_name](df)
-
-async def delete_index_by_name(index_name):
-    elasticsearch.delete_index(index_name)
-
-async def query_es_data(index_name, query):
-    es_response = elasticsearch.es_client.search(index=index_name, body=query)
-    model = MODEL_MAPPING.get(index_name)
-    return [model(**hit["_source"]) for hit in es_response["hits"]["hits"]] if model else []
-
-async def insert_cities_into_elasticsearch():
-    await insert_into_elasticsearch(CITY_INDEX, 'cities.xlsx')
-
-async def insert_districts_into_elasticsearch():
-    await insert_into_elasticsearch(DISTRICT_INDEX, 'districts.xlsx')
-
-async def insert_wards_into_elasticsearch():
-    await insert_into_elasticsearch(WARD_INDEX, 'wards.xlsx')
-
-async def insert_regions_into_elasticsearch():
-    await insert_into_elasticsearch(REGION_INDEX, 'regions.xlsx')
-
 async def delete_cities():
-    await delete_index_by_name(CITY_INDEX)
+    delete_index(CITY_INDEX)
 
 async def delete_districts():
-    await delete_index_by_name(DISTRICT_INDEX)
+    delete_index(DISTRICT_INDEX)
 
 async def delete_wards():
-    await delete_index_by_name(WARD_INDEX)
+    delete_index(WARD_INDEX)
 
 async def delete_regions():
-    await delete_index_by_name(REGION_INDEX)
+    delete_index(REGION_INDEX)
+
+async def insert_cities_into_elasticsearch():
+    await insert_es_common(CITY_INDEX, 'cities.xlsx')
+
+async def insert_districts_into_elasticsearch():
+    await insert_es_common(DISTRICT_INDEX, 'districts.xlsx')
+
+async def insert_wards_into_elasticsearch():
+    await insert_es_common(WARD_INDEX, 'wards.xlsx')
+
+async def insert_regions_into_elasticsearch():
+    await insert_es_common(REGION_INDEX, 'regions.xlsx')
 
 async def get_cities():
     return await query_es_data(CITY_INDEX, {"query": {"match_all": {}}, "size": 65})
@@ -83,6 +48,35 @@ async def get_wards_by_district(district_code: str):
 
 async def get_regions():
     return await query_es_data(REGION_INDEX, {"query": {"match_all": {}}, "size": 65})
+
+async def get_domestic_name(province_code: int) -> Union[str, response.JsonException]:
+    result = await search_es(CITY_INDEX, {"code": province_code})
+
+    if isinstance(result, response.JsonException) or not result:
+        raise response.JsonException(
+            status_code=HTTP_400_BAD_REQUEST,
+            message="Province code không tồn tại"
+        )
+
+    return result.get("domestic_name")
+
+async def determine_route(sender_code: int, receiver_code: int) -> str:
+    if sender_code == receiver_code:
+        return "intra_province"
+    if sender_code in special_cities and receiver_code in special_cities:
+        return "cross_metro"
+
+    sender_domain, receiver_domain = await asyncio.gather(
+        get_domestic_name(sender_code),
+        get_domestic_name(receiver_code)
+    )
+
+    if isinstance(sender_domain, response.JsonException):
+        return sender_domain
+    if isinstance(receiver_domain, response.JsonException):
+        return receiver_domain
+
+    return "same_region" if sender_domain == receiver_domain else "cross_region"
 
 async def get_all_locations_by_user(token: str):
     try:

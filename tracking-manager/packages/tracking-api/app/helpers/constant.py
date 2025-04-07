@@ -33,4 +33,8 @@ BANK_IDS = {
     PAYMENT_TP_BANK_QR: "TPB",
     PAYMENT_BIDV_BANK_QR: "BIDV"
 }
-
+special_cities = {
+    79: True, #TP. Hồ Chí Minh
+	1:  True, #TP. Hà Nội
+	48: True, #TP. Đà Nẵng
+}

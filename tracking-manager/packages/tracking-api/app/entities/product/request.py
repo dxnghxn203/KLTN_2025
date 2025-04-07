@@ -11,6 +11,12 @@ class ItemProductReq(BaseModel):
     unit: str
     quantity: int = 0
     price: float = 0
+    weight: float = 0
+
+class ItemProductInReq(BaseModel):
+    product_id: str = ""
+    price_id: str = ""
+    quantity: int = 0
 
 class ItemProductRedisReq(BaseModel):
     inventory: int = 0
@@ -26,6 +32,7 @@ class ItemPriceDBReq(BaseModel):
     unit: str = ""
     amount: int
     amount_per_unit: str = ""
+    weight: float = 0
 
 class ItemPriceDBInReq(BaseModel):
     original_price: float
@@ -34,6 +41,7 @@ class ItemPriceDBInReq(BaseModel):
     unit: str
     amount: int
     amount_per_unit: str = ""
+    weight: float = 0
 
     @model_validator(mode="before")
     @classmethod

@@ -1,35 +1,36 @@
-import json
-import os
+import math
 
-from app.core import elasticsearch, logger
+from app.core import elasticsearch
 from app.core import response
-from app.core.elasticsearch import delete_index
-from app.entities.fee.request import FeeReq
 from app.entities.fee.response import FeeRes
-from app.helpers.es_fee import insert_es_fee
+from app.helpers.constant import FEE_INDEX
+from app.helpers.es_helpers import delete_index, insert_es_common
+from app.models.location import query_es_data
 
-async def insert_fee_into_elasticsearch(file, index):
-    if await elasticsearch.index_has_data(index):
-        logger.info(f"Index {index} đã có dữ liệu, bỏ qua insert!")
-        return
-    json_file = os.path.join('app/static', file)
-    print("json_file:", json_file)
-    try:
-        with open(json_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        print(data)
-        fee_data = [FeeReq(**item) for item in data]
-        await insert_es_fee(fee_data, index)
-        print(f"Inserted {index} into Elasticsearch successfully.")
 
-    except Exception as e:
-        print(f"Error reading or inserting {index}: {e}")
+async def insert_fee_into_elasticsearch():
+    await insert_es_common(FEE_INDEX, 'pricing.json')
 
-async def delete_fee(index):
-    delete_index(index)
+async def delete_fee():
+    delete_index(FEE_INDEX)
 
-async def get_fee(index):
-    query = {"query": {"match_all": {}}, "size": 1000}
-    es_response = elasticsearch.es_client.search(index=index, body=query)
-    data = [FeeRes(**hit["_source"]) for hit in es_response["hits"]["hits"]]
+async def get_fee():
+    data = await query_es_data(FEE_INDEX, {"query": {"match_all": {}}, "size": 1000})
     return response.SuccessResponse(data=data)
+
+def calculate_shipping_fee(fee_data: dict, weight: float) -> float:
+    pricing_list = fee_data.get("pricing", [])
+    threshold_weight = fee_data.get("threshold_weight", 0)
+    step_weight = fee_data.get("step_weight", 0.5)
+    additional_price_per_step = fee_data.get("additional_price_per_step", 0)
+
+    for pricing in pricing_list:
+        if weight <= pricing["weight_less_than_equal"]:
+            return pricing["price"]
+
+    if weight > threshold_weight:
+        steps = math.ceil((weight - threshold_weight) / step_weight)
+        base_price = pricing_list[-1]["price"]
+        return base_price + steps * additional_price_per_step
+
+    return pricing_list[-1]["price"]

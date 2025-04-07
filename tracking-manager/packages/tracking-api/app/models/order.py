@@ -2,7 +2,7 @@ import base64
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List, Tuple
 
 import httpx
 from starlette import status
@@ -10,10 +10,16 @@ from starlette import status
 from app.core import logger, response, rabbitmq, database
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
 from app.entities.order.response import ItemOrderRes
-from app.entities.product.request import ItemProductRedisReq
+from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id, PAYMENT_COD, BANK_IDS
+from app.helpers.constant import get_create_order_queue, get_create_tracking_queue, generate_id, PAYMENT_COD, BANK_IDS, \
+    FEE_INDEX
+from app.helpers.es_helpers import search_es
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
+from app.models.fee import calculate_shipping_fee
+from app.models.location import determine_route
+from app.models.product import get_product_by_id
+from app.models.time import get_range_time
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -90,45 +96,105 @@ async def get_all_order(page: int, page_size: int):
         skip_count = (page - 1) * page_size
         order_list = collection.find().skip(skip_count).limit(page_size)
         logger.info(f"Order list: {order_list}")
-        return [ItemOrderRes(**prod) for prod in order_list]
+        return [ItemOrderRes(**order) for order in order_list]
     except Exception as e:
         logger.error(f"Failed [get_all_order]: {e}")
+        raise e
+
+async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List[ItemProductReq], float, float]:
+    total_price = 0
+    weight = 0
+    product_items = []
+
+    for product in products:
+        data = redis.get_product_transaction(product_id=f"{product.product_id}_{product.price_id}")
+        logger.info(f"Product data from Redis: {data}")
+
+        if not data:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        inventory = data.get("inventory", 0)
+        sell = data.get("sell", 0)
+        total_requested = product.quantity + sell
+
+        if total_requested > inventory:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Sản phẩm không đủ hàng"
+            )
+
+        product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
+        price_info = product_info.prices[0]
+
+        total_price += price_info.price * product.quantity
+        weight += price_info.weight * product.quantity
+
+        product_item = ItemProductReq(
+            product_id=product.product_id,
+            price_id=product.price_id,
+            product_name=product_info.product_name,
+            unit=price_info.unit,
+            quantity=product.quantity,
+            price=price_info.price,
+            weight=price_info.weight
+        )
+        product_items.append(product_item)
+
+    return product_items, total_price, weight
+
+async def check_shipping_fee(
+        sender_province_code: int,
+        receiver_province_code: int,
+        product_price: float,
+        weight: float
+    ):
+    try:
+        route_code = await determine_route(
+                sender_code=sender_province_code,
+                receiver_code=receiver_province_code
+            )
+
+        delivery_time = await get_range_time(route_code)
+
+        if product_price > 100_000:
+            shipping_fee = 0
+        else:
+            fee_data = await search_es(index=FEE_INDEX, conditions={"route_code": route_code})
+            if isinstance(fee_data, response.JsonException):
+                raise fee_data
+
+            shipping_fee = calculate_shipping_fee(fee_data, weight)
+        return {
+            "product_fee": product_price,
+            "shipping_fee": shipping_fee,
+            "delivery_time": delivery_time,
+            "weight": weight,
+            "total_fee": product_price + shipping_fee
+        }
+
+    except Exception as e:
+        logger.error(f"Failed [check_shipping_fee]: {e}")
         raise e
 
 async def check_order(item: ItemOrderInReq, user_id: str):
     try:
         order_id = generate_id("ORDER")
+        tracking_id = f"{generate_id('TRACKING')}_V{1:03}"
 
-        version_formatted = f"{1:03}"
-        tracking_id = generate_id("TRACKING")
-        tracking_id = f"{tracking_id}_V{version_formatted}"
-        total_price = 0
+        product_items, product_price, weight = await process_order_products(item.product)
 
-        for product in item.product:
-            total_price += product.price * product.quantity
-            data = redis.get_product_transaction(product_id=f"{product.product_id}_{product.price_id}")
-            logger.info(f"Product data from Redis: {data}")
+        fee_data = await check_shipping_fee(
+            sender_province_code=item.sender_province_code,
+            receiver_province_code=item.receiver_province_code,
+            product_price=product_price,
+            weight=weight
+        )
+        logger.info(f"Fee data: {fee_data}")
 
-            if not data:
-                raise response.JsonException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    message="Không tìm thấy sản phẩm"
-                )
-
-            inventory = data.get("inventory", 0)
-            sell = data.get("sell", 0)
-
-            total_requested = product.quantity + sell
-
-            if total_requested > inventory:
-                raise response.JsonException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    message="Sản phẩm không đủ hàng"
-                )
-
-        logger.info(f"Total price: {total_price}")
-
-        if not await save_order_to_redis(item, order_id, tracking_id, user_id):
+        if not await save_order_to_redis(item, order_id, tracking_id, user_id, fee_data, product_items):
             return response.BaseResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 message="Không thể lưu đơn hàng"
@@ -136,7 +202,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
         qr_code = None
         if item.payment_type and item.payment_type != PAYMENT_COD:
-            qr_code = await generate_qr_code(order_id, total_price, item.payment_type)
+            qr_code = await generate_qr_code(order_id, fee_data["total_fee"], item.payment_type)
             if not qr_code:
                 return response.BaseResponse(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -145,7 +211,6 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
         if item.payment_type == PAYMENT_COD:
             await add_order(OrderRequest(order_id=order_id))
-            await remove_item_cart_by_order(item, user_id)
 
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,
@@ -158,7 +223,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         logger.error(f"Failed [check_order]: {e}")
         raise e
 
-async def remove_item_cart_by_order(orders:ItemOrderInReq, identifier: str):
+async def remove_item_cart_by_order(orders: ItemOrderReq, identifier: str):
     try:
         for product in orders.product:
             remove_cart_item(identifier, product.product_id)
@@ -192,13 +257,28 @@ async def generate_qr_code(order_id: str, total_price: float, payment_type: str)
         logger.error(f"Error generating QR code: {e}")
         return None
 
-async def save_order_to_redis(item: ItemOrderInReq,order_id, tracking_id, user_id):
+async def save_order_to_redis(
+        item: ItemOrderInReq,
+        order_id: str,
+        tracking_id: str,
+        user_id: str,
+        fee_data: dict,
+        product_items: List[ItemProductReq]
+    ):
     try:
-        item_data = ItemOrderReq(**dict(item),
-                                 order_id=order_id,
-                                 tracking_id=tracking_id,
-                                 status="created",
-                                 created_by=user_id)
+        item_data = ItemOrderReq(
+            **item.model_dump(exclude={"product"}),
+            product=product_items,
+            order_id=order_id,
+            tracking_id=tracking_id,
+            status="created",
+            created_by=user_id,
+            delivery_time=fee_data["delivery_time"],
+            shipping_fee=fee_data["shipping_fee"],
+            product_fee=fee_data["product_fee"],
+            total_fee=fee_data["total_fee"],
+            weight=fee_data["weight"]
+        )
         logger.info("item", json=item_data)
 
         redis.save_order(item_data)
@@ -223,6 +303,7 @@ async def add_order(item: OrderRequest):
         rabbitmq.send_message(get_create_order_queue(), order_json)
         rabbitmq.send_message(get_create_tracking_queue(), order_json)
 
+        await remove_item_cart_by_order(ItemOrderReq(**order_dict), order_dict["created_by"])
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
@@ -233,7 +314,11 @@ async def get_order_by_user(user_id: str):
         collection = database.db[collection_name]
         order_list = collection.find({"created_by": user_id})
         logger.info(f"Order list: {order_list}")
+<<<<<<< Updated upstream
         return [{**prod, '_id': str(prod['_id'])} for prod in order_list]
+=======
+        return [ItemOrderRes.from_mongo(order) for order in order_list]
+>>>>>>> Stashed changes
     except Exception as e:
         logger.error(f"Failed [get_order_by_user]: {e}")
         raise e
@@ -302,3 +387,4 @@ async def cancel_order(order_id: str):
     except Exception as e:
         logger.error(f"Failed [cancel_order]: {e}")
         raise e
+

@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 from typing import List
 
-from app.entities.product.request import ItemProductReq
+from app.entities.product.request import ItemProductReq, ItemProductInReq
+
 
 class AddressOrderReq(BaseModel):
     address: str
@@ -29,11 +32,16 @@ class ItemOrderReq(BaseModel):
     receiver_district_code: int
     receiver_commune_code: int
     created_by: str
+    delivery_time: str
     delivery_instruction: str = ""
     payment_type: str = ""
+    weight: float = 0
+    shipping_fee: float = 0
+    product_fee: float = 0
+    total_fee: float = 0
 
 class ItemOrderInReq(BaseModel):
-    product: List[ItemProductReq]
+    product: List[ItemProductInReq]
     pick_from: InfoAddressOrderReq
     pick_to: InfoAddressOrderReq
     sender_province_code: int

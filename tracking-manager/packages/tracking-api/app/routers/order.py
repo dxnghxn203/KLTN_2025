@@ -7,6 +7,27 @@ from app.models import order, user
 
 router = APIRouter()
 
+@router.post("/order/check_shipping_fee", response_model=response.BaseResponse)
+async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
+    try:
+        _, total_price, weight = await order.process_order_products(item.product)
+        return response.SuccessResponse(
+            data=await order.check_shipping_fee(
+                item.sender_province_code,
+                item.receiver_province_code,
+                total_price,
+                weight
+            )
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error checking order {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/order/check", response_model=response.BaseResponse)
 async def check_order(item: ItemOrderInReq, session: str= None, token: str = Depends(middleware.verify_token_optional)):
     try:
