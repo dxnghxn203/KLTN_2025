@@ -233,7 +233,7 @@ async def get_order_by_user(user_id: str):
         collection = database.db[collection_name]
         order_list = collection.find({"created_by": user_id})
         logger.info(f"Order list: {order_list}")
-        return [ItemOrderRes(**prod) for prod in order_list]
+        return [{**prod, '_id': str(prod['_id'])} for prod in order_list]
     except Exception as e:
         logger.error(f"Failed [get_order_by_user]: {e}")
         raise e
