@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
-import { googleLoginStart, googleLoginSuccess, loginStart, logoutStart, selectAuth, selectUser } from '@/store';
+import { googleLoginStart, googleLoginSuccess, loginStart, logoutStart, selectAuth, selectUserAuth } from '@/store';
 import { getToken } from '@/utils/cookie';
 import { get } from 'http';
 
@@ -9,7 +9,7 @@ export function useAuth() {
     const dispatch = useDispatch();
     const { data: session } = useSession();
     const { loading, error } = useSelector(selectAuth);
-    const user= useSelector(selectUser);
+    const user= useSelector(selectUserAuth);
     
     const isAuthenticated = useMemo(() => {
         const token = getToken();
