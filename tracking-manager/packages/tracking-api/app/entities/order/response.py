@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
@@ -34,6 +36,10 @@ class ItemOrderRes(BaseModel):
     delivery_instruction: Optional[Union[str, None]] = None
     payment_type: Optional[Union[str, None]] = None
     weight: float = 0
+    total_fee: float = 0
+    shipping_fee: float = 0
+    product_fee: float = 0
+    created_date: Optional[Union[datetime.datetime, None]] = None
 
     @classmethod
     def from_mongo(cls, data):
