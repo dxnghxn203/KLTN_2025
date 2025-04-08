@@ -13,7 +13,7 @@ import (
 )
 
 func GetCurrentTime() time.Time {
-	return time.Now()
+	return time.Now().Add(7 * time.Hour)
 }
 
 type addressOrderReq struct {

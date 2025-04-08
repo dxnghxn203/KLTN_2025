@@ -35,16 +35,17 @@ async def create_review(item: ItemReviewReq, token, images):
     except Exception as e:
         raise e
 
-async def get_review_by_product(product_id: str, page: int, page_size: int, sort_type: str = "oldest"):
+async def get_review_by_product(product_id: str, page: int, page_size: int, rating: float):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
 
-    sort_order = 1
-    if sort_type == "newest":
-        sort_order = -1
+    query = {"product_id": product_id}
 
-    reviews = list(collection.find({"product_id": product_id})
-                   .sort("created_at", sort_order)
+    if rating != 0:
+        query["rating"] = rating
+
+    reviews = list(collection.find(query)
+                   .sort("created_at", -1)
                    .skip(skip_count)
                    .limit(page_size))
 

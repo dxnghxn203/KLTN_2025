@@ -37,6 +37,7 @@ class ItemOrderRes(BaseModel):
     created_by: Optional[Union[str, None]] = None
     delivery_instruction: Optional[Union[str, None]] = None
     payment_type: Optional[Union[str, None]] = None
+    payment_status: Optional[Union[str, None]] = None
     weight: float = 0
     total_fee: float = 0
     shipping_fee: float = 0

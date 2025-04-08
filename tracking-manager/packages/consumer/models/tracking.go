@@ -50,7 +50,7 @@ func (t *Tracking) Create(ctx context.Context) (bool, string, error) {
 
 	db := database.GetDatabase()
 	collection := db.Collection("trackings")
-	t.CreatedDate = time.Now()
+	t.CreatedDate = time.Now().Add(7 * time.Hour)
 	t.UpdatedDate = t.CreatedDate
 	res, err := collection.InsertOne(ctx, t)
 	if err != nil {

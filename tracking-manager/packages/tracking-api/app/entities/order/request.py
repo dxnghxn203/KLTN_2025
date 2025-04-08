@@ -1,7 +1,6 @@
-from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel
-from typing import List
 
 from app.entities.product.request import ItemProductReq, ItemProductInReq
 
