@@ -12,8 +12,11 @@ import {
     fetchGetAllOrderAdminStart,
     fetchGetAllOrderAdminSuccess,
     fetchGetAllOrderAdminFailed,
+
+    fetchGetOrderByUserStart,
+    fetchGetOrderByUserSuccess,
+    fetchGetOrderByUserFailed,
 } from './orderSlice';
-import { get } from 'http';
 import { getSession, getToken } from '@/utils/cookie';
 
 // Fetch all order
@@ -79,9 +82,9 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
                     "province": addressInfo.city || ""
                 }
             },
-            "sender_province_code": 0,
-            "sender_district_code": 0,
-            "sender_commune_code": 0,
+            "sender_province_code": 79,
+            "sender_district_code": 765,
+            "sender_commune_code": 26914,
             "receiver_province_code": addressInfo.cityCode || 0,
             "receiver_district_code": addressInfo.districtCode || 0,
             "receiver_commune_code": addressInfo.wardCode || 0,
@@ -132,8 +135,23 @@ function* fetchGetAllOrderAdmin(action: any): Generator<any, void, any> {
     }
 }
 // 
+// Get order by user
+function* fetchGetOrderByUser(action: any): Generator<any, void, any> {
+    try {
+        const product = yield call(orderService.getOrderByUserId);
+        if (product.status_code === 200) {
+            yield put(fetchGetOrderByUserSuccess(product.data));
+            return;
+        }
+        yield put(fetchGetOrderByUserFailed());
+    } catch (error) {
+        yield put(fetchGetOrderByUserFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
     yield takeLatest(fetchGetAllOrderAdminStart.type, fetchGetAllOrderAdmin);
+    yield takeLatest(fetchGetOrderByUserStart.type, fetchGetOrderByUser);
 }

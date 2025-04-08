@@ -171,3 +171,15 @@ export const getAllOrderAdmin = async (params: any) => {
     }
 
 }
+
+export const getOrderByUserId = async () => {
+    try{
+        const response: any= await axiosClient.get('/v1/order/order');
+        return response;
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lổi lấy danh sách đơn hàng',
+        }
+    }
+}
