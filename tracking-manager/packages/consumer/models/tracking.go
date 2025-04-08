@@ -23,7 +23,6 @@ type Tracking struct {
 
 type TrackingReq struct {
 	OrderId             string `json:"order_id" bson:"order_id"`
-	TrackingId          string `json:"tracking_id" bson:"tracking_id"`
 	Status              string `json:"status" bson:"status"`
 	ShipperId           string `json:"shipper_id" bson:"shipper_id"`
 	ShipperName         string `json:"shipper_name" bson:"shipper_name"`

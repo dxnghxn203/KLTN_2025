@@ -38,13 +38,13 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 	}
 
 	if _id != "" && orderRaw.Status != "canceled" {
-		err = models.UpdateProductSellCount(ctx, orderRaw.Product)
+		err = models.UpdateProductSellCount(ctx, orderRaw.Product, 1)
 		if err != nil {
 			slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
 		}
-		err = orderRaw.IncreaseProductRedis(ctx)
+		err = models.UpdateProductSellRedis(ctx, orderRaw.Product, 1)
 		if err != nil {
-			slog.Error("Failed to increase product from redis", "id", _id, "err", err)
+			slog.Error("Lỗi cập nhật số lượng bán sau khi tạo đơn hàng", "id", _id, "err", err)
 		}
 	} else {
 		trackingRaw.Status = orderRaw.Status
