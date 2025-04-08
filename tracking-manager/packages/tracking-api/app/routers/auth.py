@@ -5,7 +5,7 @@ from fastapi import APIRouter, status, Form, Depends
 from app.core import logger
 from app.core.authGoogle import google_auth
 from app.core.response import BaseResponse, JsonException, SuccessResponse
-from app.entities.authen import GoogleAuthRequest
+from app.entities.auth.request import GoogleAuthRequest
 from app.entities.user.response import ItemUserRes
 from app.helpers.redis import get_session, save_session
 from app.middleware import middleware

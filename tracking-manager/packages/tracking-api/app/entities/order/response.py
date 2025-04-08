@@ -40,6 +40,7 @@ class ItemOrderRes(BaseModel):
     shipping_fee: float = 0
     product_fee: float = 0
     created_date: Optional[Union[datetime.datetime, None]] = None
+    updated_date: Optional[Union[datetime.datetime, None]] = None
 
     @classmethod
     def from_mongo(cls, data):

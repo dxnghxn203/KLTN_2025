@@ -1,5 +1,5 @@
-# Description: Authen entity
 from pydantic import BaseModel, validator
+
 
 class GoogleAuthRequest(BaseModel):
     id_token: str = None
