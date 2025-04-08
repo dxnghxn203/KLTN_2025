@@ -35,6 +35,8 @@ type Orders struct {
 	OrderId              string              `json:"order_id" bson:"order_id"`
 	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
 	Status               string              `json:"status" bson:"status"`
+	ShipperId            string              `json:"shipper_id" bson:"shipper_id"`
+	ShipperName          string              `json:"shipper_name" bson:"shipper_name"`
 	Product              []ProductInfo       `json:"product" bson:"product"`
 	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
 	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
@@ -57,13 +59,16 @@ type Orders struct {
 }
 
 type ProductInfo struct {
-	ProductId   string  `json:"product_id" bson:"product_id"`
-	PriceId     string  `json:"price_id" bson:"price_id"`
-	ProductName string  `json:"product_name" bson:"product_name"`
-	Unit        string  `json:"unit" bson:"unit"`
-	Quantity    int     `json:"quantity" bson:"quantity"`
-	Price       float64 `json:"price" bson:"price"`
-	Weight      float64 `json:"weight" bson:"weight"`
+	ProductId     string  `json:"product_id" bson:"product_id"`
+	PriceId       string  `json:"price_id" bson:"price_id"`
+	ProductName   string  `json:"product_name" bson:"product_name"`
+	Unit          string  `json:"unit" bson:"unit"`
+	Quantity      int     `json:"quantity" bson:"quantity"`
+	Price         float64 `json:"price" bson:"price"`
+	Weight        float64 `json:"weight" bson:"weight"`
+	OrginalPrice  float64 `json:"original_price" bson:"original_price"`
+	Discount      float64 `json:"discount" bson:"discount"`
+	ImagesPrimary string  `json:"images_primary" bson:"images_primary"`
 }
 
 type PriceRes struct {
@@ -83,6 +88,8 @@ type OrderRes struct {
 	OrderId              string              `json:"order_id" bson:"order_id"`
 	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
 	Status               string              `json:"status" bson:"status"`
+	ShipperId            string              `json:"shipper_id" bson:"shipper_id"`
+	ShipperName          string              `json:"shipper_name" bson:"shipper_name"`
 	Product              []ProductInfo       `json:"product" bson:"product"`
 	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
 	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
@@ -233,7 +240,11 @@ func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 		slog.Error("Không thể xóa order trong Redis", "order_id", order.OrderId, "err", err)
 		return err
 	}
+	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
+	return nil
+}
 
+func (order *Orders) IncreaseProductRedis(ctx context.Context) error {
 	for _, product := range order.Product {
 		productId := fmt.Sprintf("%s_%s", product.ProductId, product.PriceId)
 		err := database.IncreaseProductSales(ctx, productId, product.Quantity)
@@ -241,8 +252,6 @@ func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 			slog.Error("Lỗi khi tăng số lượng bán của sản phẩm", "product", productId, "err", err)
 		}
 	}
-
-	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
 	return nil
 }
 

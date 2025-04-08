@@ -24,7 +24,7 @@ async def create_review(item: ItemReviewReq, token, images):
             image_urls = [upload_file(img, "reviews") for img in images if img]
 
         item_dict["images"] = image_urls
-        item_dict["created_at"] = datetime.datetime.now()
+        item_dict["created_at"] = datetime.datetime.now() + datetime.timedelta(hours=7)
         item_dict["replies"] = []
         insert_result = collection.insert_one(item_dict)
         logger.info(f"[create_review] Đã thêm đánh giá mới, ID: {insert_result.inserted_id}")
@@ -35,13 +35,26 @@ async def create_review(item: ItemReviewReq, token, images):
     except Exception as e:
         raise e
 
-async def get_review_by_product(product_id: str, page: int, page_size: int):
+async def get_review_by_product(product_id: str, page: int, page_size: int, sort_type: str = "oldest"):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
-    reviews = list(collection.find({"product_id": product_id}).skip(skip_count).limit(page_size))
+
+    sort_order = 1
+    if sort_type == "newest":
+        sort_order = -1
+
+    reviews = list(collection.find({"product_id": product_id})
+                   .sort("created_at", sort_order)
+                   .skip(skip_count)
+                   .limit(page_size))
 
     review_list = [ItemReviewRes.from_mongo(review) for review in reviews]
-    return review_list
+    total_reviews = collection.count_documents({"product_id": product_id})
+
+    return {
+        "reviews": review_list,
+        "total": total_reviews
+    }
 
 async def reply_to_review(item: ItemReplyReq, token, images):
     try:
@@ -62,7 +75,7 @@ async def reply_to_review(item: ItemReplyReq, token, images):
             "user_id": user_info.id,
             "user_name": user_info.user_name,
             "comment": item.comment,
-            "created_at": datetime.datetime.now(),
+            "created_at": datetime.datetime.now() + datetime.timedelta(hours=7),
             "images": image_urls
         }
 

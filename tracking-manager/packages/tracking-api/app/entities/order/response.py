@@ -23,6 +23,8 @@ class ItemOrderRes(BaseModel):
     order_id: Optional[Union[str, None]] = None
     tracking_id: Optional[Union[str, None]] = None
     status: Optional[Union[str, None]] = None
+    shipper_id: Optional[Union[str, None]] = None
+    shipper_name: Optional[Union[str, None]] = None
     product: List[Optional[Union[ItemProductRes, None]]] = None
     pick_from: Optional[Union[InfoAddressOrderRes, None]] = None
     pick_to: Optional[Union[InfoAddressOrderRes, None]] = None
@@ -44,5 +46,6 @@ class ItemOrderRes(BaseModel):
 
     @classmethod
     def from_mongo(cls, data):
-        data['_id'] = str(data.get('_id'))
+        if '_id' in data:
+            data['_id'] = str(data.get('_id'))
         return cls(**data)

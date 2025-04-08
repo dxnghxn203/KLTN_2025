@@ -269,3 +269,21 @@ async def get_product_by_id(product_id: str, price_id: str):
     except Exception as e:
         logger.error(f"Error getting product by id: {str(e)}")
         raise e
+
+async def restore_product_sell(product_id: str, price_id: str, quantity: int):
+    try:
+        collection = db[collection_name]
+
+        result = collection.update_one(
+            {"product_id": product_id, "prices.price_id": price_id},
+            {"$inc": {"prices.$.sell": -quantity}}
+        )
+        if result.modified_count == 0:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found or quantity not updated"
+            )
+        logger.info(f"Product sell restored successfully for product_id: {product_id}, price_id: {price_id}")
+    except Exception as e:
+        logger.error(f"Error restoring product sell: {str(e)}")
+        raise e

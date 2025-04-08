@@ -27,7 +27,7 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 		return false, err
 	}
 
-	newTracking := trackingReq.Mapping(trackingReq.TrackingId)
+	newTracking := trackingReq.Mapping(orderRes.TrackingId)
 
 	res, _, err := newTracking.Create(ctx)
 	if err != nil {

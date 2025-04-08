@@ -14,6 +14,8 @@ type Tracking struct {
 	OrderId             string    `json:"order_id" bson:"order_id"`
 	TrackingId          string    `json:"tracking_id" bson:"tracking_id"`
 	Status              string    `json:"status" bson:"status"`
+	ShipperId           string    `json:"shipper_id" bson:"shipper_id"`
+	ShipperName         string    `json:"shipper_name" bson:"shipper_name"`
 	CreatedDate         time.Time `json:"created_date" bson:"created_date"`
 	UpdatedDate         time.Time `json:"updated_date" bson:"updated_date"`
 	DeliveryInstruction string    `json:"delivery_instruction" bson:"delivery_instruction"`
@@ -23,6 +25,8 @@ type TrackingReq struct {
 	OrderId             string `json:"order_id" bson:"order_id"`
 	TrackingId          string `json:"tracking_id" bson:"tracking_id"`
 	Status              string `json:"status" bson:"status"`
+	ShipperId           string `json:"shipper_id" bson:"shipper_id"`
+	ShipperName         string `json:"shipper_name" bson:"shipper_name"`
 	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
@@ -32,6 +36,8 @@ func (r *TrackingReq) Mapping(trackingId string) *Tracking {
 		OrderId:             r.OrderId,
 		Status:              r.Status,
 		DeliveryInstruction: r.DeliveryInstruction,
+		ShipperId:           r.ShipperId,
+		ShipperName:         r.ShipperName,
 	}
 }
 

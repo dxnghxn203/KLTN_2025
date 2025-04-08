@@ -42,14 +42,20 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 		if err != nil {
 			slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
 		}
-		err = orderRaw.DeleteOrderRedis(ctx)
+		err = orderRaw.IncreaseProductRedis(ctx)
 		if err != nil {
-			slog.Error("Failed to delete order from redis", "id", _id, "err", err)
+			slog.Error("Failed to increase product from redis", "id", _id, "err", err)
 		}
 	} else {
 		trackingRaw.Status = orderRaw.Status
 		trackingRaw.DeliveryInstruction = orderRaw.DeliveryInstruction
 	}
+
+	err = orderRaw.DeleteOrderRedis(ctx)
+	if err != nil {
+		slog.Error("Failed to delete order from redis", "id", _id, "err", err)
+	}
+
 	res, _, err = trackingRaw.Create(ctx)
 	if err != nil {
 		return res, err

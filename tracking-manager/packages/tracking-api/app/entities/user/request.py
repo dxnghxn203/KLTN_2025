@@ -51,7 +51,7 @@ class ItemUserRegisReq(BaseModel):
         try:
             parsed_date = datetime.datetime.fromisoformat(v.replace("Z", "+00:00"))
             parsed_date = parsed_date.replace(tzinfo=None)
-            if parsed_date > datetime.datetime.now():
+            if parsed_date > datetime.datetime.now() + datetime.timedelta(hours=7):
                 raise ValueError("Ngày sinh không thể lớn hơn ngày hiện tại")
             return parsed_date
         except ValueError:
