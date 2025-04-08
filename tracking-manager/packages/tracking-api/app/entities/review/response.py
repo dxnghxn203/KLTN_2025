@@ -4,6 +4,7 @@ from typing import Optional, List, Union
 from pydantic import BaseModel, Field
 
 class ItemReplyRes(BaseModel):
+    reply_id: Optional[str] = None
     user_id: str
     user_name: Optional[str] = None
     images: List[Optional[Union[str, None]]] = None

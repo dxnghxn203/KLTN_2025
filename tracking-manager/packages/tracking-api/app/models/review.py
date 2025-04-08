@@ -7,6 +7,7 @@ from app.core import database, logger, response
 from app.core.s3 import upload_file
 from app.entities.review.request import ItemReviewReq, ItemReplyReq
 from app.entities.review.response import ItemReviewRes
+from app.helpers.constant import generate_id
 from app.models import user
 
 collection_name = "reviews"
@@ -73,6 +74,7 @@ async def reply_to_review(item: ItemReplyReq, token, images):
             image_urls = [upload_file(img, "reviews") for img in images if img]
 
         reply = {
+            "reply_id": generate_id("REPLY"),
             "user_id": user_info.id,
             "user_name": user_info.user_name,
             "comment": item.comment,

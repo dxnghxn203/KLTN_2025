@@ -4,6 +4,7 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 class ItemAsnswerRes(BaseModel):
+    answer_id: Optional[str] = None
     user_id: str
     user_name: Optional[str] = None
     comment: Optional[str] = None

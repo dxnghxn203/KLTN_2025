@@ -6,6 +6,7 @@ from starlette import status
 from app.core import database, logger, response
 from app.entities.comment.request import ItemCommentReq, ItemAnswerReq
 from app.entities.comment.response import ItemCommentRes
+from app.helpers.constant import generate_id
 from app.models import user
 
 collection_name = "comments"
@@ -63,6 +64,7 @@ async def answer_to_comment(item: ItemAnswerReq, token):
                 message="Không tìm thấy bình luận"
             )
         answer = {
+            "answer_id": generate_id("ANSWER"),
             "user_id": user_info.id,
             "user_name": user_info.user_name,
             "comment": item.comment,
