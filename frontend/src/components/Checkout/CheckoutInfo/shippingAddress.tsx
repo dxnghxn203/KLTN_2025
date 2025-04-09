@@ -25,39 +25,28 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
   useEffect(() => {
     getCities();
   }, []);
-  
+
   return (
     <section className="flex flex-col gap-4 mt-6">
       <header className="flex gap-2 self-start text-sm text-black">
         <PiFireTruck className="text-2xl text-[#0053E2] mt-[-2px]" />
         <h3>Địa chỉ nhận hàng</h3>
       </header>
-
-      {/* <div className="flex gap-5 text-sm">
-        <input
-          type="text"
-          value={address.fullName}
-          onChange={(e) => onChange({ ...address, fullName: e.target.value })}
-          placeholder="Họ và tên người nhận hàng"
-          className={inputClass}
-        />
-        <input
-          type="tel"
-          value={address.phone}
-          onChange={(e) => onChange({ ...address, phone: e.target.value })}
-          placeholder="Số điện thoại"
-          className={inputClass}
-        />
-      </div> */}
-
       <div className="flex gap-2 text-sm">
         <div className="relative flex-1">
           <select
             value={address.cityCode || ""}
             onChange={(e) => {
               const cityCode = Number(e.target.value);
-              console.log(e.target.selectedOptions[0].text);
-              onChange({ ...address, city: e.target.selectedOptions[0].text, cityCode: cityCode });
+              onChange({
+                ...address,
+                city: e.target.selectedOptions[0].text,
+                cityCode: cityCode,
+                district: "",
+                districtCode: undefined,
+                ward: "",
+                wardCode: undefined
+              });
               if (cityCode) getDistrictsByCityId(cityCode.toString());
             }}
             className={`${buttonClass} appearance-none`}
@@ -76,14 +65,20 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
             value={address.districtCode || ""}
             onChange={(e) => {
               const districtCode = Number(e.target.value);
-              onChange({ ...address, district: e.target.selectedOptions[0].text, districtCode: districtCode });
+              onChange({
+                ...address,
+                district: e.target.selectedOptions[0].text,
+                districtCode: districtCode,
+                ward: "",
+                wardCode: undefined
+              });
               if (districtCode) getWardsByDistrictId(districtCode.toString());
             }}
             disabled={!address.city || districts.length === 0}
             className={`${buttonClass} appearance-none`}
           >
             <option value="" disabled>Chọn quận/ huyện</option>
-            {districts.map((district:any) => (
+            {districts.map((district: any) => (
               <option key={district.code} value={district.code}>
                 {district.name}
               </option>

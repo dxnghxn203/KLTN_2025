@@ -40,6 +40,6 @@ async def get_range_time(route_code: str) -> Union[str, response.JsonException]:
 
     days = int(range_time)
     seconds = (range_time % 1) * 86400
-    delivery_time = (datetime.utcnow() + timedelta(days=days, seconds=seconds)).replace(tzinfo=timezone.utc)
+    delivery_time = (datetime.utcnow() + timedelta(days=days, seconds=seconds, hours=7)).replace(tzinfo=timezone.utc)
 
     return delivery_time.isoformat()

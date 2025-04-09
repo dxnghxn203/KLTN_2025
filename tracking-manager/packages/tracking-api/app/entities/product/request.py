@@ -8,10 +8,13 @@ class ItemProductReq(BaseModel):
     product_id: str = ""
     price_id: str = ""
     product_name: str = ""
-    unit: str
+    unit: str = ""
     quantity: int = 0
     price: float = 0
     weight: float = 0
+    original_price: float = 0
+    discount: float = 0
+    images_primary: str = ""
 
 class ItemProductInReq(BaseModel):
     product_id: str = ""

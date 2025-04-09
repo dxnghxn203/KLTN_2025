@@ -110,14 +110,26 @@ func parseIntWithDefault(value string, defaultValue int) int {
 	return result
 }
 
-func IncreaseProductSales(ctx context.Context, productID string, quantity int) error {
+func UpdateProductSales(ctx context.Context, productID string, quantity int, modifier int) error {
 	productKey := GetProductKey(productID)
-	_, err := RedisClient.HIncrBy(ctx, productKey, "sell", int64(quantity)).Result()
+	_, err := RedisClient.HIncrBy(ctx, productKey, "sell", int64(modifier*quantity)).Result()
 	if err != nil {
 		slog.Error("Không thể cập nhật số lượng bán của sản phẩm", "product", productID, "err", err)
 		return err
 	}
 
 	slog.Info("Cập nhật số lượng bán thành công", "product", productID, "quantity", quantity)
+	return nil
+}
+
+func UpdateProductDelivery(ctx context.Context, productID string, quantity int, modifier int) error {
+	productKey := GetProductKey(productID)
+	_, err := RedisClient.HIncrBy(ctx, productKey, "delivery", int64(modifier*quantity)).Result()
+	if err != nil {
+		slog.Error("Không thể cập nhật số lượng vận chuyển của sản phẩm", "product", productID, "err", err)
+		return err
+	}
+
+	slog.Info("Cập nhật số lượng vận chuyển thành công", "product", productID, "quantity", quantity)
 	return nil
 }

@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface OrderState {
     orders: any[];
     ordersAdmin: any[];
+    ordersByUser: any[];
     loading: boolean;
     error: string | null;
 }
@@ -10,6 +11,7 @@ interface OrderState {
 const initialState: OrderState = {
     orders: [],
     ordersAdmin: [],
+    ordersByUser: [],
     loading: false,
     error: null,
 };
@@ -52,7 +54,18 @@ export const orderSlice = createSlice({
         },
         fetchGetAllOrderAdminFailed(state) {
             state.loading = false;
-        }
+        },
+        // get order by user
+        fetchGetOrderByUserStart(state) {
+            state.loading = true;
+        },
+        fetchGetOrderByUserSuccess(state, action: PayloadAction<any[]>) {
+            state.ordersByUser = action.payload
+            state.loading = false;
+        },
+        fetchGetOrderByUserFailed(state) {
+            state.loading = false;
+        },
     },
 });
 
@@ -68,6 +81,10 @@ export const {
     fetchGetAllOrderAdminStart,
     fetchGetAllOrderAdminSuccess,
     fetchGetAllOrderAdminFailed,
+
+    fetchGetOrderByUserStart,
+    fetchGetOrderByUserSuccess,
+    fetchGetOrderByUserFailed,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

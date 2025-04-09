@@ -113,7 +113,7 @@ async def create_location(item: ItemLocationReq, token: str):
             "province_code": item.province_code,
             "district_code": item.district_code,
             "ward_code": item.ward_code,
-            "created_at": datetime.datetime.now()
+            "created_at": datetime.datetime.now() + datetime.timedelta(hours=7)
         }
         if not location:
             collection.insert_one({

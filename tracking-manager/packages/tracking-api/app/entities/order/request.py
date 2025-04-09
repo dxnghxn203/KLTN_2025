@@ -1,7 +1,6 @@
-from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel
-from typing import List
 
 from app.entities.product.request import ItemProductReq, ItemProductInReq
 
@@ -22,6 +21,8 @@ class ItemOrderReq(BaseModel):
     order_id: str
     tracking_id: str
     status: str
+    shipper_id: str = ""
+    shipper_name: str = ""
     product: List[ItemProductReq]
     pick_from: InfoAddressOrderReq
     pick_to: InfoAddressOrderReq

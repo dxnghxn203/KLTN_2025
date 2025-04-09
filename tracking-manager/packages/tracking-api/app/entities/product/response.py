@@ -10,6 +10,10 @@ class ItemProductRes(BaseModel):
     unit: Optional[Union[str, None]] = None
     quantity: int = 0
     price: float = 0
+    original_price: float = 0
+    discount: float = 0
+    weight: float = 0
+    images_primary: Optional[Union[str, None]] = None
 
 class ItemPriceDBRes(BaseModel):
     price_id: Optional[Union[str, None]] = None

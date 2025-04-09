@@ -46,7 +46,25 @@ export default function Cart() {
   const [priceOrder, setPriceOrder] = useState<any | null>(null);
   const [imageQR, setImageQR] = useState<any>(null);
   const [isCOD, setIsCOD] = useState(false);
+
+  const validateData = () => {
+    const orderInf = data?.ordererInfo;
+    const addressInf = data?.addressInfo;
+    if (!orderInf.fullName || !orderInf.phone) {
+      toast.showToast("Vui lòng nhập đầy đủ thông tin", "error");
+      return false;
+    }
+
+    if (!addressInf.address || !addressInf.cityCode || !addressInf.districtCode || !addressInf.wardCode) {
+      toast.showToast("Vui lòng chọn địa chỉ giao hàng", "error");
+      return false;
+    }
+    return true;
+  }
   const checkOrderStatus = () => {
+    if (!validateData()) {
+      return;
+    }
     setLoadingCheckout(true);
     checkOrder(
       {

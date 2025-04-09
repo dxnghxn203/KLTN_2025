@@ -23,7 +23,6 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
     "delivery"
   );
 
-
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfoType>({
     fullName: "",
     phone: "",
@@ -49,7 +48,6 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
 
   useEffect(() => {
     if (dataLocation) {
-      console.log("dataLocation add order", dataLocation);
       setData({
         ordererInfo: {
           fullName: dataLocation?.name,
@@ -91,18 +89,6 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
       />
 
       <div className="flex flex-col px-5 py-6 mt-5 font-medium text-black rounded-xl bg-[#F5F7F9]">
-        {/* {deliveryMethod === "delivery" ? (
-          <>
-            <OrdererInfo info={ordererInfo} onChange={setOrdererInfo} />
-            <ShippingAddress address={addressInfo} onChange={setAddressInfo} />
-          </>
-        ) : (
-          <>
-            <OrdererInfoPickup info={ordererInfo} onChange={setOrdererInfo} />
-            <PharmaInfo />
-          </>
-        )} */}
-
         {
           isAuthenticated ? (
             <>
@@ -124,23 +110,6 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
           )
         }
       </div>
-      {/* {deliveryMethod === "pickup" && (
-        <div className="flex items-center justify-between px-6 py-3 mt-1.5 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
-          <p className="text-sm font-medium text-black/50 whitespace-nowrap flex items-center gap-2 py-1">
-            <FaTruckFast size={16} className="text-[#0053E2]" />
-            Thời gian nhận hàng dự kiến
-            <p className="text-sm font-medium text-black">
-              Từ 13:00 - 14:00 Hôm nay, 19/02/2025
-            </p>
-          </p>
-          <p
-            className="text-sm font-medium text-[#0053E2] whitespace-nowrap flex items-center gap-2 cursor-pointer"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            Thay đổi
-          </p>
-        </div>
-      )} */}
       <div className="flex items-center justify-between px-6 py-3 mt-1.5 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
         <p className="text-sm font-medium text-black whitespace-nowrap">
           Yêu cầu xuất hóa đơn điện tử

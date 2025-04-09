@@ -14,6 +14,8 @@ type Tracking struct {
 	OrderId             string    `json:"order_id" bson:"order_id"`
 	TrackingId          string    `json:"tracking_id" bson:"tracking_id"`
 	Status              string    `json:"status" bson:"status"`
+	ShipperId           string    `json:"shipper_id" bson:"shipper_id"`
+	ShipperName         string    `json:"shipper_name" bson:"shipper_name"`
 	CreatedDate         time.Time `json:"created_date" bson:"created_date"`
 	UpdatedDate         time.Time `json:"updated_date" bson:"updated_date"`
 	DeliveryInstruction string    `json:"delivery_instruction" bson:"delivery_instruction"`
@@ -21,8 +23,9 @@ type Tracking struct {
 
 type TrackingReq struct {
 	OrderId             string `json:"order_id" bson:"order_id"`
-	TrackingId          string `json:"tracking_id" bson:"tracking_id"`
 	Status              string `json:"status" bson:"status"`
+	ShipperId           string `json:"shipper_id" bson:"shipper_id"`
+	ShipperName         string `json:"shipper_name" bson:"shipper_name"`
 	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
@@ -32,6 +35,8 @@ func (r *TrackingReq) Mapping(trackingId string) *Tracking {
 		OrderId:             r.OrderId,
 		Status:              r.Status,
 		DeliveryInstruction: r.DeliveryInstruction,
+		ShipperId:           r.ShipperId,
+		ShipperName:         r.ShipperName,
 	}
 }
 
@@ -44,7 +49,7 @@ func (t *Tracking) Create(ctx context.Context) (bool, string, error) {
 
 	db := database.GetDatabase()
 	collection := db.Collection("trackings")
-	t.CreatedDate = time.Now()
+	t.CreatedDate = time.Now().Add(7 * time.Hour)
 	t.UpdatedDate = t.CreatedDate
 	res, err := collection.InsertOne(ctx, t)
 	if err != nil {

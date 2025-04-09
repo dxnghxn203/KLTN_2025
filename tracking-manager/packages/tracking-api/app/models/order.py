@@ -18,7 +18,7 @@ from app.helpers.es_helpers import search_es
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
 from app.models.fee import calculate_shipping_fee
 from app.models.location import determine_route
-from app.models.product import get_product_by_id
+from app.models.product import get_product_by_id, restore_product_sell
 from app.models.time import get_range_time
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
@@ -139,7 +139,10 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
             unit=price_info.unit,
             quantity=product.quantity,
             price=price_info.price,
-            weight=price_info.weight
+            weight=price_info.weight,
+            original_price=price_info.original_price,
+            discount=price_info.discount,
+            images_primary=product_info.images_primary,
         )
         product_items.append(product_item)
 
@@ -330,7 +333,7 @@ async def get_order_by_id(order_id: str):
                 message="Không tìm thấy đơn hàng"
             )
 
-        return ItemOrderRes(**order)
+        return ItemOrderRes.from_mongo(order)
 
     except Exception as e:
         logger.error(f"Failed [get_order_by_id]: {e}")
@@ -375,8 +378,11 @@ async def cancel_order(order_id: str):
                     delivery=redis_data.get("delivery", 0)
                 ), product_key_redis)
 
-                logger.info(f"Đã cập nhật Redis cho sản phẩm {product.product_id}: giảm {product.quantity} đã bán")
+                logger.info(f"Đã cập nhật Redis cho sản phẩm {product.product_id}: giảm sell: {product.quantity}")
+            else:
+                logger.error(f"Không tìm thấy dữ liệu trong Redis: {product_key_redis}")
 
+            await restore_product_sell(product.product_id, product.price_id, product.quantity)
         logger.info(f"Đã hủy đơn hàng: {order_id}")
         return response.SuccessResponse(message="Hủy đơn hàng thành công")
 

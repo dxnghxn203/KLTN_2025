@@ -1,10 +1,10 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
-import medicine from "@/images/medicinee.png";
-import Image from "next/image";
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useOrder } from "@/hooks/useOrder";
+import { formatDate } from "@/utils/string";
+import { getOrderStatusInfo } from "@/utils/orderStatusMapping";
 
 const tabs = [
   { id: "all", label: "Tất cả" },
@@ -13,43 +13,23 @@ const tabs = [
   { id: "cancelled", label: "Đã hủy" },
 ];
 
-const orders = [
-  {
-    id: "1",
-    pharmacy: "122 Hoàng Diệu 2",
-    product:
-      "Thuốc dùng ngoài Ketovazol 2% điều trị nhiễm nấm ngoài da (tuýp 5g)",
-    type: "Tuýp",
-    price: 9000,
-    time: "17:34 06/11/2024",
-    points: 90,
-    image: medicine,
-    quantity: 1,
-  },
-  {
-    id: "SGPMC277-SGPMC27702-288306",
-    pharmacy: "90 Lý Thường Kiệt",
-    product: "Paracetamol 500mg - Giảm đau, hạ sốt",
-    type: "Hộp",
-    price: 35000,
-    time: "12:15 05/11/2024",
-    points: 120,
-    image: medicine,
-    quantity: 2,
-  },
-];
-
 const HistoryOrder: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const router = useRouter();
+  const { ordersUser, getOrdersByUser } = useOrder();
+
+  const getOrders = () => {
+    getOrdersByUser();
+  }
+
+  useEffect(() => {
+    getOrders();
+  }, []);
 
   return (
     <div>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between">
         <h2 className="font-semibold text-lg">Lịch sử đơn hàng</h2>
-
-        {/* Ô tìm kiếm */}
         <div className="relative w-[410px]">
           <input
             type="text"
@@ -74,11 +54,10 @@ const HistoryOrder: React.FC = () => {
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            className={`py-2 px-4 text-sm font-medium ${
-              activeTab === tab.id
-                ? "border-b-2 border-blue-500 text-blue-500"
-                : "text-gray-600 hover:text-blue-500"
-            }`}
+            className={`py-2 px-4 text-sm font-medium ${activeTab === tab.id
+              ? "border-b-2 border-blue-500 text-blue-500"
+              : "text-gray-600 hover:text-blue-500"
+              }`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -88,48 +67,98 @@ const HistoryOrder: React.FC = () => {
 
       {/* Nội dung tab "Tất cả" */}
       {activeTab === "all" &&
-        orders.map((order) => (
-          <div key={order.id} className="bg-[#F5F7F9] rounded-lg p-4 mt-4">
+        ordersUser && ordersUser.map((order: any) => (
+          <div key={order?.order_id} className="bg-[#F5F7F9] rounded-lg p-4 mt-4">
             <div className="border-b last:border-0">
+
               <div className="flex justify-between items-center">
-                <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm font-medium">
-                  Mua tại nhà thuốc
-                </span>
-                <span className="text-gray-500 text-sm">{order.time}</span>
+                <div className="flex items-center">
+                  <Link href={`/ca-nhan/lich-su-don-hang/${order?.order_id}`}>
+                    <span className="text-blue-600 hover:text-blue-800 font-semibold mr-2">{order?.order_id}</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(order?.order_id);
+                    }}
+                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    title="Copy mã đơn hàng"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                  </button>
+                </div>
+                {(() => {
+                  const statusInfo = getOrderStatusInfo(order.status);
+                  return (
+                    <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.colors.bg} ${statusInfo.colors.text}`}>
+                      <span className={`mr-1.5 ${statusInfo.colors.text}`}>●</span>
+                      {statusInfo.displayName}
+                    </span>
+                  );
+                })()}
+                <span className="text-gray-500 text-sm">{formatDate(order.created_date) || "14:35 AM 12/08/2025"}</span>
               </div>
               <div className="border-t border-dashed border-gray-400 w-full my-2"></div>
-
-              <p className="mt-2">
-                Nhà thuốc: <strong>{order.pharmacy}</strong>
-              </p>
-
-              <div className="flex mt-3">
-                <Image
-                  src={order.image}
-                  alt="Product"
-                  className="w-16 h-16 rounded-lg object-cover border"
-                />
-                <div className="ml-4 flex-1">
-                  <p className="font-medium text-black">{order.product}</p>
-                  <p className="text-gray-500 text-sm">
-                    Phân loại: {order.type}
-                  </p>
+              <div className="mt-3 space-y-2.5">
+                <div className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className="text-gray-600">Người nhận:</span>
+                  <span className="font-semibold ml-1">{order.pick_to.name}</span>
+                  <span className="mx-1">|</span>
+                  <span className="text-gray-700">{order.pick_to.phone_number}</span>
                 </div>
-                <span className="font-medium">
-                  {order.price.toLocaleString("vi-VN")}đ
-                </span>
-              </div>
 
-              <div className="mt-3 flex self-end">
-                <p className="">
-                  Thành tiền:{" "}
-                  <span className="font-semibold">
-                    {order.price.toLocaleString("vi-VN")}đ
+                <div className="flex items-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span className="text-gray-600">Nơi giao hàng:
                   </span>
-                </p>
+                  <span className="font-semibold block ml-1">
+                    {order.pick_to.address.address}, {order.pick_to.address.ward}, {order.pick_to.address.district}, {order.pick_to.address.province}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex justify-between mt-2">
+              <div className="mt-4 flex">
+                <div className=" px-4 py-2 rounded-md">
+                  <span className="text-gray-600">Thành tiền:</span>
+                  <span className="font-bold text-lg ml-2 text-blue-700">{order?.total_fee.toLocaleString("vi-VN")}đ</span>
+                </div>
+                {
+                  <div className="flex items-center border-l pl-4 ml-4">
+                    <div className="flex items-center">
+                      {order?.payment_type === "COD" ? (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                          </svg>
+                          <span className="font-medium text-gray-700">Phương thức: </span>
+                          <span className="ml-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 rounded-md text-sm font-medium">
+                            Thanh toán khi nhận hàng COD
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                          <span className="font-medium text-gray-700">Phương thức: </span>
+                          <span className="ml-1.5 px-2.5 py-1 bg-green-50 text-green-600 rounded-md text-sm font-medium">
+                            Thanh toán trước
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                }
+              </div>
+
+              {/* <div className="flex justify-between mt-2">
                 <div className="bg-[#FFFBE6] text-[#FAB328] p-2 rounded-lg text-sm font-semibold w-[90%]">
                   Tích lũy {order.points} điểm
                 </div>
@@ -138,7 +167,7 @@ const HistoryOrder: React.FC = () => {
                     Chi tiết
                   </button>
                 </Link>
-              </div>
+              </div> */}
             </div>
           </div>
         ))}

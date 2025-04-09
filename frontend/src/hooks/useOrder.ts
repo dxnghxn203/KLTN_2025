@@ -1,4 +1,4 @@
-import { fetchCheckOrderStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, selectAllOrder, selectAllOrderAdmin } from "@/store/order";
+import { fetchCheckOrderStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser } from "@/store/order";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -6,6 +6,7 @@ export function useOrder() {
     const dispatch = useDispatch();
     const allOrder = useSelector(selectAllOrder);
     const allOrderAdmin = useSelector(selectAllOrderAdmin);
+    const ordersUser = useSelector(selectOrdersByUser);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
@@ -29,6 +30,9 @@ export function useOrder() {
             pageSize: pageSize,
         }))
     };
+    const getOrdersByUser = async () => {
+        dispatch(fetchGetOrderByUserStart())
+    }
 
     return {
         allOrder,
@@ -39,6 +43,8 @@ export function useOrder() {
         setPage,
         pageSize,
         setPageSize,
+        ordersUser,
+        getOrdersByUser
     }
 }
 

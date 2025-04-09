@@ -38,18 +38,24 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 	}
 
 	if _id != "" && orderRaw.Status != "canceled" {
-		err = models.UpdateProductSellCount(ctx, orderRaw.Product)
+		err = models.UpdateProductSellCount(ctx, orderRaw.Product, 1)
 		if err != nil {
 			slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
 		}
-		err = orderRaw.DeleteOrderRedis(ctx)
+		err = models.UpdateProductSellRedis(ctx, orderRaw.Product, 1)
 		if err != nil {
-			slog.Error("Failed to delete order from redis", "id", _id, "err", err)
+			slog.Error("Lỗi cập nhật số lượng bán sau khi tạo đơn hàng", "id", _id, "err", err)
 		}
 	} else {
 		trackingRaw.Status = orderRaw.Status
 		trackingRaw.DeliveryInstruction = orderRaw.DeliveryInstruction
 	}
+
+	err = orderRaw.DeleteOrderRedis(ctx)
+	if err != nil {
+		slog.Error("Failed to delete order from redis", "id", _id, "err", err)
+	}
+
 	res, _, err = trackingRaw.Create(ctx)
 	if err != nil {
 		return res, err

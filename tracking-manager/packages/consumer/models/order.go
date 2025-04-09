@@ -13,7 +13,7 @@ import (
 )
 
 func GetCurrentTime() time.Time {
-	return time.Now()
+	return time.Now().Add(7 * time.Hour)
 }
 
 type addressOrderReq struct {
@@ -35,6 +35,8 @@ type Orders struct {
 	OrderId              string              `json:"order_id" bson:"order_id"`
 	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
 	Status               string              `json:"status" bson:"status"`
+	ShipperId            string              `json:"shipper_id" bson:"shipper_id"`
+	ShipperName          string              `json:"shipper_name" bson:"shipper_name"`
 	Product              []ProductInfo       `json:"product" bson:"product"`
 	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
 	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
@@ -50,6 +52,7 @@ type Orders struct {
 	DeliveryTime         time.Time           `json:"delivery_time" bson:"delivery_time"`
 	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
 	PaymentType          string              `json:"payment_type" bson:"payment_type"`
+	PaymentStatus        string              `json:"payment_status" bson:"payment_status"`
 	Weight               float64             `json:"weight" bson:"weight"`
 	ShippingFee          float64             `json:"shipping_fee" bson:"shipping_fee"`
 	ProductFee           float64             `json:"product_fee" bson:"product_fee"`
@@ -57,13 +60,16 @@ type Orders struct {
 }
 
 type ProductInfo struct {
-	ProductId   string  `json:"product_id" bson:"product_id"`
-	PriceId     string  `json:"price_id" bson:"price_id"`
-	ProductName string  `json:"product_name" bson:"product_name"`
-	Unit        string  `json:"unit" bson:"unit"`
-	Quantity    int     `json:"quantity" bson:"quantity"`
-	Price       float64 `json:"price" bson:"price"`
-	Weight      float64 `json:"weight" bson:"weight"`
+	ProductId     string  `json:"product_id" bson:"product_id"`
+	PriceId       string  `json:"price_id" bson:"price_id"`
+	ProductName   string  `json:"product_name" bson:"product_name"`
+	Unit          string  `json:"unit" bson:"unit"`
+	Quantity      int     `json:"quantity" bson:"quantity"`
+	Price         float64 `json:"price" bson:"price"`
+	Weight        float64 `json:"weight" bson:"weight"`
+	OrginalPrice  float64 `json:"original_price" bson:"original_price"`
+	Discount      float64 `json:"discount" bson:"discount"`
+	ImagesPrimary string  `json:"images_primary" bson:"images_primary"`
 }
 
 type PriceRes struct {
@@ -83,6 +89,8 @@ type OrderRes struct {
 	OrderId              string              `json:"order_id" bson:"order_id"`
 	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
 	Status               string              `json:"status" bson:"status"`
+	ShipperId            string              `json:"shipper_id" bson:"shipper_id"`
+	ShipperName          string              `json:"shipper_name" bson:"shipper_name"`
 	Product              []ProductInfo       `json:"product" bson:"product"`
 	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
 	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
@@ -98,6 +106,7 @@ type OrderRes struct {
 	DeliveryTime         time.Time           `json:"delivery_time" bson:"delivery_time"`
 	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
 	PaymentType          string              `json:"payment_type" bson:"payment_type"`
+	PaymentStatus        string              `json:"payment_status" bson:"payment_status"`
 	Weight               float64             `json:"weight" bson:"weight"`
 	ShippingFee          float64             `json:"shipping_fee" bson:"shipping_fee"`
 	ProductFee           float64             `json:"product_fee" bson:"product_fee"`
@@ -107,6 +116,9 @@ type OrderRes struct {
 type OrderToUpdate struct {
 	OrderId             string `json:"order_id" bson:"order_id"`
 	Status              string `json:"status" bson:"status"`
+	ShipperId           string `json:"shipper_id" bson:"shipper_id"`
+	ShipperName         string `json:"shipper_name" bson:"shipper_name"`
+	PaymentStatus       string `json:"payment_status" bson:"payment_status"`
 	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
@@ -121,6 +133,11 @@ func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	collection := db.Collection("orders")
 	o.CreatedDate = GetCurrentTime()
 	o.UpdatedDate = o.CreatedDate
+	if o.PaymentType == "COD" {
+		o.PaymentStatus = "UNPAID"
+	} else {
+		o.PaymentStatus = "PAID"
+	}
 
 	res, err := collection.InsertOne(ctx, o)
 	_id := ""
@@ -204,7 +221,7 @@ func GetOrderByOrderId(ctx context.Context, order_id string) (*OrderRes, error) 
 	return &res, nil
 }
 
-func UpdateProductSellCount(ctx context.Context, products []ProductInfo) error {
+func UpdateProductSellCount(ctx context.Context, products []ProductInfo, modifier int) error {
 	db := database.GetDatabase()
 	collection := db.Collection("products")
 
@@ -214,7 +231,7 @@ func UpdateProductSellCount(ctx context.Context, products []ProductInfo) error {
 			"prices.price_id": p.PriceId,
 		}
 		update := bson.M{
-			"$inc": bson.M{"prices.$.sell": p.Quantity},
+			"$inc": bson.M{"prices.$.sell": p.Quantity * modifier},
 		}
 
 		_, err := collection.UpdateOne(ctx, filter, update)
@@ -227,22 +244,58 @@ func UpdateProductSellCount(ctx context.Context, products []ProductInfo) error {
 	return nil
 }
 
+func UpdateProductDeliveryCount(ctx context.Context, products []ProductInfo, modifier int) error {
+	db := database.GetDatabase()
+	collection := db.Collection("products")
+
+	for _, p := range products {
+		filter := bson.M{
+			"product_id":      p.ProductId,
+			"prices.price_id": p.PriceId,
+		}
+		update := bson.M{
+			"$inc": bson.M{"prices.$.delivery": p.Quantity * modifier},
+		}
+
+		_, err := collection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			slog.Error("Không thể cập nhật số lượng đã vận chuyển", "product_id", p.ProductId, "err", err)
+			return fmt.Errorf("lỗi cập nhật số lượng vận chuyển cho sản phẩm %s: %w", p.ProductId, err)
+		}
+	}
+
+	return nil
+}
+
 func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 	err := database.DeleteOrder(ctx, order.OrderId)
 	if err != nil {
 		slog.Error("Không thể xóa order trong Redis", "order_id", order.OrderId, "err", err)
 		return err
 	}
+	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
+	return nil
+}
 
-	for _, product := range order.Product {
+func UpdateProductSellRedis(ctx context.Context, product []ProductInfo, modifier int) error {
+	for _, product := range product {
 		productId := fmt.Sprintf("%s_%s", product.ProductId, product.PriceId)
-		err := database.IncreaseProductSales(ctx, productId, product.Quantity)
+		err := database.UpdateProductSales(ctx, productId, product.Quantity, modifier)
 		if err != nil {
-			slog.Error("Lỗi khi tăng số lượng bán của sản phẩm", "product", productId, "err", err)
+			slog.Error("Lỗi khi cập nhật số lượng bán của sản phẩm", "product", productId, "err", err)
 		}
 	}
+	return nil
+}
 
-	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
+func UpdateProductDeliveryRedis(ctx context.Context, product []ProductInfo, modifier int) error {
+	for _, product := range product {
+		productId := fmt.Sprintf("%s_%s", product.ProductId, product.PriceId)
+		err := database.UpdateProductDelivery(ctx, productId, product.Quantity, modifier)
+		if err != nil {
+			slog.Error("Lỗi khi cập nhật số lượng cập nhật của sản phẩm", "product", productId, "err", err)
+		}
+	}
 	return nil
 }
 
