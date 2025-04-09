@@ -17,8 +17,9 @@ export default function ProductMainCategoryList({
   const { fetchProductFeatured, productRelated } = useProduct();
   const [loading, setLoading] = useState(true);
   const [topN, setTopN] = useState(5);
-  const products = data.products || [];
-  // console.log("product", products);
+  const products = data.products;
+
+  console.log("product", products);
 
   useEffect(() => {
     if (maincategoryId) {

@@ -5,7 +5,7 @@ import SubscribeNewsletter from "./subscribeNewsletter";
 
 export default function Footer() {
   return (
-    <footer className="px-[120px] bg-[#f5f5f5]">
+    <footer className="bg-[#f5f5f5]">
       <SubscribeNewsletter />
       <InfoFooter />
     </footer>

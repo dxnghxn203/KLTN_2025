@@ -1,4 +1,5 @@
-import { fetchCommentStart, fetchGetAllCommentStart, fetchGetAllReviewStart, fetchReviewStart, insertCommentSelector, insertReviewSelector, selectAllComment, selectAllReview } from "@/store/review";
+import { fetchAnswerReviewStart, fetchAnswerStart, fetchCommentStart, fetchGetAllCommentStart, fetchGetAllReviewStart, fetchReviewStart, insertAnswerSelector, insertCommentSelector, insertReviewSelector, selectAllComment, selectAllReview } from "@/store/review";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useReview() {
@@ -7,23 +8,29 @@ export function useReview() {
     const allComment: any = useSelector(selectAllComment);
     const insertReview: any = useSelector(insertReviewSelector);
     const insertComment: any = useSelector(insertCommentSelector);
+    const insertAnswer: any = useSelector(insertAnswerSelector);
+    const insertAnswerReview: any = useSelector(insertAnswerSelector);
   
-    const fetchGetAllReview = (id: any,
+    const fetchGetAllReview = (id: any, pageSize: number, rating: number,
       onSuccess: () => void,
       onFailure: () => void) => {
-      // console.log("Dispatching fetchGetAllReviewStart action with id:", id);
       dispatch(fetchGetAllReviewStart({
         id: id,
+        pageSize: pageSize,
+        rating: rating,
         onSuccess: onSuccess,
         onFailure: onFailure,
       }));
+      // console.log("Dispatching fetchGetAllReviewStart action with id:", id, pageSize);
     };
-    const fetchGetAllComment = (id: any,
+    const fetchGetAllComment = (id: any, pageSize: number,sort_type: string,
       onSuccess: () => void,
       onFailure: () => void) => {
-      console.log("Dispatching fetchGetAllCommentStart action with id:", id); 
+      // console.log("Dispatching fetchGetAllCommentStart action with id:", id, pageSize); 
         dispatch(fetchGetAllCommentStart({
           id: id,
+          pageSize: pageSize,
+          sort_type: sort_type,
           onSuccess: onSuccess,
           onFailure: onFailure,
         }));
@@ -56,6 +63,34 @@ export function useReview() {
       }));
       console.log("Dispatching fetchInsertComment action with param:", param);
     };
+    const fetchInsertAnswer = ({
+      param, onSuccess, onFailure
+    }: {
+      param: any;
+      onSuccess: (message: string) => void;
+      onFailure: (message: string) => void;
+    }) => {
+      dispatch(fetchAnswerStart({
+        ...param,
+        onSuccess,
+        onFailure
+      }));
+      console.log("Dispatching fetchInsertAnswer action with param:", param);
+    };
+    const fetchInsertAnswerReview = ({
+      param, onSuccess, onFailure
+    }: {
+      param: any;
+      onSuccess: (message: string) => void;
+      onFailure: (message: string) => void;
+    }) => {
+      dispatch(fetchAnswerReviewStart({
+        ...param,
+        onSuccess,
+        onFailure
+      }));
+    };
+
 
 
     
@@ -72,6 +107,13 @@ export function useReview() {
 
     insertComment,
     fetchInsertComment,
+
+    insertAnswer,
+    fetchInsertAnswer,
+
+    insertAnswerReview,
+    fetchInsertAnswerReview,
+    
 
 
   };

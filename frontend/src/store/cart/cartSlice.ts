@@ -111,6 +111,7 @@ export const cartSlice = createSlice({
         // add to cart session
         addToCartStart: (state, action: PayloadAction<any>) => {
             state.loading = true;
+            
         },  
         addToCartSuccess: (state) => {
             state.loading = false;

@@ -356,7 +356,6 @@ const CreateSingleProduct = () => {
   const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormSubmitted(true);
-
     const isValid = validateForm();
     if (!isValid) {
       const firstErrorElement = document.querySelector('[data-error="true"]');

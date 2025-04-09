@@ -1,36 +1,33 @@
-import React, { JSX, useState } from "react";
-import { X } from "lucide-react"; // Import icon X
-import Image from "next/image";
-import { FaStar } from "react-icons/fa";
-import { useToast } from "@/providers/toastProvider";
+import { useAuth } from "@/hooks/useAuth";
 import { useReview } from "@/hooks/useReview";
-import { validateEmptyFields } from "@/utils/validation";
-import { useProduct } from "@/hooks/useProduct";
+import { useToast } from "@/providers/toastProvider";
+import { useState } from "react";
 
-interface RatingDialogProps {
-  onClose: () => void;
-  product: any;
-  productId: any;
-  onCommentSubmitted?: () => void;
-}
+const ReplyFormReview = ({
+  review_id,
+  user_name,
+  product_id,
+}: {
+  review_id: string;
+  user_name: string;
+  product_id: any;
+}) => {
+  const { user } = useAuth();
+  const { fetchInsertAnswerReview, fetchGetAllReview } = useReview();
+  const toast = useToast();
+  const [selected, setSelected] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
-const RatingDialog: React.FC<RatingDialogProps> = ({
-  onClose,
-  product,
-  productId,
-  onCommentSubmitted,
-}): JSX.Element => {
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDragging, setIsDragging] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const { insertReview, fetchInsertReview } = useReview();
-  const { fetchProductBySlug } = useProduct();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showReplyForm, setShowReplyForm] = useState(true);
+
   const hasError = (fieldName: string): boolean => {
     return formSubmitted && !!errors[fieldName];
   };
-
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -103,47 +100,56 @@ const RatingDialog: React.FC<RatingDialogProps> = ({
     setImagePreviewUrls(newPreviews);
   };
 
-  const ratingTexts = [
-    "Rất tệ",
-    "Thất vọng",
-    "Bình thường",
-    "Hài lòng",
-    "Tuyệt vời",
-  ];
+  const getInitials = (name: string | undefined | null) => {
+    if (!name) return "";
+    return name
+      .trim()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase())
+      .join("");
+  };
 
-  const toast = useToast();
   const [formData, setFormData] = useState({
-    productId: productId,
+    review_id: review_id,
     comment: "",
-    rating: 0,
     images: [],
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormSubmitted(true);
 
-    const validationErrors: Record<string, string> = {};
-    if (formData.rating === 0) {
-      validationErrors.rating = "Vui lòng chọn mức đánh giá";
+    if (!formData.comment.trim()) {
+      setErrors({ comment: "Vui lòng nhập nội dung trả lời." });
+      return;
     }
 
-    setErrors(validationErrors);
+    try {
+      const form = new FormData();
+      form.append("review_id", formData.review_id);
+      form.append("comment", formData.comment);
+      images.forEach((file) => form.append("images", file)); // Gửi nhiều ảnh
 
-    if (Object.keys(validationErrors).length === 0) {
       try {
-        await fetchInsertReview({
+        await fetchInsertAnswerReview({
           param: {
             ...formData,
             images: images,
           },
           onSuccess: (message: string) => {
             toast.showToast(message, "success");
-            if (onCommentSubmitted) {
-              onCommentSubmitted();
-            }
-
-            onClose();
+            setFormData({
+              review_id: review_id,
+              comment: "",
+              images: [],
+            });
+            setShowReplyForm(false);
+            fetchGetAllReview(
+              product_id,
+              pageSize,
+              selected,
+              () => {},
+              () => {}
+            );
           },
           onFailure: (message: string) => {
             toast.showToast(message, "error");
@@ -152,42 +158,62 @@ const RatingDialog: React.FC<RatingDialogProps> = ({
       } catch (error) {
         console.error("Error during submission:", error);
       }
+    } catch (error) {
+      toast.showToast("Trả lời không thành công!", "error");
     }
   };
 
-  const handleRatingChange = (star: number) => {
-    setFormData({
-      ...formData,
-      rating: star,
-    });
-  };
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-      <div className="bg-white rounded-lg shadow-lg max-w-xl w-full">
-        <div className="border border-b-1 border-gray-300 rounded-t-lg flex items-center justify-center relative p-2">
-          <div className="absolute top-2 right-2">
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-black"
-            >
-              <X size={24} />
-            </button>
+    <>
+      {showReplyForm && (
+        <div className="mt-3 flex items-start space-x-4 mx-12">
+          <div className="w-10 h-10 bg-blue-500 text-white flex items-center justify-center rounded-full font-bold mt-2">
+            {getInitials(user?.user_name)}
           </div>
-          <div className="text-2xl font-bold text-black">Đánh giá sản phẩm</div>
-        </div>
-        <div className="overflow-y-scroll max-h-[550px] px-6 py-4 space-y-4">
-          <form className="w-full space-y-4 " onSubmit={handleSubmit}>
-            <div className="flex-col space-y-2 items-center justify-center flex">
-              <div className="ml-3 flex-1 flex flex-col justify-center">
-                <h4 className="font-semibold text-gray-900 text-center">
-                  {product?.name_primary}
-                </h4>
+          <div className="flex-1 flex items-start space-x-6">
+            <form
+              onSubmit={onSubmit}
+              className="flex-1 flex flex-col space-y-2"
+            >
+              <div className="flex-1 flex flex-col">
+                <div className="flex items-start space-x-2">
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900 font-medium mb-1">
+                      Đang trả lời:{" "}
+                      <span className="font-semibold">{user_name}</span>
+                    </p>
+                    <input
+                      type="text"
+                      placeholder="Nhập nội dung trả lời..."
+                      className="w-full px-3 py-4 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          comment: e.target.value,
+                        });
+                      }}
+                      value={formData.comment}
+                    />
+                    {errors.comment && (
+                      <div className="text-red-500 text-sm pt-1">
+                        {errors.comment}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Button bên phải */}
+                  <button
+                    className="bg-[#0053E2] text-white px-6 py-4 rounded-full font-semibold hover:bg-blue-700 mt-6"
+                    type="submit"
+                  >
+                    Gửi bình luận
+                  </button>
+                </div>
               </div>
 
-              <div data-error={hasError("images")}>
+              <div data-error={hasError("images")} className="w-[300px]">
                 <label className="block text-sm font-medium mb-1 mt-4">
-                  Ảnh sản phẩm{" "}
+                  Thêm ảnh
                   <span className="text-blue-500">
                     (Được phép thêm nhiều ảnh)
                   </span>
@@ -280,64 +306,12 @@ const RatingDialog: React.FC<RatingDialogProps> = ({
                   </div>
                 )}
               </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <FaStar
-                    key={star}
-                    size={32}
-                    className={`cursor-pointer ${
-                      star <= formData.rating
-                        ? "text-[#FCD53F]"
-                        : "text-gray-400"
-                    }`}
-                    onClick={() =>
-                      setFormData({
-                        ...formData,
-                        rating: star,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-              <p className="text-[#FCD53F]">
-                {formData.rating > 0
-                  ? ratingTexts[formData.rating - 1]
-                  : "Chưa đánh giá"}
-              </p>
-              {errors.rating && (
-                <div className="text-red-500 text-sm">{errors.rating}</div>
-              )}
-            </div>
-            <div className="px-6 w-full">
-              <textarea
-                placeholder="Nội dung đánh giá (Vui lòng gõ tiếng Việt có dấu)"
-                className="w-full px-5 py-4 rounded-xl border border-black/10 
-    focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
-    outline-none placeholder:text-[14px] placeholder:font-normal resize-none"
-                rows={4}
-                value={formData.comment || ""}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    comment: e.target.value,
-                  });
-                }}
-              />
-            </div>
-
-            <div>
-              <button className="bg-[#0053E2] text-white rounded-full h-[50px] font-bold w-full">
-                Gửi bình luận
-              </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
-export default RatingDialog;
+export default ReplyFormReview;

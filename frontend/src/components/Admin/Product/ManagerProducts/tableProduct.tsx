@@ -12,7 +12,7 @@ const TableProduct = () => {
   const { allProductAdmin, getAllProductsAdmin } = useProduct();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const productsPerPage = 6;
+  const productsPerPage = 5;
 
   useEffect(() => {
     getAllProductsAdmin();

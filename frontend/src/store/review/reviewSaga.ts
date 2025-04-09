@@ -15,6 +15,15 @@ import {
     fetchCommentStart,
     fetchCommentSuccess,
     fetchCommentFailure,
+
+    fetchAnswerStart,
+    fetchAnswerSuccess,
+    fetchAnswerFailure,
+
+    fetchAnswerReviewStart,
+    fetchAnswerReviewSuccess,   
+    fetchAnswerReviewFailed,
+
 } from './reviewSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 import * as reviewService from '@/services/reviewService';
@@ -22,9 +31,10 @@ import * as reviewService from '@/services/reviewService';
 function* fetchGetAllReview(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const { id, onSuccess = () => {}, onFailure = () => {} } = payload;
+        const { id, pageSize, rating,  // id là productId
+             onSuccess = () => {}, onFailure = () => {} } = payload;
 
-        const review = yield call(reviewService.getAllReview, id);
+        const review = yield call(reviewService.getAllReview, id, pageSize, rating);
 
         // Kiểm tra status_code từ response
         if (review.status_code === 200) {
@@ -47,9 +57,9 @@ function* fetchGetAllReview(action: any): Generator<any, void, any> {
 function* fetchGetAllComment(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const { id, onSuccess = () => {}, onFailure = () => {} } = payload;
+        const { id, pageSize, sort_type, onSuccess = () => {}, onFailure = () => {} } = payload;
 
-        const comment = yield call(reviewService.getAllComment, id);
+        const comment = yield call(reviewService.getAllComment, id, pageSize, sort_type);
 
         // Kiểm tra status_code từ response
         if (comment.status_code === 200) {
@@ -75,9 +85,18 @@ function* reviewWorkerSaga(action: any): Generator<any, void, any> {
             onSuccess =()=> {},
             onFailure =()=> {},
         } = payload; 
-        
+        const form = new FormData();
+        form.append("rating", payload.rating);
+        form.append("comment", payload.comment || "");
+        if (payload.images) {
+            payload.images.forEach((image: any) => {
+                form.append("images", image);
+            });
+        }
+        form.append("product_id", payload.productId);
+        console.log("payload: ", payload);
         try {
-            const response = yield call(reviewService.insertReview, payload);
+            const response = yield call(reviewService.insertReview, form);
             if (response.status_code === 201) {
                 yield put(fetchReviewSuccess());
                 console.log("response: ", response);
@@ -105,23 +124,84 @@ function* commentWorkerSaga(action: any): Generator<any, void, any> {
             console.log("payload: ", payload);
             if (response.status_code === 201) {
                 yield put(fetchCommentSuccess());
-                console.log("response: ", response);
+                // console.log("response: ", response);
                 onSuccess(response.message);
             } else {
                 yield put(fetchCommentFailure());
+                // console.log("response: ", response);
+                onFailure(response.message);
+            }
+            // console.log("response: ", response);
+        } catch (error: any) {
+            yield put(fetchCommentFailure());
+        }
+}
+
+function* answerWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+        const {
+            onSuccess =()=> {},
+            onFailure =()=> {},
+        } = payload; 
+        
+        try {
+            const response = yield call(reviewService.insertAnswer, payload);
+            console.log("payload: ", payload);
+            if (response.status_code === 200) {
+                yield put(fetchAnswerSuccess());
+                console.log("response: ", response);
+                onSuccess(response.message);
+            } else {
+                yield put(fetchAnswerFailure());
                 console.log("response: ", response);
                 onFailure(response.message);
             }
             console.log("response: ", response);
         } catch (error: any) {
-            yield put(fetchCommentFailure());
+            yield put(fetchAnswerFailure());
         }
 }
+function * answerReviewWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+        const {
+            onSuccess =()=> {},
+            onFailure =()=> {},
+        } = payload;   
+        const form = new FormData();
+        form.append("review_id", payload.review_id);
+        form.append("comment", payload.comment);
+        
+        if (payload.images) {
+            payload.images.forEach((image: any) => {
+                form.append("images", image);
+            });
+        }
+        console.log("payload: ", payload);
+        try {
+            const response = yield call(reviewService.insertAnswerReview, form);
+            console.log("payload: ", form);
+            if (response.status_code === 200) {
+                yield put(fetchAnswerReviewSuccess());
+                console.log("response: ", response);
+                onSuccess(response.message);
+            } else {
+                yield put(fetchAnswerReviewFailed());
+                console.log("response: ", response);
+                onFailure(response.message);
+            }
+            console.log("response: ", response);
+        } catch (error: any) {
+            yield put(fetchAnswerReviewFailed());
+        }
+}
+
 export function* reviewSaga() {
     yield takeLatest(fetchGetAllReviewStart.type, fetchGetAllReview);
     yield takeLatest(fetchGetAllCommentStart.type, fetchGetAllComment);
     yield takeLatest(fetchReviewStart.type, reviewWorkerSaga);
     yield takeLatest(fetchCommentStart.type, commentWorkerSaga);
+    yield takeLatest(fetchAnswerStart.type, answerWorkerSaga);
+    yield takeLatest(fetchAnswerReviewStart.type, answerReviewWorkerSaga);
     
     
 

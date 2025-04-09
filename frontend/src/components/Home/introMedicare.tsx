@@ -4,13 +4,13 @@ import Image from "next/image";
 
 const IntroMedicare: React.FC = () => {
   return (
-    <div className="flex gap-5 max-md:flex-col rounded-2xl bg-slate-100 mt-8">
+    <div className="flex gap-5 max-md:flex-col rounded-2xl bg-slate-100 mt-8 mx-5">
       <div className="flex flex-col w-[66%] max-md:ml-0 max-md:w-full">
         <div className="flex flex-col self-stretch my-auto text-black max-md:mt-10 max-md:max-w-full">
-          <div className="self-start ml-20 text-2xl font-extrabold max-md:max-w-full">
+          <div className="self-start ml-20 text-2xl font-bold max-md:max-w-full">
             Giới Thiệu về ứng dụng đặt thuốc online Medicare
           </div>
-          <div className="mt-12 ml-20 text-base font-medium max-md:mt-10 max-md:max-w-full">
+          <div className="mt-8 ml-20 text-sm font-medium max-md:mt-10 max-md:max-w-full">
             Ứng dụng giao thuốc Medigo mang trong mình sứ mệnh chăm sóc sức khỏe
             cho hàng triệu người dân Việt Nam. Chúng tôi luôn không ngừng nâng
             cao dịch vụ để mang lại chất lượng và trải nghiệm tốt nhất cho khách

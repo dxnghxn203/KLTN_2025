@@ -48,7 +48,9 @@ interface DetailProductProps {
 
 const DetailProduct = ({ product }: any) => {
   const [quantity, setQuantity] = useState(1);
-  const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.unit);
+  const [selectedUnit, setSelectedUnit] = useState(
+    product?.prices[0]?.price_id
+  );
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("details");
   const [isOpenDialog, setIsDialogOpen] = useState(false);
@@ -238,7 +240,7 @@ const DetailProduct = ({ product }: any) => {
             <div className="flex items-center space-x-2 text-gray-600 text-sm">
               <span>{product?.product_id}</span>
               <span>•</span>
-              <span>{product?.rating}</span>
+              <span>{Number(product?.rating).toFixed(1)}</span>
               <span>⭐</span>
               <span>•</span>
               <a className="text-[#0053E2] hover:underline">
@@ -264,8 +266,8 @@ const DetailProduct = ({ product }: any) => {
               )}
               {selectedPrice?.price && (
                 <p className="text-[#0053E2] text-4xl font-bold">
-                  {selectedPrice.price.toLocaleString("vi-VN")}đ/{" "}
-                  {selectedPrice.unit}
+                  {selectedPrice.price.toLocaleString("vi-VN")}
+                  đ/ {selectedPrice.unit}
                 </p>
               )}
             </div>
@@ -276,7 +278,7 @@ const DetailProduct = ({ product }: any) => {
                 {product?.prices.map((price: any) => (
                   <>
                     <button
-                      key={price.id}
+                      key={price?.price_id}
                       onClick={() => {
                         setSelectedUnit(price?.price_id);
                       }}
@@ -287,7 +289,7 @@ const DetailProduct = ({ product }: any) => {
             : "border-gray-300 text-gray-500"
         }`}
                     >
-                      {price.unit}
+                      {price?.unit}
                     </button>
                   </>
                 ))}

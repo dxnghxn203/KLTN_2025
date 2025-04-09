@@ -3,8 +3,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface ReviewState {
     reviews: any[];
     comments: any[];
+    answers: any[];
+    answerReview: any[];
+    responseInsertAnswer: any;
     responseInsertReview: any;
     responseInsertComment: any;
+    responseInsertAnswerReview: any;
     loading: boolean;
     error: string | null;
 }
@@ -12,8 +16,12 @@ interface ReviewState {
 const initialState: ReviewState = {
     reviews: [],
     comments: [],
+    answers: [],
+    answerReview: [],
+    responseInsertAnswer: null,
     responseInsertReview: null,
     responseInsertComment: null,
+    responseInsertAnswerReview: null,
     loading: false,
     error: null,
 };
@@ -84,6 +92,39 @@ export const reviewSlice = createSlice({
             console.log("fetchCommentFailure reducer: ");
             state.responseInsertComment = false;
             state.loading = false;
+        },
+        // Insert answer
+        fetchAnswerStart: (state) => {
+            console.log("fetchAnswerStart reducer: ");
+            state.loading = true;
+        },
+        fetchAnswerSuccess: (state) => {
+            console.log("fetchAnswerSuccess reducer: ");
+            state.responseInsertAnswer = true;
+            state.loading = false;
+        },
+        fetchAnswerFailure: (state) => {   
+            console.log("fetchAnswerFailure reducer: ");
+            state.responseInsertAnswer = false;
+            state.loading = false;
+        },
+
+        // Fetch answer by comment ID
+        fetchAnswerReviewStart(state) {
+            // console.log("fetchAnswerReviewStart reducer: ", action.payload);
+            state.loading = true;
+        },
+
+        fetchAnswerReviewSuccess(state) {
+            // console.log("fetchAnswerReviewSuccess", action.payload);
+            state.responseInsertAnswerReview = true;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAnswerReviewFailed(state) {
+            // console.log("fetchAnswerReviewFailed", action.payload);
+            state.loading = false;
+            state.responseInsertAnswerReview = false;
         }
 
 
@@ -106,6 +147,14 @@ export const {
     fetchCommentStart,
     fetchCommentSuccess,
     fetchCommentFailure,
+
+    fetchAnswerStart,
+    fetchAnswerSuccess,
+    fetchAnswerFailure,
+
+    fetchAnswerReviewStart,
+    fetchAnswerReviewSuccess,
+    fetchAnswerReviewFailed,
 
 } = reviewSlice.actions;
 

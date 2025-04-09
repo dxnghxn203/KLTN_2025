@@ -5,11 +5,10 @@ import logoyellow from "@/images/MM.png";
 
 const InfoFooter: React.FC = () => {
   return (
-    <div className=" py-10 px-10">
-      {/* Thêm px-10 để tạo khoảng cách hai bên */}
-      <div className="grid grid-cols-4 gap-16 justify-between text-black max-md:grid-cols-2 max-sm:grid-cols-1">
+    <div className="py-10 px-10">
+      <div className="grid grid-cols-5 justify-between text-black max-md:grid-cols-2 max-sm:grid-cols-1">
         {/* Cột 1: Logo và giới thiệu */}
-        <div className="flex flex-col items-start">
+        <div className="flex flex-col items-start col-span-2 mr-16">
           <div className="relative flex self-start whitespace-nowrap -mt-10">
             <Image
               src={logoyellow}
@@ -29,22 +28,21 @@ const InfoFooter: React.FC = () => {
             />
           </div>
 
-          <p className="mt-2 text-sm w-[250px] text-justify">
-            Cửa hàng thực phẩm chức năng Medicare là địa chỉ tin cậy để bạn tìm
-            kiếm những sản phẩm chất lượng nhất.
-          </p>
-          <br />
-
-          <p className="mt-2 text-sm w-[250px] text-justify">
-            Mã số thuế: 01234567891 - Sở Kế hoạch và Đầu tư Tp Hà Nội cấp ngày
-            13/02/2024
+          <p className="text-sm mt-[-10px]">
+            Cửa hàng thực phẩm chức năng <em className="italic">Medicare</em> là
+            địa chỉ tin cậy hàng đầu, nơi bạn có thể tìm kiếm và lựa chọn những
+            sản phẩm chất lượng nhất, được kiểm định kỹ lưỡng.
+            <br />
+            <br />
+            Chúng tôi cam kết đảm bảo sức khỏe của bạn, giúp bạn duy trì một cơ
+            thể khỏe mạnh và năng động trong suốt cuộc sống.
           </p>
         </div>
 
         {/* Cột 2: Về chúng tôi */}
         <div className="flex flex-col items-start">
           <h3 className="text-lg font-semibold">VỀ CHÚNG TÔI</h3>
-          <ul className="mt-4 space-y-2 text-sm ">
+          <ul className="mt-4 space-y-2 text-sm">
             <li>
               <a href="#">Trang chủ</a>
             </li>

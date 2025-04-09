@@ -10,7 +10,7 @@ import HealthCorner from "../components/Home/healthCorner";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[120px]">
+    <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
       <main className="flex flex-col space-y-8 px-5">
         <ProductCatalog />
         <div className="self-start text-2xl font-extrabold text-black">

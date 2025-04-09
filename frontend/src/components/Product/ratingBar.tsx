@@ -1,13 +1,8 @@
-export default function RatingBar({ allReviews }: { allReviews: any[] }) {
-  if (!allReviews || allReviews.length === 0) {
-    return <div>Chưa có đánh giá nào.</div>;
-  }
-
+export default function RatingBar({ allReviews }: { allReviews: any }) {
   // Đếm số lượng đánh giá theo số sao
   const ratingCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
   let totalReviews = 0;
-
-  allReviews.forEach((review) => {
+  allReviews?.reviews?.forEach((review: any) => {
     if (review.rating >= 1 && review.rating <= 5) {
       ratingCounts[review.rating] += 1;
       totalReviews++;

@@ -1,7 +1,6 @@
 import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { select } from "redux-saga/effects";
 
 export function useProduct() {
     const dispatch = useDispatch();
@@ -14,7 +13,6 @@ export function useProduct() {
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
-
     const [top_n, setTopN] = useState(10);
 
     const fetchProductBySlug = async (slug: string, onSuccess: () => void, onFailed: () => void) => {

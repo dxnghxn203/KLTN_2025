@@ -42,6 +42,7 @@ export const validatePassword = (value: string): string | null => {
       confirmPassword: "Xác nhận mật khẩu",
       comment: "Nội dung bình luận",
       rating: "Đánh giá",
+      
     };
     
   
