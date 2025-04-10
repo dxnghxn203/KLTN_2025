@@ -44,18 +44,30 @@ export default function ProductMainCategoryList({
   });
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const sortedAndFilteredProducts = [...productRelated]
-    .filter(
-      (product) =>
-        product.price >= priceFilter.min &&
-        product.price <= priceFilter.max &&
-        (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
-    )
-    .sort((a, b) => {
-      if (sortOrder === "asc") return a.price - b.price;
-      if (sortOrder === "desc") return b.price - a.price;
-      return 0;
-    });
+
+  let sortedProducts = [...products];
+
+  let filteredProducts = products.filter((product: any) => {
+    const price = product.prices?.[0]?.price || 0;
+    const brand = product.brand || "";
+    const withinPriceRange =
+      price >= priceFilter.min && price <= priceFilter.max;
+    const matchesBrand =
+      selectedBrands.length === 0 || selectedBrands.includes(brand);
+    return withinPriceRange && matchesBrand;
+  });
+
+  if (sortOrder === "asc") {
+    filteredProducts.sort(
+      (a: any, b: any) =>
+        (a.prices?.[0]?.price || 0) - (b.prices?.[0]?.price || 0)
+    );
+  } else if (sortOrder === "desc") {
+    filteredProducts.sort(
+      (a: any, b: any) =>
+        (b.prices?.[0]?.price || 0) - (a.prices?.[0]?.price || 0)
+    );
+  }
 
   return (
     <div className="grid grid-cols-6 gap-4">
@@ -90,28 +102,39 @@ export default function ProductMainCategoryList({
         </div>
         <div className="w-full max-md:px-5 max-md:max-w-full">
           {products && products.length > 0 ? (
-            <>
-              <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
-                {products &&
-                  products.map((productData: any, index: any) => (
+            filteredProducts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
+                  {filteredProducts.map((productData: any, index: any) => (
                     <ProductMainCategoryCard
                       key={index}
                       products={productData}
                       mainCategoryName={mainCategoryName}
                     />
                   ))}
-              </div>
-              {showAll && (
-                <div className="text-center mt-5">
-                  <button
-                    className="px-6 py-2 border border-[#0053E2] text-[#0053E2] rounded-lg transition"
-                    onClick={() => setShowAll(!showAll)}
-                  >
-                    {showAll ? "Thu gọn" : "Xem thêm"}
-                  </button>
                 </div>
-              )}
-            </>
+                {showAll && (
+                  <div className="text-center mt-5">
+                    <button
+                      className="px-6 py-2 border border-[#0053E2] text-[#0053E2] rounded-lg transition"
+                      onClick={() => setShowAll(!showAll)}
+                    >
+                      {showAll ? "Thu gọn" : "Xem thêm"}
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-gray-500 py-10">
+                <Image
+                  src={shopping}
+                  alt="No products"
+                  width={150}
+                  height={150}
+                />
+                <p className="mt-2">Không có sản phẩm nào</p>
+              </div>
+            )
           ) : (
             <div className="flex flex-col items-center justify-center text-gray-500 py-10">
               <Image

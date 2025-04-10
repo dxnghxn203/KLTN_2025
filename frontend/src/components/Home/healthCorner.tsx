@@ -45,7 +45,7 @@ const HealthCorner: React.FC = () => {
       </div>
       <div className="grid grid-cols-3 gap-8 mt-6 w-full max-md:grid-cols-1 max-md:gap-7">
         {articles.map((article) => (
-          <Link href={`/health-corner/${article.slug}`}>
+          <Link href={`/goc-suc-khoe/${article.slug}`}>
             <div className="flex flex-col cursor-pointer">
               <div className="w-full rounded-2xl overflow-hidden">
                 <Image
