@@ -150,7 +150,25 @@ async def get_product_by_list_id(product_ids):
     try:
         collection = db[collection_name]
         product_list = collection.find({"product_id": {"$in": product_ids}})
-        return [ItemProductDBRes(**product) for product in product_list]
+        enriched_products = []
+
+        for prod in product_list:
+            product_id = prod["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id),
+            )
+
+            enriched_products.append(
+                ItemProductDBRes(
+                    **prod,
+                    count_review=count_review,
+                    count_comment=count_comment,
+                    rating=avg_rating
+                )
+            )
+        return enriched_products
     except Exception as e:
         logger.error(f"Failed [get_product_by_list_id]: {e}")
         return []
