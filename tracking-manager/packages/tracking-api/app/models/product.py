@@ -74,7 +74,28 @@ async def get_product_top_selling(top_n):
 
 async def get_related_product(product_id, top_n=5):
     try:
-        return recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
+        result = recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
+        product_list = result["data"]
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        result["data"] = enriched_products
+        return result
     except Exception as e:
         logger.error(f"Failed [get_related_product]: {e}")
         return response.BaseResponse(
@@ -144,7 +165,29 @@ async def get_product_featured(main_category_id, sub_category_id=None, child_cat
         }
         filtered_params = {k: v for k, v in params.items() if v is not None}
 
-        return recommendation.send_request("/v1/featured/", filtered_params)
+        result = recommendation.send_request("/v1/featured/", filtered_params)
+        product_list = result["data"]
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        result["data"] = enriched_products
+        return result
+
     except Exception as e:
         logger.error(f"Failed [get_featured]: {e}")
         return response.BaseResponse(
