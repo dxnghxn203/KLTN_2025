@@ -4,7 +4,7 @@ import delivery from "@/images/c.png";
 
 export default function LocationDelivery() {
   return (
-    <div className="flex items-center p-2 w-fit bg-[#002E99] rounded-full w-[430px] h-[48px]">
+    <div className="flex items-center p-2 w-full max-w-[430px] bg-[#002E99] rounded-full h-[48px]">
       {/* Icon vị trí */}
       <div className="w-[30px] h-[30px] rounded-full overflow-hidden flex items-center justify-center bg-[#D3EFF8]">
         <Image
