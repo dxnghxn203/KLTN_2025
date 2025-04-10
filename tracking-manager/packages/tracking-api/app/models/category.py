@@ -1,3 +1,5 @@
+import asyncio
+
 from starlette import status
 
 from app.core import response
@@ -8,6 +10,8 @@ from app.entities.category.request import MainCategoryInReq, MainCategoryReq, Ch
 from app.entities.product.response import ItemProductDBRes
 from app.helpers.constant import generate_id
 from app.middleware.logging import logger
+from app.models.comment import count_comments
+from app.models.review import count_reviews, average_rating
 
 collection_name = "categories"
 product_collection_name = "products"
@@ -39,7 +43,26 @@ async def get_category_by_slug(main_slug: str):
 
         product_collection = db[product_collection_name]
         products = list(product_collection.find({"category.main_category_slug": main_slug}, {"_id": 0}))
-        category["products"] = [ItemProductDBRes(**prod) for prod in products]
+        enriched_products = []
+
+        for prod in products:
+            product_id = prod["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id),
+            )
+
+            enriched_products.append(
+                ItemProductDBRes(
+                    **prod,
+                    count_review=count_review,
+                    count_comment=count_comment,
+                    rating=avg_rating
+                )
+            )
+
+        category["products"] = enriched_products
 
         return category
     except Exception as e:
@@ -62,7 +85,26 @@ async def get_sub_category(main_slug: str, sub_slug: str):
         products = list(product_collection.find(
             {"category.main_category_slug": main_slug, "category.sub_category_slug": sub_slug},
             {"_id": 0}))
-        sub_category["products"] = [ItemProductDBRes(**prod) for prod in products]
+        enriched_products = []
+
+        for prod in products:
+            product_id = prod["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id),
+            )
+
+            enriched_products.append(
+                ItemProductDBRes(
+                    **prod,
+                    count_review=count_review,
+                    count_comment=count_comment,
+                    rating=avg_rating
+                )
+            )
+
+        sub_category["products"] = enriched_products
 
         return sub_category
     except Exception as e:
@@ -90,7 +132,26 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
                         "category.sub_category_slug": sub_slug,
                         "category.child_category_slug": child_slug
                     }, {"_id": 0}))
-                child_category["products"] = [ItemProductDBRes(**prod) for prod in products]
+                enriched_products = []
+
+                for prod in products:
+                    product_id = prod["product_id"]
+                    count_review, count_comment, avg_rating = await asyncio.gather(
+                        count_reviews(product_id),
+                        count_comments(product_id),
+                        average_rating(product_id),
+                    )
+
+                    enriched_products.append(
+                        ItemProductDBRes(
+                            **prod,
+                            count_review=count_review,
+                            count_comment=count_comment,
+                            rating=avg_rating
+                        )
+                    )
+
+                child_category["products"] = enriched_products
                 return child_category
 
         return None

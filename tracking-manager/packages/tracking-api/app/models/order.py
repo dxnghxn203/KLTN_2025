@@ -8,12 +8,12 @@ import httpx
 from starlette import status
 
 from app.core import logger, response, rabbitmq, database
-from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest
+from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq
 from app.entities.order.response import ItemOrderRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
-    FEE_INDEX
+    FEE_INDEX, get_update_status_queue
 from app.helpers.es_helpers import search_es
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
 from app.models.fee import calculate_shipping_fee
@@ -309,6 +309,25 @@ async def add_order(item: OrderRequest):
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
+        raise e
+
+async def update_status_order(item: ItemUpdateStatusReq):
+    try:
+        order_info = await get_order_by_id(item.order_id)
+        if not order_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy thông tin đơn hàng"
+            )
+        order_dict = item.dict()
+        logger.info(order_dict)
+        order_json = json.dumps(order_dict, ensure_ascii=False)
+
+        rabbitmq.send_message(get_update_status_queue(), order_json)
+
+        return item.order_id
+    except Exception as e:
+        logger.error(f"Failed [update_status_order]: {e}")
         raise e
 
 async def get_order_by_user(user_id: str):

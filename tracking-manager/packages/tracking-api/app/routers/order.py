@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends
 
 from app.core import logger, response
-from app.entities.order.request import ItemOrderInReq, OrderRequest
+from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq
 from app.middleware import middleware
 from app.models import order, user
 
@@ -59,6 +59,25 @@ async def add_order(item: OrderRequest):
         raise je
     except Exception as e:
         logger.error(f"Error adding order: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/order/update_status", response_model=response.BaseResponse)
+async def update_status_order(item: ItemUpdateStatusReq):
+    try:
+        result = await order.update_status_order(item)
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            status="created",
+            message=f"status order updated successfully",
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error updating status order: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

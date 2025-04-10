@@ -108,4 +108,4 @@ async def average_rating(product_id: str) -> float:
     ]
 
     result = list(collection.aggregate(pipeline))
-    return result[0]["avg_rating"] if result else 0.0
+    return round(result[0]["avg_rating"], 1) if result else 0.0

@@ -1,3 +1,5 @@
+import asyncio
+
 from starlette import status
 
 from app.core import logger, response, recommendation
@@ -41,7 +43,28 @@ async def get_all_product(page: int, page_size: int):
 
 async def get_product_top_selling(top_n):
     try:
-        return recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+        result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+        product_list = result["data"]
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        result["data"] = enriched_products
+        return result
     except Exception as e:
         logger.error(f"Failed [get_product_top_selling]: {e}")
         return response.BaseResponse(

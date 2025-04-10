@@ -56,3 +56,10 @@ class ItemOrderInReq(BaseModel):
 
 class OrderRequest(BaseModel):
     order_id: str
+
+class ItemUpdateStatusReq(BaseModel):
+    order_id: str
+    status: str
+    shipper_id: str = ""
+    shipper_name: str = ""
+    delivery_instruction: str = ""
