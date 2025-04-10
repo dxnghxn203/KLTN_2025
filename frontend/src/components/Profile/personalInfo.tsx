@@ -3,17 +3,19 @@ import { FiUser } from "react-icons/fi";
 import EditProfileDialog from "@/components/Dialog/editProfileDialog";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { HiOutlineUserCircle } from "react-icons/hi";
 
 const PersonalInfomation = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const userInfo = [
-    { label: "Họ và tên", value: user?.name ?? "" },
-    { label: "Email", value: user?.email ?? "" },
+    { label: "Họ và tên", value: user?.user_name },
+    { label: "Email", value: user?.email },
     { label: "Số điện thoại", value: "0943640913" },
-    { label: "Giới tính", value: "" },
+    { label: "Giới tính", value: user?.gender },
     { label: "Ngày sinh", value: "" },
   ];
+  console.log(user);
   return (
     <div className="bg-[#F5F7F9] p-6 rounded-lg">
       <h2 className="font-semibold text-lg">Thông tin cá nhân</h2>
@@ -26,7 +28,7 @@ const PersonalInfomation = () => {
             className="w-24 h-24 rounded-full object-cover"
           />
         ) : (
-          <FiUser className="w-8 h-8 text-[#0053E2]" />
+          <HiOutlineUserCircle className="w-20 h-20 text-[#0053E2]" />
         )}
       </div>
 

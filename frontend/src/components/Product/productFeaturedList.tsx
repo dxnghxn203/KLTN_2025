@@ -5,6 +5,7 @@ import Image from "next/image";
 import ProductMainCategoryCard from "./productMainCategoryCard";
 import { useProduct } from "@/hooks/useProduct";
 import Link from "next/link";
+import ProductFeaturedCard from "./productFeaturedCard";
 
 export default function ProductFeaturedList({
   data,
@@ -81,7 +82,7 @@ export default function ProductFeaturedList({
             <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
               {productRelated &&
                 productRelated.map((productData: any, index: any) => (
-                  <ProductMainCategoryCard
+                  <ProductFeaturedCard
                     key={index}
                     products={productData}
                     mainCategoryName={mainCategoryName}

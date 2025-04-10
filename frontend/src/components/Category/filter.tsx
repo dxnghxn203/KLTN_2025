@@ -25,6 +25,7 @@ const brands = [
   "Tipharco",
   "Agimexpharm",
   "Dhg",
+  "Royal Care",
 ];
 interface FilterProps {
   onPriceFilterChange: (range: { min: number; max: number }) => void;

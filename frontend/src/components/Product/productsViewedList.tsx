@@ -3,14 +3,12 @@ import ProductsViewCard from "./productsViewedCard";
 import { useProduct } from "@/hooks/useProduct";
 
 const ProductsViewedList: React.FC = () => {
-
-  const { productGetRecentlyViewed, fetchProductRecentlViewed} = useProduct();
+  const { productGetRecentlyViewed, fetchProductRecentlViewed } = useProduct();
 
   useEffect(() => {
     fetchProductRecentlViewed();
-  }
-  , []);
-  
+  }, []);
+
   return (
     <div className="w-full max-md:px-5 max-md:max-w-full mt-6">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black mt-[-30px]">
@@ -25,10 +23,11 @@ const ProductsViewedList: React.FC = () => {
         </div>
       </div>
       <div className="self-center mt-5 w-full max-md:max-w-full">
-        <div className="grid grid-cols-4 gap-6 max-md:grid-cols-1">
-          {productGetRecentlyViewed && productGetRecentlyViewed.map((product: any, index: any) => (
-            <ProductsViewCard key={index} product={product} />
-          ))}
+        <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
+          {productGetRecentlyViewed &&
+            productGetRecentlyViewed.map((product: any, index: any) => (
+              <ProductsViewCard key={index} product={product} />
+            ))}
         </div>
       </div>
     </div>

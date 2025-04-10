@@ -14,7 +14,7 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
 }) => {
   const slug = products?.slug;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  console.log("hvjnsdv", products?.category?.main_category_name);
+  console.log("hvjnsdv", products?.rating);
 
   return (
     <>
@@ -36,8 +36,8 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
               <Image
                 src={products?.images_primary}
                 alt={""}
-                width={120}
-                height={120}
+                width={170}
+                height={170}
                 className="object-contain cursor-pointer"
                 priority
               />
@@ -46,18 +46,15 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
           {/* Thông tin sản phẩm */}
           <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
             {/* Category + Rating */}
-            <div className="flex justify-between text-[10px] mb-2">
-              <span className="font-normal text-[#A7A8B0] ">
+            <div className="flex justify-between text-[10px] mb-2 items-center">
+              <span className="font-normal text-[#A7A8B0]">
                 {products?.category?.main_category_name}
               </span>
-              <div className="flex items-center gap-1">
-                <img
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/3fb1e163c165fc6375e283b0be8b64e20b1e971291ae656171dc64b8ec27a93e?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-                  className="object-contain w-3.5 aspect-square"
-                  alt=""
-                />
-                <span className="font-normal text-[#A7A8B0]">({4.5})</span>
+              <div className="flex items-center">
+                <span className="text-lg">⭐</span>
+                <span className="font-normal text-[#A7A8B0]">
+                  {products?.rating?.toFixed(1)}
+                </span>
               </div>
             </div>
 
