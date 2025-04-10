@@ -41,7 +41,7 @@ const LocationCheckout = ({ setDataLocation, setNote }: { setDataLocation: (data
             </header>
 
             {
-                allLocation && allLocation.locations.length > 0 ? (
+                allLocation &&  allLocation.locations && allLocation.locations.length > 0 ? (
                     <>
                         {selectedLocation ? (
                             <>
