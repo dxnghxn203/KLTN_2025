@@ -49,18 +49,15 @@ const ProductChildCategoryCard: React.FC<ProductChildCategoryCardProps> = ({
           {/* Thông tin sản phẩm */}
           <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
             {/* Category + Rating */}
-            <div className="flex justify-between text-[10px] mb-2">
+            <div className="flex justify-between text-[10px] mb-2 items-center">
               <span className="font-normal text-[#A7A8B0]">
                 {mainCategoryName}
               </span>
-              <div className="flex items-center gap-1">
-                <img
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/3fb1e163c165fc6375e283b0be8b64e20b1e971291ae656171dc64b8ec27a93e?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
-                  className="object-contain w-3.5 aspect-square"
-                  alt=""
-                />
-                <span className="font-normal text-[#A7A8B0]">({4.5})</span>
+              <div className="flex items-center">
+                <span className="text-lg">⭐</span>
+                <span className="font-normal text-[#A7A8B0]">
+                  {products?.rating?.toFixed(1)}
+                </span>
               </div>
             </div>
 
@@ -73,13 +70,14 @@ const ProductChildCategoryCard: React.FC<ProductChildCategoryCardProps> = ({
             <div className="mt-2">
               <div
                 className={`text-sm text-zinc-400 line-through ${
-                  products?.prices[0]?.original_price ? "" : "invisible"
+                  products?.prices[0]?.original_price &&
+                  products?.prices[0]?.original_price !==
+                    products?.prices[0]?.price
+                    ? "opacity-100"
+                    : "opacity-0"
                 }`}
               >
-                {(products?.prices[0]?.original_price || 0).toLocaleString(
-                  "vi-VN"
-                )}
-                đ
+                {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}đ
               </div>
               <div className="text-lg font-bold text-[#0053E2]">
                 {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
@@ -103,7 +101,7 @@ const ProductChildCategoryCard: React.FC<ProductChildCategoryCardProps> = ({
       {/* Dialog hiển thị khi isDialogOpen = true */}
       {isDialogOpen && (
         <ProductDialog
-        product={products}
+          product={products}
           onClose={() => setIsDialogOpen(false)}
         />
       )}

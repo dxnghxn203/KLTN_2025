@@ -1,22 +1,19 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import { X } from "lucide-react";
-import { StaticImageData } from "next/image";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
-import Link from "next/link";
 import { getPriceFromProduct } from "@/utils/price";
 import { useToast } from "@/providers/toastProvider";
 import { useRouter } from "next/navigation";
 
-const ProductDialog = ({
-  product,
-  onClose,
-}: any) => {
+const ProductDialog = ({ product, onClose }: any) => {
   const [quantity, setQuantity] = useState(1);
-  const [selectedUnit, setSelectedUnit] = useState(product?.prices[0]?.price_id);
+  const [selectedUnit, setSelectedUnit] = useState(
+    product?.prices[0]?.price_id
+  );
   const selectedPrice: any = useMemo(() => {
-    return getPriceFromProduct(product, selectedUnit)
+    return getPriceFromProduct(product, selectedUnit);
   }, [selectedUnit]);
 
   const increaseQuantity = () => {
@@ -44,15 +41,10 @@ const ProductDialog = ({
           router.push("/gio-hang");
         } else {
           getProductFromCart(
-            () => {
-
-            },
-            () => {
-
-            }
-          )
+            () => {},
+            () => {}
+          );
         }
-
       },
       () => {
         toast.showToast("Thêm vào giỏ hàng thất bại", "error");
@@ -69,9 +61,7 @@ const ProductDialog = ({
         >
           <X size={24} />
         </button>
-        <div className="text-left text-2xl font-semibold text-black">
-          Chọn sản phẩm  11
-        </div>
+        <div className="text-left text-xl font-semibold">Chọn sản phẩm</div>
 
         <div className="flex gap-6 py-4">
           <div className="w-1/2 flex justify-center items-center bg-[#F1F5F9] p-4 rounded-lg ">
@@ -86,52 +76,56 @@ const ProductDialog = ({
           </div>
 
           <div className="w-1/2 text-left">
-            <h1 className="text-2xl font-semibold text-black">{product?.name_primary}</h1>
+            <h1 className="text-2xl font-semibold text-black">
+              {product?.name_primary}
+            </h1>
 
-            <div className="flex space-x-2">
-              {product?.prices.map((price: any) => (
-                <button
-                  key={price.id}
-                  onClick={() => setSelectedUnit(price?.price_id)}
-                  className={`flex items-center justify-center px-6 py-2 rounded-full border text-lg font-normal
-        ${selectedUnit === price?.price_id
-                      ? "border-blue-500 text-black font-semibold"
-                      : "border-gray-300 text-gray-500"
-                    }`}
-                >
-                  {price.unit}
-                </button>
-              ))}
-            </div>
             <div className="flex-col space-y-4 gap-2 mt-3 items-center">
               {selectedPrice?.discount > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-2 text-sm font-medium text-black bg-amber-300 rounded-lg flex items-center justify-center">
+                  <span className="px-2 py-2 text-sm font-medium bg-amber-300 rounded-lg flex items-center justify-center">
                     Giảm {selectedPrice.discount}%
                   </span>
                   {selectedPrice?.original_price && (
-                    <span className="text-2xl font-bold text-zinc-400 line-through flex items-center">
+                    <span className="text-xl font-bold text-zinc-400 line-through flex items-center">
                       {selectedPrice.original_price.toLocaleString("vi-VN")}đ
                     </span>
                   )}
                 </div>
               )}
               {selectedPrice?.price && (
-                <p className="text-[#0053E2] text-4xl font-bold">
+                <p className="text-[#0053E2] text-3xl font-bold">
                   {selectedPrice.price.toLocaleString("vi-VN")}đ/{" "}
                   {selectedPrice.unit}
                 </p>
               )}
             </div>
-            <div className="mt-6 flex items-center gap-4">
+            <div className="flex space-x-2">
+              {product?.prices.map((price: any) => (
+                <button
+                  key={price.id}
+                  onClick={() => setSelectedUnit(price?.price_id)}
+                  className={`flex items-center justify-center px-6 py-2 rounded-full border font-normal my-2
+        ${
+          selectedUnit === price?.price_id
+            ? "border-blue-500 text-black font-semibold"
+            : "border-gray-300 text-gray-500"
+        }`}
+                >
+                  {price.unit}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
               <span className="font-semibold">Số lượng:</span>
 
-              <div className="flex items-center gap-2 border p-2 rounded-lg">
+              <div className="flex items-center gap-2 border p-1 rounded-lg">
                 <button
-                  className={`px-3 py-1  rounded-md ${quantity === 1
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-gray-300"
-                    }`}
+                  className={`px-3 py-1  rounded-md ${
+                    quantity === 1
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:bg-gray-300"
+                  }`}
                   onClick={decreaseQuantity}
                   disabled={quantity === 1}
                 >
@@ -149,14 +143,14 @@ const ProductDialog = ({
               </div>
             </div>
             <a
-              onClick={()=>handleAddToCart(true)}
-              className="block mt-10 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full text-center"
+              onClick={() => handleAddToCart(true)}
+              className="block mt-4 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full text-center"
             >
               Mua ngay
             </a>
 
             <button
-              onClick={()=>handleAddToCart(false)}
+              onClick={() => handleAddToCart(false)}
               className="mt-3 text-[#0053E2] font-semibold px-6 py-3 rounded-xl w-full border border-[#0053E2] hover:border-opacity-50 hover:text-opacity-50"
             >
               Thêm vào giỏ hàng

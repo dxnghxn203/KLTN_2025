@@ -5,7 +5,7 @@ import Image, { StaticImageData } from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 interface CategoryCardProps {
-  mainCategory: string;
+  mainCategory: any;
   subCategories: any;
 }
 
@@ -35,6 +35,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
     page * itemsPerPage,
     (page + 1) * itemsPerPage
   );
+
   return (
     <div className="relative flex items-center shadow-sm rounded-lg bg-[#F6FBFF] border border-gray-200 group h-[160px]">
       <div className="flex flex-col items-center w-1/3 text-center p-2 transition duration-300 rounded-lg">
@@ -61,15 +62,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
 
       <div className="flex-1 py-4 px-2">
         <div className="flex flex-col space-y-2">
-          {visibleSubSubCategories && visibleSubSubCategories.map((sub: any, index: any) => (
-            <Link
-              key={index}
-              href={`/${mainCategory}/${subCategories?.sub_category_slug}/${sub.child_category_slug}`}
-              className="block text-[#1D4ED8] hover:underline text-sm font-medium"
-            >
-              {sub?.child_category_name}
-            </Link>
-          ))}
+          {visibleSubSubCategories &&
+            visibleSubSubCategories.map((sub: any, index: any) => (
+              <Link
+                key={index}
+                href={`/${mainCategory}/${subCategories?.sub_category_slug}/${sub.child_category_slug}`}
+                className="block text-[#1D4ED8] hover:underline text-sm font-medium"
+              >
+                {sub?.child_category_name}
+              </Link>
+            ))}
         </div>
       </div>
 

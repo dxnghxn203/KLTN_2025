@@ -17,10 +17,7 @@ export default function ProductMainCategoryList({
   const { fetchProductFeatured, productRelated } = useProduct();
   const [loading, setLoading] = useState(true);
   const [topN, setTopN] = useState(5);
-  const products = data.products;
-
-  console.log("product", products);
-
+  const products = data?.products ?? [];
   useEffect(() => {
     if (maincategoryId) {
       fetchProductFeatured(
@@ -38,8 +35,7 @@ export default function ProductMainCategoryList({
     }
   }, []);
 
-  console.log("Product:", productRelated);
-
+  // console.log("Product:", productRelated);
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
   const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({

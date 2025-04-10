@@ -15,7 +15,7 @@ export default function ProductFeaturedList({
   maincategoryId: string | null;
   mainCategoryName: string;
 }) {
-  console.log("MainCategoryId:", maincategoryId);
+  // console.log("MainCategoryId:", maincategoryId);
   const { fetchProductFeatured, productRelated } = useProduct();
   const [loading, setLoading] = useState(true);
   const [topN, setTopN] = useState(5);
@@ -37,7 +37,7 @@ export default function ProductFeaturedList({
     }
   }, []);
 
-  console.log("Product:", productRelated);
+  // console.log("Product:", productRelated);
 
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");

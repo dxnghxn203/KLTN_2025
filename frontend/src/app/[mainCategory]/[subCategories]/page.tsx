@@ -17,15 +17,9 @@ export default function CategoryPage() {
   const mainCategories = Array.isArray(params.mainCategory)
     ? params.mainCategory[0]
     : params.mainCategory;
-
   const subCategories = Array.isArray(params.subCategories)
     ? params.subCategories[0]
     : params.subCategories;
-
-  const childCategories = Array.isArray(params.childCategories)
-    ? params.childCategories[0]
-    : params.childCategories;
-
   const categoryTitle = mainCategory?.main_category_name || "Danh mục sản phẩm";
   const [loading, setLoading] = useState(false);
   useMemo(() => {
@@ -41,6 +35,7 @@ export default function CategoryPage() {
       }
     );
   }, []);
+  console.log("subCategory", subCategory);
 
   const subCategoriesTitle = subCategory?.sub_category_name || "Danh mục con";
 
