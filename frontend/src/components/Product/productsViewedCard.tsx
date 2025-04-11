@@ -16,9 +16,9 @@ const ProductsViewCard = ({ product }: any) => {
               <Link href={`/chi-tiet-san-pham/${product?.slug}`} legacyBehavior>
                 <div className="py-6 flex flex-col items-center">
                   <div className="flex justify-end w-full">
-                    {product?.prices[0]?.discount !== undefined ? (
+                    {product?.prices[0]?.discount !== 0 ? (
                       <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md transition-opacity">
-                        {product?.prices[0]?.discount}
+                        {product?.prices[0]?.discount}%
                       </div>
                     ) : (
                       <div className="bg-amber-300 text-black text-sm font-medium px-3 py-1 rounded-l-lg rounded-bl-lg shadow-md opacity-0">
