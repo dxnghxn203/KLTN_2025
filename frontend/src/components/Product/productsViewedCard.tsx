@@ -37,7 +37,7 @@ const ProductsViewCard = ({ product }: any) => {
             </Link>
 
             <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
-              <div className="flex justify-between text-xs mb-5 items-center">
+              <div className="flex justify-between text-xs mb-2 items-center">
                 <span className="font-normal text-[#A7A8B0]">
                   {product?.category?.main_category_name}
                 </span>
@@ -49,8 +49,8 @@ const ProductsViewCard = ({ product }: any) => {
                 </div>
               </div>
 
-              <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] h-[48px]">
-                {product?.product_name}
+              <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] cursor-pointer">
+                {product?.name_primary}
               </div>
 
               <div className="mt-2">
