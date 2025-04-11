@@ -328,7 +328,7 @@ export default function Header() {
                 <Link href="/dang-nhap" className="focus:outline-none">
                   <div
                     className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
-                      pathname === "/login"
+                      pathname === "/dang-nhap"
                         ? "bg-[#002E99]"
                         : "hover:bg-[#004BB7]"
                     }`}

@@ -105,7 +105,7 @@ const ProductDialog = ({ product, onClose }: any) => {
                 <button
                   key={price.id}
                   onClick={() => setSelectedUnit(price?.price_id)}
-                  className={`flex items-center justify-center px-6 py-2 rounded-full border font-normal my-2
+                  className={`text-sm flex items-center justify-center px-4 py-2 rounded-full border font-normal my-3
         ${
           selectedUnit === price?.price_id
             ? "border-blue-500 text-black font-semibold"

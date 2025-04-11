@@ -1,21 +1,20 @@
-import { FiPieChart, FiShoppingBag, FiServer } from "react-icons/fi";
+import { FiPieChart, FiShoppingBag } from "react-icons/fi";
 import { BsBox } from "react-icons/bs";
+import { TbCategory } from "react-icons/tb";
+import { FaRegUser } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
-import { Dispatch, SetStateAction, memo } from "react";
+import { memo } from "react";
+import { usePathname } from "next/navigation";
+
 import logo from "@/images/MM.png";
 import textlogo from "@/images/medicare2.png";
-import { TbCategory } from "react-icons/tb";
-import { FaRegUser } from "react-icons/fa";
 
 interface SidebarProps {
   isOpen: boolean;
-  activeItem: string;
-  setActiveItem: Dispatch<SetStateAction<string>>;
 }
 
-// Danh sách menu cố định (không render lại)
 const menuItems = [
   {
     id: "Dashboard",
@@ -49,11 +48,13 @@ const menuItems = [
   },
 ];
 
-const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
+const Sidebar = memo(({ isOpen }: SidebarProps) => {
+  const pathname = usePathname();
+
   return (
     <aside
       className={clsx(
-        "flex flex-col p-4  border-r border-gray-200 transition-all duration-500 bg-[#FAFBFB]",
+        "flex flex-col p-4 border-r border-gray-200 transition-all duration-500 bg-[#FAFBFB]",
         isOpen ? "w-[250px]" : "w-[80px]"
       )}
     >
@@ -73,7 +74,7 @@ const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
         />
       </div>
 
-      {/* Menu Items */}
+      {/* Menu */}
       <div className="px-2 flex flex-col w-full">
         <p
           className={clsx(
@@ -85,35 +86,34 @@ const Sidebar = memo(({ isOpen, activeItem, setActiveItem }: SidebarProps) => {
         </p>
 
         <nav className="space-y-1 w-full flex flex-col">
-          {menuItems.map((item) => (
-            <Link
-              key={item.id}
-              href={item.path}
-              onClick={() => setActiveItem(item.id)}
-            >
-              <div
-                className={clsx(
-                  "flex px-2 py-3 rounded-lg transition-all duration-500 cursor-pointer",
-                  isOpen
-                    ? "justify-start items-center"
-                    : "justify-center items-center",
-                  activeItem === item.id
-                    ? "bg-[#1E4DB7] text-white"
-                    : "text-black hover:bg-[#E7ECF7] hover:text-[#1E4DB7]"
-                )}
-              >
-                <div className="text-lg">{item.icon}</div>
-                <span
+          {menuItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <Link key={item.id} href={item.path}>
+                <div
                   className={clsx(
-                    "ml-3",
-                    isOpen ? "opacity-100" : "opacity-0 hidden"
+                    "flex px-2 py-3 rounded-lg transition-all duration-500 cursor-pointer",
+                    isOpen
+                      ? "justify-start items-center"
+                      : "justify-center items-center",
+                    isActive
+                      ? "bg-[#1E4DB7] text-white"
+                      : "text-black hover:bg-[#E7ECF7] hover:text-[#1E4DB7]"
                   )}
                 >
-                  {item.label}
-                </span>
-              </div>
-            </Link>
-          ))}
+                  <div className="text-lg">{item.icon}</div>
+                  <span
+                    className={clsx(
+                      "ml-3",
+                      isOpen ? "opacity-100" : "opacity-0 hidden"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </nav>
 
         <p

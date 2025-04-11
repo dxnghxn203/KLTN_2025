@@ -18,6 +18,7 @@ interface AuthResponse {
     user?: any;
     token?: string;
     message?: string;
+    admin?: any;
 }
 
 export interface User {
@@ -27,9 +28,17 @@ export interface User {
     image?: string;
     role?: string;
 }
+export interface Admin {
+    id: string;
+    email: string;
+    name?: string;
+    image?: string;
+    role?: string;
+}
 
 export interface AuthState {
     user: any | null;
+    admin: any | null;
     token: string | null;
     isAuthenticated: boolean;
     loading: boolean;

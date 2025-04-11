@@ -10,6 +10,9 @@ import {
     logoutStart,
     logoutSuccess,
     logoutFailure,
+    loginAdminStart,
+    loginAdminSuccess,
+    loginAdminFailure,
 } from './authSlice';
 import { getSession, signIn, signOut } from 'next-auth/react';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -99,9 +102,47 @@ function* handleLogout(): Generator<any, void, any> {
     }
 }
 
+// loginAdmin
+function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess = () => { },
+        onFailed = () => { },
+        ...credentials
+    } = payload;
+    const device_id = getDeviceId();
+    const form = new FormData();
+    form.append('email', credentials.email);
+    form.append('password', credentials.password);
+    form.append('device_id', device_id);
+    try {
+        const response = yield call(authService.loginAdmin, form);
+        if (response.success) {
+            onSuccess();
+            setToken(response?.token);
+            yield put(
+                loginAdminSuccess({
+                    admin: response?.admin || null,
+                    token: response?.token || null,
+                })
+            );
+            console.log('Login admin success:', response.admin);
+        } else {
+            console.log('Login failed:', response.message);
+            onFailed(response.message);
+            yield put(loginAdminFailure(response.message || 'Đăng nhập thất bại'));
+        }
+    }
+    catch (error: any) {
+        onFailed(error?.message || 'Đăng nhập thất bại');
+        yield put(loginAdminFailure(error.message || 'Đăng nhập thất bại'));
+    }
+}
+
 // Check auth status
 export function* authSaga() {
     yield takeLatest(googleLoginStart.type, handleGoogleLogin);
     yield takeLatest(loginStart.type, handleLogin);
     yield takeLatest(logoutStart.type, handleLogout);
+    yield takeLatest(loginAdminStart.type, handleLoginAdmin);
 }

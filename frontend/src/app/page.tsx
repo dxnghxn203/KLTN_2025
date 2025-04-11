@@ -1,6 +1,4 @@
 "use client";
-import Footer from "@/components/Footer/footer";
-import Header from "@/components/Header/header";
 import ProductCatalog from "../components/Home/productCatalog";
 import ProductList from "@/components/Product/productList";
 import BrandList from "@/components/BrandList/brandList";

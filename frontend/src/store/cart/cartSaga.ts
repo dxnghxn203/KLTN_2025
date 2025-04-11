@@ -110,6 +110,7 @@ function* handleAddToCart(action: any): Generator<any, void, any> {
             price_id: price_id,
             quantity: quantity,
         }
+        
         const response = token ?
             yield call(cartService.addToCartToken, data)
             : yield call(cartService.addToCartSession, data);

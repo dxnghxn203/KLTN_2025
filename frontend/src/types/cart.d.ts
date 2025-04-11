@@ -22,7 +22,7 @@ interface CartState {
 import { Product } from './product';
 
 export interface CartItem extends Product {
-    quantity: number;
+    quantity: number;z
 }
 
 export interface CartState {
