@@ -16,9 +16,35 @@ import {
     fetchGetOrderByUserStart,
     fetchGetOrderByUserSuccess,
     fetchGetOrderByUserFailed,
+
+    fetchCallWebhookStart,
+    fetchCallWebhookSuccess,
+    fetchCallWebhookFailed,
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
 
+// Call webhook
+function* fetchCallWebhook(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+            data
+        } = payload;
+        const rs = yield call(orderService.callWebhook, data);
+        if (rs.status_code === 200) {
+            onSuccess();
+            yield put(fetchCallWebhookSuccess(rs.data));
+            return;
+        }
+        onFailed();
+        yield put(fetchCallWebhookFailed());
+    } catch (error) {
+        yield put(fetchCallWebhookFailed());
+    }
+}
+// Call webhook
 // Fetch all order
 function* fetchGetAllOrder(action: any): Generator<any, void, any> {
     try {
@@ -154,4 +180,5 @@ export function* orderSaga() {
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
     yield takeLatest(fetchGetAllOrderAdminStart.type, fetchGetAllOrderAdmin);
     yield takeLatest(fetchGetOrderByUserStart.type, fetchGetOrderByUser);
+    yield takeLatest(fetchCallWebhookStart.type, fetchCallWebhook);
 }

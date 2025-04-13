@@ -183,3 +183,21 @@ export const getOrderByUserId = async () => {
         }
     }
 }
+
+export const callWebhook = async (data: any) => {
+    try {
+        console.log('callWebhook', data);
+        const verify_token = process.env.NEXT_PUBLIC_WEBHOOK_TOKEN;
+        const response: any = await axiosClient.post(`https://kltn-2025.onrender.com/api/v1/webhook/shipment/status?verify_token=${verify_token}`, data);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lổi gọi webhook',
+        }
+    }
+}

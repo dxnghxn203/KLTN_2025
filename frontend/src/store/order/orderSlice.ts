@@ -66,6 +66,16 @@ export const orderSlice = createSlice({
         fetchGetOrderByUserFailed(state) {
             state.loading = false;
         },
+        // call webhook
+        fetchCallWebhookStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchCallWebhookSuccess(state) {
+            state.loading = false;
+        },
+        fetchCallWebhookFailed(state) {
+            state.loading = false;
+        },
     },
 });
 
@@ -85,6 +95,10 @@ export const {
     fetchGetOrderByUserStart,
     fetchGetOrderByUserSuccess,
     fetchGetOrderByUserFailed,
+
+    fetchCallWebhookStart,
+    fetchCallWebhookSuccess,
+    fetchCallWebhookFailed,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;
