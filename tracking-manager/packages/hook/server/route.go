@@ -17,8 +17,8 @@ func NewRouter() *gin.Engine {
 	router := gin.New()
 
 	allowedOrigins := []string{
-		os.Getenv("http://localhost:3000"),
-		os.Getenv("https://kltn-2025.vercel.app"),
+		"http://localhost:3000",
+		"https://kltn-2025.vercel.app",
 	}
 
 	router.Use(cors.New(cors.Config{
