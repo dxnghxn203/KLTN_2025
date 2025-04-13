@@ -72,7 +72,7 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             data=None
         )
 
-def remove_product_from_cart(user_id: str, product_id: str):
+async def remove_product_from_cart(user_id: str, product_id: str):
     try:
         collection = db[collection_name]
         cart_data = collection.find_one({"user_id": user_id})
