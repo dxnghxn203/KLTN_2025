@@ -10,9 +10,6 @@ export enum OrderStatusCode {
     PICKING = "picking",
     DELIVERING = "delivering",
     DELIVERY_SUCCESS = "delivery_success",
-    DELIVERY_PART_SUCCESS = "delivery_part_success",
-    DELIVERY_PART_WAITING_TO_RETURN = "delivery_part_waiting_to_return",
-    DELIVERY_PART_RETURNED = "delivery_part_returned",
     DELIVERY_FAIL = "delivery_fail",
     WAITING_TO_RETURN = "waiting_to_return",
     RETURNED = "returned",
@@ -26,13 +23,10 @@ export const NUMERIC_STATUS_MAP = {
     "picking": "2",
     "delivering": "3",
     "delivery_success": "4",
-    "delivery_part_success": "5",
-    "delivery_part_waiting_to_return": "6",
-    "delivery_part_returned": "7",
-    "delivery_fail": "8",
-    "waiting_to_return": "9",
-    "returned": "10",
-    "canceled": "11"
+    "delivery_fail": "5",
+    "waiting_to_return": "6",
+    "returned": "7",
+    "canceled": "8"
 };
 
 export const ORDER_STATUS_NAMES = {
@@ -41,9 +35,6 @@ export const ORDER_STATUS_NAMES = {
     "picking": "Đang lấy hàng",
     "delivering": "Đang giao hàng",
     "delivery_success": "Giao hàng thành công",
-    "delivery_part_success": "Giao hàng thành công 1 phần",
-    "delivery_part_waiting_to_return": "Chờ trả hàng 1 phần",
-    "delivery_part_returned": "Đã trả hàng 1 phần",
     "delivery_fail": "Giao hàng thất bại",
     "waiting_to_return": "Chờ trả hàng",
     "returned": "Đã trả hàng",
@@ -56,9 +47,6 @@ export const ORDER_STATUS_DESCRIPTIONS = {
     "picking": "Shipper đang lấy hàng ở kho",
     "delivering": "Shipper đang giao hàng tới điểm nhận",
     "delivery_success": "Shipper đã giao hàng thành công",
-    "delivery_part_success": "Shipper đã giao hàng thành công nhưng khách hàng chỉ nhận 1 phần hàng",
-    "delivery_part_waiting_to_return": "Shipper đang trở về kho trả hàng còn lại trong đơn hàng giao 1 phần",
-    "delivery_part_returned": "Shipper đã trả hàng còn lại trong đơn giao 1 phần",
     "delivery_fail": "Vì lý do gì đó mà hàng không thể đến tay người nhận",
     "waiting_to_return": "Shipper đang trở về trả full hàng",
     "returned": "Shipper đã trả đơn hàng về kho",
@@ -93,21 +81,6 @@ export const ORDER_STATUS_COLORS = {
         text: "text-green-800",
         border: "border-green-300"
     },
-    "delivery_part_success": {
-        bg: "bg-emerald-100",
-        text: "text-emerald-800",
-        border: "border-emerald-300"
-    },
-    "delivery_part_waiting_to_return": {
-        bg: "bg-purple-100",
-        text: "text-purple-800",
-        border: "border-purple-300"
-    },
-    "delivery_part_returned": {
-        bg: "bg-violet-100",
-        text: "text-violet-800",
-        border: "border-violet-300"
-    },
     "delivery_fail": {
         bg: "bg-red-100",
         text: "text-red-800",
@@ -137,9 +110,6 @@ export const ORDER_STATUS_HEX_COLORS = {
     "picking": "#e0e7ff", // indigo-100
     "delivering": "#fef9c3", // yellow-100
     "delivery_success": "#dcfce7", // green-100
-    "delivery_part_success": "#d1fae5", // emerald-100
-    "delivery_part_waiting_to_return": "#f3e8ff", // purple-100
-    "delivery_part_returned": "#ede9fe", // violet-100
     "delivery_fail": "#fee2e2", // red-100
     "waiting_to_return": "#ffedd5", // orange-100
     "returned": "#fef3c7", // amber-100
@@ -154,9 +124,6 @@ export const ORDER_STATUS_ICONS = {
     "picking": "LoaderIcon", // FiLoader - Picking
     "delivering": "TruckIcon", // FiTruck - Delivering
     "delivery_success": "CheckCircleIcon", // FiCheckCircle - Success
-    "delivery_part_success": "CheckIcon", // FiCheck - Partial success
-    "delivery_part_waiting_to_return": "RefreshCwIcon", // FiRefreshCw - Waiting to return partial
-    "delivery_part_returned": "CornerDownLeftIcon", // FiCornerDownLeft - Partial returned
     "delivery_fail": "AlertCircleIcon", // FiAlertCircle - Delivery fail
     "waiting_to_return": "RotateCcwIcon", // FiRotateCcw - Waiting to return
     "returned": "CornerLeftDownIcon", // FiCornerLeftDown - Returned
@@ -220,8 +187,7 @@ export function isOrderPending(statusName: string): boolean {
  */
 export function isOrderCompleted(statusName: string): boolean {
     return [
-        OrderStatusCode.DELIVERY_SUCCESS,
-        OrderStatusCode.DELIVERY_PART_SUCCESS
+        OrderStatusCode.DELIVERY_SUCCESS
     ].includes(statusName as OrderStatusCode);
 }
 
@@ -240,8 +206,6 @@ export function isOrderFailed(statusName: string): boolean {
  */
 export function isOrderReturning(statusName: string): boolean {
     return [
-        OrderStatusCode.DELIVERY_PART_WAITING_TO_RETURN,
-        OrderStatusCode.DELIVERY_PART_RETURNED,
         OrderStatusCode.WAITING_TO_RETURN,
         OrderStatusCode.RETURNED
     ].includes(statusName as OrderStatusCode);

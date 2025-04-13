@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import {
     FiHome,
     FiPackage,
     FiShoppingBag,
     FiTruck,
-    FiBarChart2,
     FiSettings,
     FiUser,
     FiLogOut,
@@ -17,7 +15,8 @@ import {
     FiX,
     FiChevronDown,
     FiHelpCircle,
-    FiBell
+    FiBell,
+    FiRefreshCw
 } from "react-icons/fi";
 
 export default function PartnerLayout({
@@ -56,7 +55,12 @@ export default function PartnerLayout({
     }, []);
 
     const navigation = [
-        { name: 'Cập nhật trạng thái', href: '/status-order', icon: FiTruck }
+        { name: 'Trang chủ', href: '/dashboard', icon: FiHome },
+        { name: 'Sản phẩm', href: '/products', icon: FiPackage },
+        { name: 'Đơn hàng', href: '/orders', icon: FiShoppingBag },
+        { name: 'Vận chuyển', href: '/shipping', icon: FiTruck },
+        { name: 'Cập nhật trạng thái', href: '/status-order', icon: FiRefreshCw },
+        { name: 'Cài đặt', href: '/settings', icon: FiSettings },
     ];
 
     return (
@@ -81,7 +85,7 @@ export default function PartnerLayout({
                             <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">P</span>
                             </div>
-                            <span className="text-lg font-semibold text-gray-900">Partner Portal</span>
+                            <span className="text-lg font-semibold text-gray-900">Đối tác giao hàng</span>
                         </Link>
                         {isMobileView && (
                             <button
@@ -97,7 +101,7 @@ export default function PartnerLayout({
                     <div className="flex-1 overflow-y-auto py-4 px-3">
                         <nav className="space-y-1">
                             {navigation.map((item) => {
-                                const isActive = pathname === item.href || (pathname && pathname.startsWith(`${item.href}/`));
+                                const isActive = (pathname ?? '') === item.href || (pathname ?? '').startsWith(`${item.href}/`);
                                 return (
                                     <Link
                                         key={item.name}
@@ -149,7 +153,7 @@ export default function PartnerLayout({
                         </button>
 
                         <div className="font-medium text-lg text-gray-900 lg:hidden">
-                            Partner Portal
+                            Đối tác giao hàng
                         </div>
 
                         {/* Right buttons */}
@@ -214,10 +218,10 @@ export default function PartnerLayout({
                                 {profileDropdownOpen && (
                                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-30" onClick={e => e.stopPropagation()}>
                                         <div className="py-1">
-                                            <Link href="/" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <Link href="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                 <FiUser className="mr-2 h-4 w-4" /> Hồ sơ
                                             </Link>
-                                            <Link href="/" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            <Link href="/settings" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                 <FiSettings className="mr-2 h-4 w-4" /> Cài đặt
                                             </Link>
                                             <div className="border-t border-gray-100"></div>

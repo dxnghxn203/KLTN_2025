@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { OrderStatusCode, getOrderStatusInfo } from "@/utils/orderStatusMapping";
-import { useRouter } from "next/navigation";
+import { FiSearch, FiCheck, FiAlertTriangle, FiArrowRight } from "react-icons/fi";
 
 // Mock types for our data model - replace with your actual types
 interface Order {
@@ -12,6 +12,7 @@ interface Order {
     customerName: string;
     customerPhone: string;
     createdAt: string;
+    expectedDeliveryDate?: string;
     totalAmount: number;
     products: Array<{
         id: string;
@@ -27,32 +28,34 @@ export default function StatusOrderPage() {
     const [isSearching, setIsSearching] = useState(false);
     const [order, setOrder] = useState<Order | null>(null);
     const [newStatus, setNewStatus] = useState("");
+    const [statusNote, setStatusNote] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    const router = useRouter();
 
     // Mock function to fetch order data - replace with actual API call
     const searchOrder = async (code: string) => {
         setIsSearching(true);
         setError("");
-
+        setSuccess("");
+        
         try {
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1000));
-
+            
             if (code === "NOT_FOUND") {
-                throw new Error("Không tìm thấy đơn hàng");
+                throw new Error("Không tìm thấy đơn hàng với mã này");
             }
-
+            
             // Mock data
             const mockOrder: Order = {
-                id: "order1",
+                id: Math.random().toString(36).substring(2, 15),
                 orderCode: code,
                 status: "delivering", // Default status
-                customerName: "Khách hàng A",
+                customerName: "Nguyễn Văn A",
                 customerPhone: "0987654321",
                 createdAt: new Date().toISOString(),
+                expectedDeliveryDate: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
                 totalAmount: 350000,
                 products: [
                     {
@@ -70,10 +73,10 @@ export default function StatusOrderPage() {
                 ],
                 deliveryAddress: "123 Đường Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh",
             };
-
+            
             setOrder(mockOrder);
-            // Initialize new status to current status
-            setNewStatus(mockOrder.status);
+            // Do not initialize new status automatically
+            setNewStatus("");
         } catch (err: any) {
             setError(err.message || "Có lỗi xảy ra khi tìm kiếm đơn hàng");
             setOrder(null);
@@ -85,20 +88,30 @@ export default function StatusOrderPage() {
     // Handle submit status change - replace with actual API call
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!order || !newStatus || newStatus === order.status) return;
-
+        
+        if (!order || !newStatus) {
+            setError("Vui lòng chọn trạng thái mới cho đơn hàng");
+            return;
+        }
+        
+        if (newStatus === order.status) {
+            setError("Trạng thái mới phải khác trạng thái hiện tại");
+            return;
+        }
+        
         setIsSubmitting(true);
         setError("");
         setSuccess("");
-
+        
         try {
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1500));
-
+            
             // Mock successful update
-            setSuccess(`Đã cập nhật trạng thái đơn hàng ${order.orderCode} thành công!`);
-            setOrder({ ...order, status: newStatus });
+            setSuccess(`Đã cập nhật trạng thái đơn hàng ${order.orderCode} từ "${getOrderStatusInfo(order.status).displayName}" thành "${getOrderStatusInfo(newStatus).displayName}" thành công!`);
+            setOrder({...order, status: newStatus});
+            setStatusNote("");
+            setNewStatus("");
         } catch (err: any) {
             setError(err.message || "Có lỗi xảy ra khi cập nhật trạng thái đơn hàng");
         } finally {
@@ -108,40 +121,48 @@ export default function StatusOrderPage() {
 
     // Get a list of status options that would be logical next steps from current status
     const getAvailableNextStatuses = (currentStatus: string) => {
-        // This is a simplified flow - update with your actual business rules
+        // Define logical status progression based on business rules
         const statusFlow: Record<string, string[]> = {
             "created": ["waiting_to_pick", "canceled"],
             "waiting_to_pick": ["picking", "canceled"],
             "picking": ["delivering", "canceled"],
-            "delivering": ["delivery_success", "delivery_part_success", "delivery_fail"],
+            "delivering": ["delivery_success", "delivery_fail"],
             "delivery_fail": ["waiting_to_return"],
-            "delivery_part_success": ["delivery_part_waiting_to_return"],
-            "delivery_part_waiting_to_return": ["delivery_part_returned"],
             "waiting_to_return": ["returned"],
             "delivery_success": [], // End state
-            "delivery_part_returned": [], // End state
             "returned": [], // End state
             "canceled": [], // End state
         };
-
-        return Object.values(OrderStatusCode).filter(status => {
-            if (!currentStatus) return false;
-            // Allow selecting all statuses for flexibility in the demo
-            return true; // Replace with: return statusFlow[currentStatus]?.includes(status) || false;
-        });
+        
+        // For status-order page, we may want to allow all status transitions for admins/partners
+        // or restrict based on logical flow
+        const allowAllTransitions = true; // Set to false to restrict based on flow
+        
+        if (!currentStatus || !order) return [];
+        
+        if (allowAllTransitions) {
+            // Only filter out current status and end states if needed
+            return Object.values(OrderStatusCode).filter(status => status !== currentStatus);
+        } else {
+            // Return only valid next statuses based on flow
+            return Object.values(OrderStatusCode).filter(status => {
+                return statusFlow[currentStatus]?.includes(status);
+            });
+        }
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="container mx-auto px-4 max-w-6xl">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Cập nhật trạng thái đơn hàng</h1>
-                <p className="text-gray-600 mt-2">
+                <h1 className="text-2xl font-bold text-gray-900">Cập nhật trạng thái đơn hàng</h1>
+                <p className="text-gray-600 mt-1">
                     Nhập mã đơn hàng và chọn trạng thái mới để cập nhật
                 </p>
             </div>
 
             {/* Order search section */}
-            <div className="bg-white shadow-md rounded-lg p-6 mb-8">
+            <div className="bg-white shadow rounded-lg p-6 mb-6">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">Tìm kiếm đơn hàng</h2>
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-grow">
                         <label htmlFor="orderCode" className="block text-sm font-medium text-gray-700 mb-1">
@@ -153,7 +174,7 @@ export default function StatusOrderPage() {
                             value={orderCode}
                             onChange={(e) => setOrderCode(e.target.value)}
                             placeholder="Nhập mã đơn hàng cần tìm..."
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             disabled={isSearching}
                         />
                     </div>
@@ -172,19 +193,20 @@ export default function StatusOrderPage() {
                                     Đang tìm...
                                 </span>
                             ) : (
-                                "Tìm kiếm"
+                                <span className="flex items-center">
+                                    <FiSearch className="mr-2" />
+                                    Tìm kiếm
+                                </span>
                             )}
                         </button>
                     </div>
                 </div>
-
+                
                 {error && (
                     <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4">
                         <div className="flex">
                             <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
+                                <FiAlertTriangle className="h-5 w-5 text-red-500" />
                             </div>
                             <div className="ml-3">
                                 <p className="text-sm text-red-700">{error}</p>
@@ -192,155 +214,204 @@ export default function StatusOrderPage() {
                         </div>
                     </div>
                 )}
-            </div>
-
-            {/* Order details and status update form */}
-            {order && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Order details panel */}
-                    <div className="md:col-span-2">
-                        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                            <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-                                <h2 className="text-lg font-semibold text-gray-800">Thông tin đơn hàng</h2>
+                
+                {success && (
+                    <div className="mt-4 bg-green-50 border-l-4 border-green-500 p-4">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <FiCheck className="h-5 w-5 text-green-500" />
                             </div>
-
-                            <div className="px-6 py-4">
-                                <div className="grid grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <p className="text-sm text-gray-500">Mã đơn hàng</p>
-                                        <p className="font-semibold">{order.orderCode}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Trạng thái hiện tại</p>
-                                        <StatusBadge status={order.status} />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Thời gian tạo</p>
-                                        <p>{new Date(order.createdAt).toLocaleString("vi-VN")}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-500">Tổng tiền</p>
-                                        <p className="font-semibold">{order.totalAmount.toLocaleString("vi-VN")}đ</p>
-                                    </div>
-                                </div>
-
-                                <div className="mb-6">
-                                    <h3 className="font-semibold mb-2">Thông tin khách hàng</h3>
-                                    <p>{order.customerName}</p>
-                                    <p>{order.customerPhone}</p>
-                                    <p className="text-sm text-gray-600 mt-1">{order.deliveryAddress}</p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-semibold mb-2">Sản phẩm</h3>
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Tên sản phẩm
-                                                    </th>
-                                                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Số lượng
-                                                    </th>
-                                                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Đơn giá
-                                                    </th>
-                                                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Thành tiền
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {order.products.map((product) => (
-                                                    <tr key={product.id}>
-                                                        <td className="px-4 py-3 text-sm text-gray-900">{product.name}</td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 text-right">{product.quantity}</td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 text-right">{product.price.toLocaleString("vi-VN")}đ</td>
-                                                        <td className="px-4 py-3 text-sm text-gray-900 text-right">{(product.price * product.quantity).toLocaleString("vi-VN")}đ</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-green-700">{success}</p>
                             </div>
                         </div>
                     </div>
+                )}
+            </div>
 
-                    {/* Status update panel */}
-                    <div>
-                        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                            <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
-                                <h2 className="text-lg font-semibold text-gray-800">Cập nhật trạng thái</h2>
-                            </div>
-
-                            <form onSubmit={handleSubmit} className="px-6 py-4">
-                                <div className="mb-6">
-                                    <label htmlFor="currentStatus" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Trạng thái hiện tại
-                                    </label>
-                                    <StatusBadge status={order.status} size="large" />
-                                    <div className="text-sm text-gray-500 mt-2">
-                                        {getOrderStatusInfo(order.status).description}
-                                    </div>
-                                </div>
-
-                                <hr className="my-4" />
-
-                                <div className="mb-6">
-                                    <label htmlFor="newStatus" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Trạng thái mới
-                                    </label>
-                                    <select
-                                        id="newStatus"
-                                        value={newStatus}
-                                        onChange={(e) => setNewStatus(e.target.value)}
-                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                                        disabled={isSubmitting}
-                                    >
-                                        <option value="">-- Chọn trạng thái --</option>
-                                        {getAvailableNextStatuses(order.status).map((status) => (
-                                            <option
-                                                key={status}
-                                                value={status}
-                                                disabled={status === order.status}
-                                            >
-                                                {getOrderStatusInfo(status).displayName}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    {newStatus && newStatus !== order.status && (
-                                        <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-200">
-                                            <StatusBadge status={newStatus} />
-                                            <p className="text-sm text-gray-600 mt-2">
-                                                {getOrderStatusInfo(newStatus).description}
+            {order && (
+                <>
+                    {/* Order details section */}
+                    <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
+                        <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 flex justify-between items-center">
+                            <h2 className="text-lg font-semibold text-gray-800">Thông tin đơn hàng</h2>
+                            <StatusBadge status={order.status} size="large" />
+                        </div>
+                        
+                        <div className="p-6">
+                            <div className="grid grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Chi tiết đơn hàng</h3>
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <p className="text-sm text-gray-500">Mã đơn hàng:</p>
+                                            <p className="text-sm font-medium text-gray-900">{order.orderCode}</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <p className="text-sm text-gray-500">Ngày tạo:</p>
+                                            <p className="text-sm text-gray-900">
+                                                {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                                             </p>
                                         </div>
-                                    )}
-                                </div>
-
-                                {success && (
-                                    <div className="mb-4 bg-green-50 border-l-4 border-green-500 p-4">
-                                        <div className="flex">
-                                            <div className="flex-shrink-0">
-                                                <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                                </svg>
+                                        {order.expectedDeliveryDate && (
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <p className="text-sm text-gray-500">Dự kiến giao:</p>
+                                                <p className="text-sm text-gray-900">
+                                                    {new Date(order.expectedDeliveryDate).toLocaleDateString('vi-VN')}
+                                                </p>
                                             </div>
-                                            <div className="ml-3">
-                                                <p className="text-sm text-green-700">{success}</p>
+                                        )}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <p className="text-sm text-gray-500">Tổng tiền:</p>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Thông tin khách hàng</h3>
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-gray-900">{order.customerName}</p>
+                                        <p className="text-sm text-gray-900">{order.customerPhone}</p>
+                                        <p className="text-sm text-gray-600">{order.deliveryAddress}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h3 className="text-sm font-semibold text-gray-700 mb-2">Sản phẩm</h3>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sản phẩm</th>
+                                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Đơn giá</th>
+                                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {order.products.map((product) => (
+                                            <tr key={product.id}>
+                                                <td className="px-4 py-3 text-sm text-gray-900">{product.name}</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-900">{product.quantity}</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-900">
+                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                                                </td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-900">
+                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price * product.quantity)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                
+                    {/* Status update form */}
+                    <div className="bg-white shadow rounded-lg overflow-hidden mb-6">
+                        <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                            <h2 className="text-lg font-semibold text-gray-800">Cập nhật trạng thái</h2>
+                        </div>
+                        
+                        <div className="p-6">
+                            <form onSubmit={handleSubmit}>
+                                {/* Current status */}
+                                <div className="mb-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2">
+                                        <div className="w-full sm:w-1/3">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Trạng thái hiện tại
+                                            </label>
+                                        </div>
+                                        <div className="w-full sm:w-2/3">
+                                            <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                                                <StatusBadge status={order.status} size="large" />
+                                                <p className="text-sm text-gray-600 mt-2">
+                                                    {getOrderStatusInfo(order.status).description}
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                                
+                                {/* Status change visualization */}
+                                {newStatus && (
+                                    <div className="mb-6 flex justify-center items-center">
+                                        <StatusBadge status={order.status} />
+                                        <FiArrowRight className="mx-3 text-gray-400" />
+                                        <StatusBadge status={newStatus} />
+                                    </div>
                                 )}
-
-                                <div className="flex justify-center">
+                                
+                                {/* New status selection */}
+                                <div className="mb-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                        <div className="w-full sm:w-1/3">
+                                            <label htmlFor="newStatus" className="block text-sm font-medium text-gray-700">
+                                                Chọn trạng thái mới
+                                            </label>
+                                        </div>
+                                        <div className="w-full sm:w-2/3">
+                                            <select
+                                                id="newStatus"
+                                                value={newStatus}
+                                                onChange={(e) => setNewStatus(e.target.value)}
+                                                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                                                disabled={isSubmitting}
+                                            >
+                                                <option value="">-- Chọn trạng thái mới --</option>
+                                                {getAvailableNextStatuses(order.status).map((status) => (
+                                                    <option
+                                                        key={status}
+                                                        value={status}
+                                                        disabled={status === order.status}
+                                                    >
+                                                        {getOrderStatusInfo(status).displayName}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            
+                                            {newStatus && (
+                                                <div className="mt-4 p-3 bg-gray-50 rounded-md border border-gray-200">
+                                                    <p className="text-sm text-gray-600">
+                                                        {getOrderStatusInfo(newStatus).description}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Status update note */}
+                                <div className="mb-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                                        <div className="w-full sm:w-1/3">
+                                            <label htmlFor="statusNote" className="block text-sm font-medium text-gray-700">
+                                                Ghi chú (nếu có)
+                                            </label>
+                                        </div>
+                                        <div className="w-full sm:w-2/3">
+                                            <textarea
+                                                id="statusNote"
+                                                value={statusNote}
+                                                onChange={(e) => setStatusNote(e.target.value)}
+                                                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                                                placeholder="Nhập ghi chú về việc thay đổi trạng thái (nếu cần)"
+                                                rows={3}
+                                                disabled={isSubmitting}
+                                            ></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Submit button */}
+                                <div className="flex justify-end">
                                     <button
                                         type="submit"
                                         disabled={isSubmitting || !newStatus || newStatus === order.status}
-                                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed min-w-[200px]"
+                                        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
                                             <span className="flex items-center">
@@ -356,17 +427,19 @@ export default function StatusOrderPage() {
                             </form>
                         </div>
                     </div>
-                </div>
+                </>
             )}
-
+            
             {/* Empty state when no order is loaded */}
             {!order && !isSearching && !error && (
-                <div className="text-center py-12 bg-white rounded-lg shadow">
-                    <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M34 40h10v-4a6 6 0 00-10.712-3.714M34 40H14m20 0v-4a9.971 9.971 0 00-.712-3.714M14 40H4v-4a6 6 0 0110.713-3.714M14 40v-4c0-1.313.253-2.566.713-3.714m0 0A10.003 10.003 0 0124 26c4.21 0 7.813 2.602 9.288 6.286M30 14a6 6 0 11-12 0 6 6 0 0112 0z" />
+                <div className="text-center py-16 bg-white rounded-lg shadow">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <h2 className="mt-2 text-lg font-medium text-gray-900">Chưa có đơn hàng được chọn</h2>
-                    <p className="mt-1 text-sm text-gray-500">Vui lòng nhập mã đơn hàng để bắt đầu.</p>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">Không có đơn hàng nào</h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Vui lòng tìm kiếm một đơn hàng để cập nhật trạng thái.
+                    </p>
                 </div>
             )}
         </div>
@@ -380,11 +453,11 @@ interface StatusBadgeProps {
 
 function StatusBadge({ status, size = 'small' }: StatusBadgeProps) {
     const statusInfo = getOrderStatusInfo(status);
-    const sizeClasses = size === 'large' ? 'px-4 py-2 text-base' : 'px-2.5 py-1 text-xs';
-
+    const sizeClasses = size === 'large' ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs';
+    
     return (
         <span className={`inline-flex items-center rounded-full ${statusInfo.colors.bg} ${statusInfo.colors.text} ${sizeClasses} font-medium`}>
-            <span className="h-2 w-2 rounded-full bg-current mr-1.5"></span>
+            <span className="h-1.5 w-1.5 rounded-full bg-current mr-1.5"></span>
             {statusInfo.displayName}
         </span>
     );
