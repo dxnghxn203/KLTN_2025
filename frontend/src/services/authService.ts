@@ -1,6 +1,7 @@
 
 import axiosClient from "@/utils/configs/axiosClient";
 import { AuthResponse } from "@/types/auth";
+import { message } from "antd";
 
 export const signInWithGoogle = async (data: any) => {
     try {
@@ -78,6 +79,27 @@ export const getUserProfile = async (token: string) => {
         console.error("Error fetching profile:", error);
         throw error;
     }
+};
+
+// loginAdmin
+export const loginAdmin = async (data: any): Promise<AuthResponse> => {
+    try {
+        const response: any = await axiosClient.post('/v1/admin/login', data);
+        return {
+            success: true,
+            admin: response?.data || null,
+            token: response?.data?.token || null,
+            message: response?.message || 'Đăng nhập thành công',
+            
+        };
+    } catch (error: any) {
+        console.error('Login error:', error);
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Đăng nhập thất bại'
+        };
+    }
+    
 };
 
 

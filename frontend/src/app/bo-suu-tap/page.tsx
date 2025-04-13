@@ -1,9 +1,5 @@
 "use client";
 import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import Header from "@/components/Header/header";
-import Footer from "@/components/Footer/footer";
 
 const Collection: React.FC = () => {
   return (
