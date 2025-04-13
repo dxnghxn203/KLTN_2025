@@ -28,6 +28,7 @@ func NewRouter() *gin.Engine {
 			"Origin", "Content-Type", "Authorization",
 			"Accept", "Content-Security-Policy",
 			"Cache-Control", "Pragma", "Expires",
+			"Access-Control-Allow-Credentials",
 		},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
