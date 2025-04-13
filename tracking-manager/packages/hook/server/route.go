@@ -16,8 +16,13 @@ func NewRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
+	allowedOrigins := []string{
+		os.Getenv("http://localhost:3000"),
+		os.Getenv("https://kltn-2025.vercel.app"),
+	}
+
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
