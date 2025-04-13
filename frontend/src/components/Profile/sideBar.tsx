@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import HistoryOrder from "@/components/Profile/historyOrder";
 import PersonalInfomation from "./personalInfo";
+import { HiOutlineUserCircle } from "react-icons/hi";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -23,10 +24,10 @@ const Sidebar = () => {
               className="w-16 h-16 rounded-full object-cover"
             />
           ) : (
-            <FiUser className="w-8 h-8 text-[#0053E2]" />
+            <HiOutlineUserCircle className="w-8 h-8 text-[#0053E2]" />
           )}
           <h2 className="text-lg text-black font-semibold mt-2">
-            {user?.name}
+            {user?.user_name}
           </h2>
           <p className="text-gray-500 text-sm">{user?.email}</p>
         </div>

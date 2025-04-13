@@ -96,7 +96,7 @@ async def get_all_order(page: int, page_size: int):
         skip_count = (page - 1) * page_size
         order_list = collection.find().skip(skip_count).limit(page_size)
         logger.info(f"Order list: {order_list}")
-        return [ItemOrderRes(**order) for order in order_list]
+        return [ItemOrderRes.from_mongo(order) for order in order_list]
     except Exception as e:
         logger.error(f"Failed [get_all_order]: {e}")
         raise e

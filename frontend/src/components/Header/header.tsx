@@ -31,9 +31,11 @@ export default function Header() {
   const { removeProductFromCart, getProductFromCart, cart } = useCart();
   const [loadingGetCart, setLoadingGetCart] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
   const toast = useToast();
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -66,16 +68,16 @@ export default function Header() {
     getProductFromCart(
       () => {
         setLoadingGetCart(false);
-      }
-      , (error: string) => {
+      },
+      (error: string) => {
         setLoadingGetCart(false);
       }
-    )
-  }
+    );
+  };
 
   useEffect(() => {
     getCart();
-  }, [])
+  }, []);
 
   const renderCartItems = (product: any, price_id: any, quantity: any) => {
     const price = getPriceFromProduct(product, price_id);
@@ -83,23 +85,20 @@ export default function Header() {
       <>
         <div className="flex ml-auto items-center justify-between w-full">
           <div className="text-[#0053E2] font-medium">
-            {price.price.toLocaleString(
-              "vi-VN"
-            )}
-            đ
+            {price.price.toLocaleString("vi-VN")}đ
           </div>
           <span className="text-xs text-gray-500">
             x{quantity} {price.unit}
           </span>
         </div>
       </>
-    )
-  }
+    );
+  };
 
   const handlRemoveFromCart = (product_id: any) => {
     setSelectedProductId(product_id);
     setIsDeleteDialogOpen(true);
-  }
+  };
 
   const handleCloseDialog = () => {
     setIsDeleteDialogOpen(false);
@@ -108,19 +107,20 @@ export default function Header() {
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full z-[50]">
-        <header className="bg-[#0053E2] h-[72px] w-full flex items-center justify-between px-8">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <div className="flex items-center cursor-pointer">
-                <div className="flex self-start whitespace-nowrap">
+      <div className="fixed top-0 left-0 w-full z-[50] bg-[#0053E2]">
+        <header className="w-full px-4 md:px-8 transition-all duration-300">
+          {/* Hàng trên: Logo - (Location) - Searchbar - Icons */}
+          <div className="flex items-center justify-between h-[72px] sm:h-[72px] flex-wrap md:flex-nowrap">
+            {/* Trái: Logo */}
+            <div className="flex items-center justify-center sm:justify-start gap-4 flex-1 md:flex-none">
+              <Link href="/">
+                <div className="flex items-center cursor-pointer">
                   <Image
                     src={logoyellow}
                     alt=""
-                    width={40}
-                    height={40}
-                    priority
-                    className="object-contain aspect-square z-0"
+                    width={32}
+                    height={32}
+                    className="object-contain aspect-square sm:w-[32px] sm:h-[32px] md:w-[40px] md:h-[40px]"
                   />
                   <Image
                     src={textlogo}
@@ -128,123 +128,150 @@ export default function Header() {
                     width={80}
                     height={80}
                     priority
-                    className="top-1 ml-2 "
+                    className="top-1 ml-2 hidden sm:block"
                   />
                 </div>
-              </div>
-            </Link>
-            <div
-              onClick={() => setIsDialogOpen(true)}
-              className="cursor-pointer ml-4"
-            >
-              <LocationDelivery />
-            </div>
-            <div className="flex items-center bg-white rounded-full px-4 py-2 w-[480px] h-[48px]">
-              <input
-                type="text"
-                placeholder="Nhập từ khóa hoặc sản phẩm..."
-                className="w-full outline-none text-sm placeholder:text-black/40"
-              />
-              <button
-                type="button"
-                className="w-[32px] h-[32px] bg-[#002E99] rounded-full flex items-center justify-center shrink-0 hover:bg-[#001F70] transition"
-              >
-                <LuSearch className="text-white text-xl" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-white h-full">
-            <div
-              className="relative h-full "
-              ref={cartDropdownRef}
-              onMouseEnter={() => setShowCartDropdown(true)}
-              onMouseLeave={() => setShowCartDropdown(false)}
-            >
-              <Link href="/gio-hang" className="focus:outline-none h-full flex items-center">
-                <div
-                  className={`relative flex items-center cursor-pointer px-3 ml-4 rounded-full w-[120px] h-[48px] transition ${pathname === "/cart" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                    }`}
-                >
-                  <div className="relative">
-                    <AiOutlineShoppingCart className="text-2xl" />
-                    {cart && cart?.length > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                        {cart?.length}
-                      </span>
-                    )}
-                  </div>
-                  <span className="ml-2 text-[14px]">Giỏ hàng</span>
-                </div>
               </Link>
-
-              {showCartDropdown && (
-                <div className="absolute right-0 w-80 bg-white rounded-lg shadow-lg z-[51]">
-                  <div className="p-4">
-                    <h3 className="text-black font-semibold">Giỏ hàng của bạn</h3>
-
-                    {!cart ?(
-                      <div className="py-6 text-center text-gray-500">
-                        Giỏ hàng trống
-                      </div>
-                    ) : (
-                      <>
-                        <div
-                          className={`max-h-[250px] overflow-y-auto ${cart.length > 3 ? "scrollbar-thin" : ""
-                            }`}
-                        >
-                          {cart && cart.map((item: any, index: any) => (
-                            <div
-                              key={item.id}
-                              className={`flex py-3 ${index !== cart?.length - 1 ? "border-b" : ""
-                                }`}
-                            >
-                              <div className="w-14 h-14 flex-shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-                                <Image
-                                  src={item.product?.images_primary}
-                                  alt={item.name}
-                                  width={50}
-                                  height={50}
-                                  className="object-cover"
-                                  priority
-                                />
-                              </div>
-
-                              <div className="ml-3 flex-1 flex flex-col justify-between">
-                                <div>
-                                  <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
-                                    {item.product?.product_name}
-                                  </h4>
-                                </div>
-                                {renderCartItems(item.product, item.price_id, item.quantity)}
-                              </div>
-                              <button
-                                className="ml-3 text-black/50 hover:text-red-800"
-                                onClick={() => handlRemoveFromCart(item.product?.product_id)}
-                              >
-                                <ImBin className="text-lg hover:text-black/70" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-
-                        <Link href="/gio-hang" legacyBehavior>
-                          <a className="mt-4 text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
-                            Xem giỏ hàng
-                          </a>
-                        </Link>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
-            {isAuthenticated ? (
-              <>
+
+            <div className="hidden md:flex items-center gap-4 flex-1 mx-4">
+              <div
+                onClick={() => setIsDialogOpen(true)}
+                className="cursor-pointer"
+              >
+                <LocationDelivery />
+              </div>
+
+              <div className="flex items-center bg-white rounded-full px-4 py-2 w-full max-w-[480px] h-[48px]">
+                <input
+                  type="text"
+                  placeholder="Nhập từ khóa hoặc sản phẩm..."
+                  className="w-full outline-none text-sm placeholder:text-black/40"
+                />
+                <button
+                  type="button"
+                  className="w-[32px] h-[32px] bg-[#002E99] rounded-full flex items-center justify-center shrink-0 hover:bg-[#001F70] transition"
+                >
+                  <LuSearch className="text-white text-xl" />
+                </button>
+              </div>
+            </div>
+
+            {/* Phải: Giỏ hàng và đăng nhập/đăng xuất */}
+            <div className="flex items-center gap-2 text-white h-full ml-auto">
+              {/* Cart icon */}
+              <div
+                className="relative h-full"
+                ref={cartDropdownRef}
+                onMouseEnter={() => setShowCartDropdown(true)}
+                onMouseLeave={() => setShowCartDropdown(false)}
+              >
+                <Link
+                  href="/gio-hang"
+                  className="focus:outline-none h-full flex items-center"
+                >
+                  <div
+                    className={`relative flex items-center cursor-pointer px-3 ml-4 rounded-full w-[120px] h-[48px] transition ${
+                      pathname === "/cart"
+                        ? "bg-[#002E99]"
+                        : "hover:bg-[#004BB7]"
+                    }`}
+                  >
+                    <div className="relative">
+                      <AiOutlineShoppingCart className="text-2xl" />
+                      {cart && cart?.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {cart?.length}
+                        </span>
+                      )}
+                    </div>
+                    <span className="ml-2 text-[14px] hidden sm:inline">
+                      Giỏ hàng
+                    </span>
+                  </div>
+                </Link>
+                {showCartDropdown && (
+                  <div className="absolute right-0 w-80 bg-white rounded-lg shadow-lg z-[51]">
+                    <div className="p-4">
+                      <h3 className="text-black font-semibold">
+                        Giỏ hàng của bạn
+                      </h3>
+
+                      {!cart ? (
+                        <div className="py-6 text-center text-gray-500">
+                          Giỏ hàng trống
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            className={`max-h-[250px] overflow-y-auto ${
+                              cart.length > 3 ? "scrollbar-thin" : ""
+                            }`}
+                          >
+                            {cart &&
+                              cart.map((item: any, index: any) => (
+                                <div
+                                  key={item.id}
+                                  className={`flex py-3 ${
+                                    index !== cart?.length - 1 ? "border-b" : ""
+                                  }`}
+                                >
+                                  <div className="w-14 h-14 flex-shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                                    <Image
+                                      src={item.product?.images_primary}
+                                      alt={item.name}
+                                      width={50}
+                                      height={50}
+                                      className="object-cover"
+                                      priority
+                                    />
+                                  </div>
+
+                                  <div className="ml-3 flex-1 flex flex-col justify-between">
+                                    <div>
+                                      <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                                        {item.product?.product_name}
+                                      </h4>
+                                    </div>
+                                    {renderCartItems(
+                                      item.product,
+                                      item.price_id,
+                                      item.quantity
+                                    )}
+                                  </div>
+                                  <button
+                                    className="ml-3 text-black/50 hover:text-red-800"
+                                    onClick={() =>
+                                      handlRemoveFromCart(
+                                        item.product?.product_id
+                                      )
+                                    }
+                                  >
+                                    <ImBin className="text-lg hover:text-black/70" />
+                                  </button>
+                                </div>
+                              ))}
+                          </div>
+
+                          <Link href="/gio-hang" legacyBehavior>
+                            <a className="mt-4 text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
+                              Xem giỏ hàng
+                            </a>
+                          </Link>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Login or User */}
+              {isAuthenticated ? (
                 <div className="relative" ref={dropdownRef}>
                   <div
-                    className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
-                      }`}
+                    className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${
+                      showDropdown ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+                    }`}
                     onClick={() => setShowDropdown(!showDropdown)}
                   >
                     <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -263,16 +290,16 @@ export default function Header() {
                       <p className="text-sm font-medium truncate">
                         {user?.name || user?.user_name || ""}
                       </p>
-                      <p className="text-xs text-white/70 truncate">
+                      <p className="text-xs text-white/70 truncate hidden md:block">
                         {user?.email || ""}
                       </p>
                     </div>
                     <IoChevronDownOutline
-                      className={`ml-1 transition-transform duration-200 ${showDropdown ? "rotate-180" : ""
-                        }`}
+                      className={`ml-1 transition-transform duration-200 ${
+                        showDropdown ? "rotate-180" : ""
+                      }`}
                     />
                   </div>
-
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-10">
                       <div className="py-2 text-sm">
@@ -297,20 +324,42 @@ export default function Header() {
                     </div>
                   )}
                 </div>
-              </>
-            ) : (
-              <Link href="/dang-nhap" className="focus:outline-none">
-                <div
-                  className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${pathname === "/login" ? "bg-[#002E99]" : "hover:bg-[#004BB7]"
+              ) : (
+                <Link href="/dang-nhap" className="focus:outline-none">
+                  <div
+                    className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
+                      pathname === "/login"
+                        ? "bg-[#002E99]"
+                        : "hover:bg-[#004BB7]"
                     }`}
-                >
-                  <HiOutlineUserCircle className="text-2xl" />
-                  <span className="ml-2 text-[14px]">Đăng nhập</span>
-                </div>
-              </Link>
-            )}
+                  >
+                    <HiOutlineUserCircle className="text-2xl" />
+                    <span className="ml-2 text-[14px]">Đăng nhập</span>
+                  </div>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Hàng dưới chỉ hiển thị ở màn nhỏ: Searchbar full width */}
+          <div className="md:hidden mt-2 pb-2">
+            <div className="w-full bg-white rounded-full px-4 py-2 flex items-center">
+              <input
+                type="text"
+                placeholder="Nhập từ khóa hoặc sản phẩm..."
+                className="w-full outline-none text-sm placeholder:text-black/40"
+              />
+              <button
+                type="button"
+                className="w-[32px] h-[32px] bg-[#002E99] rounded-full flex items-center justify-center shrink-0 hover:bg-[#001F70] transition"
+              >
+                <LuSearch className="text-white text-xl" />
+              </button>
+            </div>
           </div>
         </header>
+
+        {/* Các Dialog giữ nguyên */}
         <MenuHeader />
         {isDeleteDialogOpen && selectedProductId !== null && (
           <DeleteProductDialog
@@ -326,7 +375,7 @@ export default function Header() {
                 (error: string) => {
                   toast.showToast("Xóa sản phẩm thất bại", "error");
                 }
-              )
+              );
               handleCloseDialog();
             }}
           />
