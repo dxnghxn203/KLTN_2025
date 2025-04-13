@@ -142,7 +142,7 @@ export default function LoginPage() {
             <div className="mt-4 text-center text-sm text-gray-600">
               Bạn chưa có tài khoản?{" "}
               <a
-                href="#"
+                href="/dang-ky-admin"
                 className="text-[#0053E2] hover:underline font-medium"
               >
                 Đăng ký
