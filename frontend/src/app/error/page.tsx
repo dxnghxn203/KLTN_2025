@@ -20,8 +20,8 @@ const ErrorPage = () => {
 
     useEffect(() => {
         // Lấy thông tin lỗi từ query parameters
-        const code = searchParams.get('code') || '500';
-        const message = searchParams.get('message');
+        const code = searchParams?.get('code') || '500';
+        const message = searchParams?.get('message');
 
         // Xác định chi tiết lỗi dựa trên mã lỗi
         switch (code) {

@@ -10,7 +10,9 @@ import Loading from "../loading";
 import ProductFeaturedList from "@/components/Product/productFeaturedList";
 
 export default function MainCategoryPage() {
-  const params = useParams();
+  const params = useParams() as {
+    mainCategory: string | string[];
+  };
   const { mainCategory, fetchMainCategory } = useCategory();
   const [loading, setLoading] = useState(false);
   useEffect(() => {

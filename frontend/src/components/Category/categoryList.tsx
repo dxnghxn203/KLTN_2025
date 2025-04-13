@@ -7,7 +7,11 @@ export default function CategoryList({
 }: {
   data: { mainCategory: string; sub_category: string } | any;
 }) {
-  const params = useParams();
+  const params = useParams() as {
+    mainCategory: string | string[];
+    subCategories: string | string[];
+    childCategories: string | string[];
+  }
   const mainCategory = Array.isArray(params.mainCategory)
     ? params.mainCategory[0]
     : params.mainCategory;

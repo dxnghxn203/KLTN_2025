@@ -8,8 +8,8 @@ import { ADMIN_ROUTES, PARTNER_ROUTES } from "@/utils/constants";
 export function RoleProvider({ children }: { children: React.ReactNode }) {
 
     const pathname = usePathname();
-    const isAdmin = ADMIN_ROUTES.some(route => pathname.startsWith(route));
-    const isPartner = PARTNER_ROUTES.some(route => pathname.startsWith(route));
+    const isAdmin = ADMIN_ROUTES.some(route => pathname?.startsWith(route) ?? false);
+    const isPartner = PARTNER_ROUTES.some(route => pathname?.startsWith(route) ?? false);
     return (
         <>          
             {isAdmin || isPartner ? null : <Header />}

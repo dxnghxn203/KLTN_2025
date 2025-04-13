@@ -48,7 +48,9 @@ function* handleRemoveCart(action: any): Generator<any, void, any> {
             session: session,
             product_id: product_id,
         }
-        const response = yield call(cartService.removeCartSession, data);
+        const response = token ?
+            yield call(cartService.removeCartToken, data)
+            : yield call(cartService.removeCartSession, data);
         if (response?.status_code === 200) {
             onSuccess();
             yield put(removeCartSuccess(response));

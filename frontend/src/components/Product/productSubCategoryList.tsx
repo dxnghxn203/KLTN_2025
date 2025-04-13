@@ -18,10 +18,7 @@ export default function ProductSubCategoryList({
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");
   const products = data.products || [];
-  const params = useParams();
-  const subCategories = Array.isArray(params.subCategories)
-    ? params.subCategories[0]
-    : params.subCategories;
+  const subCategories = data.subCategory;
 
   const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({
     min: 0,

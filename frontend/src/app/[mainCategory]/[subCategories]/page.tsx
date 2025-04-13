@@ -10,7 +10,10 @@ import Loading from "@/app/loading";
 import ProductFeaturedList from "@/components/Product/productFeaturedList";
 
 export default function CategoryPage() {
-  const params = useParams();
+  const params = useParams() as {
+    mainCategory: string | string[];
+    subCategories: string | string[];
+  };
   const { subCategory, fetchSubCategory } = useCategory();
   const { mainCategory } = useCategory();
 

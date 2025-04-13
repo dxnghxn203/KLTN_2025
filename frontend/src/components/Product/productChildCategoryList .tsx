@@ -17,12 +17,14 @@ export default function ProductChildCategoryList({
   data: { childCategory: string; products: any };
   mainCategoryName: string;
 }) {
-  const params = useParams();
+  // const params = useParams() as {
+  //   mainCategory: string | string[];
+  //   subCategories: string | string[];
+  //   childCategories: string | string[];
+  // };
+
   const childCategory =
-    data.childCategory ||
-    (Array.isArray(params.childCategory)
-      ? params.childCategory[0]
-      : params.childCategory);
+    data.childCategory ;
   const products = data.products || [];
   const [showAll, setShowAll] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "">("");

@@ -1,10 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import Footer from "@/components/Footer/footer";
-import ProductPortfolioList from "@/components/Product/productMainCategoryList";
 import ProductsViewedList from "@/components/Product/productsViewedList";
-import SubSubCategory from "@/components/Category/subSubCategory";
 import { useCategory } from "@/hooks/useCategory";
 import { useEffect, useState } from "react";
 import ProductChildCategoryList from "@/components/Product/productChildCategoryList ";
@@ -12,7 +9,11 @@ import Loading from "@/app/loading";
 import ProductFeaturedList from "@/components/Product/productFeaturedList";
 
 export default function CategoryPage() {
-  const params = useParams();
+  const params = useParams() as {
+    mainCategory: string | string[];
+    subCategories: string | string[];
+    childCategories: string | string[];
+  };
   const { mainCategory } = useCategory();
   const { childCategory, fetchChildCategory, fetchSubCategory, subCategory } =
     useCategory();

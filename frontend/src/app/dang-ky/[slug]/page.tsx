@@ -5,7 +5,9 @@ import { useUser } from "@/hooks/useUser";
 import { useParams, useRouter } from "next/navigation";
 
 const OtpVerificationPage: React.FC = () => {
-  const params = useParams();
+  const params = useParams() as {
+    slug: string | string[];
+  };
   const email = params.slug as string;
   const [isResending, setIsResending] = useState(false);
   const toast = useToast();
