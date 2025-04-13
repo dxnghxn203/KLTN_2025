@@ -22,9 +22,13 @@ func NewRouter() *gin.Engine {
 	}
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     allowedOrigins,
-		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowOrigins: allowedOrigins,
+		AllowMethods: []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders: []string{
+			"Origin", "Content-Type", "Authorization",
+			"Accept", "Content-Security-Policy",
+			"Cache-Control", "Pragma", "Expires",
+		},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
