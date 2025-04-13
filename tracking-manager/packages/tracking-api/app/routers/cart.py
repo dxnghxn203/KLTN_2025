@@ -159,7 +159,7 @@ async def delete_cart_token(token: str = Depends(middleware.verify_token), produ
                 message="User not found",
                 data=None
             )
-        return await remove_product_from_cart(us.user_id, product_id)
+        return await remove_product_from_cart(us.id, product_id)
 
     except JsonException as je:
         raise je
