@@ -85,6 +85,16 @@ export const orderSlice = createSlice({
         },
         fetchCheckShippingFeeFailed(state) {
             state.loading = false;
+        },
+        //cancel order
+        fetchCancelOrderStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchCancelOrderSuccess(state) {
+            state.loading = false;
+        },
+        fetchCancelOrderFailed(state) {
+            state.loading = false;
         }
     },
 });
@@ -112,7 +122,11 @@ export const {
 
     fetchCheckShippingFeeStart,
     fetchCheckShippingFeeSuccess,
-    fetchCheckShippingFeeFailed
+    fetchCheckShippingFeeFailed,
+
+    fetchCancelOrderStart,
+    fetchCancelOrderSuccess,
+    fetchCancelOrderFailed
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

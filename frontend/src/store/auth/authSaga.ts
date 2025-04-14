@@ -86,8 +86,9 @@ function* handleLogout(): Generator<any, void, any> {
         const token = getToken();
         if (token) {
             yield call(authService.logout, token);
-            removeToken();
+            
         }
+        removeToken();
         yield put(logoutSuccess());
 
         // if (typeof window !== 'undefined') {

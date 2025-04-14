@@ -212,3 +212,19 @@ export const checkShippingFee = async (data: any) => {
         }
     }
 }
+
+export const cancelOrder = async (order_id: any) => {
+    try {
+        const response: any = await axiosClient.delete(`/v1/order/delete?order_id=${order_id}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lổi hủy đơn hàng',
+        }
+    }
+}

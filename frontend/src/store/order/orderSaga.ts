@@ -23,9 +23,36 @@ import {
 
     fetchCheckShippingFeeStart,
     fetchCheckShippingFeeSuccess,
-    fetchCheckShippingFeeFailed
+    fetchCheckShippingFeeFailed,
+
+    fetchCancelOrderStart,
+    fetchCancelOrderSuccess,
+    fetchCancelOrderFailed
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
+
+// cancel order
+function* fetchCancelOrder(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+            order_id
+        } = payload;
+        const rs = yield call(orderService.cancelOrder, order_id);
+        if (rs.status_code === 200) {
+            yield put(fetchCancelOrderSuccess());   
+            onSuccess(rs.message);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchCancelOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchCancelOrderFailed());
+    }
+}
 
 // Check shipping fee
 function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
@@ -257,4 +284,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetOrderByUserStart.type, fetchGetOrderByUser);
     yield takeLatest(fetchCallWebhookStart.type, fetchCallWebhook);
     yield takeLatest(fetchCheckShippingFeeStart.type, fetchCheckShippingFee);
+    yield takeLatest(fetchCancelOrderStart.type, fetchCancelOrder);
 }
