@@ -1,4 +1,4 @@
-import { fetchCallWebhookStart, fetchCheckOrderStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser } from "@/store/order";
+import { fetchCallWebhookStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser } from "@/store/order";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -24,6 +24,15 @@ export function useOrder() {
             onFailed: onFailed
         }));
     }
+
+    const checkShippingFee = async (data: any, onSuccess: (data: any) => void, onFailed: (data: any) => void) => {
+        dispatch(fetchCheckShippingFeeStart({
+            ...data,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
     const getAllOrdersAdmin = async () => {
         dispatch(fetchGetAllOrderAdminStart({
             page: page,
@@ -52,7 +61,8 @@ export function useOrder() {
         setPageSize,
         ordersUser,
         getOrdersByUser,
-        callWebHook
+        callWebHook,
+        checkShippingFee
     }
 }
 

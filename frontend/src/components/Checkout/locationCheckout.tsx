@@ -7,7 +7,7 @@ import { SlLocationPin } from "react-icons/sl";
 import AllLocationDialog from "../Dialog/allLocationDialog";
 import { getLocationDefault } from "@/utils/location";
 
-const LocationCheckout = ({ setDataLocation, setNote }: { setDataLocation: (data: any) => void,  setNote: (data: any)=> void}) => {
+const LocationCheckout = ({ setDataLocation, setNote }: { setDataLocation: (data: any) => void, setNote: (data: any) => void }) => {
     const [selectedLocation, setSelectedLocation] = useState<any | null>(null);
     const { allLocation, getAllLocation } = useLocation();
     const [loadingGetLocation, setLoadingGetLocation] = useState(false);
@@ -19,7 +19,7 @@ const LocationCheckout = ({ setDataLocation, setNote }: { setDataLocation: (data
         getAllLocation(
             () => {
                 setLoadingGetLocation(false);
-                const location_default= getLocationDefault(allLocation?.default_location, allLocation?.locations)
+                const location_default = getLocationDefault(allLocation?.default_location, allLocation?.locations)
                 setDataLocation(location_default);
                 setSelectedLocation(location_default);
             },
@@ -33,6 +33,15 @@ const LocationCheckout = ({ setDataLocation, setNote }: { setDataLocation: (data
         getLocation();
     }, []);
 
+    useEffect(
+        () => {
+            if (selectedLocation) {
+                setDataLocation(selectedLocation);
+            }
+        },
+        [selectedLocation]
+    )
+
     return (
         <section className="flex flex-col gap-4 mt-6">
             <header className="flex gap-2 self-start text-sm text-black">
@@ -41,7 +50,7 @@ const LocationCheckout = ({ setDataLocation, setNote }: { setDataLocation: (data
             </header>
 
             {
-                allLocation &&  allLocation.locations && allLocation.locations.length > 0 ? (
+                allLocation && allLocation.locations && allLocation.locations.length > 0 ? (
                     <>
                         {selectedLocation ? (
                             <>

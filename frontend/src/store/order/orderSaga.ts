@@ -20,8 +20,82 @@ import {
     fetchCallWebhookStart,
     fetchCallWebhookSuccess,
     fetchCallWebhookFailed,
+
+    fetchCheckShippingFeeStart,
+    fetchCheckShippingFeeSuccess,
+    fetchCheckShippingFeeFailed
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
+
+// Check shipping fee
+function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+            orderData
+        } = payload;
+        const addressInfo = orderData.addressInfo;
+        const ordererInfo = orderData.ordererInfo;
+        const products = () => {
+            return orderData.product.map((item: any) => ({
+                product_id: item.product_id,
+                price_id: item.price_id,
+                // product_name: item.products_name,
+                // unit: item.unit,
+                quantity: item.quantity,
+                // price: item.price.price
+            }))
+        }   
+        
+        const apiPayload = {
+            product: products(),
+            pick_from: {
+                "name": "medicare",
+                "phone_number": "string",
+                "email": "string",
+                "address": {
+                    "address": "string",
+                    "ward": "string",
+                    "district": "string",
+                    "province": "string"
+                }
+            },
+            pick_to: {
+                "name": ordererInfo.fullName || "",
+                "phone_number": ordererInfo.phone || "",
+                "email": ordererInfo.email || "",
+                "address": {
+                    "address": addressInfo.address || "",
+                    "ward": addressInfo.ward || "",
+                    "district": addressInfo.district || "",
+                    "province": addressInfo.city || ""
+                }
+            },
+            "sender_province_code": 79,
+            "sender_district_code": 765,
+            "sender_commune_code": 26914,
+            "receiver_province_code": addressInfo.cityCode || 0,
+            "receiver_district_code": addressInfo.districtCode || 0,
+            "receiver_commune_code": addressInfo.wardCode || 0,
+            "delivery_instruction": orderData?.note || "",
+            "payment_type": orderData.paymentMethod,
+        };
+        const rs = yield call(orderService.checkShippingFee, apiPayload);
+        if (rs.status_code === 200) {
+            onSuccess(rs.data);
+            yield put(fetchCheckShippingFeeSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchCheckShippingFeeFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchCheckShippingFeeFailed());
+    }
+}
 
 // Call webhook
 function* fetchCallWebhook(action: any): Generator<any, void, any> {
@@ -78,10 +152,10 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
             return orderData.product.map((item: any) => ({
                 product_id: item.product_id,
                 price_id: item.price_id,
-                product_name: item.products_name,
-                unit: item.unit,
+                // product_name: item.products_name,
+                // unit: item.unit,
                 quantity: item.quantity,
-                price: item.price.price
+                // price: item.price.price
             }))
         }   
         
@@ -182,4 +256,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderAdminStart.type, fetchGetAllOrderAdmin);
     yield takeLatest(fetchGetOrderByUserStart.type, fetchGetOrderByUser);
     yield takeLatest(fetchCallWebhookStart.type, fetchCallWebhook);
+    yield takeLatest(fetchCheckShippingFeeStart.type, fetchCheckShippingFee);
 }

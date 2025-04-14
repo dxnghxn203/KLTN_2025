@@ -196,3 +196,19 @@ export const callWebhook = async (data: any) => {
         }
     }
 }
+
+export const checkShippingFee = async (data: any) => {
+    try {
+        const response: any = await axiosClient.post('/v1/order/check_shipping_fee', data);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lổi lấy phí vận chuyển',
+        }
+    }
+}

@@ -7,14 +7,7 @@ import { ToastType } from "@/components/Toast/toast";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
-  const { isAuthenticated, error } = useAuth();
-  const toast = useToast();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      toast.showToast("Đăng nhập thành công!", ToastType.SUCCESS);
-    }
-  }, [isAuthenticated]);
+  const { isAuthenticated } = useAuth();
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">

@@ -1,12 +1,13 @@
 'use client';
 import { ChevronLeft } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Delivery from "./CheckoutInfo/pickupPharma";
 import ProductList from "./ProductInfo/productList";
 import OrderSummary from "./ProductInfo/orderSumary";
 
 
-const CheckOut = ({ back, productForCheckOut, price, setData, handleCheckout }: any) => {
+const CheckOut = ({ back, productForCheckOut, price, setData, handleCheckout , shippingFee}: any) => {
+    
     return (
         <main className="flex flex-col px-5">
             <div className="flex flex-col">
@@ -31,6 +32,7 @@ const CheckOut = ({ back, productForCheckOut, price, setData, handleCheckout }: 
                     totalOriginPrice={price?.total_original_price || 0}
                     totalDiscount={price?.total_discount || 0}
                     totalSave={price?.total_discount || 0}
+                    shippingFee={shippingFee|| 0}
                     checkout={handleCheckout}
                 />
             </div>

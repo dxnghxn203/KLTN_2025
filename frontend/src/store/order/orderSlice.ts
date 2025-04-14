@@ -76,6 +76,16 @@ export const orderSlice = createSlice({
         fetchCallWebhookFailed(state) {
             state.loading = false;
         },
+        // check shipping fee
+        fetchCheckShippingFeeStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchCheckShippingFeeSuccess(state, action: PayloadAction<any>) {
+            state.loading = false;
+        },
+        fetchCheckShippingFeeFailed(state) {
+            state.loading = false;
+        }
     },
 });
 
@@ -99,6 +109,10 @@ export const {
     fetchCallWebhookStart,
     fetchCallWebhookSuccess,
     fetchCallWebhookFailed,
+
+    fetchCheckShippingFeeStart,
+    fetchCheckShippingFeeSuccess,
+    fetchCheckShippingFeeFailed
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

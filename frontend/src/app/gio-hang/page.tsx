@@ -38,7 +38,7 @@ export default function Cart() {
   const [isCheckout, setIsCheckout] = useState(false);
   const [productForCheckOut, setProductForCheckOut] = useState<any[]>([]);
   const [data, setData] = useState<any>({});
-  const { checkOrder } = useOrder();
+  const { checkOrder, checkShippingFee } = useOrder();
   const toast = useToast();
   const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [isQR, setIsQR] = useState(false);
@@ -48,21 +48,52 @@ export default function Cart() {
   const [isCOD, setIsCOD] = useState(false);
 
   const validateData = () => {
+    if (!data || !data?.ordererInfo || !data?.addressInfo) {
+      return false;
+    }
     const orderInf = data?.ordererInfo;
     const addressInf = data?.addressInfo;
-    if (!orderInf.fullName || !orderInf.phone) {
-      toast.showToast("Vui lòng nhập đầy đủ thông tin", "error");
+    if (!orderInf || !orderInf.fullName || !orderInf.phone) {
       return false;
     }
 
-    if (!addressInf.address || !addressInf.cityCode || !addressInf.districtCode || !addressInf.wardCode) {
-      toast.showToast("Vui lòng chọn địa chỉ giao hàng", "error");
+    if (!addressInf || !addressInf.address || !addressInf.cityCode || !addressInf.districtCode || !addressInf.wardCode) {
       return false;
     }
     return true;
   }
+
+  const [shippingFee, setShippingFee] = useState(0);
+
+  const checkShippingFeeUI = () => {
+    if (!validateData()) {
+      return;
+    }
+    checkShippingFee(
+      {
+        orderData: {
+          product: productForCheckOut,
+          ...data,
+        },
+      },
+      (data: any) => {
+        if (data && data?.shipping_fee) {
+          setShippingFee(data?.shipping_fee);
+        }
+      },
+      (error: any) => {
+        toast.showToast("Lỗi khi kiểm tra phí vận chuyển", error);
+      }
+    )
+  }
+
+  useEffect(() => {
+    checkShippingFeeUI();
+  }, [data]);
+  
   const checkOrderStatus = () => {
     if (!validateData()) {
+      toast.showToast("Vui lòng nhập đầy đủ thông tin", "error");
       return;
     }
     setLoadingCheckout(true);
@@ -117,7 +148,7 @@ export default function Cart() {
             {
               isCheckout ? (
                 <>
-                  <Checkout back={() => setIsCheckout(false)} price={priceOrder} productForCheckOut={productForCheckOut} setData={setData} handleCheckout={handleCheckout} />
+                  <Checkout back={() => setIsCheckout(false)} price={priceOrder} productForCheckOut={productForCheckOut} setData={setData} handleCheckout={handleCheckout} shippingFee={shippingFee}/>
                   {
                     loadingCheckout && <LoaingCenter />
                   }
