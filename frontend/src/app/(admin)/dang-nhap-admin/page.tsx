@@ -48,10 +48,10 @@ export default function LoginPage() {
       formData,
       () => {
         toast.showToast("Đăng nhập thành công", ToastType.SUCCESS);
-        router.push("/admin");
+        router.push("/dashboard");
       },
-      (message: string) => {
-        toast.showToast(message, ToastType.ERROR);
+      () => {
+        toast.showToast("Đăng nhập thất bại", ToastType.ERROR);
         setIsLoading(false);
       }
     );

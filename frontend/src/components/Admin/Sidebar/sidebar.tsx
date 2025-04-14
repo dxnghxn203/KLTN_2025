@@ -25,25 +25,25 @@ const menuItems = [
   {
     id: "User",
     icon: <FaRegUser />,
-    label: "Quản lý người dùng",
+    label: "Người dùng",
     path: "/quan-ly-nguoi-dung",
   },
   {
     id: "Order",
     icon: <FiShoppingBag />,
-    label: "Quản lý đơn hàng",
+    label: "Đơn hàng",
     path: "/quan-ly-don-hang",
   },
   {
     id: "Product",
     icon: <BsBox />,
-    label: "Quản lý sản phẩm",
+    label: "Sản phẩm",
     path: "/san-pham",
   },
   {
     id: "Category",
     icon: <TbCategory />,
-    label: "Quản lý danh mục",
+    label: "Danh mục",
     path: "/quan-ly-danh-muc",
   },
 ];

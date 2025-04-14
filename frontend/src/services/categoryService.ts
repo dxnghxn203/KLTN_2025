@@ -57,5 +57,39 @@ export const getAllCategoryForAdmin = async () : Promise<any>=> {
             message: "Failed to fetch categories",
         }
     }
+};
+
+export const updateMainCategory = async (mainCategory: any, data: any) : Promise<any>=> {
+    try {
+        const params = `v1/category/update/${mainCategory}?main_category_name=${data.main_category_name}&main_category_slug=${data.main_category_slug}`;
+        const response: any = await axiosClient.put(params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
+        }
+    } catch (error) {
+        return {
+            error: true,
+            message: "Failed to update category",
+        }
+    }
+}
+
+export const updateSubCategory = async (subCategoryId: any, data: any) : Promise<any>=> {
+    try {
+        const params = `v1/category/sub-category/update/${subCategoryId}?sub_category_name=${data.sub_category_name}&sub_category_slug=${data.sub_category_slug}`;
+        const response: any = await axiosClient.put(params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
+        }
+    } catch (error) {
+        return {
+            error: true,
+            message: "Failed to update category",
+        }
+    }
 }
 

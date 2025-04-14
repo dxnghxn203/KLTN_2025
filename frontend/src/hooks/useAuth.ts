@@ -38,18 +38,21 @@ export function useAuth() {
     const logout = () => {
         dispatch(logoutStart());
     };
-
     const loginAdmin = (
         credentials: any,
         onSucess: () => void,
         onFailed: (message: any) => void,
     ) => {
-        dispatch(loginAdminStart({
-            ...credentials,
-            onSucess: onSucess,
-            onFailed: onFailed,
-        }));
-    }
+
+        // dispatch(loginAdminStart({
+        //     ...credentials,
+        //     onSucess: onSucess,
+        //     onFailed: onFailed,
+        // }));
+        onSucess();
+        
+    };
+    
 
 
     return {

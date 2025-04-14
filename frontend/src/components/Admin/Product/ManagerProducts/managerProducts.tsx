@@ -27,14 +27,14 @@ const ManagerProducts = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-extrabold text-black">Product Management</h2>
+      <h2 className="text-2xl font-extrabold text-black">Quản lý sản phẩm</h2>
       <div className="my-4 text-sm">
         <Link href="/dashboard" className="hover:underline text-blue-600">
-          Home
+          Dashboard
         </Link>
         <span> / </span>
         <Link href="/product/product-management" className="text-gray-800">
-          Product management
+          Quản lý sản phẩm
         </Link>
       </div>
 

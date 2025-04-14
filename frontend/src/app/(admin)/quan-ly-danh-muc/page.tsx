@@ -1,10 +1,20 @@
 "use client";
-// import Order from "@/components/Admin/Order/orderManagement";
-
+import CategoryList from "@/components/Admin/Category/categoryList";
+import Link from "next/link";
 const Category = () => {
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAFBFB] p-4">
-      {/* <Order /> */}
+    <div className="space-y-6">
+      <h2 className="text-2xl font-extrabold text-black">Danh mục</h2>
+      <div className="my-4 text-sm">
+        <Link href="/dashboard" className="hover:underline text-blue-600">
+          Dashboard
+        </Link>
+        <span> / </span>
+        <Link href="/product/product-management" className="text-gray-800">
+          Danh mục
+        </Link>
+      </div>
+      <CategoryList />
     </div>
   );
 };
