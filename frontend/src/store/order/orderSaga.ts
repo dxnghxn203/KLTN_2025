@@ -33,9 +33,10 @@ function* fetchCallWebhook(action: any): Generator<any, void, any> {
             data
         } = payload;
         const rs = yield call(orderService.callWebhook, data);
-        if (rs.status_code === 200) {
+        console.log("🚀 ~ file: orderSaga.ts:40 ~ fetchCallWebhook ~ rs:", rs)
+        if (rs.result) {
             onSuccess();
-            yield put(fetchCallWebhookSuccess(rs.data));
+            yield put(fetchCallWebhookSuccess());
             return;
         }
         onFailed();
