@@ -62,7 +62,7 @@ export const authSlice = createSlice({
         },
         //login Admin
         loginAdminStart: (state) => {
-            console.log("loginAdminStart");
+            console.log("loginAdminStart"); 
             state.loading = true;
             state.error = null;
         },

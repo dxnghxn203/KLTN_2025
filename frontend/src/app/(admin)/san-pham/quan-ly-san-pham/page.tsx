@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import Sidebar from "@/components/Admin/Sidebar/sidebar";
-import Header from "@/components/Admin/Header/header";
 import ManagerProducts from "@/components/Admin/Product/ManagerProducts/managerProducts";
 
 const Dashboard = () => {
@@ -10,7 +8,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#FAFBFB] p-4">
-          <ManagerProducts />
+      <ManagerProducts />
     </div>
   );
 };

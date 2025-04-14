@@ -8,7 +8,7 @@ const AddNewDropdown = () => {
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button className="bg-[#1E4DB7] text-white px-2 py-2 rounded-lg hover:bg-[#173F98] text-sm flex items-center gap-1">
         <HiOutlinePlusSmall className="text-lg" />
-        Add new
+        Thêm mới
       </Menu.Button>
 
       <Transition

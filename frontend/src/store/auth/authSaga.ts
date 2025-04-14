@@ -126,7 +126,7 @@ function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any
                     token: response?.token || null,
                 })
             );
-            console.log('Login admin success:', response.admin);
+            // console.log('Login admin succddddess:', response.admin);
         } else {
             console.log('Login failed:', response.message);
             onFailed(response.message);

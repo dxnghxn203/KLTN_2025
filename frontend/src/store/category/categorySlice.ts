@@ -104,6 +104,34 @@ export const categorySlice = createSlice({
         fetchGetAllCategoryForAdminFailed(state, action: PayloadAction<string>) {
             state.loading = false;
         },
+        // update main category
+        fetchUpdateMainCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchUpdateMainCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchUpdateMainCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
+        },
+        //update sub category
+        fetchUpdateSubCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchUpdateSubCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchUpdateSubCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
+        }
     },
 });
 
@@ -131,6 +159,14 @@ export const {
     fetchGetAllCategoryForAdminStart,
     fetchGetAllCategoryForAdminSuccess,
     fetchGetAllCategoryForAdminFailed,
+
+    fetchUpdateMainCategoryStart,
+    fetchUpdateMainCategorySuccess,
+    fetchUpdateMainCategoryFailed,
+
+    fetchUpdateSubCategoryStart,
+    fetchUpdateSubCategorySuccess,
+    fetchUpdateSubCategoryFailed,
 } = categorySlice.actions;
 
 export default categorySlice.reducer;
