@@ -20,11 +20,11 @@ export const signInWithGoogle = async (data: any) => {
     }
 };
 
-export const login = async (data: any): Promise<AuthResponse> => {
+export const login = async (data: any): Promise<any> => {
     try {
         const response: any = await axiosClient.post('/v1/auth/login', data);
         return {
-            success: true,
+            status_code: response?.status_code || 200,
             user: response?.data || null,
             token: response?.data?.token || null,
             message: response?.message || 'Đăng nhập thành công',

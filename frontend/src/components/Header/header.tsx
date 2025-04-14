@@ -58,6 +58,8 @@ export default function Header() {
     };
   }, []);
 
+  console.log("isAuthenticated", isAuthenticated);
+
   const handleLogout = () => {
     logout();
     setShowDropdown(false);

@@ -6,7 +6,7 @@ import { IoHome } from "react-icons/io5";
 import { FaCircleUser } from "react-icons/fa6";
 import { useAuth } from "@/hooks/useAuth";
 
-const AlreadyLoggedIn: React.FC = () => {
+const AlreadyLoggedIn = ( ) => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [countdown, setCountdown] = useState(30);

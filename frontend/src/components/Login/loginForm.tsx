@@ -9,8 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { useRouter } from "next/navigation";
 
-const LoginForm: React.FC = () => {
-  const { signInWithGoogle, login, isLoading } = useAuth();
+const LoginForm= () => { 
+  const { signInWithGoogle, login } = useAuth();
   const [localLoading, setLocalLoading] = useState(false);
   const [localLoadingGG, setLocalLoadingGG] = useState(false);
   const toast = useToast();
@@ -59,7 +59,6 @@ const LoginForm: React.FC = () => {
       () => {
         toast.showToast("Đăng nhập thành công", ToastType.SUCCESS);
         setLocalLoading(false);
-        router.push("/");
       },
       (message: any) => {
         toast.showToast(message, ToastType.ERROR);
@@ -145,7 +144,7 @@ const LoginForm: React.FC = () => {
         <button
           type="submit"
           className="w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors"
-          disabled={isLoading || localLoading}
+          disabled={localLoading}
         >
           {localLoading ? "Đang xử lý..." : "Đăng nhập"}
         </button>

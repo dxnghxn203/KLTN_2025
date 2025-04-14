@@ -3,20 +3,13 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
 import { googleLoginStart, googleLoginSuccess, loginAdminStart, loginStart, logoutStart, selectAuth, selectUserAuth } from '@/store';
 import { getToken } from '@/utils/cookie';
-import { get } from 'http';
 
 export function useAuth() {
     const dispatch = useDispatch();
     const { data: session } = useSession();
-    const { loading, error } = useSelector(selectAuth);
-    const user= useSelector(selectUserAuth);
+    const { loading, error, isAuthenticated } = useSelector(selectAuth);
+    const user = useSelector(selectUserAuth);
     const admin = useSelector(selectUserAuth);
-    
-    const isAuthenticated = useMemo(() => {
-        const token = getToken();
-        return !!token ;  
-    }
-    , [getToken]);
 
     useEffect(() => {
         if (session?.user && !isAuthenticated) {
@@ -35,8 +28,10 @@ export function useAuth() {
     ) => {
         dispatch(loginStart({
             ...credentials,
-            onSucess: onSucess,
-            onFailed: onFailed,
+            onSuccess:
+                onSucess,
+            onFailed:
+                onFailed,
         }));
     };
 

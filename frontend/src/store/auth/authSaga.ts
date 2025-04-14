@@ -57,8 +57,9 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 
     try {
         const response = yield call(authService.login, form);
-        if (response.success) {
+        if (response.status_code === 200) {
             onSuccess();
+            console.log('Login success:', response);
             setToken(response?.token);
             yield put(
                 loginSuccess({
