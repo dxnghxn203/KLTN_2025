@@ -367,10 +367,10 @@ async def cancel_order(order_id: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Không tìm thấy đơn hàng"
             )
-        if order.status in ["completed", "canceled"]:
+        if order.status != "created":
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Không thể hủy đơn hàng đã hoàn tất hoặc đã bị hủy"
+                message="Không thể hủy đơn hàng"
             )
 
         collection = database.db[collection_name]
