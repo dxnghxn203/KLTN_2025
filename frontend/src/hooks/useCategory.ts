@@ -1,4 +1,4 @@
-import { fetchGetAllCategoryForAdminStart, fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, fetchUpdateMainCategoryStart, fetchUpdateSubCategoryStart, selectAllCategory, selectCategoryAdmin, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
+import { fetchGetAllCategoryForAdminStart, fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, fetchUpdateChildCategoryStart, fetchUpdateMainCategoryStart, fetchUpdateSubCategoryStart, selectAllCategory, selectCategoryAdmin, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useCategory() {
@@ -78,6 +78,18 @@ export function useCategory() {
       onFailure,
     }));
   }
+
+  const fetchUpdateChildCategory = (
+    formData: any,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchUpdateChildCategoryStart({
+      ...formData,
+      onSuccess,
+      onFailure,
+    }));
+  };
   
     
   return {
@@ -98,6 +110,7 @@ export function useCategory() {
 
     fetchUpdateMainCategory,
     fetchUpdateSubCategory,
+    fetchUpdateChildCategory
     
 
   };

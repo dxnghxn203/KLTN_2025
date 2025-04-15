@@ -170,12 +170,11 @@ const ShoppingCart = ({
       <>
         <div className="w-[15%] text-center flex flex-col items-center">
           <span className="text-lg font-semibold text-[#0053E2]">
-            {price.price.toLocaleString("vi-VN")} {price?.unit_price}
+            {price.price.toLocaleString("vi-VN")}đ
           </span>
           {price.original_price !== price.price && price.original_price > 0 && (
             <span className="text-sm text-gray-500 line-through">
-              {price?.original_price.toLocaleString("vi-VN")}{" "}
-              {price?.unit_price}
+              {price?.original_price.toLocaleString("vi-VN")} đ
             </span>
           )}
         </div>

@@ -2,14 +2,17 @@ import { useState } from "react";
 import { ImBin } from "react-icons/im";
 import { MdOutlineModeEdit } from "react-icons/md";
 import UpdateSubCategoryDialog from "../Dialog/updateSubCategoryDialog";
+import UpdateChildCategoryDialog from "../Dialog/updateChildCategoryDialog";
 
 export default function SubCategoryList({
   categoryAdmin,
   selectedMainId,
 }: any) {
-  const [isDialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [isDialogOpenLv1, setDialogOpenLv1] = useState<boolean>(false);
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<number | null>(null);
-  //   const [selectedMainId, setSelectedMainId] = useState<number | null>(null);
+  const [isDialogOpenLv2, setDialogOpenLv2] = useState<boolean>(false);
+  const [selectedChildCategory, setSelectedChildCategory] = useState<any>(null);
+
   const selectedMain = categoryAdmin.find(
     (d: any) => d?.main_category_id === selectedMainId
   );
@@ -24,6 +27,22 @@ export default function SubCategoryList({
     { label: "Tên danh mục cấp 1", value: selectedLevel1?.sub_category_name },
     { label: "URL danh mục cấp 1", value: selectedLevel1?.sub_category_slug },
   ];
+  const categoryChildInfo = [
+    {
+      label: "ID danh mục cấp 2",
+      value: selectedChildCategory?.child_category_id,
+    },
+    {
+      label: "Tên danh mục cấp 2",
+      value: selectedChildCategory?.child_category_name,
+    },
+    {
+      label: "URL danh mục cấp 2",
+      value: selectedChildCategory?.child_category_slug,
+    },
+  ];
+
+  console.log("childInfo", categoryChildInfo);
 
   return (
     <>
@@ -65,7 +84,7 @@ export default function SubCategoryList({
                   </div>
                   <span
                     className={
-                      "text-sm font-medium rounded-full bg-[#FFEAF4] p-2 text-[#FE7EB0]"
+                      "font-medium rounded-full bg-[#E3EFF9] p-2 text-[#0C6DFF] text-sm"
                     }
                   >
                     URL: {l1?.sub_category_slug}
@@ -79,7 +98,7 @@ export default function SubCategoryList({
                       <button
                         onClick={(e) => {
                           e.stopPropagation(); // Ngừng sự kiện click từ card
-                          setDialogOpen(true);
+                          setDialogOpenLv1(true);
                         }}
                         className="p-2 bg-[#DDF7E9] text-white rounded-full"
                       >
@@ -113,12 +132,12 @@ export default function SubCategoryList({
                       className="px-4 py-2 border rounded-lg hover:bg-gray-50 flex justify-between items-center"
                     >
                       <div className="mb-2">
-                        <h4 className="font-medium text-[#0053E2] mb-2">
+                        <h4 className="font-medium mb-2">
                           {lv2?.child_category_name}
                         </h4>
                         <span
                           className={
-                            "text-sm font-medium rounded-full bg-[#FAF1D7] p-2 text-[#F99D16]"
+                            "font-medium rounded-full bg-[#E3EFF9] p-2 text-[#0C6DFF] text-sm"
                           }
                         >
                           URL: {lv2?.child_category_slug}
@@ -130,6 +149,8 @@ export default function SubCategoryList({
                           onClick={(e) => {
                             e.stopPropagation();
                             // handleEdit(lv2?.child_category_id);
+                            setSelectedChildCategory(lv2);
+                            setDialogOpenLv2(true);
                           }}
                           className="p-2 bg-[#DDF7E9] rounded-full"
                         >
@@ -166,10 +187,16 @@ export default function SubCategoryList({
       )}
       {/* mở dialog  */}
       <UpdateSubCategoryDialog
-        isOpen={isDialogOpen}
-        onClose={() => setDialogOpen(false)}
+        isOpen={isDialogOpenLv1}
+        onClose={() => setDialogOpenLv1(false)}
         categorySubInfo={categorySubInfo}
         selectedSubId={selectedLevel1?.sub_category_id}
+      />
+      <UpdateChildCategoryDialog
+        isOpen={isDialogOpenLv2}
+        onClose={() => setDialogOpenLv2(false)}
+        categoryChildInfo={categoryChildInfo}
+        selectedChildId={selectedChildCategory?.child_category_id}
       />
     </>
   );

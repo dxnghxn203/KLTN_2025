@@ -5,11 +5,13 @@ import { ImBin } from "react-icons/im";
 import { MdOutlineModeEdit } from "react-icons/md";
 import SubCategoryList from "./subCategoryList";
 import UpdateMainCategoryDialog from "../Dialog/updateCategoryMainDialog";
+import AddNewCategoryDialog from "../Dialog/addNewCategoryDialog";
 
 export default function QuanLyDanhMuc() {
   const [selectedMainId, setSelectedMainId] = useState<number | null>(null);
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<number | null>(null);
   const [isDialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [isAddNewDialogOpen, setAddNewDialogOpen] = useState<boolean>(false);
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
   // console.log(categoryAdmin);
   const [showOptions, setShowOptions] = useState(null);
@@ -30,7 +32,7 @@ export default function QuanLyDanhMuc() {
         <button
           className="bg-[#1E4DB7] text-white px-2 py-2 rounded-lg hover:bg-[#173F98] text-sm flex items-center gap-1
                 "
-          onClick={() => setDialogOpen(true)}
+          onClick={() => setAddNewDialogOpen(true)}
         >
           <HiOutlinePlusSmall className="text-lg" />
           Thêm mới
@@ -45,7 +47,7 @@ export default function QuanLyDanhMuc() {
               setSelectedLevel1Id(null);
               setShowOptions(categoryMain?.main_category_id);
             }}
-            className={`cursor-pointer p-6 rounded-xl border shadow relative ${
+            className={`cursor-pointer px-2 py-6 rounded-xl border shadow relative ${
               selectedMainId === categoryMain?.main_category_id
                 ? "bg-[#F0F5FF] border-[#1E4DB7]"
                 : "hover:bg-gray-100"
@@ -76,7 +78,7 @@ export default function QuanLyDanhMuc() {
 
               {/* Danh mục cấp 1 */}
               <p className="flex items-center justify-center gap-1 pt-4">
-                <span className="text-xl text-[#FE7EB0] font-bold">
+                <span className="text-xl text-[#039855] font-bold">
                   {categoryMain?.sub_category?.length || 0}
                 </span>
                 <span className="font-medium text-gray-600">
@@ -86,7 +88,7 @@ export default function QuanLyDanhMuc() {
 
               {/* Danh mục cấp 2 */}
               <p className="flex items-center justify-center gap-1">
-                <span className="text-xl text-[#F99D16] font-bold">
+                <span className="text-xl text-[#BC0606] font-bold">
                   {categoryMain?.sub_category?.reduce(
                     (total: number, sub: any) =>
                       total + (sub?.child_category?.length ?? 0),
@@ -135,6 +137,10 @@ export default function QuanLyDanhMuc() {
         onClose={() => setDialogOpen(false)}
         categoryMainInfo={mainCategoryInfo}
         selectedMainId={selectedMain?.main_category_id}
+      />
+      <AddNewCategoryDialog
+        isOpen={isAddNewDialogOpen}
+        onClose={() => setAddNewDialogOpen(false)}
       />
     </div>
   );

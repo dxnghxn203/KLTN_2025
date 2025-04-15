@@ -31,10 +31,12 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
             </div>
             <div className="w-[15%] text-center flex flex-col items-center">
               <span className="text-lg font-semibold text-[#0053E2]">
-                {(product.price.price).toLocaleString('vi-VN')} {product.price.unit_price}
+                {product.price.price.toLocaleString("vi-VN")}đ
               </span>
             </div>
-            <div className="w-[15%] text-center">x{product.quantity} {product.price.unit}</div>
+            <div className="w-[15%] text-center">
+              x{product.quantity} {product.price.unit}
+            </div>
           </div>
         ))}
       </div>

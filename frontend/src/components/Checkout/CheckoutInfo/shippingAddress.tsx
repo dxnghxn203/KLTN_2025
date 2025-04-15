@@ -11,16 +11,22 @@ interface ShippingAddressProps {
 
 export const ShippingAddress: React.FC<ShippingAddressProps> = ({
   address,
-  onChange
+  onChange,
 }) => {
   const inputClass =
-    "w-full px-5 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none placeholder:text-[14px] placeholder:font-normal";
+    "w-full px-5 py-4 rounded-xl border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none placeholder:text-[14px] placeholder:font-normal";
 
   const buttonClass =
-    "flex items-center justify-between flex-1 px-6 py-5 rounded-3xl border border-black/10 focus:border-[#0053E2] bg-white focus:ring-1 focus:ring-[#0053E2] outline-none";
+    "flex items-center justify-between flex-1 px-5 py-4 rounded-xl border border-black/10 focus:border-[#0053E2] bg-white focus:ring-1 focus:ring-[#0053E2] outline-none";
 
-
-  const { cities, districts, wards, getDistrictsByCityId, getCities, getWardsByDistrictId } = useLocation();
+  const {
+    cities,
+    districts,
+    wards,
+    getDistrictsByCityId,
+    getCities,
+    getWardsByDistrictId,
+  } = useLocation();
 
   useEffect(() => {
     getCities();
@@ -45,13 +51,15 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
                 district: "",
                 districtCode: undefined,
                 ward: "",
-                wardCode: undefined
+                wardCode: undefined,
               });
               if (cityCode) getDistrictsByCityId(cityCode.toString());
             }}
             className={`${buttonClass} appearance-none`}
           >
-            <option value="" disabled>Chọn tỉnh/ thành phố</option>
+            <option value="" disabled>
+              Chọn tỉnh/ thành phố
+            </option>
             {cities.map((city: any) => (
               <option key={city.code} value={city.code}>
                 {city.name}
@@ -60,7 +68,7 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
           </select>
         </div>
 
-        <div className="relative flex-1" >
+        <div className="relative flex-1">
           <select
             value={address.districtCode || ""}
             onChange={(e) => {
@@ -70,14 +78,16 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
                 district: e.target.selectedOptions[0].text,
                 districtCode: districtCode,
                 ward: "",
-                wardCode: undefined
+                wardCode: undefined,
               });
               if (districtCode) getWardsByDistrictId(districtCode.toString());
             }}
             disabled={!address.city || districts.length === 0}
             className={`${buttonClass} appearance-none`}
           >
-            <option value="" disabled>Chọn quận/ huyện</option>
+            <option value="" disabled>
+              Chọn quận/ huyện
+            </option>
             {districts.map((district: any) => (
               <option key={district.code} value={district.code}>
                 {district.name}
@@ -91,12 +101,18 @@ export const ShippingAddress: React.FC<ShippingAddressProps> = ({
             value={address.wardCode || ""}
             onChange={(e) => {
               const wardCode = Number(e.target.value);
-              onChange({ ...address, ward: e.target.selectedOptions[0].text, wardCode: wardCode });
+              onChange({
+                ...address,
+                ward: e.target.selectedOptions[0].text,
+                wardCode: wardCode,
+              });
             }}
             disabled={!address.district || wards.length === 0}
             className={`${buttonClass} appearance-none`}
           >
-            <option value="" disabled>Chọn phường/ xã</option>
+            <option value="" disabled>
+              Chọn phường/ xã
+            </option>
             {wards.map((ward: any) => (
               <option key={ward.code} value={ward.code}>
                 {ward.name}
