@@ -47,9 +47,16 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             collection.insert_one({"user_id": user_id, "products": []})
 
         result = collection.update_one(
-            {"user_id": user_id, "products.product_id": product_id, "products.price_id": price_id},
             {
-                "$set": {"products.$.price_id": price_id},
+                "user_id": user_id,
+                "products": {
+                    "$elemMatch": {
+                        "product_id": product_id,
+                        "price_id": price_id
+                    }
+                }
+            },
+            {
                 "$inc": {"products.$.quantity": quantity}
             }
         )
