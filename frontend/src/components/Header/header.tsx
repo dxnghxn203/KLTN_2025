@@ -34,6 +34,7 @@ export default function Header() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -95,14 +96,16 @@ export default function Header() {
     );
   };
 
-  const handlRemoveFromCart = (product_id: any) => {
+  const handlRemoveFromCart = (product_id: any, price_id: any) => {
     setSelectedProductId(product_id);
+    setSelectedPriceId(price_id);
     setIsDeleteDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDeleteDialogOpen(false);
     setSelectedProductId(null);
+    setSelectedPriceId(null);
   };
 
   return (
@@ -243,7 +246,8 @@ export default function Header() {
                                     className="ml-3 text-black/50 hover:text-red-800"
                                     onClick={() =>
                                       handlRemoveFromCart(
-                                        item.product?.product_id
+                                        item.product?.product_id,
+                                        item.price_id
                                       )
                                     }
                                   >
@@ -364,10 +368,12 @@ export default function Header() {
         {isDeleteDialogOpen && selectedProductId !== null && (
           <DeleteProductDialog
             productId={selectedProductId}
+            priceId={selectedPriceId}
             onClose={handleCloseDialog}
             onConfirm={() => {
               removeProductFromCart(
                 selectedProductId,
+                selectedPriceId,
                 () => {
                   toast.showToast("Xóa sản phẩm thành công", "success");
                   getCart();

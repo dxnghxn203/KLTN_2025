@@ -44,11 +44,13 @@ export function useCart() {
 
     const removeProductFromCart = (
         product_id: any,
+        price_id: any,
         onSuccess: () => void,
         onFailure: (error: string) => void
     ) => {
         dispatch(removeCartStart({
             product_id: product_id,
+            price_id: price_id,
             onSuccess: onSuccess,
             onFailure: onFailure
         }));
@@ -70,18 +72,18 @@ export function useCart() {
         dispatch(clearCartLocal());
     };
 
-    const addCartSelectedLocal = (data: string[]) => {
-        dispatch(addCartSelected(data));
-    };
+    // const addCartSelectedLocal = (data: string[]) => {
+    //     dispatch(addCartSelected(data));
+    // };
 
-    const removeCartSelectedLocal = (id: string) => {
-        dispatch(removeCartSelected(id));   
-    }
-    const cartSelected = useSelector(selectCartSelected);
+    // const removeCartSelectedLocal = (id: string) => {
+    //     dispatch(removeCartSelected(id));   
+    // }
+    //const cartSelected = useSelector(selectCartSelected);
 
 
     return {
-        cartLocal,
+        //cartLocal,
         isLoading,
         error,
         addToCart,
@@ -89,9 +91,9 @@ export function useCart() {
         updateUnit,
         removeFromCart,
         clearCart,
-        cartSelected,
-        addCartSelectedLocal,
-        removeCartSelectedLocal,
+        //cartSelected,
+        // addCartSelectedLocal,
+        // removeCartSelectedLocal,
         addProductTocart,
         cart,
         getProductFromCart,

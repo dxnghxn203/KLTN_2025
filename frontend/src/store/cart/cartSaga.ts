@@ -39,6 +39,7 @@ function* handleRemoveCart(action: any): Generator<any, void, any> {
         const { payload } = action;
         const {
             product_id,
+            price_id,
             onSuccess = () => { },
             onFailure = () => { },
         } = payload;
@@ -47,6 +48,7 @@ function* handleRemoveCart(action: any): Generator<any, void, any> {
         const data = {
             session: session,
             product_id: product_id,
+            price_id: price_id,
         }
         const response = token ?
             yield call(cartService.removeCartToken, data)

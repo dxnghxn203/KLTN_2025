@@ -20,6 +20,7 @@ const ShoppingCart = ({
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
+  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
 
   const { addProductTocart, getProductFromCart, removeProductFromCart } =
     useCart();
@@ -115,14 +116,17 @@ const ShoppingCart = ({
     );
   };
 
-  const handleDeleteClick = (product_id: string) => {
+  const handleDeleteClick = (product_id: string, price_id: string) => {
     setSelectedProductId(product_id);
+    setSelectedPriceId(price_id);
     setIsDeleteDialogOpen(true);
   };
+  
 
   const handleCloseDialog = () => {
     setIsDeleteDialogOpen(false);
     setSelectedProductId(null);
+    setSelectedPriceId(null);
   };
 
   const handleQuantityChange = (
@@ -144,16 +148,25 @@ const ShoppingCart = ({
     );
   };
 
-  const handleUnitChange = (id: string, newUnit: string, quantity: any) => {
+  const handleUnitChange = (id: string, newUnit: string, quantity: any, old_unit: string) => {
     addProductTocart(
       id,
       newUnit,
-      0,
+      quantity,
       () => {
+        removeProductFromCart(
+          id,
+          old_unit,
+          () => {},
+          (error: string) => {
+            console.log(error);
+          }
+        );
         toast.showToast("Cập nhật thành công", "success");
         getCart();
       },
       (error: string) => {
+        console.log(error);
         toast.showToast("Cập nhật thất bại", "error");
       }
     );
@@ -214,7 +227,8 @@ const ShoppingCart = ({
               handleUnitChange(
                 product.product.product_id,
                 e.target.value,
-                product.quantity
+                product.quantity,
+                price?.price_id
               )
             }
           >
@@ -248,7 +262,7 @@ const ShoppingCart = ({
               />
               <label
                 htmlFor="select-all"
-                className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center cursor-pointer peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2] peer-checked:text-white"
+                className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center cursor-pointer peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]"
               >
                 &#10003;
               </label>
@@ -292,7 +306,7 @@ const ShoppingCart = ({
                           handleSelectProduct(product.product.product_id)
                         }
                       />
-                      <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2] peer-checked:text-white">
+                      <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]">
                         ✓
                       </span>
                     </label>
@@ -312,7 +326,7 @@ const ShoppingCart = ({
                   <div className="w-[15%] text-center text-black/50 hover:text-black transition-colors">
                     <button
                       onClick={() =>
-                        handleDeleteClick(product.product.product_id)
+                        handleDeleteClick(product.product.product_id, product.price_id)
                       }
                     >
                       <ImBin size={18} />
@@ -334,10 +348,12 @@ const ShoppingCart = ({
         {isDeleteDialogOpen && selectedProductId !== null && (
           <DeleteProductDialog
             productId={selectedProductId}
+            priceId={selectedPriceId}
             onClose={handleCloseDialog}
             onConfirm={() => {
               removeProductFromCart(
                 selectedProductId,
+                selectedPriceId,
                 () => {
                   toast.showToast("Xóa sản phẩm thành công", "success");
                   getCart();
