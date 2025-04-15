@@ -60,36 +60,39 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         </div>
 
         <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]" />
-        <div className="flex justify-between mt-5 ml-2.5 max-w-full text-sm text-black w-[337px]">
+        <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
           <div>Phí vận chuyển</div>
-          <div className="text-amber-300">{`${shippingFee.toLocaleString('vi-VN')}`}</div>
-          {
-            shippingFee==0 &&(
-              <div className="flex items-center px-3 py-1.5 mt-0.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm w-fit">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-4 w-4 text-blue-500 mr-1.5" 
-                  viewBox="0 0 20 20" 
+
+          {shippingFee == 0 && (
+            <div className="flex items-center gap-2">
+              <div className="text-amber-300">
+                {`${shippingFee.toLocaleString("vi-VN")}`}đ
+              </div>
+              <div className="flex px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-blue-500 mr-1.5"
+                  viewBox="0 0 20 20"
                   fill="currentColor"
                 >
                   <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
                   <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H18a1 1 0 001-1v-4a1 1 0 00-1-1h-8a1 1 0 00-.8.4L8 4H3z" />
                 </svg>
-                <span className="text-xs font-medium text-blue-600">Miễn phí vận chuyển</span>
+                <span className="text-xs font-medium text-blue-600">
+                  Miễn phí vận chuyển
+                </span>
               </div>
-            )
-          }
+            </div>
+          )}
         </div>
         <div className="flex gap-5 justify-between items-center mt-3 ml-2.5 max-w-full w-[337px]">
           <div className="text-xl text-black">Thành tiền</div>
           <div className="flex gap-2 whitespace-nowrap">
-            {
-              totalDiscount > 0 && (
-                <div className="text-[16px] pt-1 text-gray-500 line-through">
-                  {totalOriginPrice.toLocaleString("vi-VN")}đ
-                </div>
-              )
-            }
+            {totalDiscount > 0 && (
+              <div className="text-[16px] pt-1 text-gray-500 line-through">
+                {totalOriginPrice.toLocaleString("vi-VN")}đ
+              </div>
+            )}
             <div className="text-xl font-semisemibold text-blue-700">
               {" "}
               {(totalAmount + shippingFee).toLocaleString("vi-VN")}đ

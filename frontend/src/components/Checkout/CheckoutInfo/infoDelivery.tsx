@@ -21,7 +21,7 @@ export const OrdererInfo: React.FC<OrdererInfoProps> = ({ info, onChange }) => {
           value={info.fullName}
           onChange={(e) => onChange({ ...info, fullName: e.target.value })}
           placeholder="Họ và tên người đặt"
-          className="grow shrink-0 px-5 py-5 rounded-3xl border border-black/10 
+          className="grow shrink-0 px-5 py-4 rounded-xl border border-black/10 
           focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none basis-0 w-fit placeholder:text-[14px] placeholder:font-normal"
         />
@@ -30,14 +30,15 @@ export const OrdererInfo: React.FC<OrdererInfoProps> = ({ info, onChange }) => {
             type="tel"
             value={info.phone}
             onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '');
+              const value = e.target.value.replace(/\D/g, "");
               onChange({ ...info, phone: value });
             }}
             placeholder="Số điện thoại"
-            className={`w-full px-5 py-5 rounded-3xl border ${info.phone && !/^\d{10}$/.test(info.phone)
-                ? 'border-red-500'
-                : 'border-black/10'
-              } focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
+            className={`w-full px-5 py-4 rounded-xl border ${
+              info.phone && !/^\d{10}$/.test(info.phone)
+                ? "border-red-500"
+                : "border-black/10"
+            } focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
         outline-none placeholder:text-[14px] placeholder:font-normal`}
           />
           {info.phone && !/^\d{10}$/.test(info.phone) && (
@@ -52,7 +53,7 @@ export const OrdererInfo: React.FC<OrdererInfoProps> = ({ info, onChange }) => {
         value={info.email}
         onChange={(e) => onChange({ ...info, email: e.target.value })}
         placeholder="Email (không bắt buộc)"
-        className="px-6 py-5 text-sm rounded-3xl border border-black/10 
+        className="text-sm px-5 py-4 rounded-xl border border-black/10 
           focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none basis-0 placeholder:text-[14px] placeholder:font-normal"
       />

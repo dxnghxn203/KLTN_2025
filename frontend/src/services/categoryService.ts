@@ -93,3 +93,20 @@ export const updateSubCategory = async (subCategoryId: any, data: any) : Promise
     }
 }
 
+export const updateChildCategory = async (childCategoryId: any, data: any) : Promise<any>=> {
+    try {
+        const params = `v1/category/child-category/update/${childCategoryId}?child_category_name=${data.child_category_name}&child_category_slug=${data.child_category_slug}`;
+        const response: any = await axiosClient.put(params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
+        }
+    } catch (error) {
+        return {
+            error: true,
+            message: "Failed to update category",
+        }
+    }
+}
+

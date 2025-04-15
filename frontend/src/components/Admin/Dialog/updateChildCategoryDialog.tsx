@@ -3,25 +3,25 @@ import { X } from "lucide-react";
 import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
-interface UpdateMainCategoryDialogProps {
+interface UpdateChildCategoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  categoryMainInfo: { label: string; value: string; type?: string }[];
-  selectedMainId: string;
+  categoryChildInfo: { label: string; value: string; type?: string }[];
+  selectedChildId: string;
 }
 
-const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
+const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
   isOpen,
   onClose,
-  categoryMainInfo,
-  selectedMainId,
+  categoryChildInfo,
+  selectedChildId,
 }) => {
-  const { fetchUpdateMainCategory, fetchGetAllCategoryForAdmin } =
+  const { fetchUpdateChildCategory, fetchGetAllCategoryForAdmin } =
     useCategory();
   const toast = useToast();
 
   const [formData, setFormData] = useState(() => {
-    return categoryMainInfo.reduce((acc, item) => {
+    return categoryChildInfo.reduce((acc, item) => {
       acc[item.label] = item.value;
       return acc;
     }, {} as Record<string, string>);
@@ -31,7 +31,7 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       const updatedData = Object.fromEntries(
-        categoryMainInfo.map((item) => [item.label, item.value || ""])
+        categoryChildInfo.map((item) => [item.label, item.value || ""])
       );
       setFormData(updatedData);
     }
@@ -46,13 +46,13 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
     }));
   };
 
-  const handleUpdateMainCategory = () => {
+  const handleUpdateChildCategory = () => {
     const updatedCategory = {
-      main_category_id: selectedMainId,
-      main_category_name: formData["Tên danh mục chính"],
-      main_category_slug: formData["URL danh mục chính"],
+      child_category_id: selectedChildId,
+      child_category_name: formData["Tên danh mục cấp 2"],
+      child_category_slug: formData["URL danh mục cấp 2"],
     };
-    fetchUpdateMainCategory(
+    fetchUpdateChildCategory(
       updatedCategory,
       () => {
         toast.showToast("Cập nhật thành công!", ToastType.SUCCESS);
@@ -74,10 +74,10 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
         >
           <X size={24} />
         </button>
-        <h2 className="text-lg font-semibold mb-4">Cập nhật danh mục chính</h2>
+        <h2 className="text-lg font-semibold mb-4">Cập nhật danh mục cấp 2</h2>
 
         <div className="space-y-4">
-          {categoryMainInfo.map((item) => (
+          {categoryChildInfo.map((item) => (
             <input
               key={item.label}
               type={item.type || "text"}
@@ -85,7 +85,7 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
                 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
                 outline-none placeholder:text-sm
                 ${
-                  item.label === "ID danh mục chính"
+                  item.label === "ID danh mục cấp 2"
                     ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                     : ""
                 }
@@ -93,7 +93,7 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
               placeholder={`Enter ${item.label}`}
               value={formData[item.label] || ""}
               onChange={(e) => handleChange(item.label, e.target.value)}
-              disabled={item.label === "ID danh mục chính"}
+              disabled={item.label === "ID danh mục cấp 2"}
             />
           ))}
         </div>
@@ -106,7 +106,7 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
             Hủy
           </button>
           <button
-            onClick={handleUpdateMainCategory}
+            onClick={handleUpdateChildCategory}
             className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#002E99]"
           >
             Cập nhật
@@ -117,4 +117,4 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
   );
 };
 
-export default UpdateMainCategoryDialog;
+export default UpdateChildCategoryDialog;

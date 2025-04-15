@@ -131,6 +131,20 @@ export const categorySlice = createSlice({
         fetchUpdateSubCategoryFailed(state, action: PayloadAction<string>) {
             console.log("Fetching categories failed, data:", action.payload);
             state.loading = false;
+        },
+        // update child category
+        fetchUpdateChildCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchUpdateChildCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchUpdateChildCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
         }
     },
 });
@@ -167,6 +181,10 @@ export const {
     fetchUpdateSubCategoryStart,
     fetchUpdateSubCategorySuccess,
     fetchUpdateSubCategoryFailed,
+
+    fetchUpdateChildCategoryStart,
+    fetchUpdateChildCategorySuccess,
+    fetchUpdateChildCategoryFailed
 } = categorySlice.actions;
 
 export default categorySlice.reducer;

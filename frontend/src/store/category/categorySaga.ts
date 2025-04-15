@@ -32,6 +32,10 @@ import {
     fetchUpdateSubCategoryStart,
     fetchUpdateSubCategorySuccess,
     fetchUpdateSubCategoryFailed,
+
+    fetchUpdateChildCategorySuccess,
+    fetchUpdateChildCategoryFailed,
+    fetchUpdateChildCategoryStart,
 } from './categorySlice';
 import { on } from 'events';
 
@@ -181,8 +185,31 @@ function* fetchUpdateSubCategory(action: any): Generator<any, void, any> {
             onFailure = () => {},
             ...credentials
         } = payload;
-        const subCategoryId = credentials.sub_category_id;
-        const category = yield call(categoryService.updateSubCategory, subCategoryId, credentials);
+        const childCategoryId = credentials.sub_category_id;
+        const category = yield call(categoryService.updateSubCategory, childCategoryId, credentials);
+        if (category.status_code === 200) {
+            onSuccess()
+            yield put(fetchUpdateChildCategorySuccess(category.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchUpdateChildCategoryFailed("Category not found"));
+
+    } catch (error) {
+        yield put(fetchUpdateChildCategoryFailed("Failed to fetch category"));
+    }
+}
+
+function* fetchUpdateChildCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => {},
+            onFailure = () => {},
+            ...credentials
+        } = payload;
+        const childCategoryId = credentials.child_category_id;
+        const category = yield call(categoryService.updateChildCategory, childCategoryId, credentials);
         if (category.status_code === 200) {
             onSuccess()
             yield put(fetchUpdateSubCategorySuccess(category.data));
@@ -191,10 +218,11 @@ function* fetchUpdateSubCategory(action: any): Generator<any, void, any> {
         onFailure()
         yield put(fetchUpdateSubCategoryFailed("Category not found"));
 
-    } catch (error) {
-        yield put(fetchUpdateSubCategoryFailed("Failed to fetch category"));
     }
-}
+    catch (error) {
+            yield put(fetchUpdateSubCategoryFailed("Failed to fetch category"));
+        }
+    }
 
 
 export function* categorySaga() {
@@ -206,6 +234,5 @@ export function* categorySaga() {
     // yield takeLatest(fetchGetProductByMainSlugStart.type, fetchGetProductByMainSlug);
     yield takeLatest(fetchUpdateMainCategoryStart.type, fetchUpdateMainCategory);
     yield takeLatest(fetchUpdateSubCategoryStart.type, fetchUpdateSubCategory);
-
-
+    yield takeLatest(fetchUpdateChildCategoryStart.type, fetchUpdateChildCategory);
 }
