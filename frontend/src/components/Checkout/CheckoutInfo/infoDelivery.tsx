@@ -13,7 +13,7 @@ export const OrdererInfo: React.FC<OrdererInfoProps> = ({ info, onChange }) => {
     <section className="flex flex-col gap-4">
       <header className="flex gap-2 self-start text-sm text-black">
         <HiOutlineUserCircle className="text-2xl text-[#0053E2]" />
-        <h3 className="my-auto">Thông tin người đặt hàng</h3>
+        <h2 className="my-auto">Địa chỉ nhận hàng</h2>
       </header>
       <div className="flex flex-wrap gap-5 text-sm max-md:max-w-full">
         <input

@@ -70,12 +70,24 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
         },
         deliveryMethod,
         paymentMethod,
-      })
+      });
     } else {
-      setData({ ordererInfo, addressInfo, "note": note, deliveryMethod, paymentMethod });
+      setData({
+        ordererInfo,
+        addressInfo,
+        note: note,
+        deliveryMethod,
+        paymentMethod,
+      });
     }
-  }
-    , [ordererInfo, addressInfo, deliveryMethod, paymentMethod, note, dataLocation]);
+  }, [
+    ordererInfo,
+    addressInfo,
+    deliveryMethod,
+    paymentMethod,
+    note,
+    dataLocation,
+  ]);
 
   const [requireInvoice, setRequireInvoice] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -83,32 +95,36 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
   const { isAuthenticated } = useAuth();
   return (
     <main className="flex overflow-hidden flex-col pt-7">
-      <DeliveryMethod
+      <h2 className="my-auto text-black text-sm font-medium">
+        Chọn hình thức nhận hàng
+      </h2>
+      {/* <DeliveryMethod
         selectedMethod={deliveryMethod}
         onMethodChange={setDeliveryMethod}
-      />
+      /> */}
 
       <div className="flex flex-col px-5 py-6 mt-5 font-medium text-black rounded-xl bg-[#F5F7F9]">
-        {
-          isAuthenticated ? (
-            <>
-              <LocationCheckout setDataLocation={setDataLocation} setNote={setNote} />
-            </>
-          ) : (
-            <>
-              <OrdererInfo info={ordererInfo} onChange={setOrdererInfo} />
-              <ShippingAddress address={addressInfo} onChange={setAddressInfo} />
-              <div className="bg-white mt-5 flex flex-col items-start pt-5 pr-20 pb-12 pl-5 rounded-3xl border border-black/10">
-                <label className="text-xs">Ghi chú (không bắt buộc)</label>
-                <textarea
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Ví dụ: Hãy gọi cho tôi 15 phút trước khi giao hàng"
-                  className="w-full mt-3.5 text-sm bg-transparent outline-none resize-none placeholder:text-[14px] placeholder:font-normal"
-                />
-              </div>
-            </>
-          )
-        }
+        {isAuthenticated ? (
+          <>
+            <LocationCheckout
+              setDataLocation={setDataLocation}
+              setNote={setNote}
+            />
+          </>
+        ) : (
+          <>
+            <OrdererInfo info={ordererInfo} onChange={setOrdererInfo} />
+            <ShippingAddress address={addressInfo} onChange={setAddressInfo} />
+            <div className="bg-white mt-5 flex flex-col items-start pt-5 pr-20 pb-12 pl-5 rounded-3xl border border-black/10">
+              <label className="text-xs">Ghi chú (không bắt buộc)</label>
+              <textarea
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ví dụ: Hãy gọi cho tôi 15 phút trước khi giao hàng"
+                className="w-full mt-3.5 text-sm bg-transparent outline-none resize-none placeholder:text-[14px] placeholder:font-normal"
+              />
+            </div>
+          </>
+        )}
       </div>
       <div className="flex items-center justify-between px-6 py-3 mt-1.5 rounded-xl bg-[#F5F7F9] max-md:px-5 min-w-0">
         <p className="text-sm font-medium text-black whitespace-nowrap">

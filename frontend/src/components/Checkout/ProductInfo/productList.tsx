@@ -23,7 +23,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
                 alt={product.name}
                 width={55}
                 height={55}
-                className="ml-4 rounded-lg border border-stone-300"
+                className="ml-4 rounded-lg border border-stone-300 p-1"
               />
               <span className="ml-4 line-clamp-3 overflow-hidden text-ellipsis">
                 {product.products_name}
