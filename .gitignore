@@ -55,3 +55,6 @@ data/db/
 *.keystore
 ./build/
 .dart_tool/
+
+/frontend/yarn.lock
+/frontend/next-env.d.ts
