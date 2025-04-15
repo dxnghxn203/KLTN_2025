@@ -63,7 +63,22 @@ async def add_order(item: OrderRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
-
+@router.get("/order/tracking", response_model=response.BaseResponse)
+async def get_tracking_order(order_id: str, token: str = Depends(middleware.verify_token)):
+    try:
+        result = await order.get_tracking_order_by_order_id(order_id)
+        return response.BaseResponse(
+            message=f"order found",
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting tracking order: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 @router.put("/order/update_status", response_model=response.BaseResponse)
 async def update_status_order(item: ItemUpdateStatusReq):
     try:

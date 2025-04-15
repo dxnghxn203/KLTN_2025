@@ -101,6 +101,20 @@ async def get_all_order(page: int, page_size: int):
         logger.error(f"Failed [get_all_order]: {e}")
         raise e
 
+async def get_tracking_order_by_order_id(order_id: str):
+    try:
+        collection = database.db["trackings"]
+        trackings = collection.find({"order_id": order_id})
+        lst = []
+        for tracking in trackings:
+            data = tracking
+            data["_id"] = str(tracking["_id"])
+            lst.append(data)
+        return lst
+    except Exception as e:
+        logger.error(f"Failed [get_tracking_order_by_order_id]: {e}")
+        return []
+
 async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List[ItemProductReq], float, float]:
     total_price = 0
     weight = 0
