@@ -6,7 +6,7 @@ interface OrderSummaryProps {
   totalOriginPrice: number;
   totalDiscount: number;
   totalSave: number;
-  shippingFee?: number;
+  shippingFee?: any;
   checkout: () => void;
 }
 
@@ -63,11 +63,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
           <div>Phí vận chuyển</div>
 
-          {shippingFee == 0 && (
-            <div className="flex items-center gap-2">
+            {
+              shippingFee?.shipping_fee && (
+                <div className="flex items-center gap-2">
               <div className="text-amber-300">
-                {`${shippingFee.toLocaleString("vi-VN")}`}đ
+                {`${shippingFee?.shipping_fee?.toLocaleString("vi-VN")}`}đ
               </div>
+              {shippingFee?.shipping_fee == 0 && (
               <div className="flex px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -82,8 +84,39 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                   Miễn phí vận chuyển
                 </span>
               </div>
+              )}
             </div>
-          )}
+              )
+            }
+        
+        </div>
+        <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]" />
+        <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
+          <div>Thời gian giao hàng dự kiến</div>
+          <div className="flex items-center gap-2">
+            <div className="flex px-3 py-1.5 rounded-full bg-green-50 shadow-sm items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 text-green-500 mr-1.5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path 
+                  fillRule="evenodd" 
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" 
+                  clipRule="evenodd" 
+                />
+              </svg>
+              <span className="text-xs font-medium text-green-600">
+                {shippingFee?.delivery_time ? 
+                  new Date(shippingFee.delivery_time).toLocaleDateString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  }) : ""}
+              </span>
+            </div>
+          </div>
         </div>
         <div className="flex gap-5 justify-between items-center mt-3 ml-2.5 max-w-full w-[337px]">
           <div className="text-xl text-black">Thành tiền</div>
@@ -95,7 +128,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             )}
             <div className="text-xl font-semisemibold text-blue-700">
               {" "}
-              {(totalAmount + shippingFee).toLocaleString("vi-VN")}đ
+              {(totalAmount + shippingFee?.shipping_fee).toLocaleString("vi-VN")}đ
             </div>
           </div>
         </div>

@@ -63,7 +63,7 @@ export default function Cart() {
     return true;
   }
 
-  const [shippingFee, setShippingFee] = useState(0);
+  const [shippingFee, setShippingFee] = useState<any>({});
 
   const checkShippingFeeUI = () => {
     if (!validateData()) {
@@ -78,7 +78,7 @@ export default function Cart() {
       },
       (data: any) => {
         if (data && data?.shipping_fee) {
-          setShippingFee(data?.shipping_fee);
+          setShippingFee(data);
         }
       },
       (error: any) => {
