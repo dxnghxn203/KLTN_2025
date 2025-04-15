@@ -12,9 +12,13 @@ import { useLocation } from "@/hooks/useLocation";
 const AddLocation = ({
   getLocation,
   setOnAddLocation,
+  setUpdateLocation,
+  setLocationUpdate,
 }: {
   getLocation: any;
   setOnAddLocation: any;
+  setUpdateLocation: any;
+  setLocationUpdate: any;
 }) => {
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfoType>({
     fullName: "",
@@ -89,27 +93,36 @@ const AddLocation = ({
 
   return (
     <>
-      <div className="text-gray-600 mt-3 mx-4">
+      <div className="text-gray-600 mx-4">
         <OrdererInfo info={ordererInfo} onChange={setOrdererInfo} />
         <ShippingAddress address={addressInfo} onChange={setAddressInfo} />
         <div className="flex items-center justify-start mt-4 ml-2 gap-2">
           <input
             type="checkbox"
-            className="w-4 h-4 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            className="w-4 h-4 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 accent-[#1E4DB7]"
             checked={locationDefault}
             onChange={(e) => {
               setLocationDefault(e.target.checked);
             }}
           />
-          <span className="text-sm font-semibold text-gray-700">
+          <span className="text-sm text-gray-500">
             Đặt làm địa chỉ mặc định
           </span>
         </div>
       </div>
-      <div className="flex items-center justify-center py-0">
-
+      <div className="flex items-center justify-end space-x-4 mx-4">
         <button
-          className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
+          className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-lg"
+          onClick={() => {
+            setOnAddLocation(false);
+            setUpdateLocation(false);
+            setLocationUpdate(null);
+          }}
+        >
+          Trở về
+        </button>
+        <button
+          className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-4 rounded-lg hover:bg-[#002E99]"
           onClick={() => {
             handleAddLocation();
           }}
