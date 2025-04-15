@@ -58,3 +58,4 @@ data/db/
 
 /frontend/yarn.lock
 /frontend/next-env.d.ts
+/frontend/package-lock.json
