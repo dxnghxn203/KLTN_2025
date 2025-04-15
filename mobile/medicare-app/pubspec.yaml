@@ -45,6 +45,8 @@ dependencies:
   device_info_plus: ^11.3.3
   flutter_secure_storage: ^9.2.4
   timeline_tile: ^2.0.0
+  hive_flutter: ^1.1.0
+  connectivity_plus: ^6.1.3
 
 dev_dependencies:
   flutter_test:
@@ -108,10 +110,10 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icons/logo_Single.png"
+  image_path: "assets/icons/logo_bg.jpg"
   min_sdk_android: 21
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icons/logo_Single.png"
+  adaptive_icon_foreground: "assets/icons/logo_bg.jpg"
   remove_alpha_ios: true
 
 # Configuration for native splash screen
