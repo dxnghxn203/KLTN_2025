@@ -228,3 +228,18 @@ export const cancelOrder = async (order_id: any) => {
         }
     }
 }
+export const getTrackingOrder = async (order_id: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/tracking?order_id=${order_id}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lổi lấy thông tin đơn hàng',
+        }
+    }
+}

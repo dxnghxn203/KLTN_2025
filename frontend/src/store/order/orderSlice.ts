@@ -95,7 +95,17 @@ export const orderSlice = createSlice({
         },
         fetchCancelOrderFailed(state) {
             state.loading = false;
-        }
+        },
+        //get tracking code
+        fetchGetTrackingCodeStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchGetTrackingCodeSuccess(state, action: PayloadAction<any>) {
+            state.loading = false; 
+        },
+        fetchGetTrackingCodeFailed(state) {
+            state.loading = false;
+        }, 
     },
 });
 
@@ -126,7 +136,11 @@ export const {
 
     fetchCancelOrderStart,
     fetchCancelOrderSuccess,
-    fetchCancelOrderFailed
+    fetchCancelOrderFailed,
+    
+    fetchGetTrackingCodeStart,
+    fetchGetTrackingCodeSuccess,
+    fetchGetTrackingCodeFailed,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

@@ -1,4 +1,4 @@
-import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser } from "@/store/order";
+import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart } from "@/store/order";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -16,6 +16,14 @@ export function useOrder() {
             pageSize: pageSize,
         }));
     }, []);
+
+    const getTrackingCode = async (order_id: any, onSuccess: (data: any) => void, onFailed: (data: any) => void) => {
+        dispatch(fetchGetTrackingCodeStart({
+            order_id: order_id,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
 
     const checkOrder = async (data: any, onSuccess: (data: any) => void, onFailed: (data: any) => void) => {
         dispatch(fetchCheckOrderStart({
@@ -71,7 +79,8 @@ export function useOrder() {
         getOrdersByUser,
         callWebHook,
         checkShippingFee,
-        cancelOrder
+        cancelOrder,
+        getTrackingCode
     }
 }
 

@@ -27,9 +27,37 @@ import {
 
     fetchCancelOrderStart,
     fetchCancelOrderSuccess,
-    fetchCancelOrderFailed
+    fetchCancelOrderFailed,
+
+    fetchGetTrackingCodeStart,
+    fetchGetTrackingCodeSuccess,
+    fetchGetTrackingCodeFailed,
+
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
+
+// get tracking code
+function* fetchGetTrackingCode(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+            order_id
+        } = payload;
+        const rs = yield call(orderService.getTrackingOrder, order_id);
+        if (rs.status_code === 200) {
+            yield put(fetchGetTrackingCodeSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetTrackingCodeFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetTrackingCodeFailed());
+    }
+}
 
 // cancel order
 function* fetchCancelOrder(action: any): Generator<any, void, any> {
@@ -285,4 +313,5 @@ export function* orderSaga() {
     yield takeLatest(fetchCallWebhookStart.type, fetchCallWebhook);
     yield takeLatest(fetchCheckShippingFeeStart.type, fetchCheckShippingFee);
     yield takeLatest(fetchCancelOrderStart.type, fetchCancelOrder);
+    yield takeLatest(fetchGetTrackingCodeStart.type, fetchGetTrackingCode);
 }
