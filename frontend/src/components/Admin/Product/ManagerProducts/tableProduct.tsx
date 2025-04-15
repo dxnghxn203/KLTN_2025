@@ -44,7 +44,7 @@ const TableProduct = () => {
   // Tính số lượng sản phẩm trong kho
   const calculateTotalStock = (prices: any[]) => {
     if (!prices || prices.length === 0) return 0;
-    return prices.reduce((total, price) => total + (price.amount || 0), 0);
+    return prices.reduce((total, price) => total + (price.inventory-price.sell || 0), 0);
   };
 
   // Lấy giá hiển thị
@@ -138,11 +138,12 @@ const TableProduct = () => {
                       </span>
                     </td>
                     <td className="py-4 px-2 text-center">
-                      {formatCurrency(getPriceToDisplay(product.prices))}
-                      <br />
-                      <span className="text-xs text-gray-500">
-                        {getUnitToDisplay(product.prices)}
-                      </span>
+                      {product.prices.map((p: any, idx: number) => (
+                        <div key={idx} className="mb-1">
+                          <span>{formatCurrency(p.price)}</span>
+                          <span className="text-xs text-gray-500 ml-1">/ {p.unit}</span>
+                        </div>
+                      ))}
                     </td>
 
                     <td className="py-4 px-2 text-center">
