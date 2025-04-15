@@ -164,21 +164,20 @@ def get_cart(identifier: str):
     data = redis.hgetall(cart_key(identifier))
     return data
 
-def remove_cart_item(identifier: str, product_id: str):
-    redis.hdel(cart_key(identifier), product_id)
+def remove_cart_item(identifier: str, redis_id: str):
+    redis.hdel(cart_key(identifier), redis_id)
 
-def save_cart(identifier: str, product_id: str, price_id: str,  quantity: int):
+def save_cart(identifier: str, redis_id, quantity: int):
     key = cart_key(identifier)
-    cart_data = redis.hget(key, product_id)
+    cart_data = redis.hget(key, redis_id)
 
     if cart_data:
-        cart_item = json.loads(cart_data)
-        cart_item['price_id'] = price_id
-        cart_item["quantity"] += quantity
+        cart_data = int(cart_data)
+        cart_data += quantity
     else:
-        cart_item = {"price_id": price_id, "quantity": quantity}
+        cart_data = quantity
 
-    redis.hset(key, product_id, json.dumps(cart_item))
+    redis.hset(key, redis_id, cart_data)
     redis.expire(key, SESSION_TTL)
 
 

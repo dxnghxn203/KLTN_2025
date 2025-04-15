@@ -129,16 +129,22 @@ async def get_product_by_cart_id(product_ids, cart):
         collection = db[collection_name]
         products = list(collection.find({"product_id": {"$in": product_ids}}, {"_id": 0}))
         detailed_cart = []
-        for product in products:
-            product_id = product["product_id"]
-            cart_item = cart.get(product_id)
-            if cart_item:
-                price_id = cart_item["price_id"]
-                quantity = cart_item["quantity"]
+        for cart_item in cart:
+            product_id = cart_item["product_id"]
+            price_id = cart_item["price_id"]
+            quantity = cart_item["quantity"]
 
-                matching_price = next((p for p in product["prices"] if p["price_id"] == price_id), None)
-                if matching_price:
-                    detailed_cart.append({"product": ItemProductDBRes(**product), "price_id": price_id, "quantity": quantity})
+            product = next((p for p in products if p["product_id"] == product_id), None)
+            if not product:
+                continue
+
+            matching_price = next((p for p in product.get("prices", []) if p["price_id"] == price_id), None)
+            if matching_price:
+                detailed_cart.append({
+                    "product": ItemProductDBRes(**product),
+                    "price_id": price_id,
+                    "quantity": quantity
+                })
 
         return detailed_cart
 
