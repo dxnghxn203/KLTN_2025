@@ -1,7 +1,6 @@
 
-from app.core import logger, response, recommendation
-from app.core.database import db, collections
-from app.entities.cart.response import CartResponse, ItemCartReq
+from app.core import logger, response
+from app.core.database import db
 
 collection_name = "carts"
 
@@ -48,7 +47,7 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             collection.insert_one({"user_id": user_id, "products": []})
 
         result = collection.update_one(
-            {"user_id": user_id, "products.product_id": product_id},
+            {"user_id": user_id, "products.product_id": product_id, "products.price_id": price_id},
             {
                 "$set": {"products.$.price_id": price_id},
                 "$inc": {"products.$.quantity": quantity}
@@ -72,12 +71,15 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             data=None
         )
 
-async def remove_product_from_cart(user_id: str, product_id: str):
+async def remove_product_from_cart(user_id: str, product_id: str, price_id: str):
     try:
         collection = db[collection_name]
         cart_data = collection.find_one({"user_id": user_id})
         if cart_data:
-            cart_data["products"] = [item for item in cart_data["products"] if item["product_id"] != product_id]
+            cart_data["products"] = [
+                item for item in cart_data["products"]
+                if not (item["product_id"] == product_id and item["price_id"] == price_id)
+            ]
             collection.update_one({"user_id": user_id}, {"$set": {"products": cart_data["products"]}})
             return response.BaseResponse(
                 status="success",
