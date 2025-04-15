@@ -157,13 +157,14 @@ const ShoppingCart = ({
         removeProductFromCart(
           id,
           old_unit,
-          () => {},
+          () => {
+            toast.showToast("Cập nhật thành công", "success");
+            getCart();
+          },
           (error: string) => {
             console.log(error);
           }
         );
-        toast.showToast("Cập nhật thành công", "success");
-        getCart();
       },
       (error: string) => {
         console.log(error);
