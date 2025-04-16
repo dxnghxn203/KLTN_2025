@@ -115,10 +115,11 @@ async def get_tracking_order_by_order_id(order_id: str):
         logger.error(f"Failed [get_tracking_order_by_order_id]: {e}")
         return []
 
-async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List[ItemProductReq], float, float]:
+async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List[ItemProductReq], float, float, List[str]]:
     total_price = 0
     weight = 0
     product_items = []
+    out_of_stock_ids = []
 
     for product in products:
         data = redis.get_product_transaction(product_id=f"{product.product_id}_{product.price_id}")
@@ -135,10 +136,8 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
         total_requested = product.quantity + sell
 
         if total_requested > inventory:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Sản phẩm không đủ hàng"
-            )
+            out_of_stock_ids.append(product.product_id)
+            continue
 
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
         price_info = product_info.prices[0]
@@ -160,7 +159,7 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
         )
         product_items.append(product_item)
 
-    return product_items, total_price, weight
+    return product_items, total_price, weight, out_of_stock_ids
 
 async def check_shipping_fee(
         sender_province_code: int,
@@ -201,7 +200,14 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         order_id = generate_id("ORDER")
         tracking_id = f"{generate_id('TRACKING')}_V{1:03}"
 
-        product_items, product_price, weight = await process_order_products(item.product)
+        product_items, product_price, weight, out_of_stock_ids = await process_order_products(item.product)
+
+        if out_of_stock_ids:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm đã hết hàng",
+                data={"out_of_stock": out_of_stock_ids}
+            )
 
         fee_data = await check_shipping_fee(
             sender_province_code=item.sender_province_code,
