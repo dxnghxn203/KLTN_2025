@@ -56,7 +56,8 @@ async def get_product(slug: str, session_id: str = None):
         cur_session = session_id if check else save_session()
         save_recently_viewed(cur_session, product.product_id, False)
 
-        return response.BaseResponse(status="success",data={
+        return response.BaseResponse(
+            data={
             "product": product,
             "session_id": cur_session
         })
@@ -90,7 +91,8 @@ async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
             )
         save_recently_viewed(us.id,product.product_id, True)
 
-        return response.BaseResponse(status="success",data={
+        return response.BaseResponse(
+            data={
                 "product": product,
                 "session_id": None
         })
@@ -110,7 +112,7 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
     try:
         logger.info(f"item router: {item}")
         await add_product_db(item, images_primary, images)
-        return response.SuccessResponse(status="success", message="Product added successfully")
+        return response.SuccessResponse(status="success", message="Thêm sản phẩm thành công")
     except JsonException as je:
         raise je
     except Exception as e:
@@ -125,7 +127,7 @@ async def get_all_product_admin(page: int = 1, page_size: int = 10):
     try:
         result = await get_all_product(page, page_size)
         return response.BaseResponse(
-            message=f"product found",
+            message="Tìm thấy sản phẩm",
             data=result
         )
     except JsonException as je:
@@ -137,8 +139,8 @@ async def get_all_product_admin(page: int = 1, page_size: int = 10):
             message="Internal server error"
         )
 
-@router.put("/product/update_name", response_model=response.BaseResponse)
-async def update_product_category_name(item: UpdateCategoryReq):
+@router.put("/product/update_category", response_model=response.BaseResponse)
+async def update_category_product(item: UpdateCategoryReq):
     try:
         return await update_product_category(item)
     except JsonException as je:

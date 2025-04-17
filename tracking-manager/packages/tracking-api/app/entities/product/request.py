@@ -200,6 +200,6 @@ class ItemProductDBInReq(BaseModel):
 
 class UpdateCategoryReq(BaseModel):
     product_id: str = ""
-    main_category_name: str = ""
-    sub_category_name: str = ""
-    child_category_name: str = ""
+    main_category_id: str = ""
+    sub_category_id: str = ""
+    child_category_id: str = ""
