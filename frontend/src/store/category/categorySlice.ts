@@ -145,7 +145,66 @@ export const categorySlice = createSlice({
         fetchUpdateChildCategoryFailed(state, action: PayloadAction<string>) {
             console.log("Fetching categories failed, data:", action.payload);
             state.loading = false;
-        }
+        },
+        // add category
+        fetchAddCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchAddCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchAddCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
+        },
+
+        // add child category
+        fetchAddChildCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchAddChildCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchAddChildCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
+        },
+
+        // add sub category
+        fetchAddSubCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchAddSubCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchAddSubCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
+        },
+
+        // update image sub category
+        fetchUpdateImageSubCategoryStart(state) {
+            console.log("Fetching categories started");
+            state.loading = true;
+        },
+        fetchUpdateImageSubCategorySuccess(state, action: PayloadAction<any[]>) {
+            console.log("Fetching categories successful, data:", action.payload);
+            // state.updateMainCategory = action.payload
+            state.loading = false;
+        },
+        fetchUpdateImageSubCategoryFailed(state, action: PayloadAction<string>) {
+            console.log("Fetching categories failed, data:", action.payload);
+            state.loading = false;
+        },
     },
 });
 
@@ -184,7 +243,23 @@ export const {
 
     fetchUpdateChildCategoryStart,
     fetchUpdateChildCategorySuccess,
-    fetchUpdateChildCategoryFailed
+    fetchUpdateChildCategoryFailed,
+
+    fetchAddCategoryStart,
+    fetchAddCategorySuccess,
+    fetchAddCategoryFailed,
+
+    fetchAddChildCategoryStart,
+    fetchAddChildCategorySuccess,
+    fetchAddChildCategoryFailed,
+
+    fetchAddSubCategoryStart,
+    fetchAddSubCategoryFailed,
+    fetchAddSubCategorySuccess,
+
+    fetchUpdateImageSubCategorySuccess,
+    fetchUpdateImageSubCategoryStart,
+    fetchUpdateImageSubCategoryFailed,
 } = categorySlice.actions;
 
 export default categorySlice.reducer;

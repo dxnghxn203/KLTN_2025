@@ -33,7 +33,7 @@ const Toast: React.FC<ToastProps> = ({
   message,
   type,
   onClose,
-  duration = 5000, // Default 5 seconds
+  duration = 2000, // Default 5 seconds
   position = "top-right",
 }) => {
   const [isVisible, setIsVisible] = useState(true);

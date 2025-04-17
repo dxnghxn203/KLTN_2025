@@ -42,6 +42,10 @@ export const validatePassword = (value: string): string | null => {
       confirmPassword: "Xác nhận mật khẩu",
       comment: "Nội dung bình luận",
       rating: "Đánh giá",
+      main_category_name: "Tên danh mục chính",
+      main_category_slug: "URL danh mục chính",
+      sub_category_name: "Tên danh mục cấp 1",
+      sub_category_slug: "URL danh mục cấp 1",
       
     };
     

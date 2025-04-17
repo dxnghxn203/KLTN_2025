@@ -59,8 +59,8 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
         fetchGetAllCategoryForAdmin();
         onClose();
       },
-      (message: any) => {
-        toast.showToast("Cập nhật thất bại!", ToastType.ERROR);
+      (message) => {
+        toast.showToast(message, ToastType.ERROR);
       }
     );
   };
@@ -81,8 +81,8 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
             <input
               key={item.label}
               type={item.type || "text"}
-              className={`w-full p-2 border rounded-xl border-black/10 
-                focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
+              className={`w-full p-2 border rounded-lg border-black/10 
+                 focus:ring-1 focus:ring-[#0053E2] 
                 outline-none placeholder:text-sm
                 ${
                   item.label === "ID danh mục chính"
@@ -101,13 +101,13 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
         <div className="flex justify-end mt-6 space-x-2">
           <button
             onClick={onClose}
-            className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-xl"
+            className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-medium py-2 px-6 rounded-lg"
           >
             Hủy
           </button>
           <button
             onClick={handleUpdateMainCategory}
-            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#002E99]"
+            className="text-sm bg-[#1E4DB7] text-white font-medium py-2 px-4 rounded-lg hover:bg-[#002E99]"
           >
             Cập nhật
           </button>

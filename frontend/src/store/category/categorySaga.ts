@@ -21,10 +21,6 @@ import {
     fetchGetAllCategoryForAdminSuccess,
     fetchGetAllCategoryForAdminFailed,
 
-    // fetchGetProductByMainSlugStart,
-    // fetchGetProductByMainSlugSuccess,
-    // fetchGetProductByMainSlugFailed
-
     fetchUpdateMainCategoryStart,
     fetchUpdateMainCategorySuccess,
     fetchUpdateMainCategoryFailed,
@@ -36,6 +32,20 @@ import {
     fetchUpdateChildCategorySuccess,
     fetchUpdateChildCategoryFailed,
     fetchUpdateChildCategoryStart,
+
+    fetchAddCategorySuccess,
+    fetchAddCategoryStart,
+    fetchAddCategoryFailed,
+
+    fetchAddChildCategoryStart,
+    fetchAddChildCategorySuccess,
+    fetchAddChildCategoryFailed,
+    fetchAddSubCategorySuccess,
+    fetchAddSubCategoryFailed,
+    fetchAddSubCategoryStart,
+    fetchUpdateImageSubCategorySuccess,
+    fetchUpdateImageSubCategoryFailed,
+    fetchUpdateImageSubCategoryStart
 } from './categorySlice';
 import { on } from 'events';
 
@@ -222,9 +232,150 @@ function* fetchUpdateChildCategory(action: any): Generator<any, void, any> {
     catch (error) {
             yield put(fetchUpdateSubCategoryFailed("Failed to fetch category"));
         }
+}
+function* fetchAddCategory(action: any): Generator<any, void, any> {
+    try {
+      const { payload } = action;
+      const {
+        main_category_name,
+        main_category_slug,
+        sub_category,
+        child_category,
+        onSuccess = () => {},
+        onFailure = (message: any) => {},
+      } = payload;
+  
+      
+      const body = {
+        main_category_name,
+        main_category_slug,
+        sub_category,
+        child_category,
+      };
+      console.log("payload", payload)
+        console.log("body", body)
+  
+      const category = yield call(categoryService.addCategory, body);
+  
+      if (category.status_code === 200) {
+        onSuccess();
+        yield put(fetchAddCategorySuccess(category.data));
+      } else {
+        onFailure(category.message);
+        yield put(fetchAddCategoryFailed(category.message));
+      }
+    } catch (error: any) {
+      const { payload } = action;
+      const { onFailure = (message: any) => {} } = payload;
+      const errorMessage = error?.response?.data?.message;
+      onFailure(errorMessage);
+      yield put(fetchAddCategoryFailed(errorMessage));
     }
+}
+
+function* fetchAddChildCategory(action: any): Generator<any, void, any> {
+    try {
+      const {
+        child_category_name,
+        child_category_slug,
+        main_slug,
+        sub_slug,
+        onSuccess = () => {},
+        onFailure = (message: any) => {},
+      } = action.payload;
+  
+      const body = {
+        child_category_name,
+        child_category_slug,
+      };
+  
+      const category = yield call(
+        categoryService.addChildCategory,
+        main_slug,
+        sub_slug,
+        body 
+      );
+  
+      if (category.status_code === 200) {
+        onSuccess();
+        yield put(fetchAddChildCategorySuccess(category.data));
+      } else {
+        onFailure(category.message || "Thêm danh mục thất bại.");
+        yield put(fetchAddChildCategoryFailed(category.message || "Thêm danh mục thất bại."));
+      }
+    } catch (error) {
+      console.error("Error in fetchAddChildCategory:", error);
+      yield put(fetchAddChildCategoryFailed("Failed to fetch category"));
+    }
+}
+function* fetchAddSubCategory(action: any): Generator<any, void, any> {
+    try {
+      const {
+        sub_category_name,
+        sub_category_slug,
+        main_slug,
+        child_category,
+        onSuccess = () => {},
+        onFailure = (message: any) => {},
+      } = action.payload;
+  
+      const body = {
+        sub_category_name,
+        sub_category_slug,
+        child_category // đây là một mảng gồm các child_category_name và slug
+      };
+  
+      const category = yield call(
+        categoryService.addSubCategory,
+        main_slug, // truyền main_slug làm parameter
+        body        // truyền body như API yêu cầu
+      );
+  
+      if (category.status_code === 200) {
+        onSuccess();
+        yield put(fetchAddSubCategorySuccess(category.data));
+      } else {
+        onFailure(category.message || "Thêm danh mục thất bại.");
+        yield put(fetchAddSubCategoryFailed(category.message || "Thêm danh mục thất bại."));
+      }
+    } catch (error) {
+      console.error("Error in fetchAddSubCategory:", error);
+      yield put(fetchAddSubCategoryFailed("Đã xảy ra lỗi khi thêm danh mục"));
+    }
+}
+
+function* fetchUpdateImageCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+          sub_category_id,
+          image,
+          onSuccess = () => {},
+          onFailure = (message: any) => {}
+            
+        } = payload;
+        const formData = new FormData();
+        formData.append("image", image);
+        const category = yield call(categoryService.updateImageSubCategory, sub_category_id, formData);
+        if (category.status_code === 200) {
+            onSuccess()
+            yield put(fetchUpdateImageSubCategorySuccess(category.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchUpdateImageSubCategoryFailed("Category not found"));
+
+    }
+    catch (error) {
+            yield put(fetchUpdateImageSubCategoryFailed("Failed to fetch category"));
+        }
+}
 
 
+  
+  
+  
+  
 export function* categorySaga() {
     yield takeLatest(fetchGetAllCategoryStart.type, fetchGetAllCategory);
     yield takeLatest(fetchGetMainCategoryStart.type, fetchGetMainCategory);
@@ -235,4 +386,11 @@ export function* categorySaga() {
     yield takeLatest(fetchUpdateMainCategoryStart.type, fetchUpdateMainCategory);
     yield takeLatest(fetchUpdateSubCategoryStart.type, fetchUpdateSubCategory);
     yield takeLatest(fetchUpdateChildCategoryStart.type, fetchUpdateChildCategory);
+    yield takeLatest(fetchAddCategoryStart.type, fetchAddCategory);
+    yield takeLatest(fetchAddChildCategoryStart.type, fetchAddChildCategory);
+    yield takeLatest(fetchAddSubCategoryStart.type, fetchAddSubCategory);
+    yield takeLatest(fetchUpdateImageSubCategoryStart.type, fetchUpdateImageCategory);
+    
+
 }
+

@@ -23,7 +23,7 @@ const AllLocationDialog = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center overflow-auto">
-      <div className="bg-white rounded-lg w-[600px] shadow-lg relative my-10 transition-all duration-300">
+      <div className="bg-white rounded-lg w-auto shadow-lg relative my-10 transition-all duration-300">
         {/* Header */}
         <div className="flex items-center justify-center relative p-4  bg-white rounded-t-lg">
           <div className="absolute top-2 right-2">

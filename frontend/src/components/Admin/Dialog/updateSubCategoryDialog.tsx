@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Pencil, X } from "lucide-react";
 import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
+import Image from "next/image";
+import { MdOutlineEdit } from "react-icons/md";
 interface UpdateSubCategoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
   categorySubInfo: { label: string; value: string; type?: string }[];
   selectedSubId: string;
+  selectImageSub: string;
 }
 
 const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
@@ -15,9 +18,17 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
   onClose,
   categorySubInfo,
   selectedSubId,
+  selectImageSub,
 }) => {
-  const { fetchUpdateSubCategory, fetchGetAllCategoryForAdmin } = useCategory();
+  const {
+    fetchUpdateSubCategory,
+    fetchGetAllCategoryForAdmin,
+    fetchUpdateImageSubCategory,
+  } = useCategory();
   const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState(() => {
     return categorySubInfo.reduce((acc, item) => {
@@ -26,13 +37,18 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
     }, {} as Record<string, string>);
   });
 
-  // Chỉ cập nhật lại formData khi dialog mở
   useEffect(() => {
     if (isOpen) {
       const updatedData = Object.fromEntries(
         categorySubInfo.map((item) => [item.label, item.value || ""])
       );
       setFormData(updatedData);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFile(null);
     }
   }, [isOpen]);
 
@@ -45,23 +61,95 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
     }));
   };
 
+  const handleEditImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Kiểm tra đuôi file
+      const validExtensions = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validExtensions.includes(file.type)) {
+        toast.showToast("Vui lòng chọn file ảnh hợp lệ!", ToastType.ERROR);
+        return;
+      }
+
+      setSelectedFile(file);
+
+      console.log("image", file);
+    }
+  };
+
   const handleUpdateSubCategory = () => {
     const updatedCategory = {
       sub_category_id: selectedSubId,
       sub_category_name: formData["Tên danh mục cấp 1"],
       sub_category_slug: formData["URL danh mục cấp 1"],
     };
-    fetchUpdateSubCategory(
-      updatedCategory,
-      () => {
-        toast.showToast("Cập nhật thành công!", ToastType.SUCCESS);
+
+    const data = {
+      sub_category_id: selectedSubId,
+      image: selectedFile, // Sử dụng selectedImage nếu có ảnh mới
+    };
+    console.log("ff", data);
+
+    // Kiểm tra nếu không có thay đổi về danh mục
+    const isCategoryUpdated =
+      updatedCategory.sub_category_name !==
+        categorySubInfo.find((item) => item.label === "Tên danh mục cấp 1")
+          ?.value ||
+      updatedCategory.sub_category_slug !==
+        categorySubInfo.find((item) => item.label === "URL danh mục cấp 1")
+          ?.value;
+
+    // Nếu có thay đổi danh mục, gọi fetchUpdateSubCategory
+    if (isCategoryUpdated) {
+      fetchUpdateSubCategory(
+        updatedCategory,
+        () => {
+          // Kiểm tra nếu có ảnh mới thì cập nhật ảnh
+          if (selectedFile) {
+            fetchUpdateImageSubCategory(
+              data,
+              () => {
+                toast.showToast("Cập nhật ảnh thành công!", ToastType.SUCCESS);
+                fetchGetAllCategoryForAdmin();
+                onClose();
+              },
+              (message) => {
+                toast.showToast(message, ToastType.ERROR);
+              }
+            );
+            // console.log("emm", selectedFile);
+          } else {
+            fetchGetAllCategoryForAdmin();
+            onClose();
+          }
+          toast.showToast("Cập nhật danh mục thành công!", ToastType.SUCCESS);
+        },
+        (message) => {
+          toast.showToast(message, ToastType.ERROR);
+        }
+      );
+    } else {
+      if (selectedFile) {
+        fetchUpdateImageSubCategory(
+          data,
+          () => {
+            toast.showToast("Cập nhật ảnh thành công!", ToastType.SUCCESS);
+            fetchGetAllCategoryForAdmin();
+            onClose();
+          },
+          (message) => {
+            toast.showToast(message, ToastType.ERROR);
+          }
+        );
+      } else {
         fetchGetAllCategoryForAdmin();
         onClose();
-      },
-      (message: any) => {
-        toast.showToast("Cập nhật thất bại!", ToastType.ERROR);
       }
-    );
+    }
   };
 
   return (
@@ -80,33 +168,61 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
             <input
               key={item.label}
               type={item.type || "text"}
-              className={`w-full p-2 border rounded-xl border-black/10 
-                focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
-                outline-none placeholder:text-sm
-                ${
-                  item.label === "ID danh mục cấp 1"
-                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                    : ""
-                }
-              `}
+              className={`w-full p-2 border rounded-lg border-black/10 
+              focus:ring-1 focus:ring-[#0053E2] 
+              outline-none placeholder:text-sm
+              ${
+                item.label === "ID danh mục cấp 1"
+                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                  : ""
+              }
+            `}
               placeholder={`Enter ${item.label}`}
               value={formData[item.label] || ""}
               onChange={(e) => handleChange(item.label, e.target.value)}
               disabled={item.label === "ID danh mục cấp 1"}
             />
           ))}
+          <div className="relative w-[120px] h-[120px]">
+            <Image
+              src={
+                selectedFile
+                  ? URL.createObjectURL(selectedFile)
+                  : selectImageSub
+              }
+              alt="icon"
+              width={120}
+              height={120}
+              className="object-contain rounded-md"
+              priority
+            />
+            <button
+              onClick={handleEditImage}
+              className="absolute bottom-1 right-1 bg-white border border-gray-300 rounded-full p-1 shadow hover:bg-gray-100"
+              title="Chỉnh sửa ảnh"
+            >
+              <MdOutlineEdit className="w-4 h-4 text-gray-600" />
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+          </div>
         </div>
 
         <div className="flex justify-end mt-6 space-x-2">
           <button
             onClick={onClose}
-            className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-xl"
+            className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-medium py-2 px-6 rounded-lg"
           >
             Hủy
           </button>
           <button
             onClick={handleUpdateSubCategory}
-            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-4 rounded-xl hover:bg-[#002E99]"
+            className="text-sm bg-[#1E4DB7] text-white font-medium py-2 px-4 rounded-lg hover:bg-[#002E99]"
           >
             Cập nhật
           </button>

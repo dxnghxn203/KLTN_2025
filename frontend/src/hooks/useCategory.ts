@@ -1,4 +1,4 @@
-import { fetchGetAllCategoryForAdminStart, fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, fetchUpdateChildCategoryStart, fetchUpdateMainCategoryStart, fetchUpdateSubCategoryStart, selectAllCategory, selectCategoryAdmin, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
+import { fetchAddCategoryStart, fetchAddChildCategoryStart, fetchAddSubCategoryStart, fetchGetAllCategoryForAdminStart, fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, fetchUpdateChildCategoryStart, fetchUpdateImageSubCategoryStart, fetchUpdateMainCategoryStart, fetchUpdateSubCategoryStart, selectAllCategory, selectCategoryAdmin, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useCategory() {
@@ -90,6 +90,54 @@ export function useCategory() {
       onFailure,
     }));
   };
+
+  const fetchAddCategory = (
+    credentials: any,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchAddCategoryStart({
+      ...credentials,
+      onSuccess,
+      onFailure,
+    }));
+  }
+
+  const fetchAddChildCategory = (
+    credentials: any,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchAddChildCategoryStart({
+      ...credentials,
+      onSuccess,
+      onFailure,
+    }));
+  }
+
+  const fetchAddSubCategory = (
+    credentials: any,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchAddSubCategoryStart({
+      ...credentials,
+      onSuccess,
+      onFailure,
+    }));
+  }
+
+  const fetchUpdateImageSubCategory = (
+    formData: any,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchUpdateImageSubCategoryStart({
+      ...formData,
+      onSuccess,
+      onFailure,
+    }));
+  }
   
     
   return {
@@ -110,7 +158,13 @@ export function useCategory() {
 
     fetchUpdateMainCategory,
     fetchUpdateSubCategory,
-    fetchUpdateChildCategory
+    fetchUpdateChildCategory,
+
+    fetchAddCategory,
+    fetchAddChildCategory,
+    fetchAddSubCategory,
+
+    fetchUpdateImageSubCategory,
     
 
   };

@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { MdLockOutline, MdOutlineEmail } from "react-icons/md";
 export default function LoginPage() {
-  const { loginAdmin } = useAuth();
+  const { loginAdmin, admin } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -47,6 +47,7 @@ export default function LoginPage() {
     loginAdmin(
       formData,
       () => {
+        console.log("formData", admin);
         toast.showToast("Đăng nhập thành công", ToastType.SUCCESS);
         router.push("/dashboard");
       },

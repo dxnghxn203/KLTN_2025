@@ -5,7 +5,7 @@ import { ImBin } from "react-icons/im";
 import { MdOutlineModeEdit } from "react-icons/md";
 import SubCategoryList from "./subCategoryList";
 import UpdateMainCategoryDialog from "../Dialog/updateCategoryMainDialog";
-import AddNewCategoryDialog from "../Dialog/addNewCategoryDialog";
+import AddNewCategoryDialog from "../Dialog/addCategoryDialog";
 
 export default function QuanLyDanhMuc() {
   const [selectedMainId, setSelectedMainId] = useState<number | null>(null);
@@ -27,7 +27,7 @@ export default function QuanLyDanhMuc() {
     fetchGetAllCategoryForAdmin();
   }, []);
   return (
-    <div className="space-y-6">
+    <div>
       <div className="justify-end flex items-center">
         <button
           className="bg-[#1E4DB7] text-white px-2 py-2 rounded-lg hover:bg-[#173F98] text-sm flex items-center gap-1
@@ -38,7 +38,7 @@ export default function QuanLyDanhMuc() {
           Thêm mới
         </button>
       </div>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-4 my-4">
         {categoryAdmin.map((categoryMain: any) => (
           <div
             key={categoryMain?.main_category_id}
@@ -56,8 +56,8 @@ export default function QuanLyDanhMuc() {
             <h3
               className={`font-semibold text-center my-4 ${
                 selectedMainId === categoryMain?.main_category_id
-                  ? "text-[#1E4DB7]" // màu khi được chọn
-                  : "text-black" // màu mặc định
+                  ? "text-[#1E4DB7]"
+                  : "text-black"
               }`}
             >
               {categoryMain?.main_category_name}
@@ -66,7 +66,7 @@ export default function QuanLyDanhMuc() {
               {/* URL */}
               <p>
                 <span
-                  className={`font-medium rounded-full bg-[#E3EFF9] p-2 ${
+                  className={`font-medium rounded-full bg-[#E3EFF9] px-3 py-1 text-sm w-fit" ${
                     selectedMainId === categoryMain?.main_category_id
                       ? "text-[#0C6DFF]"
                       : "text-[#0C6DFF]"
@@ -81,7 +81,7 @@ export default function QuanLyDanhMuc() {
                 <span className="text-xl text-[#039855] font-bold">
                   {categoryMain?.sub_category?.length || 0}
                 </span>
-                <span className="font-medium text-gray-600">
+                <span className="font-medium text-gray-500 text-sm">
                   Danh mục cấp 1
                 </span>
               </p>
@@ -95,7 +95,7 @@ export default function QuanLyDanhMuc() {
                     0
                   )}
                 </span>
-                <span className="font-medium text-gray-600">
+                <span className="font-medium text-gray-500 text-sm">
                   Danh mục cấp 2
                 </span>
               </p>
@@ -115,7 +115,7 @@ export default function QuanLyDanhMuc() {
                 </button>
                 <button
                   onClick={(e) => {
-                    e.stopPropagation(); // Ngừng sự kiện click từ card
+                    e.stopPropagation();
                     // handleDelete(categoryMain?.main_category_id);
                   }}
                   className="p-2 bg-[#FCECEC] text-white rounded-full"

@@ -10,12 +10,14 @@ import { usePathname } from "next/navigation";
 
 import logo from "@/images/MM.png";
 import textlogo from "@/images/medicare2.png";
+import { IoMdSettings } from "react-icons/io";
+import { IoSettingsOutline } from "react-icons/io5";
 
 interface SidebarProps {
   isOpen: boolean;
 }
 
-const menuItems = [
+const menuHomeItems = [
   {
     id: "Dashboard",
     icon: <FiPieChart />,
@@ -47,6 +49,14 @@ const menuItems = [
     path: "/quan-ly-danh-muc",
   },
 ];
+const menuSettingsItems = [
+  {
+    id: "Settings",
+    icon: <IoSettingsOutline />,
+    label: "Cài đặt",
+    path: "/cai-dat",
+  },
+];
 
 const Sidebar = memo(({ isOpen }: SidebarProps) => {
   const pathname = usePathname();
@@ -54,17 +64,17 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
   return (
     <aside
       className={clsx(
-        "flex flex-col p-4 border-r border-gray-200 transition-all duration-500 bg-[#FAFBFB]",
-        isOpen ? "w-[250px]" : "w-[80px]"
+        "flex flex-col border-r border-gray-200 transition-all duration-500 bg-[#FAFBFB]",
+        isOpen ? "w-[250px] p-2 " : "w-[80px] p-4 "
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-10">
-        <Image src={logo} alt="Logo" width={50} height={50} priority />
+      <div className="flex items-center gap-2 mb-10 ml-2">
+        <Image src={logo} alt="Logo" width={40} height={40} priority />
         <Image
           src={textlogo}
-          width={90}
-          height={90}
+          width={80}
+          height={80}
           alt="Text Logo"
           priority
           className={clsx(
@@ -86,13 +96,13 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
         </p>
 
         <nav className="space-y-1 w-full flex flex-col">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.path;
+          {menuHomeItems.map((item) => {
+            const isActive = pathname.startsWith(item.path);
             return (
               <Link key={item.id} href={item.path}>
                 <div
                   className={clsx(
-                    "flex px-2 py-3 rounded-lg transition-all duration-500 cursor-pointer",
+                    "flex p-3 rounded-lg transition-all duration-500 cursor-pointer",
                     isOpen
                       ? "justify-start items-center"
                       : "justify-center items-center",
@@ -124,6 +134,36 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
         >
           {isOpen ? "SETTINGS" : "..."}
         </p>
+        <nav className="space-y-1 w-full flex flex-col">
+          {menuSettingsItems.map((item) => {
+            const isActive = pathname.startsWith(item.path);
+            return (
+              <Link key={item.id} href={item.path}>
+                <div
+                  className={clsx(
+                    "flex px-2 py-3 rounded-lg transition-all duration-500 cursor-pointer",
+                    isOpen
+                      ? "justify-start items-center"
+                      : "justify-center items-center",
+                    isActive
+                      ? "bg-[#1E4DB7] text-white"
+                      : "text-black hover:bg-[#E7ECF7] hover:text-[#1E4DB7]"
+                  )}
+                >
+                  <div className="text-lg">{item.icon}</div>
+                  <span
+                    className={clsx(
+                      "ml-3",
+                      isOpen ? "opacity-100" : "opacity-0 hidden"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </aside>
   );

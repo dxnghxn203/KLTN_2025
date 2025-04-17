@@ -13,7 +13,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
         {products.map((product: any, index: any) => (
           <div
             key={product.id}
-            className={`flex items-center justify-between py-4 mx-4 text-sm ${
+            className={`flex items-center justify-between py-4 text-sm ${
               index !== products.length - 1 ? "border-b border-gray-300" : ""
             }`}
           >

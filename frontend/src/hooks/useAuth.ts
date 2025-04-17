@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useSession } from 'next-auth/react';
 import { useEffect, useMemo, useState } from 'react';
-import { googleLoginStart, googleLoginSuccess, loginAdminStart, loginStart, logoutStart, selectAuth, selectUserAuth } from '@/store';
+import { googleLoginStart, googleLoginSuccess, loginAdminStart, loginStart, logoutStart, selectAdminAuth, selectAuth, selectUserAuth } from '@/store';
 import { getToken } from '@/utils/cookie';
 
 export function useAuth() {
@@ -9,7 +9,7 @@ export function useAuth() {
     const { data: session } = useSession();
     const { loading, error, isAuthenticated } = useSelector(selectAuth);
     const user = useSelector(selectUserAuth);
-    const admin = useSelector(selectUserAuth);
+    const admin = useSelector(selectAdminAuth);
 
     useEffect(() => {
         if (session?.user && !isAuthenticated) {
@@ -62,5 +62,6 @@ export function useAuth() {
         login,
         logout,
         loginAdmin,
+        admin: admin || null,
     };
 }
