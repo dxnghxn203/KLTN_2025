@@ -224,3 +224,42 @@ async def get_all_categories_for_admin():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.delete("/category/main/{main_category_id}")
+async def delete_main_category(main_category_id: str):
+    try:
+        return await category.delete_main_category(main_category_id)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error deleting main category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.delete("/category/sub/{sub_category_id}")
+async def delete_sub_category(sub_category_id: str):
+    try:
+        return await category.delete_sub_category(sub_category_id)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error deleting sub-category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.delete("/category/child/{child_category_id}")
+async def delete_child_category(child_category_id: str):
+    try:
+        return await category.delete_child_category(child_category_id)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error deleting child-category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

@@ -14,6 +14,7 @@ from app.models.comment import count_comments
 from app.models.review import count_reviews, average_rating
 
 collection_name = "products"
+collection_category = "categories"
 
 async def get_product_by_slug(slug: str):
     try:
@@ -281,27 +282,61 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
 async def update_product_category(item: UpdateCategoryReq):
     try:
         collection = db[collection_name]
+        category_collection = db[collection_category]
         product = collection.find_one({"product_id": item.product_id})
 
         if not product:
             raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                message="Product not found"
+                message="Không tìm thấy sản phẩm"
             )
 
-        if "category" not in product:
-            product["category"] = {}
+        main_category = category_collection.find_one({"main_category_id": item.main_category_id})
+        if not main_category:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục chính không hợp lệ"
+            )
+
+        sub_category = next(
+            (sub for sub in main_category.get("sub_category", []) if sub["sub_category_id"] == item.sub_category_id),
+            None
+        )
+        if not sub_category:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục phụ không hợp lệ"
+            )
+
+        child_category = next(
+            (child for child in sub_category.get("child_category", []) if
+             child["child_category_id"] == item.child_category_id),
+            None
+        )
+        if not child_category:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục con không hợp lệ"
+            )
 
         update_data = {
-            "category.main_category_name": item.main_category_name,
-            "category.sub_category_name": item.sub_category_name,
-            "category.child_category_name": item.child_category_name,
+            "category.main_category_id": item.main_category_id,
+            "category.main_category_name": main_category.get("main_category_name", ""),
+            "category.main_category_slug": main_category.get("main_category_slug", ""),
+
+            "category.sub_category_id": item.sub_category_id,
+            "category.sub_category_name": sub_category.get("sub_category_name", ""),
+            "category.sub_category_slug": sub_category.get("sub_category_slug", ""),
+
+            "category.child_category_id": item.child_category_id,
+            "category.child_category_name": child_category.get("child_category_name", ""),
+            "category.child_category_slug": child_category.get("child_category_slug", ""),
         }
 
         collection.update_one({"product_id": item.product_id}, {"$set": update_data})
         logger.info(f"Updated category names for product_id: {item.product_id}")
 
-        return response.SuccessResponse(message="Product category updated successfully")
+        return response.SuccessResponse(message="Cập nhật danh mục thành công")
     except Exception as e:
         logger.error(f"Error updating product category: {str(e)}")
         raise e
@@ -313,7 +348,7 @@ async def delete_product(product_id: str):
         if not product:
             raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                message="Product not found"
+                message="Không tìm thấy sản phẩm"
             )
 
         product = ItemProductDBRes(**product)
@@ -322,7 +357,7 @@ async def delete_product(product_id: str):
         if delete_result.deleted_count == 0:
             raise response.JsonException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                message="Failed to delete product"
+                message="Xóa sản phẩm không thành công"
             )
 
         for price in product.prices:
@@ -330,7 +365,7 @@ async def delete_product(product_id: str):
             redis.delete_product(redis_id)
             logger.info(f"Đã xóa sản phẩm vào Redis với key: {redis_id}")
 
-        return response.SuccessResponse(message="Product deleted successfully")
+        return response.SuccessResponse(message="Xóa sản phẩm thành công")
     except Exception as e:
         logger.error(f"Error deleting product: {str(e)}")
         raise e
