@@ -15,6 +15,7 @@ from app.models.review import count_reviews, average_rating
 
 collection_name = "categories"
 product_collection_name = "products"
+default_image_url = "https://kltn2025.s3.ap-southeast-2.amazonaws.com/default/1742882469"
 
 async def get_all_categories_admin():
     try:
@@ -181,14 +182,16 @@ async def add_category(item: MainCategoryInReq):
                 child_categories.append(ChildCategoryReq(
                     child_category_id=child_category_id,
                     child_category_name=child.child_category_name,
-                    child_category_slug=child.child_category_slug
+                    child_category_slug=child.child_category_slug,
+                    child_image_url=default_image_url
                 ))
 
             sub_categories.append(SubCategoryReq(
                 sub_category_id=sub_category_id,
                 sub_category_name=sub.sub_category_name,
                 sub_category_slug=sub.sub_category_slug,
-                child_category=child_categories
+                child_category=child_categories,
+                sub_image_url=default_image_url
             ))
 
         category_data = MainCategoryReq(
@@ -230,14 +233,16 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
         child_categories = [ChildCategoryReq(
             child_category_id=generate_id("CHILD"),
             child_category_name=child.child_category_name,
-            child_category_slug=child.child_category_slug
+            child_category_slug=child.child_category_slug,
+            child_image_url=default_image_url
         ) for child in sub_category.child_category]
 
         new_sub_category = SubCategoryReq(
             sub_category_id=sub_category_id,
             sub_category_name=sub_category.sub_category_name,
             sub_category_slug=sub_category.sub_category_slug,
-            child_category=child_categories
+            child_category=child_categories,
+            sub_image_url=default_image_url
         )
 
         collection.update_one(
@@ -276,7 +281,8 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
                 new_child_category = ChildCategoryReq(
                     child_category_id=child_category_id,
                     child_category_name=child_category.child_category_name,
-                    child_category_slug=child_category.child_category_slug
+                    child_category_slug=child_category.child_category_slug,
+                    child_image_url=default_image_url
                 )
 
                 collection.update_one(
@@ -454,23 +460,20 @@ async def update_all_categories_image(image_url):
         updated_count = 0
 
         for category in categories:
-            updated = False  # Biến flag để kiểm tra có cần update không
+            updated = False
 
-            # Kiểm tra sub_category
             if "sub_category" in category:
                 for sub in category["sub_category"]:
                     #if "sub_image_url" not in sub or sub["sub_image_url"] == "":
                     sub["sub_image_url"] = image_url
                     updated = True
 
-                    # Kiểm tra child_category trong sub_category
                     if "child_category" in sub:
                         for child in sub["child_category"]:
                             #if "child_image_url" not in child or child["child_image_url"] == "":
                             child["child_image_url"] = image_url
                             updated = True
 
-            # Nếu có thay đổi thì cập nhật lại MongoDB
             if updated:
                 collection.update_one(
                     {"_id": category["_id"]}, {"$set": {"sub_category": category["sub_category"]}}
@@ -486,4 +489,77 @@ async def update_all_categories_image(image_url):
         logger.info(f"Updated {updated_count} categories with default image.")
     except Exception as e:
         logger.error(f"Lỗi cập nhật ảnh mặc định: {str(e)}")
+        raise e
+
+async def delete_main_category(main_category_id: str):
+    try:
+        product_collection = db[product_collection_name]
+        products = list(product_collection.find({"category.main_category_id": main_category_id}, {"_id": 0}))
+
+        if products:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục đang được sử dụng",
+                data=products
+            )
+
+        collection = db[collection_name]
+        result = collection.delete_one({"main_category_id": main_category_id})
+        if result.deleted_count == 0:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy danh mục chính")
+
+        return response.SuccessResponse(message="Xóa danh mục chính thành công")
+    except Exception as e:
+        logger.error(f"Lỗi xóa danh mục chính: {str(e)}")
+        raise e
+
+async def delete_sub_category(sub_category_id: str):
+    try:
+        product_collection = db[product_collection_name]
+        products = list(product_collection.find({"category.sub_category_id": sub_category_id}, {"_id": 0}))
+
+        if products:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục con đang được sử dụng",
+                data=products
+            )
+
+        collection = db[collection_name]
+        result = collection.update_one(
+            {"sub_category.sub_category_id": sub_category_id},
+            {"$pull": {"sub_category": {"sub_category_id": sub_category_id}}}
+        )
+        if result.modified_count == 0:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy danh mục con")
+
+        return response.SuccessResponse(message="Xóa danh mục con thành công")
+    except Exception as e:
+        logger.error(f"Lỗi xóa danh mục con: {str(e)}")
+        raise e
+
+
+async def delete_child_category(child_category_id: str):
+    try:
+        product_collection = db[product_collection_name]
+        products = list(product_collection.find({"category.child_category_id": child_category_id}, {"_id": 0}))
+
+        if products:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục con cấp 2 đang được sử dụng",
+                data=products
+            )
+
+        collection = db[collection_name]
+        result = collection.update_one(
+            {"sub_category.child_category.child_category_id": child_category_id},
+            {"$pull": {"sub_category.$[].child_category": {"child_category_id": child_category_id}}}
+        )
+        if result.modified_count == 0:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy danh mục con cấp 2")
+
+        return response.SuccessResponse(message="Xóa danh mục con cấp 2 thành công")
+    except Exception as e:
+        logger.error(f"Lỗi xóa danh mục con cấp 2: {str(e)}")
         raise e
