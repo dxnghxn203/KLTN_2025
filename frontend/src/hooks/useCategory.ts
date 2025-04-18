@@ -1,4 +1,4 @@
-import { fetchAddCategoryStart, fetchAddChildCategoryStart, fetchAddSubCategoryStart, fetchGetAllCategoryForAdminStart, fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, fetchUpdateChildCategoryStart, fetchUpdateImageSubCategoryStart, fetchUpdateMainCategoryStart, fetchUpdateSubCategoryStart, selectAllCategory, selectCategoryAdmin, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
+import { fetchAddCategoryStart, fetchAddChildCategoryStart, fetchAddSubCategoryStart, fetchDeleteChildCategoryStart, fetchDeleteMainCategoryStart, fetchDeleteSubCategoryStart, fetchGetAllCategoryForAdminStart, fetchGetAllCategoryStart, fetchGetChildCategoryStart, fetchGetMainCategoryStart, fetchGetProductByMainSlugStart, fetchGetSubCategoryStart, fetchUpdateChildCategoryStart, fetchUpdateImageChildCategoryStart, fetchUpdateImageSubCategoryStart, fetchUpdateMainCategoryStart, fetchUpdateSubCategoryStart, selectAllCategory, selectCategoryAdmin, selectChildCategory, selectMainCategory, selectProductByMainSlug, selectSubCategory } from "@/store/category";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useCategory() {
@@ -138,6 +138,55 @@ export function useCategory() {
       onFailure,
     }));
   }
+
+  const fetchUpdateImageChildCategory = (
+    formData: any,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchUpdateImageChildCategoryStart({
+      ...formData,
+      onSuccess,
+      onFailure,
+    }));
+  }
+
+  const fetchDeleteChildCategory = (
+    child_category_id: string,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchDeleteChildCategoryStart({
+      child_category_id,
+      onSuccess,
+      onFailure,
+    }));
+  };
+
+  const fetchDeleteSubCategory = (
+    sub_category_id: string,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchDeleteSubCategoryStart({
+      sub_category_id,
+      onSuccess,
+      onFailure,
+    }));
+  };
+
+  const fetchDeleteMainCategory = (
+    main_category_id: string,
+    onSuccess: () => void,
+    onFailure: (message: any) => void,
+  ) => {
+    dispatch(fetchDeleteMainCategoryStart({
+      main_category_id,
+      onSuccess,
+      onFailure,
+    }));
+  }
+  
   
     
   return {
@@ -165,6 +214,11 @@ export function useCategory() {
     fetchAddSubCategory,
 
     fetchUpdateImageSubCategory,
+    fetchUpdateImageChildCategory,
+
+    fetchDeleteChildCategory,
+    fetchDeleteSubCategory,
+    fetchDeleteMainCategory,
     
 
   };

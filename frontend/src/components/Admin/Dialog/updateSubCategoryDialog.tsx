@@ -28,7 +28,6 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  // const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState(() => {
     return categorySubInfo.reduce((acc, item) => {
@@ -68,7 +67,6 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Kiểm tra đuôi file
       const validExtensions = ["image/jpeg", "image/png", "image/jpg"];
       if (!validExtensions.includes(file.type)) {
         toast.showToast("Vui lòng chọn file ảnh hợp lệ!", ToastType.ERROR);
@@ -90,11 +88,10 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
 
     const data = {
       sub_category_id: selectedSubId,
-      image: selectedFile, // Sử dụng selectedImage nếu có ảnh mới
+      image: selectedFile,
     };
-    console.log("ff", data);
+    // console.log("ff", data);
 
-    // Kiểm tra nếu không có thay đổi về danh mục
     const isCategoryUpdated =
       updatedCategory.sub_category_name !==
         categorySubInfo.find((item) => item.label === "Tên danh mục cấp 1")
@@ -103,12 +100,10 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
         categorySubInfo.find((item) => item.label === "URL danh mục cấp 1")
           ?.value;
 
-    // Nếu có thay đổi danh mục, gọi fetchUpdateSubCategory
     if (isCategoryUpdated) {
       fetchUpdateSubCategory(
         updatedCategory,
         () => {
-          // Kiểm tra nếu có ảnh mới thì cập nhật ảnh
           if (selectedFile) {
             fetchUpdateImageSubCategory(
               data,
@@ -121,7 +116,6 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
                 toast.showToast(message, ToastType.ERROR);
               }
             );
-            // console.log("emm", selectedFile);
           } else {
             fetchGetAllCategoryForAdmin();
             onClose();
@@ -145,6 +139,7 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
             toast.showToast(message, ToastType.ERROR);
           }
         );
+        console.log("update image", data);
       } else {
         fetchGetAllCategoryForAdmin();
         onClose();

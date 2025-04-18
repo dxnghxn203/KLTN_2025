@@ -44,7 +44,10 @@ const TableProduct = () => {
   // Tính số lượng sản phẩm trong kho
   const calculateTotalStock = (prices: any[]) => {
     if (!prices || prices.length === 0) return 0;
-    return prices.reduce((total, price) => total + (price.inventory-price.sell || 0), 0);
+    return prices.reduce(
+      (total, price) => total + (price.inventory - price.sell || 0),
+      0
+    );
   };
 
   // Lấy giá hiển thị
@@ -77,7 +80,9 @@ const TableProduct = () => {
               <tr className="uppercase text-sm">
                 <th className="py-4 px-4 text-center w-[130px]">Hình ảnh</th>
                 <th className="py-4 px-2 ">Tên sản phẩm</th>
-                <th className="py-4 px-2 text-center">Mã sản phẩm</th>
+                <th className="py-4 px-2 text-center">
+                  Mã sản phẩm/ Mã danh mục
+                </th>
                 <th className="py-4 px-2 text-center w-[100px]">Kho</th>
                 <th className="py-4 px-2 text-center">Giá</th>
                 <th className="py-4 px-2 text-center">Danh mục</th>
@@ -99,7 +104,7 @@ const TableProduct = () => {
                   >
                     <td className="py-4 px-4 text-center">
                       {product.images_primary ? (
-                        <div className="relative h-12 w-12 mx-auto">
+                        <div className="relative h-16 w-16 mx-auto">
                           <Image
                             src={product.images_primary}
                             alt={product.product_name}
@@ -121,8 +126,22 @@ const TableProduct = () => {
                         {product.name_primary.substring(0, 20)}...
                       </div>
                     </td>
-                    <td className="py-4 px-2  text-center">
-                      <span className="text-xs">{product.product_id}</span>
+                    <td className="py-4 px-2 text-center text-xs flex flex-col gap-2 items-center justify-center">
+                      <span className="font-semibold">
+                        {product.product_id}
+                      </span>
+                      <span
+                        className="
+                      px-2 py-1 bg-blue-100 text-blue-700 rounded-full w-fit"
+                      >
+                        {product.category?.main_category_id}
+                      </span>
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full w-fit">
+                        {product.category?.sub_category_id}
+                      </span>
+                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full w-fit">
+                        {product.category?.child_category_id}
+                      </span>
                     </td>
                     <td className="py-4 px-2 text-center font-medium">
                       {calculateTotalStock(product.prices) === 0 ? (
@@ -141,29 +160,24 @@ const TableProduct = () => {
                       {product.prices.map((p: any, idx: number) => (
                         <div key={idx} className="mb-1">
                           <span>{formatCurrency(p.price)}</span>
-                          <span className="text-xs text-gray-500 ml-1">/ {p.unit}</span>
+                          <span className="text-xs text-gray-500 ml-1">
+                            / {p.unit}
+                          </span>
                         </div>
                       ))}
                     </td>
 
                     <td className="py-4 px-2 text-center">
-                      <div className="flex flex-wrap justify-center gap-1">
-                        {product.category?.main_category_slug && (
-                          <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs mb-1">
-                            {product.category.main_category_slug.replace(
-                              /-/g,
-                              " "
-                            )}
-                          </span>
-                        )}
-                        {product.category?.sub_category_slug && (
-                          <span className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                            {product.category.sub_category_slug.replace(
-                              /-/g,
-                              " "
-                            )}
-                          </span>
-                        )}
+                      <div className="flex flex-wrap justify-center gap-2">
+                        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
+                          {product.category.main_category_name}
+                        </span>
+                        <span className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                          {product.category.sub_category_name}
+                        </span>
+                        <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                          {product.category.child_category_name}
+                        </span>
                       </div>
                     </td>
                     <td className="py-4 px-2 w-[100px] text-center">

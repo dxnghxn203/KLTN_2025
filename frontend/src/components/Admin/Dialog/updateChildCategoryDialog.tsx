@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
+import Image from "next/image";
+import { MdOutlineEdit } from "react-icons/md";
 
 interface UpdateChildCategoryDialogProps {
   isOpen: boolean;
@@ -12,6 +14,7 @@ interface UpdateChildCategoryDialogProps {
   main_slug: string;
   sub_slug: string;
   mode: "add" | "update";
+  selectImageChild: string;
 }
 
 const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
@@ -22,14 +25,17 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
   main_slug,
   sub_slug,
   mode,
+  selectImageChild,
 }) => {
   const {
     fetchUpdateChildCategory,
     fetchGetAllCategoryForAdmin,
     fetchAddChildCategory,
+    fetchUpdateImageChildCategory,
   } = useCategory();
   const toast = useToast();
-
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<Record<string, string>>(() => {
     if (mode === "add") {
       return {
@@ -60,6 +66,12 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
     }
   }, [isOpen, categoryChildInfo, mode]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFile(null);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleChange = (label: string, value: string) => {
@@ -68,6 +80,24 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
       [label]: value,
     }));
   };
+  const handleEditImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const validExtensions = ["image/jpeg", "image/png", "image/jpg"];
+      if (!validExtensions.includes(file.type)) {
+        toast.showToast("Vui lòng chọn file ảnh hợp lệ!", ToastType.ERROR);
+        return;
+      }
+
+      setSelectedFile(file);
+
+      console.log("image", file);
+    }
+  };
 
   const handleUpdateChildCategory = () => {
     const updatedCategory = {
@@ -75,19 +105,64 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
       child_category_name: formData["Tên danh mục cấp 2"],
       child_category_slug: formData["URL danh mục cấp 2"],
     };
-    console.log("updatedCategory", updatedCategory);
+    const data = {
+      child_category_id: selectedChildId,
+      image: selectedFile,
+    };
+    console.log("ff", data);
+    const isCategoryUpdated =
+      updatedCategory.child_category_name !==
+        categoryChildInfo.find((item) => item.label === "Tên danh mục cấp 2")
+          ?.value ||
+      updatedCategory.child_category_slug !==
+        categoryChildInfo.find((item) => item.label === "URL danh mục cấp 2")
+          ?.value;
 
-    fetchUpdateChildCategory(
-      updatedCategory,
-      () => {
-        toast.showToast("Cập nhật thành công!", ToastType.SUCCESS);
+    if (isCategoryUpdated) {
+      fetchUpdateChildCategory(
+        updatedCategory,
+        () => {
+          if (selectedFile) {
+            fetchUpdateImageChildCategory(
+              data,
+              () => {
+                toast.showToast("Cập nhật ảnh thành công!", ToastType.SUCCESS);
+                fetchGetAllCategoryForAdmin();
+                onClose();
+              },
+              (message) => {
+                toast.showToast(message, ToastType.ERROR);
+              }
+            );
+          } else {
+            fetchGetAllCategoryForAdmin();
+            onClose();
+          }
+          toast.showToast("Cập nhật danh mục thành công!", ToastType.SUCCESS);
+        },
+        (message) => {
+          toast.showToast(message, ToastType.ERROR);
+        }
+      );
+    } else {
+      if (selectedFile) {
+        fetchUpdateImageChildCategory(
+          data,
+          () => {
+            toast.showToast("Cập nhật ảnh thành công!", ToastType.SUCCESS);
+            fetchGetAllCategoryForAdmin();
+            onClose();
+          },
+          (message) => {
+            toast.showToast(message, ToastType.ERROR);
+          }
+        );
+        console.log("update image", data);
+      } else {
         fetchGetAllCategoryForAdmin();
         onClose();
-      },
-      () => {
-        toast.showToast("Cập nhật thất bại!", ToastType.ERROR);
       }
-    );
+    }
   };
   const handleAddChildCategory = () => {
     const newCategory = {
@@ -110,7 +185,6 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
       }
     );
   };
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="relative bg-white p-6 rounded-lg shadow-lg w-96">
@@ -144,6 +218,34 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
               disabled={item.label === "ID danh mục cấp 2"}
             />
           ))}
+          <div className="relative w-[120px] h-[120px]">
+            <Image
+              src={
+                selectedFile
+                  ? URL.createObjectURL(selectedFile)
+                  : selectImageChild
+              }
+              alt="icon"
+              width={120}
+              height={120}
+              className="object-contain rounded-md"
+              priority
+            />
+            <button
+              onClick={handleEditImage}
+              className="absolute bottom-1 right-1 bg-white border border-gray-300 rounded-full p-1 shadow hover:bg-gray-100"
+              title="Chỉnh sửa ảnh"
+            >
+              <MdOutlineEdit className="w-4 h-4 text-gray-600" />
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+          </div>
         </div>
 
         <div className="flex justify-end mt-6 space-x-2">

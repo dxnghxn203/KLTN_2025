@@ -45,7 +45,17 @@ import {
     fetchAddSubCategoryStart,
     fetchUpdateImageSubCategorySuccess,
     fetchUpdateImageSubCategoryFailed,
-    fetchUpdateImageSubCategoryStart
+    fetchUpdateImageSubCategoryStart,
+    fetchUpdateImageChildCategorySuccess,
+    fetchUpdateImageChildCategoryFailed,
+    fetchUpdateImageChildCategoryStart,
+    fetchDeleteChildCategoryStart,
+    fetchDeleteSubCategorySuccess,
+    fetchDeleteSubCategoryFailed,
+    fetchDeleteSubCategoryStart,
+    fetchDeleteMainCategorySuccess,
+    fetchDeleteMainCategoryFailed,
+    fetchDeleteMainCategoryStart
 } from './categorySlice';
 import { on } from 'events';
 
@@ -344,7 +354,7 @@ function* fetchAddSubCategory(action: any): Generator<any, void, any> {
     }
 }
 
-function* fetchUpdateImageCategory(action: any): Generator<any, void, any> {
+function* fetchUpdateImageSubCategory(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
         const {
@@ -371,6 +381,105 @@ function* fetchUpdateImageCategory(action: any): Generator<any, void, any> {
         }
 }
 
+function* fetchUpdateImageChildCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            child_category_id,
+            image,
+            onSuccess = () => {},
+            onFailure = (message: any) => {}
+            
+        } = payload;
+        const formData = new FormData();
+        formData.append("image", image);
+        console.log("formData", formData)
+        const category = yield call(categoryService.updateImageChildCategory, child_category_id, formData);
+        if (category.status_code === 200) {
+            onSuccess()
+            yield put(fetchUpdateImageChildCategorySuccess(category.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchUpdateImageChildCategoryFailed("Category not found"));
+
+    }
+    catch (error) {
+            yield put(fetchUpdateImageChildCategoryFailed("Failed to fetch category"));
+        }
+}
+
+function* fetchDeleteChildCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            child_category_id,
+            onSuccess = () => {},
+            onFailure = (message: any) => {}
+            
+        } = payload;
+        const category = yield call(categoryService.deleteChildCategory, child_category_id);
+        if (category.status_code === 200) {
+            onSuccess()
+            yield put(fetchUpdateImageChildCategorySuccess(category.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchUpdateImageChildCategoryFailed("Category not found"));
+
+    }
+    catch (error) {
+            yield put(fetchUpdateImageChildCategoryFailed("Failed to fetch category"));
+        }
+}
+
+function* fetchDeleteSubCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            sub_category_id,
+            onSuccess = () => {},
+            onFailure = (message: any) => {}
+            
+        } = payload;
+        const category = yield call(categoryService.deleteSubCategory, sub_category_id);
+        if (category.status_code === 200) {
+            onSuccess()
+            yield put(fetchDeleteSubCategorySuccess(category.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchDeleteSubCategoryFailed("Category not found"));
+    }
+    catch (error) {
+            yield put(fetchDeleteSubCategoryFailed("Failed to fetch category"));
+        }
+    }
+
+function* fetchDeleteMainCategory(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            main_category_id,
+            onSuccess = () => {},
+            onFailure = (message: any) => {}
+            
+        } = payload;
+        const category = yield call(categoryService.deleteMainCategory, main_category_id);
+        if (category.status_code === 200) {
+            onSuccess()
+            yield put(fetchDeleteMainCategorySuccess(category.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchDeleteMainCategoryFailed("Category not found"));
+
+    }
+    catch (error) {
+            yield put(fetchDeleteMainCategoryFailed("Failed to fetch category"));
+        }
+    }
+
 
   
   
@@ -389,7 +498,12 @@ export function* categorySaga() {
     yield takeLatest(fetchAddCategoryStart.type, fetchAddCategory);
     yield takeLatest(fetchAddChildCategoryStart.type, fetchAddChildCategory);
     yield takeLatest(fetchAddSubCategoryStart.type, fetchAddSubCategory);
-    yield takeLatest(fetchUpdateImageSubCategoryStart.type, fetchUpdateImageCategory);
+    yield takeLatest(fetchUpdateImageSubCategoryStart.type, fetchUpdateImageSubCategory);
+    yield takeLatest(fetchUpdateImageChildCategoryStart.type, fetchUpdateImageChildCategory);
+    yield takeLatest(fetchDeleteChildCategoryStart.type, fetchDeleteChildCategory);
+    yield takeLatest(fetchDeleteSubCategoryStart.type, fetchDeleteSubCategory);
+    yield takeLatest(fetchDeleteMainCategoryStart.type, fetchDeleteMainCategory);
+    
     
 
 }

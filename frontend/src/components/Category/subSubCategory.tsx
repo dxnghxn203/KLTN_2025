@@ -25,8 +25,8 @@ export default function SubSubCategory({
                   <Image
                     src={child?.child_image_url}
                     alt="icon"
-                    width={90}
-                    height={90}
+                    width={100}
+                    height={100}
                     className="object-contain bg-transparent"
                   />
                 </div>

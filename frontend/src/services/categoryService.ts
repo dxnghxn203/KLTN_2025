@@ -182,5 +182,64 @@ export const addSubCategory = async (
       }
     }
 
+export const updateImageChildCategory = async (
+    child_category_id: string,
+    data: any
+    ): Promise<any> => {
+    try {
+      const params = `/v1/category/child-category/${child_category_id}/update-image`;
+      const response: any = await axiosClient.put(params, data);
+      return {
+        status_code: response.status_code,
+        message: response.message,
+        data: response.data,
+      };
+    } catch (error: any) {
+        throw error;
+      }
+    }
+
+export const deleteChildCategory = async (child_category_id: string): Promise<any> => {
+    try {
+      const params = `/v1/category/child/${child_category_id}`;
+      const response: any = await axiosClient.delete(params);
+      return {
+        status_code: response.status_code,
+        message: response.message,
+        data: response.data,
+      };
+    } catch (error: any) {
+        throw error;
+      }
+    }
+
+export const deleteSubCategory = async (sub_category_id: string): Promise<any> => {
+    try {
+      const params = `/v1/category/sub/${sub_category_id}`;
+      const response: any = await axiosClient.delete(params);
+      return {
+        status_code: response.status_code,
+        message: response.message,
+        data: response.data,
+      };
+    } catch (error: any) {
+        throw error;
+      }
+    }
+
+export const deleteMainCategory = async (main_category_id: string): Promise<any> => {
+    try {
+      const params = `/v1/category/main/${main_category_id}`;
+      const response: any = await axiosClient.delete(params);
+      return {
+        status_code: response.status_code,
+        message: response.message,
+        data: response.data,
+      };
+    } catch (error: any) {
+        throw error;
+      }
+    }
+
   
 

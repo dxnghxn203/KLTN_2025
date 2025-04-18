@@ -6,14 +6,22 @@ import { MdOutlineModeEdit } from "react-icons/md";
 import SubCategoryList from "./subCategoryList";
 import UpdateMainCategoryDialog from "../Dialog/updateCategoryMainDialog";
 import AddNewCategoryDialog from "../Dialog/addCategoryDialog";
+import DeleteCategoryDialog from "../Dialog/confirmDeleteCategoryDialog";
+import { useToast } from "@/providers/toastProvider";
+import { ToastType } from "@/components/Toast/toast";
 
 export default function QuanLyDanhMuc() {
   const [selectedMainId, setSelectedMainId] = useState<number | null>(null);
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<number | null>(null);
   const [isDialogOpen, setDialogOpen] = useState<boolean>(false);
   const [isAddNewDialogOpen, setAddNewDialogOpen] = useState<boolean>(false);
-  const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
-  // console.log(categoryAdmin);
+  const {
+    categoryAdmin,
+    fetchGetAllCategoryForAdmin,
+    fetchDeleteMainCategory,
+  } = useCategory();
+  const [isDialogDeleteMain, setDialogDeleteMain] = useState<boolean>(false);
+  const toast = useToast();
   const [showOptions, setShowOptions] = useState(null);
   const selectedMain = categoryAdmin.find(
     (d: any) => d?.main_category_id === selectedMainId
@@ -66,11 +74,9 @@ export default function QuanLyDanhMuc() {
               {/* URL */}
               <p>
                 <span
-                  className={`font-medium rounded-full bg-[#E3EFF9] px-3 py-1 text-sm w-fit" ${
-                    selectedMainId === categoryMain?.main_category_id
-                      ? "text-[#0C6DFF]"
-                      : "text-[#0C6DFF]"
-                  }`}
+                  className={
+                    "font-medium rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-sm w-fit"
+                  }
                 >
                   URL: {categoryMain?.main_category_slug}
                 </span>
@@ -116,7 +122,8 @@ export default function QuanLyDanhMuc() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    // handleDelete(categoryMain?.main_category_id);
+                    setSelectedMainId(categoryMain?.main_category_id);
+                    setDialogDeleteMain(true);
                   }}
                   className="p-2 bg-[#FCECEC] text-white rounded-full"
                 >
@@ -128,10 +135,7 @@ export default function QuanLyDanhMuc() {
         ))}
       </div>
 
-      <SubCategoryList
-        categoryAdmin={categoryAdmin}
-        selectedMainId={selectedMainId}
-      />
+      <SubCategoryList selectedMainId={selectedMainId} />
       <UpdateMainCategoryDialog
         isOpen={isDialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -141,6 +145,23 @@ export default function QuanLyDanhMuc() {
       <AddNewCategoryDialog
         isOpen={isAddNewDialogOpen}
         onClose={() => setAddNewDialogOpen(false)}
+      />
+      <DeleteCategoryDialog
+        isOpen={isDialogDeleteMain}
+        onClose={() => setDialogDeleteMain(false)}
+        onDelete={() => {
+          fetchDeleteMainCategory(
+            selectedMain?.main_category_id,
+            () => {
+              toast.showToast("Xóa danh mục thành công!", ToastType.SUCCESS);
+              fetchGetAllCategoryForAdmin();
+              setDialogDeleteMain(false);
+            },
+            (message) => {
+              toast.showToast(message, ToastType.ERROR);
+            }
+          );
+        }}
       />
     </div>
   );

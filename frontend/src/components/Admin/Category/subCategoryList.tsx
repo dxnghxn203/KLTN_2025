@@ -5,18 +5,28 @@ import UpdateSubCategoryDialog from "../Dialog/updateSubCategoryDialog";
 import UpdateChildCategoryDialog from "../Dialog/updateChildCategoryDialog";
 import AddSubCategoryDialog from "../Dialog/addSubCategoryDialog";
 import Image from "next/image";
+import { useCategory } from "@/hooks/useCategory";
+import { ToastType } from "@/components/Toast/toast";
+import { useToast } from "@/providers/toastProvider";
+import { Delete } from "lucide-react";
+import DeleteCategoryDialog from "../Dialog/confirmDeleteCategoryDialog";
 
-export default function SubCategoryList({
-  categoryAdmin,
-  selectedMainId,
-}: any) {
+export default function SubCategoryList({ selectedMainId }: any) {
   const [isDialogOpenLv1, setDialogOpenLv1] = useState<boolean>(false);
   const [selectedLevel1Id, setSelectedLevel1Id] = useState<number | null>(null);
   const [isDialogOpenLv2, setDialogOpenLv2] = useState<boolean>(false);
   const [isDialogOpenAddSub, setDialogOpenAddSub] = useState<boolean>(false);
-
   const [selectedChildCategory, setSelectedChildCategory] = useState<any>(null);
+  const [isDialogDeleteChild, setDialogDeleteChild] = useState<boolean>(false);
+  const [isDialogDeleteSub, setDialogDeleteSub] = useState<boolean>(false);
   const [mode, setMode] = useState<"add" | "update">("add");
+  const {
+    fetchDeleteChildCategory,
+    categoryAdmin,
+    fetchGetAllCategoryForAdmin,
+    fetchDeleteSubCategory,
+  } = useCategory();
+  const toast = useToast();
 
   const selectedMain = categoryAdmin.find(
     (d: any) => d?.main_category_id === selectedMainId
@@ -27,7 +37,11 @@ export default function SubCategoryList({
   const selectImageSub = selectedMain?.sub_category.find(
     (l1: any) => l1.sub_category_id === selectedLevel1Id
   )?.sub_image_url;
-  // console.log("selectedMain?.sub_image_url", selectImageSub);
+
+  const selectImageChild = selectedLevel1?.child_category.find(
+    (l2: any) =>
+      l2.child_category_id === selectedChildCategory?.child_category_id
+  )?.child_image_url;
   const [showLevel1Options, setShowLevel1Options] = useState<number | null>(
     null
   );
@@ -36,6 +50,7 @@ export default function SubCategoryList({
     { label: "Tên danh mục cấp 1", value: selectedLevel1?.sub_category_name },
     { label: "URL danh mục cấp 1", value: selectedLevel1?.sub_category_slug },
   ];
+  // const selectedChildId =
   const categoryChildInfo =
     mode === "add"
       ? [
@@ -56,8 +71,6 @@ export default function SubCategoryList({
             value: selectedChildCategory?.child_category_slug,
           },
         ];
-
-  // console.log("childInfo", categoryChildInfo);
 
   return (
     <>
@@ -109,7 +122,7 @@ export default function SubCategoryList({
                         </div>
                       </div>
 
-                      <span className="font-medium rounded-full bg-[#E3EFF9] px-3 py-1 text-[#0C6DFF] text-sm w-fit">
+                      <span className="font-medium rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-sm w-fit">
                         URL: {l1?.sub_category_slug}
                       </span>
                     </div>
@@ -128,8 +141,9 @@ export default function SubCategoryList({
                       </button>
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); // Ngừng sự kiện click từ card
-                          // handleDelete(categoryMain?.main_category_id);
+                          e.stopPropagation();
+                          setSelectedLevel1Id(l1?.sub_category_id);
+                          setDialogDeleteSub(true);
                         }}
                         className="p-2 bg-[#FCECEC] text-white rounded-full"
                       >
@@ -176,7 +190,7 @@ export default function SubCategoryList({
                           <h4 className="font-medium">
                             {lv2?.child_category_name}
                           </h4>
-                          <span className="font-medium rounded-full bg-[#E3EFF9] px-3 py-1 text-[#0C6DFF] text-sm w-fit">
+                          <span className="font-medium rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-sm w-fit">
                             URL: {lv2?.child_category_slug}
                           </span>
                         </div>
@@ -197,7 +211,8 @@ export default function SubCategoryList({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            // handleDelete(lv2?.child_category_id);
+                            setSelectedChildCategory(lv2);
+                            setDialogDeleteChild(true);
                           }}
                           className="p-2 bg-[#FCECEC] rounded-full"
                         >
@@ -253,6 +268,7 @@ export default function SubCategoryList({
         categoryChildInfo={categoryChildInfo}
         selectedChildId={selectedChildCategory?.child_category_id}
         mode={mode}
+        selectImageChild={selectImageChild}
       />
       <AddSubCategoryDialog
         isOpen={isDialogOpenAddSub}
@@ -262,6 +278,42 @@ export default function SubCategoryList({
             (d: any) => d?.main_category_id === selectedMainId
           )?.main_category_slug
         }
+      />
+      <DeleteCategoryDialog
+        // selectedChildId={selectedChildCategory?.child_category_id}
+        isOpen={isDialogDeleteChild}
+        onClose={() => setDialogDeleteChild(false)}
+        onDelete={() => {
+          fetchDeleteChildCategory(
+            selectedChildCategory?.child_category_id,
+            () => {
+              toast.showToast("Xóa danh mục thành công!", ToastType.SUCCESS);
+              fetchGetAllCategoryForAdmin();
+              setDialogDeleteChild(false);
+            },
+            (message) => {
+              toast.showToast(message, ToastType.ERROR);
+            }
+          );
+        }}
+      />
+
+      <DeleteCategoryDialog
+        isOpen={isDialogDeleteSub}
+        onClose={() => setDialogDeleteSub(false)}
+        onDelete={() => {
+          fetchDeleteSubCategory(
+            selectedLevel1?.sub_category_id,
+            () => {
+              toast.showToast("Xóa danh mục thành công!", ToastType.SUCCESS);
+              fetchGetAllCategoryForAdmin();
+              setDialogDeleteSub(false);
+            },
+            (message) => {
+              toast.showToast(message, ToastType.ERROR);
+            }
+          );
+        }}
       />
     </>
   );
