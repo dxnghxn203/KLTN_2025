@@ -73,15 +73,16 @@ type ProductInfo struct {
 }
 
 type PriceRes struct {
-	PriceId   string `json:"price_id" bson:"price_id"`
-	Inventory int    `json:"inventory" bson:"inventory"`
-	Sell      int    `json:"sell" bson:"sell"`
-	Delivery  int    `json:"delivery" bson:"delivery"`
+	PriceId string `json:"price_id" bson:"price_id"`
+	Amount  int    `json:"amount" bson:"amount"`
 }
 
 type ProductRes struct {
 	ProductId string     `json:"product_id" bson:"product_id"`
 	Prices    []PriceRes `json:"prices" bson:"prices"`
+	Inventory int        `json:"inventory" bson:"inventory"`
+	Sell      int        `json:"sell" bson:"sell"`
+	Delivery  int        `json:"delivery" bson:"delivery"`
 }
 
 type OrderRes struct {
@@ -152,6 +153,30 @@ func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	return false, _id, nil
 }
 
+func getPriceAmount(productId string, priceId string, ctx context.Context) int {
+	db := database.GetDatabase()
+	collection := db.Collection("products")
+
+	result := collection.FindOne(ctx, bson.M{"product_id": productId})
+	if result.Err() != nil {
+		slog.Error("Không tìm thấy sản phẩm khi lấy amount", "product_id", productId, "err", result.Err())
+		return 1
+	}
+
+	var product ProductRes
+	if err := result.Decode(&product); err != nil {
+		slog.Error("Lỗi giải mã khi lấy amount", "product_id", productId, "err", err)
+		return 1
+	}
+
+	for _, price := range product.Prices {
+		if price.PriceId == priceId {
+			return price.Amount
+		}
+	}
+	return 1
+}
+
 func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 	db := database.GetDatabase()
 	collection := db.Collection("products")
@@ -173,7 +198,8 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 
 		for _, price := range product.Prices {
 			if price.PriceId == p.PriceId {
-				if price.Inventory < price.Sell+p.Quantity {
+				usedQuantity := p.Quantity * price.Amount
+				if product.Inventory < product.Sell+usedQuantity {
 					insufficientProducts = append(insufficientProducts, p.ProductName)
 				}
 				break
@@ -227,11 +253,10 @@ func UpdateProductSellCount(ctx context.Context, products []ProductInfo, modifie
 
 	for _, p := range products {
 		filter := bson.M{
-			"product_id":      p.ProductId,
-			"prices.price_id": p.PriceId,
+			"product_id": p.ProductId,
 		}
 		update := bson.M{
-			"$inc": bson.M{"prices.$.sell": p.Quantity * modifier},
+			"$inc": bson.M{"sell": p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx) * modifier},
 		}
 
 		_, err := collection.UpdateOne(ctx, filter, update)
@@ -250,11 +275,10 @@ func UpdateProductDeliveryCount(ctx context.Context, products []ProductInfo, mod
 
 	for _, p := range products {
 		filter := bson.M{
-			"product_id":      p.ProductId,
-			"prices.price_id": p.PriceId,
+			"product_id": p.ProductId,
 		}
 		update := bson.M{
-			"$inc": bson.M{"prices.$.delivery": p.Quantity * modifier},
+			"$inc": bson.M{"delivery": p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx) * modifier},
 		}
 
 		_, err := collection.UpdateOne(ctx, filter, update)
@@ -277,23 +301,21 @@ func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 	return nil
 }
 
-func UpdateProductSellRedis(ctx context.Context, product []ProductInfo, modifier int) error {
-	for _, product := range product {
-		productId := fmt.Sprintf("%s_%s", product.ProductId, product.PriceId)
-		err := database.UpdateProductSales(ctx, productId, product.Quantity, modifier)
+func UpdateProductSellRedis(ctx context.Context, products []ProductInfo, modifier int) error {
+	for _, p := range products {
+		err := database.UpdateProductSales(ctx, p.ProductId, p.Quantity*getPriceAmount(p.ProductId, p.PriceId, ctx), modifier)
 		if err != nil {
-			slog.Error("Lỗi khi cập nhật số lượng bán của sản phẩm", "product", productId, "err", err)
+			slog.Error("Lỗi khi cập nhật số lượng bán của sản phẩm", "product", p.ProductId, "err", err)
 		}
 	}
 	return nil
 }
 
-func UpdateProductDeliveryRedis(ctx context.Context, product []ProductInfo, modifier int) error {
-	for _, product := range product {
-		productId := fmt.Sprintf("%s_%s", product.ProductId, product.PriceId)
-		err := database.UpdateProductDelivery(ctx, productId, product.Quantity, modifier)
+func UpdateProductDeliveryRedis(ctx context.Context, products []ProductInfo, modifier int) error {
+	for _, p := range products {
+		err := database.UpdateProductDelivery(ctx, p.ProductId, p.Quantity*getPriceAmount(p.ProductId, p.PriceId, ctx), modifier)
 		if err != nil {
-			slog.Error("Lỗi khi cập nhật số lượng cập nhật của sản phẩm", "product", productId, "err", err)
+			slog.Error("Lỗi khi cập nhật số lượng cập nhật của sản phẩm", "product", p.ProductId, "err", err)
 		}
 	}
 	return nil

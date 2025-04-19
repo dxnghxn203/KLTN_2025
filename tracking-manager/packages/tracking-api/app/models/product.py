@@ -6,7 +6,7 @@ from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
-    ItemProductRedisReq, UpdateCategoryReq
+    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
@@ -237,14 +237,12 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             price_list = [
                 ItemPriceDBReq(
                     price_id=generate_id("PRICE"),
-                    price=price.original_price*(100-price.discount)/100,
-                    original_price=price.original_price,
-                    unit_price=price.unit_price,
+                    price=item.original_price*(100-price.discount)/100,
                     discount=price.discount,
                     unit=price.unit,
-                    inventory=price.inventory,
-                    amount_per_unit=price.amount_per_unit,
-                    weight=price.weight
+                    weight=price.weight,
+                    amount=price.amount,
+                    original_price=item.original_price
                 ) for idx, price in enumerate(item.prices.prices)
             ]
 
@@ -254,14 +252,56 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
 
         product_id = generate_id("PRODUCT")
 
+        category_collection = db[collection_category]
+        main_category = category_collection.find_one({"main_category_id": item.category.main_category_id})
+        if not main_category:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục chính không hợp lệ"
+            )
+
+        sub_category = next(
+            (sub for sub in main_category.get("sub_category", []) if sub["sub_category_id"] == item.category.sub_category_id),
+            None
+        )
+        if not sub_category:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục phụ không hợp lệ"
+            )
+
+        child_category = next(
+            (child for child in sub_category.get("child_category", []) if
+             child["child_category_id"] == item.category.child_category_id),
+            None
+        )
+        if not child_category:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Danh mục con không hợp lệ"
+            )
+
+        category_obj = ItemCategoryDBReq(
+            main_category_id=item.category.main_category_id,
+            main_category_name=main_category.get("main_category_name", ""),
+            main_category_slug=main_category.get("main_category_slug", ""),
+            sub_category_id=item.category.sub_category_id,
+            sub_category_name=sub_category.get("sub_category_name", ""),
+            sub_category_slug=sub_category.get("sub_category_slug", ""),
+            child_category_id=item.category.child_category_id,
+            child_category_name=child_category.get("child_category_name", ""),
+            child_category_slug=child_category.get("child_category_slug", ""),
+        )
+
         item_data = ItemProductDBReq(
-            **{k: v for k, v in dict(item).items() if k not in ["prices", "ingredients"]},
+            **{k: v for k, v in dict(item).items() if k not in ["prices", "ingredients", "category"]},
             product_id=product_id,
             prices=price_list,
             images=image_list,
             full_descriptions=full_subscription_list,
             ingredients=ingredients_list,
-            images_primary=images_primary_url
+            images_primary=images_primary_url,
+            category=category_obj,
         )
 
         collection = db[collection_name]
@@ -269,11 +309,9 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
 
         logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
 
-        for price in price_list:
-            redis_id = f"{product_id}_{price.price_id}"
-            redis_product = ItemProductRedisReq(inventory=price.inventory)
-            redis.save_product(redis_product, redis_id)
-            logger.info(f"Đã lưu sản phẩm vào Redis với key: {redis_id}")
+        redis_product = ItemProductRedisReq(inventory=item.inventory)
+        redis.save_product(redis_product, product_id)
+        logger.info(f"Đã lưu sản phẩm vào Redis với key: {product_id}")
 
     except Exception as e:
         logger.error(f"Lỗi khi thêm sản phẩm: {e}")
@@ -360,10 +398,8 @@ async def delete_product(product_id: str):
                 message="Xóa sản phẩm không thành công"
             )
 
-        for price in product.prices:
-            redis_id = f"{product.product_id}_{price.price_id}"
-            redis.delete_product(redis_id)
-            logger.info(f"Đã xóa sản phẩm vào Redis với key: {redis_id}")
+        redis.delete_product(product_id)
+        logger.info(f"Đã xóa sản phẩm vào Redis với key: {product_id}")
 
         return response.SuccessResponse(message="Xóa sản phẩm thành công")
     except Exception as e:

@@ -122,7 +122,8 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
     out_of_stock_ids = []
 
     for product in products:
-        data = redis.get_product_transaction(product_id=f"{product.product_id}_{product.price_id}")
+        product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
+        data = redis.get_product_transaction(product_id=product.product_id)
         logger.info(f"Product data from Redis: {data}")
 
         if not data:
@@ -133,13 +134,12 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
 
         inventory = data.get("inventory", 0)
         sell = data.get("sell", 0)
-        total_requested = product.quantity + sell
+        total_requested = product.quantity * product_info.prices[0].amount + sell
 
         if total_requested > inventory:
             out_of_stock_ids.append(product.product_id)
             continue
 
-        product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
         price_info = product_info.prices[0]
 
         total_price += price_info.price * product.quantity

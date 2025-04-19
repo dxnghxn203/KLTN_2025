@@ -10,23 +10,19 @@ class ItemProductRes(BaseModel):
     unit: Optional[Union[str, None]] = None
     quantity: int = 0
     price: float = 0
+    weight: float = 0
     original_price: float = 0
     discount: float = 0
-    weight: float = 0
     images_primary: Optional[Union[str, None]] = None
 
 class ItemPriceDBRes(BaseModel):
     price_id: Optional[Union[str, None]] = None
     price: float = 0
-    original_price: float = 0
-    unit_price: Optional[Union[str, None]] = None
     discount: float = 0
     unit: Optional[Union[str, None]] = None
-    inventory: int = 0
-    sell: int = 0
-    delivery: int = 0
-    amount_per_unit: Optional[Union[str, None]] = None
     weight: float = 0
+    amount: int = 0
+    original_price: float = 0
 
 class ItemImageDBRes(BaseModel):
     images_id: Optional[Union[str, None]] = None
@@ -62,6 +58,9 @@ class ItemProductDBRes(BaseModel):
     product_name: Optional[Union[str, None]] = None
     name_primary: Optional[Union[str, None]] = None
     prices: List[Optional[Union[ItemPriceDBRes, None]]] = None
+    inventory: Optional[Union[int, None]] = None
+    sell: Optional[Union[int, None]] = None
+    delivery: Optional[Union[int, None]] = None
     slug: Optional[Union[str, None]] = None
     description: Optional[Union[str, None]] = None
     full_descriptions: List[Optional[Union[ItemFullDescriptionDBRes, None]]] = None

@@ -29,24 +29,18 @@ class ItemProductRedisReq(BaseModel):
 class ItemPriceDBReq(BaseModel):
     price_id: str = ""
     price: float = 0
-    original_price: float = 0
-    unit_price: str = ""
     discount: float = 0
     unit: str = ""
-    inventory: int = 0
-    sell: int = 0
-    delivery: int = 0
-    amount_per_unit: str = ""
     weight: float = 0
+    amount: int = 0
+    original_price: float = 0
 
 class ItemPriceDBInReq(BaseModel):
-    original_price: float
-    unit_price: str
     discount: float
     unit: str
-    inventory: int = 0
-    amount_per_unit: str = ""
     weight: float = 0
+    amount: int = 0
+    original_price: float = 0
 
     @model_validator(mode="before")
     @classmethod
@@ -73,7 +67,7 @@ class ItemImageDBReq(BaseModel):
     images_id: str = ""
     images_url: str = ""
 
-class ItemCategoryDBInReq(BaseModel):
+class ItemCategoryDBReq(BaseModel):
     main_category_id: str = ""
     main_category_slug: str = ""
     main_category_name: str = ""
@@ -83,6 +77,11 @@ class ItemCategoryDBInReq(BaseModel):
     child_category_id: str = ""
     child_category_slug: str = ""
     child_category_name: str = ""
+
+class ItemCategoryDBInReq(BaseModel):
+    main_category_id: str = ""
+    sub_category_id: str = ""
+    child_category_id: str = ""
 
     @model_validator(mode="before")
     @classmethod
@@ -162,12 +161,15 @@ class ItemProductDBReq(BaseModel):
     product_name: str = ""
     name_primary: str = ""
     prices: List[ItemPriceDBReq] = None
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
     slug: str = ""
     description: str = ""
     full_descriptions: List[ItemFullDescriptionDBReq] = None
     images_primary: str = ""
     images: List[ItemImageDBReq] = None
-    category: ItemCategoryDBInReq
+    category: ItemCategoryDBReq
     origin: str = ""
     ingredients: List[ItemIngredientDBReq] = None
     uses: str = ""
@@ -183,6 +185,7 @@ class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")
     name_primary: Optional[str] = Field(default="")
     prices: Optional[ListPriceDBInReq] = Field(None)
+    inventory: Optional[int] = Field(default=0)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
     full_description: Optional[ListFullDescriptionDBReq] = Field(None)
