@@ -8,7 +8,7 @@ import (
 
 func Init() {
 	r := NewRouter()
-	port := os.Getenv("MEDICARE_PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "10001"
 	}
