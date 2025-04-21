@@ -242,7 +242,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
                     unit=price.unit,
                     weight=price.weight,
                     amount=price.amount,
-                    original_price=item.original_price
+                    original_price=price.original_price
                 ) for idx, price in enumerate(item.prices.prices)
             ]
 
