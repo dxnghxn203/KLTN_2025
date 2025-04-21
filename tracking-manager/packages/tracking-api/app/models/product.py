@@ -237,7 +237,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             price_list = [
                 ItemPriceDBReq(
                     price_id=generate_id("PRICE"),
-                    price=item.original_price*(100-price.discount)/100,
+                    price=price.original_price*(100-price.discount)/100,
                     discount=price.discount,
                     unit=price.unit,
                     weight=price.weight,
