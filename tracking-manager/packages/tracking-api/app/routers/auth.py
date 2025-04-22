@@ -65,7 +65,7 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
             device_id=device_id)
         res = ItemUserRes.from_mongo(us)
         res.token = jwt_token
-        return SuccessResponse(message="Đăng nhập thanh công", data=res)
+        return SuccessResponse(message="Đăng nhập thành công", data=res)
     except JsonException as je:
         raise je
     except Exception as e:
