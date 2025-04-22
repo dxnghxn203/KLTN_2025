@@ -8,7 +8,7 @@ from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
 from app.models import user
-from app.models.auth import handle_otp_verification
+from app.models.auth import handle_otp_verification, handle_password_verification
 
 router = APIRouter()
 

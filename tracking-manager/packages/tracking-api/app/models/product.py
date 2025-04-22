@@ -448,3 +448,44 @@ async def restore_product_sell(product_id: str, price_id: str, quantity: int):
     except Exception as e:
         logger.error(f"Error restoring product sell: {str(e)}")
         raise e
+
+async def get_product_best_deals(top_n: int):
+    try:
+        result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+        product_list = result.get("data", [])
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        sorted_products = sorted(
+            enriched_products,
+            key=lambda x: (x.get("rating", 0) * 2 + x.get("count_review", 0)),
+            reverse=True
+        )
+
+        return response.BaseResponse(
+            status="success",
+            message="Best deal products retrieved successfully",
+            data=sorted_products[:top_n]
+        )
+
+    except Exception as e:
+        logger.error(f"Failed [get_product_best_deals]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error"
+        )
