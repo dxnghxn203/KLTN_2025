@@ -73,3 +73,12 @@ class ItemAdminVerifyEmailReq(ItemAdminOtpReq):
         if len(value) != 6:
             raise ValueError("OTP must be 6 characters long")
         return value
+
+class ItemAdminChangePassReq(BaseModel):
+    old_password: str
+    new_password: str
+
+    @field_validator('old_password', 'new_password')
+    def validate_password(cls, v):
+        password.validate_password(v)
+        return v

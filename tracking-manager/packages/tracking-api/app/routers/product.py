@@ -10,7 +10,8 @@ from app.helpers.redis import get_session, get_recently_viewed, save_recently_vi
 from app.middleware import middleware
 from app.models import order
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
-    delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product
+    delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
+    get_product_best_deals
 from app.models.user import get_current
 
 router = APIRouter()
@@ -243,6 +244,19 @@ async def get_recently_viewed_token(token: str = Depends(middleware.verify_token
         raise je
     except Exception as e:
         logger.error("Error getting recently viewed products", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/best-deal", response_model=response.BaseResponse)
+async def get_best_deals(top_n: int = 5):
+    try:
+        return await get_product_best_deals(top_n)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting best deals product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

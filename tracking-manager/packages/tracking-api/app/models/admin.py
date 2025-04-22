@@ -8,7 +8,7 @@ from app.entities.admin.request import ItemAdminRegisReq
 from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
 from app.middleware import middleware
-from app.middleware.middleware import decode_jwt
+from app.middleware.middleware import decode_jwt, generate_password
 
 collection_name = "admin"
 
@@ -97,8 +97,20 @@ async def get_current(token: str) -> ItemAdminRes:
         if admin_info:
             admin_info['token'] = token
             return ItemAdminRes.from_mongo(admin_info)
+        return None
     except response.JsonException as je:
         raise je
     except Exception as e:
         logger.error(f"Error get_current admin: {str(e)}")
+        raise e
+
+async def update_admin_password(email: str, new_password: str):
+    try:
+        collection = database.db[collection_name]
+        collection.update_one({"email": email}, {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
+        return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"[update_admin_password] Lỗi: {str(e)}")
         raise e

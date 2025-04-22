@@ -18,6 +18,7 @@ class ItemAdminRes(BaseModel):
     created_at: Optional[Union[datetime.datetime, None]] = None
     updated_at: Optional[Union[datetime.datetime, None]] = None
     token: Optional[Union[str, None]] = None
+    password: Optional[Union[str, None]] = None
 
     @classmethod
     def from_mongo(cls, data):

@@ -237,7 +237,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             price_list = [
                 ItemPriceDBReq(
                     price_id=generate_id("PRICE"),
-                    price=item.original_price*(100-price.discount)/100,
+                    price=price.original_price*(100-price.discount)/100,
                     discount=price.discount,
                     unit=price.unit,
                     weight=price.weight,
@@ -448,3 +448,52 @@ async def restore_product_sell(product_id: str, price_id: str, quantity: int):
     except Exception as e:
         logger.error(f"Error restoring product sell: {str(e)}")
         raise e
+
+async def get_product_best_deals(top_n: int):
+    try:
+        result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+        product_list = result.get("data", [])
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            prices = product.get("prices", [])
+            max_discount = max([p.get("discount", 0) for p in prices]) if prices else 0
+
+            product.update({
+                "count_review": count_review,
+                "count_comment": count_comment,
+                "rating": avg_rating,
+                "max_discount_percent": max_discount
+            })
+
+            enriched_products.append(product)
+
+        sorted_products = sorted(
+            enriched_products,
+            key=lambda x: (
+                -x.get("max_discount_percent", 0)  # discount giảm dần
+                -(x.get("rating") or 0),              # review giảm dần
+            )
+        )
+
+        return response.BaseResponse(
+            status="success",
+            message="Best deal products retrieved successfully",
+            data=sorted_products[:top_n]
+        )
+
+    except Exception as e:
+        logger.error(f"Failed [get_product_best_deals]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error"
+        )

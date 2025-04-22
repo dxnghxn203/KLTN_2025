@@ -44,7 +44,7 @@ async def login(request: GoogleAuthRequest):
 async def login(email: str = Form(), password: str = Form(), device_id: Optional[str] = Form(None)):
     try:
         us = await user.get_by_email_and_auth_provider(email, "email")
-        if not await auth.verify_user(us, password):
+        if not await auth.verify_password(us["password"], password, us["active"]):
             raise JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Tên đăng nhập hoặc mật khẩu không đúng!"
@@ -65,7 +65,7 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
             device_id=device_id)
         res = ItemUserRes.from_mongo(us)
         res.token = jwt_token
-        return SuccessResponse(data=res)
+        return SuccessResponse(message="Đăng nhập thành công", data=res)
     except JsonException as je:
         raise je
     except Exception as e:
