@@ -8,7 +8,7 @@ from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
 from app.models import user
-from app.models.auth import handle_otp_verification, handle_password_verification
+from app.models.auth import handle_otp_verification, handle_password_verification, verify_password
 
 router = APIRouter()
 
@@ -164,7 +164,7 @@ async def change_password(item: ItemUserChangePassReq, token: str = Depends(midd
                 message="Người dùng không tồn tại."
             )
 
-        if not await auth.verify_password(user_info.password, item.old_password, user_info.active):
+        if not await verify_password(user_info.password, item.old_password, user_info.active):
             raise response.JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Mật khẩu cũ không đúng!"

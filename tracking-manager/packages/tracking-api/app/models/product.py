@@ -465,16 +465,24 @@ async def get_product_best_deals(top_n: int):
                 average_rating(product_id)
             )
 
-            product["count_review"] = count_review
-            product["count_comment"] = count_comment
-            product["rating"] = avg_rating
+            prices = product.get("prices", [])
+            max_discount = max([p.get("discount", 0) for p in prices]) if prices else 0
+
+            product.update({
+                "count_review": count_review,
+                "count_comment": count_comment,
+                "rating": avg_rating,
+                "max_discount_percent": max_discount
+            })
 
             enriched_products.append(product)
 
         sorted_products = sorted(
             enriched_products,
-            key=lambda x: (x.get("rating", 0) * 2 + x.get("count_review", 0)),
-            reverse=True
+            key=lambda x: (
+                -x.get("max_discount_percent", 0)  # discount giảm dần
+                -(x.get("rating") or 0),              # review giảm dần
+            )
         )
 
         return response.BaseResponse(
