@@ -139,6 +139,7 @@ async def get_current(token: str) -> ItemUserRes:
         if user_info:
             user_info['token'] = token
             return ItemUserRes.from_mongo(user_info)
+        return None
     except response.JsonException as je:
         raise je
     except Exception as e:
