@@ -145,3 +145,14 @@ async def get_current(token: str) -> ItemUserRes:
     except Exception as e:
         logger.error(f"Error get_current user: {str(e)}")
         raise e
+
+async def update_user_password(email: str, new_password: str):
+    try:
+        collection = database.db[collection_name]
+        collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
+        return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"[update_user_password] Lỗi: {str(e)}")
+        raise e

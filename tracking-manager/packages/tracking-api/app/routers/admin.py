@@ -5,13 +5,14 @@ from starlette import status
 
 from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
-from app.entities.admin.request import ItemAdminRegisReq, ItemAdminOtpReq, ItemAdminVerifyEmailReq
+from app.entities.admin.request import ItemAdminRegisReq, ItemAdminOtpReq, ItemAdminVerifyEmailReq, \
+    ItemAdminChangePassReq
 from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
 from app.models import auth, admin
-from app.models.auth import handle_otp_verification
+from app.models.auth import handle_otp_verification, handle_password_verification
 
 router = APIRouter()
 
@@ -95,7 +96,12 @@ async def verify_user(request: ItemAdminVerifyEmailReq):
 async def login(email: str = Form(), password: str = Form(), device_id: Optional[str] = Form(None)):
     try:
         ad = await admin.get_by_email(email)
-        if not await auth.verify_user(ad, password):
+        if not ad:
+            raise JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        if not await auth.verify_password(ad["password"], password, ad["active"]):
             raise JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Tên đăng nhập hoặc mật khẩu không đúng!"
@@ -132,6 +138,52 @@ async def get_admin(token: str = Depends(middleware.verify_token)):
         data = await admin.get_current(token)
         return SuccessResponse(data=data)
     except Exception as e:
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/admin/forgot-password")
+async def forgot_password(item: ItemAdminOtpReq):
+    try:
+        admin_info = await admin.get_by_email(item.email)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        new_password = await handle_password_verification(item.email)
+        await admin.update_admin_password(item.email, new_password)
+        return SuccessResponse(message="Mật khẩu mới đã được gửi đến email của bạn.")
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error forgot password: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/admin/change-password")
+async def change_password(item: ItemAdminChangePassReq, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+
+        if not await auth.verify_password(admin_info.password, item.old_password, admin_info.active):
+            raise response.JsonException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                message="Mật khẩu cũ không đúng!"
+            )
+        return await admin.update_admin_password(admin_info.email, item.new_password)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error change password: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
