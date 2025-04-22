@@ -12,11 +12,9 @@ const Product = () => {
           </div>
           <div className="flex flex-col items-center">
             <span className="font-medium font-semibold  text-xl">
-              Create Product
+              Thêm sản phẩm
             </span>
-            <span className="text-sm text-[#9297A0]">
-              Create new single product
-            </span>
+            <span className="text-sm text-[#9297A0]">Thêm sản phẩm đơn</span>
           </div>
         </div>
       </Link>
@@ -26,9 +24,11 @@ const Product = () => {
             <BsFolderPlus className="text-[#FDC90F] text-4xl" />
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-xl">Bulk Create Products</span>
+            <span className="font-semibold text-xl">
+              Thêm sản phẩm hàng loạt
+            </span>
             <span className="text-sm text-[#9297A0]">
-              Import product from Excel/ CSV
+              Thêm sản phẩm từ Excel/ CSV
             </span>
           </div>
         </div>
@@ -40,9 +40,9 @@ const Product = () => {
             <BsInboxes className="text-[#00C292] text-4xl" />
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-xl">Manager Products</span>
+            <span className="font-semibold text-xl">Quản lý sản phẩm</span>
             <span className="text-sm text-[#9297A0]">
-              Track and manager product
+              Theo dõi và quản lý sản phẩm
             </span>
           </div>
         </div>

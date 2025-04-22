@@ -10,22 +10,25 @@ import Toast from "@/components/Toast/toast";
 import { useToast } from "@/providers/toastProvider";
 
 const CreateSingleProduct = () => {
-  const unitOptions: string[] = ["Gói", "Hộp", "Viên"];
+  const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai"];
 
   const { addProduct } = useProduct();
 
   interface PriceItem {
     original_price: number;
-    unit_price: string;
     discount: number;
     unit: string;
     amount: number;
-    amount_per_unit: string;
+    weight: number;
   }
 
   interface IngredientItem {
     ingredient_name: string;
     ingredient_amount: string;
+  }
+  interface FullDescription {
+    title: string;
+    content: string;
   }
 
   interface Manufacturer {
@@ -49,16 +52,18 @@ const CreateSingleProduct = () => {
   const [prices, setPrices] = useState<PriceItem[]>([
     {
       original_price: 0,
-      unit_price: "",
       discount: 0,
       unit: "",
       amount: 0,
-      amount_per_unit: "",
+      weight: 0,
     },
   ]);
 
   const [ingredients, setIngredients] = useState<IngredientItem[]>([
     { ingredient_name: "", ingredient_amount: "" },
+  ]);
+  const [full_descriptions, setFullDescription] = useState<FullDescription[]>([
+    { title: "", content: "" },
   ]);
 
   const [manufacturer, setManufacturer] = useState<Manufacturer>({
@@ -135,11 +140,10 @@ const CreateSingleProduct = () => {
       ...prices,
       {
         original_price: 0,
-        unit_price: "",
         discount: 0,
         unit: "",
         amount: 0,
-        amount_per_unit: "",
+        weight: 0,
       },
     ]);
   };
@@ -165,8 +169,16 @@ const CreateSingleProduct = () => {
     ]);
   };
 
+  const addFullDescriptionItem = () => {
+    setFullDescription([...full_descriptions, { title: "", content: "" }]);
+  };
+
   const removeIngredientItem = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
+  };
+
+  const removeFullDescriptionItem = (index: number) => {
+    setFullDescription(full_descriptions.filter((_, i) => i !== index));
   };
 
   const updateIngredientItem = (
@@ -180,6 +192,19 @@ const CreateSingleProduct = () => {
       [field]: value,
     };
     setIngredients(updatedIngredients);
+  };
+
+  const updateFullDescriptionItem = (
+    index: number,
+    field: keyof FullDescription,
+    value: string
+  ) => {
+    const updatedFullDescription = [...full_descriptions];
+    updatedFullDescription[index] = {
+      ...updatedFullDescription[index],
+      [field]: value,
+    };
+    setFullDescription(updatedFullDescription);
   };
 
   // Enhanced image handlers
@@ -286,28 +311,26 @@ const CreateSingleProduct = () => {
     const newErrors: Record<string, string> = {};
 
     // Validate basic information
-    if (!productName) newErrors.product_name = "Product name is required";
-    if (!slug) newErrors.slug = "Slug is required";
+    if (!productName) newErrors.product_name = "Vui lòng điền tên sản phẩm";
+    if (!slug) newErrors.slug = "Vui lòng điền Slug";
 
     // Validate category selection
     if (!category.main_category_id)
-      newErrors.main_category = "Please select a main category";
+      newErrors.main_category = "Vui lòng chọn một danh mục chính";
 
     // Validate prices
     if (prices.length === 0) {
-      newErrors.prices = "At least one price option is required";
+      newErrors.prices = "Cần có ít nhất một tùy chọn giá";
     } else {
       const priceErrors: string[] = [];
       prices.forEach((price, index) => {
         if (!price.unit)
-          priceErrors.push(`Option ${index + 1}: Unit is required`);
+          priceErrors.push(`Tùy chọn ${index + 1}: Vui lòng điền đơn vị`);
         if (price.original_price <= 0)
-          priceErrors.push(
-            `Option ${index + 1}: Original price must be greater than 0`
-          );
+          priceErrors.push(`Tùy chọn ${index + 1}: Giá gốc phải lớn hơn 0`);
       });
       if (priceErrors.length > 0) {
-        newErrors.prices = priceErrors.join("; ");
+        newErrors.prices = priceErrors.join(";");
       }
     }
 
@@ -315,15 +338,25 @@ const CreateSingleProduct = () => {
     const ingredientErrors: string[] = [];
     ingredients.forEach((ingredient, index) => {
       if (!ingredient.ingredient_name)
-        ingredientErrors.push(`Ingredient ${index + 1}: Name is required`);
+        ingredientErrors.push(
+          `Thành phần ${index + 1}: Vui lòng điền tên thành phần`
+        );
     });
     if (ingredientErrors.length > 0) {
       newErrors.ingredients = ingredientErrors.join("; ");
     }
+    // Validate full descriptions
+    const fullDescriptionErrors: string[] = [];
+    full_descriptions.forEach((full_descriptions, index) => {
+      if (!full_descriptions.title)
+        fullDescriptionErrors.push(
+          `Mô tả ${index + 1}: Vui lòng điền tiêu đề mô tả`
+        );
+    });
 
     // Validate manufacturer
     if (!manufacturer.manufacture_name)
-      newErrors.manufacture_name = "Manufacturer name is required";
+      newErrors.manufacture_name = "Vui lòng điền tên nhà sản xuất";
 
     // Validate product details
     if (
@@ -331,23 +364,31 @@ const CreateSingleProduct = () => {
         'textarea[name="description"]'
       )?.value
     )
-      newErrors.description = "Description is required";
+      newErrors.description = "Vui lòng điền mô tả ngắn";
     if (
       !document.querySelector<HTMLTextAreaElement>('textarea[name="uses"]')
         ?.value
     )
-      newErrors.uses = "Uses information is required";
+      newErrors.uses = "Vui lòng điền thông tin công dụng";
     if (
       !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
         ?.value
     )
-      newErrors.dosage_form = "Dosage form is required";
+      newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
 
+    if (
+      !document.querySelector<HTMLInputElement>('input[name="inventory"]')
+        ?.value
+    )
+      newErrors.inventory = "Vui lòng điền số lượng sản phẩm";
+
+    if (!document.querySelector<HTMLInputElement>('input[name="brand"]')?.value)
+      newErrors.brand = "Vui lòng điền thương hiệu sản phẩm";
     // Validate images
     if (images.length === 0)
-      newErrors.images = "Please upload at least one product image";
+      newErrors.images = "Vui lòng tải lên ít nhất một hình ảnh sản phẩm";
     if (!primaryImage)
-      newErrors.images_primary = "Please upload a primary product image";
+      newErrors.images_primary = "Vui lòng tải lên hình ảnh sản phẩm chính";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -382,6 +423,7 @@ const CreateSingleProduct = () => {
     }
 
     formData.set("ingredients", JSON.stringify({ ingredients }));
+    formData.set("full_description", JSON.stringify({ full_descriptions }));
     formData.set("prices", JSON.stringify({ prices }));
     formData.set("manufacturer", JSON.stringify(manufacturer));
     formData.set("category", JSON.stringify(category));
@@ -413,14 +455,14 @@ const CreateSingleProduct = () => {
     setPrices([
       {
         original_price: 0,
-        unit_price: "",
         discount: 0,
         unit: "",
         amount: 0,
-        amount_per_unit: "",
+        weight: 0,
       },
     ]);
     setIngredients([{ ingredient_name: "", ingredient_amount: "" }]);
+    setFullDescription([{ title: "", content: "" }]);
     setManufacturer({
       manufacture_name: "",
       manufacture_address: "",
@@ -460,7 +502,6 @@ const CreateSingleProduct = () => {
   };
 
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
-
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
   const [selectedChildCategory, setSelectedChildCategory] =
@@ -561,14 +602,14 @@ const CreateSingleProduct = () => {
 
   return (
     <div className="">
-      <h2 className="text-2xl font-extrabold text-black">Create Product</h2>
+      <h2 className="text-2xl font-extrabold text-black">Thêm sản phẩm</h2>
       <div className="my-4 text-sm">
-        <Link href="/dashboard" className="hover:underline text-[#1E4DB7]">
-          Home
+        <Link href="/dashboard" className="hover:underline text-blue-600">
+          Dashboard
         </Link>
         <span> / </span>
         <Link href="/create-single-product" className="text-gray-800">
-          Create Product
+          Thêm sản phẩm đơn
         </Link>
       </div>
       <form onSubmit={submitProduct}>
@@ -578,13 +619,11 @@ const CreateSingleProduct = () => {
               {/* <General /> */}
 
               <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-3">
-                  Basic Information
-                </h3>
+                <h3 className="text-lg font-semibold mb-3">Thông tin cơ bản</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div data-error={hasError("product_name")}>
                     <label className="block text-sm font-medium mb-1">
-                      Product Name <span className="text-red-500">*</span>
+                      Tên sản phẩm <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -601,7 +640,7 @@ const CreateSingleProduct = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Primary Name <span className="text-red-500">*</span>
+                      Tên sản phẩm chính <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -629,13 +668,12 @@ const CreateSingleProduct = () => {
                     />
                     {hasError("slug") && <ErrorMessage message={errors.slug} />}
                     <p className="text-xs text-gray-500 mt-1">
-                      Automatically generated from product name. You can edit if
-                      needed.
+                      Tự động tạo từ tên sản phẩm. Bạn có thể chỉnh sửa nếu cần.
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Origin <span className="text-red-500">*</span>
+                      Nguồn gốc <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -651,7 +689,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div className="mt-3" data-error={hasError("description")}>
                   <label className="block text-sm font-medium mb-1">
-                    Description <span className="text-red-500">*</span>
+                    Mô tả ngắn <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="description"
@@ -664,33 +702,86 @@ const CreateSingleProduct = () => {
                     <ErrorMessage message={errors.description} />
                   )}
                 </div>
-                {/* <div className="mt-3" data-error={hasError("fulldescription")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Full Description <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="description"
-                    rows={5}
-                    className={`border rounded-lg p-2 w-full ${
-                      hasError("description") ? "border-red-500" : ""
-                    }`}
-                  ></textarea>
-                  {hasError("description") && (
-                    <ErrorMessage message={errors.description} />
+                <div className="mt-3">
+                  <h3 className="block text-sm font-medium mb-1">
+                    Mô tả đầy đủ <span className="text-red-500">*</span>
+                  </h3>
+
+                  {full_descriptions.map((fullDescription, index) => (
+                    <div key={index} className="mb-3 p-3 border rounded-lg">
+                      <div className="flex justify-between mb-2">
+                        <h4 className="font-medium">Mô tả {index + 1}</h4>
+                        {full_descriptions.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeFullDescriptionItem(index)}
+                            className="text-red-500 text-sm"
+                          >
+                            Xóa
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Tên tiêu đề mô tả
+                          </label>
+                          <input
+                            type="text"
+                            value={fullDescription.title}
+                            onChange={(e) =>
+                              updateFullDescriptionItem(
+                                index,
+                                "title",
+                                e.target.value
+                              )
+                            }
+                            className="border rounded-lg p-2 w-full"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-1">
+                            Nội dung
+                          </label>
+                          <textarea
+                            value={fullDescription.content}
+                            onChange={(e) =>
+                              updateFullDescriptionItem(
+                                index,
+                                "content",
+                                e.target.value
+                              )
+                            }
+                            rows={5}
+                            className="border rounded-lg p-2 w-full"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {hasError("full_descriptions") && (
+                    <ErrorMessage message={errors.full_descriptions} />
                   )}
-                </div> */}
+                  <button
+                    type="button"
+                    onClick={addFullDescriptionItem}
+                    className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+                  >
+                    + Thêm mô tả
+                  </button>
+                </div>
               </div>
 
               {/* Category Information */}
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-3">
-                  Category Information
+                  Thông tin danh mục
                 </h3>
 
                 <div className="grid grid-cols-1 gap-4 mb-4">
                   <div data-error={hasError("main_category")}>
                     <label className="block text-sm font-medium mb-1">
-                      Main Category <span className="text-red-500">*</span>
+                      Danh mục chính <span className="text-red-500">*</span>
                     </label>
                     <select
                       className={`border rounded-lg p-2 w-full ${
@@ -699,7 +790,7 @@ const CreateSingleProduct = () => {
                       value={selectedMainCategory}
                       onChange={(e) => setSelectedMainCategory(e.target.value)}
                     >
-                      <option value="">Select Main Category</option>
+                      <option value="">Chọn danh mục chính</option>
                       {categoryAdmin &&
                         categoryAdmin.map((mainCat: any) => (
                           <option
@@ -718,14 +809,14 @@ const CreateSingleProduct = () => {
                   {selectedMainCategory && (
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Sub Category
+                        Danh mục cấp 1
                       </label>
                       <select
                         className="border rounded-lg p-2 w-full"
                         value={selectedSubCategory}
                         onChange={(e) => setSelectedSubCategory(e.target.value)}
                       >
-                        <option value="">Select Sub Category</option>
+                        <option value="">Chọn danh mục cấp 1</option>
                         {availableSubCategories.map((subCat: any) => (
                           <option
                             key={subCat.sub_category_id}
@@ -741,7 +832,7 @@ const CreateSingleProduct = () => {
                   {selectedSubCategory && (
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Child Category
+                        Danh mục cấp 2
                       </label>
                       <select
                         className="border rounded-lg p-2 w-full"
@@ -750,7 +841,7 @@ const CreateSingleProduct = () => {
                           setSelectedChildCategory(e.target.value)
                         }
                       >
-                        <option value="">Select Child Category</option>
+                        <option value="">Chọn danh mục cấp 2</option>
                         {availableChildCategories.map((childCat: any) => (
                           <option
                             key={childCat.child_category_id}
@@ -765,21 +856,19 @@ const CreateSingleProduct = () => {
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                  <h4 className="text-sm font-medium mb-2">
-                    Selected Category
-                  </h4>
+                  <h4 className="text-sm font-medium mb-2">Danh mục đã chọn</h4>
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div>
-                      <span className="font-medium">Main:</span>{" "}
-                      {category.main_category_name || "None"}
+                      <span className="font-medium">Chính:</span>{" "}
+                      {category.main_category_name || "Chưa có"}
                     </div>
                     <div>
-                      <span className="font-medium">Sub:</span>{" "}
-                      {category.sub_category_name || "None"}
+                      <span className="font-medium">Cấp 1:</span>{" "}
+                      {category.sub_category_name || "Chưa có"}
                     </div>
                     <div>
-                      <span className="font-medium">Child:</span>{" "}
-                      {category.child_category_name || "None"}
+                      <span className="font-medium">Cấp 2:</span>{" "}
+                      {category.child_category_name || "Chưa có"}
                     </div>
                   </div>
                 </div>
@@ -836,28 +925,27 @@ const CreateSingleProduct = () => {
             {/* Prices Section */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
               <h3 className="text-lg font-semibold mb-3">
-                Prices & Units <span className="text-red-500">*</span>
+                Giá và đơn vị <span className="text-red-500">*</span>
               </h3>
-              {hasError("prices") && <ErrorMessage message={errors.prices} />}
 
               {prices.map((price, index) => (
                 <div key={index} className="mb-4 p-3 border rounded-lg">
                   <div className="flex justify-between mb-2">
-                    <h4 className="font-medium">Price Option {index + 1}</h4>
+                    <h4 className="font-medium">Tùy chọn giá {index + 1}</h4>
                     {prices.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removePriceItem(index)}
                         className="text-red-500 text-sm"
                       >
-                        Remove
+                        Xóa
                       </button>
                     )}
                   </div>
                   <div className="grid grid-cols-3 gap-3 mb-2">
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Original Price <span className="text-red-500">*</span>
+                        Giá gốc <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="number"
@@ -874,20 +962,7 @@ const CreateSingleProduct = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Unit Price
-                      </label>
-                      <input
-                        type="text"
-                        value={price.unit_price}
-                        onChange={(e) =>
-                          updatePriceItem(index, "unit_price", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Discount
+                        Giảm giá
                       </label>
                       <input
                         type="number"
@@ -904,7 +979,21 @@ const CreateSingleProduct = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Unit <span className="text-red-500">*</span>
+                        Số lượng tương ứng
+                      </label>
+                      <input
+                        type="text"
+                        value={price.amount}
+                        onChange={(e) =>
+                          updatePriceItem(index, "amount", e.target.value)
+                        }
+                        className="border rounded-lg p-2 w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Đơn vị <span className="text-red-500">*</span>
                       </label>
                       <select
                         value={price.unit}
@@ -913,7 +1002,7 @@ const CreateSingleProduct = () => {
                         }
                         className="border rounded-lg p-2 w-full"
                       >
-                        <option value="">Select a unit</option>
+                        <option value="">Chọn 1 đơn vị</option>
                         {unitOptions.map((unit, idx) => (
                           <option key={idx} value={unit}>
                             {unit}
@@ -921,36 +1010,16 @@ const CreateSingleProduct = () => {
                         ))}
                       </select>
                     </div>
+
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Amount
-                      </label>
-                      <input
-                        type="number"
-                        value={price.amount}
-                        onChange={(e) =>
-                          updatePriceItem(
-                            index,
-                            "amount",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Amount Per Unit
+                        Trọng lượng
                       </label>
                       <input
                         type="text"
-                        value={price.amount_per_unit}
+                        value={price.weight}
                         onChange={(e) =>
-                          updatePriceItem(
-                            index,
-                            "amount_per_unit",
-                            e.target.value
-                          )
+                          updatePriceItem(index, "weight", e.target.value)
                         }
                         className="border rounded-lg p-2 w-full"
                       />
@@ -958,42 +1027,49 @@ const CreateSingleProduct = () => {
                   </div>
                 </div>
               ))}
+
+              {hasError("prices") && <ErrorMessage message={errors.prices} />}
               <button
                 type="button"
                 onClick={addPriceItem}
-                className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
               >
-                + Add New Price Option
+                + Thêm tùy chọn giá mới
               </button>
+              <label className="block text-sm font-medium mb-1 mt-3">
+                Số lượng sản phẩm
+              </label>
+              <input
+                type="number"
+                name="inventory"
+                className="border rounded-lg p-2 w-full"
+              />
             </div>
 
             {/* Ingredients Section */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
               <h3 className="text-lg font-semibold mb-3">
-                Ingredients <span className="text-red-500">*</span>
+                Thành phần <span className="text-red-500">*</span>
               </h3>
-              {hasError("ingredients") && (
-                <ErrorMessage message={errors.ingredients} />
-              )}
 
               {ingredients.map((ingredient, index) => (
                 <div key={index} className="mb-3 p-3 border rounded-lg">
                   <div className="flex justify-between mb-2">
-                    <h4 className="font-medium">Ingredient {index + 1}</h4>
+                    <h4 className="font-medium">Thành phần {index + 1}</h4>
                     {ingredients.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeIngredientItem(index)}
                         className="text-red-500 text-sm"
                       >
-                        Remove
+                        Xóa
                       </button>
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Ingredient Name
+                        Tên thành phần
                       </label>
                       <input
                         type="text"
@@ -1010,7 +1086,7 @@ const CreateSingleProduct = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Ingredient Amount
+                        Số lượng thành phần
                       </label>
                       <input
                         type="text"
@@ -1028,21 +1104,24 @@ const CreateSingleProduct = () => {
                   </div>
                 </div>
               ))}
+              {hasError("ingredients") && (
+                <ErrorMessage message={errors.ingredients} />
+              )}
               <button
                 type="button"
                 onClick={addIngredientItem}
                 className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
               >
-                + Add New Ingredient
+                + Thêm thành phần mới
               </button>
             </div>
 
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">Manufacturer</h3>
+              <h3 className="text-lg font-semibold mb-3">Nhà sản xuất</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div data-error={hasError("manufacture_name")}>
                   <label className="block text-sm font-medium mb-1">
-                    Manufacturer Name <span className="text-red-500">*</span>
+                    Tên nhà sản xuất <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -1063,7 +1142,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Manufacturer Contact
+                    Liên hệ nhà sản xuất
                   </label>
                   <input
                     type="text"
@@ -1079,7 +1158,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium mb-1">
-                    Manufacturer Address
+                    Địa chỉ sản xuất
                   </label>
                   <input
                     type="text"
@@ -1093,6 +1172,16 @@ const CreateSingleProduct = () => {
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Thương hiệu sản phẩm
+                  </label>
+                  <input
+                    type="text"
+                    name="brand"
+                    className="border rounded-lg p-2 w-full"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1100,11 +1189,11 @@ const CreateSingleProduct = () => {
           <div className="w-1/3 flex flex-col space-y-5">
             {/* Additional Product Details */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">Product Details</h3>
+              <h3 className="text-lg font-semibold mb-3">Chi tiết sản phẩm</h3>
               <div className="space-y-4">
                 <div data-error={hasError("uses")}>
                   <label className="block text-sm font-medium mb-1">
-                    Uses <span className="text-red-500">*</span>
+                    Công dụng <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="uses"
@@ -1117,7 +1206,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Dosage
+                    Liều lượng
                   </label>
                   <textarea
                     name="dosage"
@@ -1127,7 +1216,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Dosage Form
+                    Dạng bào chế
                   </label>
                   <input
                     type="text"
@@ -1137,7 +1226,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Side Effects
+                    Tác dụng phụ
                   </label>
                   <textarea
                     name="side_effects"
@@ -1147,7 +1236,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Precautions
+                    Lưu ý
                   </label>
                   <textarea
                     name="precautions"
@@ -1157,7 +1246,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Storage Instructions
+                    Hướng dẫn bảo quản
                   </label>
                   <textarea
                     name="storage"
@@ -1168,9 +1257,9 @@ const CreateSingleProduct = () => {
                 {/* Enhanced Product Images Section */}
                 <div data-error={hasError("images")}>
                   <label className="block text-sm font-medium mb-1">
-                    Product Images <span className="text-red-500">*</span>{" "}
+                    Hình ảnh sản phẩm <span className="text-red-500">*</span>{" "}
                     <span className="text-blue-500">
-                      (Multiple images allowed)
+                      (Cho phép nhiều hình ảnh)
                     </span>
                   </label>
 
@@ -1204,10 +1293,10 @@ const CreateSingleProduct = () => {
 
                       <div className="flex flex-col items-center text-sm text-gray-600">
                         <p className="font-medium">
-                          Drag and drop images here, or
+                          Kéo và thả hình ảnh vào đây hoặc
                         </p>
                         <label className="mt-2 cursor-pointer text-blue-600 hover:text-blue-800">
-                          <span>Click to select files</span>
+                          <span>Bấm để chọn tệp</span>
                           <input
                             type="file"
                             name="images"
@@ -1220,7 +1309,7 @@ const CreateSingleProduct = () => {
                       </div>
 
                       <p className="mt-1 text-xs text-gray-500">
-                        PNG, JPG, GIF up to 10MB each
+                        PNG, JPG, GIF tối đa 10MB mỗi tệp
                       </p>
                     </div>
                   </div>
@@ -1231,8 +1320,8 @@ const CreateSingleProduct = () => {
                     <div className="mt-3">
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-sm font-medium">
-                          {images.length} image{images.length !== 1 ? "s" : ""}{" "}
-                          selected
+                          {images.length} ảnh{images.length !== 1 ? "s" : ""}{" "}
+                          được chọn
                         </p>
                         <button
                           type="button"
@@ -1242,7 +1331,7 @@ const CreateSingleProduct = () => {
                           }}
                           className="text-xs text-red-500 hover:text-red-700"
                         >
-                          Clear all
+                          Xóa hết
                         </button>
                       </div>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -1271,7 +1360,7 @@ const CreateSingleProduct = () => {
                 {/* Primary Image */}
                 <div data-error={hasError("images_primary")}>
                   <label className="block text-sm font-medium mb-1">
-                    Primary Image <span className="text-red-500">*</span>
+                    Ảnh chính<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="file"
@@ -1309,22 +1398,22 @@ const CreateSingleProduct = () => {
         <div className="flex justify-center mt-4 space-x-2">
           <button
             type="submit"
-            className="text-sm bg-[#1E4DB7] text-white font-semibold py-3 px-5 rounded-xl hover:bg-[#002E99]"
+            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
           >
-            Save Changes
+            Thêm
           </button>
           <button
             type="button"
-            className="text-sm text-red-500 font-semibold py-3 px-5 rounded-xl border border-red-500 hover:bg-red-500 hover:text-white"
+            className="text-sm text-red-500 font-semibold py-2 px-6 rounded-lg border border-red-500 hover:bg-red-500 hover:text-white"
           >
-            Cancel
+            Hủy
           </button>
         </div>
 
         {formSubmitted && Object.keys(errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-600 font-medium text-sm">
-              Please fix the following errors:
+              Vui lòng sửa các lỗi sau:
             </p>
             <ul className="list-disc pl-5 mt-1 text-xs text-red-500">
               {Object.values(errors).map((error, index) => (

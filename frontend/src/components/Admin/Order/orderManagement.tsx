@@ -85,22 +85,22 @@ const Order = () => {
         <h2 className="text-2xl font-extrabold text-black">Order Management</h2>
         <div className="my-4 text-sm">
           <Link href="/dashboard" className="hover:underline text-blue-600">
-            Home
+            Dashboard
           </Link>
           <span> / </span>
           <Link href="/order" className="text-gray-800">
-            Order management
+            Quản lý đơn hàng
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-[#E7ECF7] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
             <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">Total Orders</span>
+              <span className="text-black font-medium">Tổng đơn hàng</span>
               <div className="flex text-[#1E4DB7] text-2xl items-center">
                 <span className="font-medium">63.879.0</span>
               </div>
               <div className="text-sm text-gray-500">
-                Total Orders last 365 days
+                Tổng số đơn hàng trong 365 ngày qua
               </div>
             </div>
 
@@ -111,12 +111,12 @@ const Order = () => {
 
           <div className="bg-[#EBFAF2] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
             <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">New Orders</span>
+              <span className="text-black font-medium">Đơn hàng mới</span>
               <div className="flex text-[#00C292] text-2xl items-center">
                 <span className="font-medium">63.879.0</span>
               </div>
               <div className="text-sm text-gray-500">
-                New Orders last 365 days
+                Đơn hàng mới trong 365 ngày qua
               </div>
             </div>
 
@@ -127,12 +127,14 @@ const Order = () => {
 
           <div className="bg-[#FDF3F5] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
             <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">Completed Orders</span>
+              <span className="text-black font-medium">
+                Đơn hàng hoàn thành
+              </span>
               <div className="flex text-[#FD5171] text-2xl items-center">
                 <span className="font-medium">63.879.0</span>
               </div>
               <div className="text-sm text-gray-500">
-                Completed Orders last 365 days
+                Đơn hàng hoàn thành trong 365 ngày qua
               </div>
             </div>
 
@@ -143,12 +145,12 @@ const Order = () => {
 
           <div className="bg-[#FFF4E5] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
             <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">Cancel Orders</span>
+              <span className="text-black font-medium">Đơn hàng hủy</span>
               <div className="flex text-[#FDC90F] text-2xl items-center">
                 <span className="font-medium">63.879.0</span>
               </div>
               <div className="text-sm text-gray-500">
-                Cancel Orders last 365 days
+                Đơn hàng hủy trong 365 ngày qua
               </div>
             </div>
 
@@ -177,12 +179,12 @@ const Order = () => {
           <div className="flex items-center space-x-3">
             <button className="flex items-center gap-2 px-4 py-3 bg-[#1E4DB7] text-white rounded-lg text-sm font-medium transition">
               <FaSyncAlt className="text-white" />
-              Synchronise Order
+              Đồng bộ hóa
             </button>
 
             <button className="flex items-center gap-2 px-4 py-3 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition">
               <FiDownload className="text-[#1E4DB7]" />
-              Download CSV
+              Tải về CSV
             </button>
           </div>
         </div>

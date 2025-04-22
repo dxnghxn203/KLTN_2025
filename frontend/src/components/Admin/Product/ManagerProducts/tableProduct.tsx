@@ -7,6 +7,7 @@ import { ImBin } from "react-icons/im";
 import { IoImage } from "react-icons/io5";
 import Image from "next/image";
 import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
+import { MdOutlineModeEdit } from "react-icons/md";
 
 const TableProduct = () => {
   const { allProductAdmin, getAllProductsAdmin } = useProduct();
@@ -33,35 +34,6 @@ const TableProduct = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Format giá tiền
-  const formatCurrency = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
-  // Tính số lượng sản phẩm trong kho
-  const calculateTotalStock = (prices: any[]) => {
-    if (!prices || prices.length === 0) return 0;
-    return prices.reduce(
-      (total, price) => total + (price.inventory - price.sell || 0),
-      0
-    );
-  };
-
-  // Lấy giá hiển thị
-  const getPriceToDisplay = (prices: any[]) => {
-    if (!prices || prices.length === 0) return 0;
-    return prices[0].price;
-  };
-
-  // Lấy đơn vị sản phẩm
-  const getUnitToDisplay = (prices: any[]) => {
-    if (!prices || prices.length === 0) return "";
-    return prices[0].unit;
-  };
-
   // Phân trang
   const totalProducts = allProductAdmin ? allProductAdmin.length : 0;
   const indexOfLastProduct = currentPage * productsPerPage;
@@ -78,16 +50,14 @@ const TableProduct = () => {
           <table className="w-full table-auto border-collapse">
             <thead className="text-left text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
               <tr className="uppercase text-sm">
-                <th className="py-4 px-4 text-center w-[130px]">Hình ảnh</th>
+                <th className="py-4 px-2 text-center w-[130px]">Hình ảnh</th>
                 <th className="py-4 px-2 ">Tên sản phẩm</th>
-                <th className="py-4 px-2 text-center">
-                  Mã sản phẩm/ Mã danh mục
-                </th>
-                <th className="py-4 px-2 text-center w-[100px]">Kho</th>
+                <th className="py-4 px-2 text-center">Mã sản phẩm/ danh mục</th>
+                <th className="py-4 px-8 text-center">Kho</th>
+                <th className="py-4 px-2 text-center">Bán</th>
                 <th className="py-4 px-2 text-center">Giá</th>
                 <th className="py-4 px-2 text-center">Danh mục</th>
-                <th className="py-4 px-2 text-center">Xuất xứ</th>
-                <th className="py-4 px-2 text-center">Thao tác</th>
+                <th className="py-4 px-2 text-center"></th>
               </tr>
             </thead>
 
@@ -122,8 +92,8 @@ const TableProduct = () => {
                       <div className="line-clamp-2 font-medium">
                         {product.product_name}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {product.name_primary.substring(0, 20)}...
+                      <div className="line-clamp-2 text-xs text-gray-500 mt-1">
+                        {product.name_primary}
                       </div>
                     </td>
                     <td className="py-4 px-2 text-center text-xs flex flex-col gap-2 items-center justify-center">
@@ -144,23 +114,30 @@ const TableProduct = () => {
                       </span>
                     </td>
                     <td className="py-4 px-2 text-center font-medium">
-                      {calculateTotalStock(product.prices) === 0 ? (
+                      <span className="font-normal">
+                        {product.inventory}{" "}
+                        {product.prices.find((p: any) => p.amount === 1)?.unit}
+                      </span>
+                      <br />
+                      {product.inventory === 0 ? (
                         <span className="text-red-500">Hết hàng</span>
-                      ) : calculateTotalStock(product.prices) < 10 ? (
+                      ) : product.inventor < 60 ? (
                         <span className="text-yellow-500">Sắp hết</span>
                       ) : (
                         <span className="text-green-500">Còn hàng</span>
                       )}
-                      <br />
-                      <span className="font-normal">
-                        ({calculateTotalStock(product.prices)})
+                    </td>
+                    <td className="py-4 px-2 w-[100px] text-center">
+                      <span className="text-sm">
+                        {product.sell}{" "}
+                        {product.prices.find((p: any) => p.amount === 1)?.unit}
                       </span>
                     </td>
                     <td className="py-4 px-2 text-center">
                       {product.prices.map((p: any, idx: number) => (
-                        <div key={idx} className="mb-1">
-                          <span>{formatCurrency(p.price)}</span>
-                          <span className="text-xs text-gray-500 ml-1">
+                        <div key={idx} className="mb-2">
+                          <span>{p.price.toLocaleString("vi-VN")}đ</span>
+                          <span className="text-xs text-gray-500">
                             / {p.unit}
                           </span>
                         </div>
@@ -180,9 +157,7 @@ const TableProduct = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-2 w-[100px] text-center">
-                      <span className="text-sm">{product.origin || "—"}</span>
-                    </td>
+
                     <td className="py-4 px-2 text-center relative">
                       <div className="menu-container">
                         <div
@@ -193,13 +168,15 @@ const TableProduct = () => {
                         </div>
 
                         {menuOpen === product.product_id && (
-                          <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow-lg z-10">
-                            <button className="flex items-center w-full px-6 py-2 text-left hover:bg-gray-100">
-                              <BiEditAlt className="mr-2" /> Chỉnh sửa
+                          <div className="absolute right-0 bg-white border rounded-lg shadow-lg z-10">
+                            <button className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100">
+                              <MdOutlineModeEdit className="text-base" />
+                              <span>Sửa</span>
                             </button>
                             <div className="border-t border-gray-200"></div>
-                            <button className="flex items-center w-full px-6 py-2 text-left hover:bg-gray-100 text-red-500">
-                              <ImBin className="mr-2 text-red-500" /> Xóa
+                            <button className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500">
+                              <ImBin className="text-base text-sm" />
+                              <span>Xóa</span>
                             </button>
                           </div>
                         )}
