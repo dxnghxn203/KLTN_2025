@@ -20,7 +20,7 @@ const AddNewDropdown = () => {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-lg focus:outline-none">
+        <Menu.Items className="absolute left-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg focus:outline-none">
           <Menu.Item>
             {({ active }) => (
               <Link href="/product/create-single-product">
@@ -28,9 +28,8 @@ const AddNewDropdown = () => {
                   className={`${
                     active ? "bg-gray-100" : ""
                   } w-full text-left px-4 py-2 text-sm text-gray-700`}
-                  onClick={() => console.log("Import a single product")}
                 >
-                  Import a single product
+                  Thêm sản phẩm đơn
                 </button>
               </Link>
             )}
@@ -42,9 +41,8 @@ const AddNewDropdown = () => {
                   className={`${
                     active ? "bg-gray-100" : ""
                   } w-full text-left px-4 py-2 text-sm text-gray-700`}
-                  onClick={() => console.log("Import bulk file")}
                 >
-                  Import product file
+                  Thêm sản phẩm hàng loạt
                 </button>
               </Link>
             )}

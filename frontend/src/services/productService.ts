@@ -30,11 +30,10 @@ export const addProduct = async (data: any) => {
         return response;
     }
     catch (error: any) {
-        return {
-            status: 500,
-            message: error.response?.data?.message || "Internal server error",
-            data: null
-        }
+        
+            console.error("Error", error);
+            throw error;
+       
     }
 }
 
