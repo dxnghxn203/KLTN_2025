@@ -24,15 +24,24 @@ export const getProductTopSelling = async (params: any) => {
     }
 }
 
-export const addProduct = async (data: any) => {
+export const addProduct = async (data: any) : Promise<any>=> {
     try {
         const response: any = await axiosClient.post(`/v1/product/add`, data);
-        return response;
+        console.log("response", response);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
+                }
+
     }
     catch (error: any) {
-        
-            console.error("Error", error);
-            throw error;
+        // console.log("error", error?.response?.data?.message);
+        return {
+            status_code: error?.response?.status || 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
        
     }
 }

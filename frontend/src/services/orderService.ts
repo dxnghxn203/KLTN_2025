@@ -134,7 +134,7 @@ export const checkOrder = async ( data: any, session: any): Promise<any> => {
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi đặt hàng',
+            message: 'Lỗi đặt hàng',
         };
     }
 }
@@ -150,7 +150,7 @@ export const createOrder = async ( data: any): Promise<any> => {
     } catch (error: any) {
         return {
             status: false,
-            message: 'Lổi đặt hàng',
+            message: 'Lỗi đặt hàng',
         };
     }
 }
@@ -166,7 +166,7 @@ export const getAllOrderAdmin = async (params: any) => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lổi lấy danh sách đơn hàng',
+            message: 'Lỗi lấy danh sách đơn hàng',
         }
     }
 
@@ -179,7 +179,7 @@ export const getOrderByUserId = async () => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lổi lấy danh sách đơn hàng',
+            message: 'Lỗi lấy danh sách đơn hàng',
         }
     }
 }
@@ -192,7 +192,7 @@ export const callWebhook = async (data: any) => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lổi gọi webhook',
+            message: 'Lỗi gọi webhook',
         }
     }
 }
@@ -208,7 +208,7 @@ export const checkShippingFee = async (data: any) => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lổi lấy phí vận chuyển',
+            message: 'Lỗi lấy phí vận chuyển',
         }
     }
 }
@@ -224,7 +224,7 @@ export const cancelOrder = async (order_id: any) => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lổi hủy đơn hàng',
+            message: 'Lỗi hủy đơn hàng',
         }
     }
 }
@@ -239,7 +239,7 @@ export const getTrackingOrder = async (order_id: any) => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lổi lấy thông tin đơn hàng',
+            message: 'Lỗi lấy thông tin đơn hàng',
         }
     }
 }

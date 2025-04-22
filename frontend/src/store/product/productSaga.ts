@@ -163,17 +163,30 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
             formData.append('attributes', JSON.stringify(form.attributes));
         }
 
+        console.log("formData", formData);
+
         const product = yield call(productService.addProduct, formData);
+        console.log("product", product);
         if (product.status_code === 200) {
             onsucces(product.message);
             yield put(fetchAddProductSuccess());
             return;
         }
+        console.log("test",product.message);
         onfailed(product.message);
-        yield put(fetchAddProductFailed());
+        
+        yield put(fetchAddProductFailed(
+            product.message || "Failed to add product"
+
+        ));
 
     } catch (error) {
-        yield put(fetchAddProductFailed());
+        yield put(fetchAddProductFailed(
+            "Failed to add product"
+        ));
+        
+        console.log("final",error);
+
     }
 }
 

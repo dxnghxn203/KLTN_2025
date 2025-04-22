@@ -15,7 +15,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   totalOriginPrice,
   totalDiscount,
   totalSave,
-  shippingFee = 0,
+  shippingFee,
   checkout,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,17 +43,17 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </div>
           <div className="flex justify-between text-black mt-5">
             <div>Giảm giá trực tiếp</div>
-            <div className="text-amber-300">
+            <div className="text-amber-500">
               - {totalDiscount.toLocaleString("vi-VN")}đ
             </div>
           </div>
           <div className="flex justify-between text-black mt-5">
             <div>Giảm giá voucher</div>
-            <div className="text-amber-300">0đ</div>
+            <div className="text-amber-500">0đ</div>
           </div>
           <div className="flex justify-between text-black mt-5">
             <div>Tiết kiệm được</div>
-            <div className="text-amber-300">
+            <div className="text-amber-500">
               {totalSave.toLocaleString("vi-VN")}đ
             </div>
           </div>
@@ -62,74 +62,75 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]" />
         <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
           <div>Phí vận chuyển</div>
-
-          {shippingFee?.shipping_fee && (
-            <div className="flex items-center gap-2">
-              <div className="text-amber-300">
-                {`${shippingFee?.shipping_fee?.toLocaleString("vi-VN")}`}đ
+          <div className="flex items-center gap-2">
+            {shippingFee?.shipping_fee === 0 ? (
+              <div className="flex px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-blue-500 mr-1.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                  <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H18a1 1 0 001-1v-4a1 1 0 00-1-1h-8a1 1 0 00-.8.4L8 4H3z" />
+                </svg>
+                <span className="text-xs font-medium text-blue-600">
+                  Miễn phí vận chuyển
+                </span>
               </div>
-              {shippingFee?.shipping_fee == 0 && (
-                <div className="flex px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-blue-500 mr-1.5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H18a1 1 0 001-1v-4a1 1 0 00-1-1h-8a1 1 0 00-.8.4L8 4H3z" />
-                  </svg>
-                  <span className="text-xs font-medium text-blue-600">
-                    Miễn phí vận chuyển
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
+            ) : (
+              <div className="text-amber-500">
+                {shippingFee?.shipping_fee?.toLocaleString("vi-VN")}đ
+              </div>
+            )}
+          </div>
         </div>
+
         <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]" />
         <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
           <div>Thời gian giao hàng dự kiến</div>
-          <div className="flex items-center gap-2">
-            <div className="flex px-3 py-1.5 rounded-full bg-green-50 shadow-sm items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-green-500 mr-1.5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-xs font-medium text-green-600">
-                {shippingFee?.delivery_time
-                  ? new Date(shippingFee.delivery_time).toLocaleDateString(
-                      "vi-VN",
-                      {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      }
-                    )
-                  : ""}
-              </span>
+          {shippingFee?.delivery_time ? (
+            <div className="flex items-center gap-2">
+              <div className="flex px-3 py-1.5 rounded-full bg-green-50 shadow-sm items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 text-green-500 mr-1.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+
+                <span className="text-xs font-medium text-green-600">
+                  {new Date(shippingFee.delivery_time).toLocaleDateString(
+                    "vi-VN",
+                    {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    }
+                  )}
+                </span>
+              </div>
             </div>
-          </div>
+          ) : (
+            ""
+          )}
         </div>
         <div className="flex gap-5 justify-between items-center mt-3 ml-2.5 max-w-full w-[337px]">
           <div className="text-xl text-black">Thành tiền</div>
-          <div className="flex gap-2 whitespace-nowrap">
+          <div className="flex gap-2 whitespace-nowrap items-center">
             {totalDiscount > 0 && (
-              <div className="text-xl pt-1 text-gray-500 line-through font-bold">
+              <div className="text-xl text-gray-500 line-through">
                 {totalOriginPrice.toLocaleString("vi-VN")}đ
               </div>
             )}
             <div className="text-xl font-semibold text-blue-700">
-              {" "}
-              {(totalAmount + shippingFee?.shipping_fee).toLocaleString(
+              {(totalAmount + (shippingFee?.shipping_fee || 0)).toLocaleString(
                 "vi-VN"
               )}
               đ

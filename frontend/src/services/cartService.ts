@@ -31,6 +31,7 @@ export const addToCartToken = async (params: any)=>{
     try {
         const res = await axiosClient.post(`/v1/cart/?&product_id=${params.product_id}&price_id=${params.price_id}&quantity=${params.quantity}`);
         return res;
+        
     } catch (error: any) {
         return {
             status: false,

@@ -1,4 +1,4 @@
-import { fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
+import { fetchChangePasswordAdminStart, fetchChangePasswordStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
 import { insertUserSelector, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
@@ -97,6 +97,44 @@ export function useUser() {
     }));
   }
 
+  const forgotPasswordUser = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+  ) => {
+    dispatch(fetchForgotPasswordStart({
+      ...params,
+      onSuccess,
+      onFailure
+    }));
+
+  }
+
+  const changePasswordUser = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+  ) => {
+    dispatch(fetchChangePasswordStart({
+      ...params,
+      onSuccess,
+      onFailure
+    }));
+  }
+
+  const changePasswordAdmin = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+  ) => {
+    dispatch(fetchChangePasswordAdminStart({
+      ...params,
+      onSuccess,
+      onFailure
+    }));
+  }
+  
+
   return {
     insertUser,
     fetchInsertUser,
@@ -116,6 +154,9 @@ export function useUser() {
     setPage,
     pageSize,
     setPageSize,
+    forgotPasswordUser,
+    changePasswordUser,
+    changePasswordAdmin,
   };
 }
 

@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { useRouter } from "next/navigation";
 
-const LoginForm= () => { 
+const LoginForm = () => {
   const { signInWithGoogle, login } = useAuth();
   const [localLoading, setLocalLoading] = useState(false);
   const [localLoadingGG, setLocalLoadingGG] = useState(false);
@@ -134,7 +134,7 @@ const LoginForm= () => {
 
         <div className="flex justify-end">
           <a
-            href="#"
+            href="/quen-mat-khau"
             className="text-sm font-bold text-[#0053E2] hover:text-[#002E99] transition-colors"
           >
             Quên mật khẩu?

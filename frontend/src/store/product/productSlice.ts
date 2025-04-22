@@ -49,8 +49,9 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
-        fetchAddProductFailed(state) {
+        fetchAddProductFailed(state, action: PayloadAction<string>) {
             state.loading = false;
+            state.error = action.payload;
         },
 
         // Fetch all product admin
