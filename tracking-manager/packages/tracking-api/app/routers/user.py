@@ -133,7 +133,7 @@ async def update_status_user(user_id: str, status_user: bool, token: str = Depen
             message="Internal server error"
         )
 
-@router.post("/admin/forgot-password")
+@router.post("/users/forgot-password")
 async def forgot_password(item: ItemUserOtpReq):
     try:
         user_info = await user.get_by_email_and_auth_provider(item.email, "email")
@@ -154,7 +154,7 @@ async def forgot_password(item: ItemUserOtpReq):
             message="Internal server error"
         )
 
-@router.post("/admin/change-password")
+@router.post("/users/change-password")
 async def change_password(item: ItemUserChangePassReq, token: str = Depends(middleware.verify_token)):
     try:
         user_info = await user.get_current(token)
