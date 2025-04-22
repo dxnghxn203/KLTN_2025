@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form
+from fastapi.exceptions import RequestValidationError
 from starlette import status
 
 from app.core import response, logger
@@ -13,7 +14,6 @@ from app.helpers.redis import delete_otp
 from app.middleware import middleware
 from app.models import auth, admin
 from app.models.auth import handle_otp_verification, handle_password_verification
-
 router = APIRouter()
 
 @router.post("/admin/register")

@@ -13,7 +13,17 @@ async def json_exception_handler(request: Request, exc: JsonException):
     )
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    simplified = [
+        {
+            "field": ".".join(str(loc) for loc in err["loc"]),
+            "error": err["msg"]
+        }
+        for err in exc.errors()
+    ]
     return JSONResponse(
-        status_code=422,
-        content={"message": "Validation error", "details": exc.errors()}
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "message": "Dữ liệu không hợp lệ",
+            "errors": simplified
+        }
     )
