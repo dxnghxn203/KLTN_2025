@@ -133,6 +133,18 @@ export function useUser() {
       onFailure
     }));
   }
+
+  const forgotPasswordAdmin = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+  ) => {
+    dispatch(fetchForgotPasswordStart({
+      ...params,
+      onSuccess,
+      onFailure
+    }));
+  }
   
 
   return {
@@ -157,6 +169,7 @@ export function useUser() {
     forgotPasswordUser,
     changePasswordUser,
     changePasswordAdmin,
+    forgotPasswordAdmin,
   };
 }
 

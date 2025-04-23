@@ -29,8 +29,12 @@ import {
     fetchChangePasswordAdminFailure,
     fetchChangePasswordAdminStart,
     fetchChangePasswordAdminSuccess,
+
+    fetchForgotPasswordAdminFailure,
+    fetchForgotPasswordAdminStart,
+    fetchForgotPasswordAdminSuccess,
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin } from "@/services/userService";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -191,6 +195,32 @@ function* userChangePasswordAdminWorkerSaga(action: any): Generator<any, void, a
         yield put(fetchChangePasswordAdminFailure());
     }
 }
+
+export function* userForgotPasswordAdminWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+        email
+    } = payload;
+    const body = {
+        email
+    };
+    try {
+        const response = yield call(forgotPasswordAdmin, body);
+        if (response.status_code === 200) {
+            yield put(fetchForgotPasswordAdminSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchForgotPasswordAdminFailure());
+            onFailure(response.message);
+        }
+    }
+    catch (error: any) {
+        onFailure(error?.response?.data?.message);
+        yield put(fetchForgotPasswordAdminFailure());
+    }
+}
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
@@ -199,5 +229,6 @@ export function* userSaga() {
     yield takeLatest(fetchForgotPasswordStart.type, userForgotPasswordWorkerSaga);
     yield takeLatest(fetchChangePasswordStart.type, userChangePasswordWorkerSaga);
     yield takeLatest(fetchChangePasswordAdminStart.type, userChangePasswordAdminWorkerSaga);
+    yield takeLatest(fetchForgotPasswordAdminStart.type, userForgotPasswordAdminWorkerSaga);
 }
 

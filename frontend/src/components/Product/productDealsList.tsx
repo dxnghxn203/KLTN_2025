@@ -1,77 +1,86 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ProductDealsCard from "./productDealsCard";
 import { ProductData } from "@/types/product";
 import medicine1 from "@/images/medicinee.png";
 import { generateRandomId } from "@/utils/string";
 import Link from "next/link";
+import { useProduct } from "@/hooks/useProduct";
 
-const productData: ProductData[] = [
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Dovev",
-  },
-  {
-    id: generateRandomId(),
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 190000,
-    unit: "Chai",
-    brand: "Dovev",
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Dovev",
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Dovev",
-  },
-  {
-    id: generateRandomId(),
-    discount: "-20%",
-    imageSrc:
-      "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
-    category: "Dinh dưỡng",
-    rating: 4.5,
-    name: "NutriGrow Nutrimed...",
-    price: 150000,
-    unit: "Chai",
-    originPrice: 180000,
-    brand: "Dovev",
-  },
-];
+// const productData: ProductData[] = [
+//   {
+//     id: generateRandomId(),
+//     discount: "-20%",
+//     imageSrc:
+//       "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+//     category: "Dinh dưỡng",
+//     rating: 4.5,
+//     name: "Găng tay dùng một lần Salon World Safety Blue Nitrile.",
+//     price: 150000,
+//     unit: "Chai",
+//     originPrice: 180000,
+//     brand: "Dovev",
+//   },
+//   {
+//     id: generateRandomId(),
+//     imageSrc:
+//       "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+//     category: "Dinh dưỡng",
+//     rating: 4.5,
+//     name: "NutriGrow Nutrimed...",
+//     price: 190000,
+//     unit: "Chai",
+//     brand: "Dovev",
+//   },
+//   {
+//     id: generateRandomId(),
+//     discount: "-20%",
+//     imageSrc:
+//       "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+//     category: "Dinh dưỡng",
+//     rating: 4.5,
+//     name: "NutriGrow Nutrimed...",
+//     price: 150000,
+//     unit: "Chai",
+//     originPrice: 180000,
+//     brand: "Dovev",
+//   },
+//   {
+//     id: generateRandomId(),
+//     discount: "-20%",
+//     imageSrc:
+//       "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+//     category: "Dinh dưỡng",
+//     rating: 4.5,
+//     name: "NutriGrow Nutrimed...",
+//     price: 150000,
+//     unit: "Chai",
+//     originPrice: 180000,
+//     brand: "Dovev",
+//   },
+//   {
+//     id: generateRandomId(),
+//     discount: "-20%",
+//     imageSrc:
+//       "https://kltn2025.s3.ap-southeast-2.amazonaws.com/images_primary/1742463222",
+//     category: "Dinh dưỡng",
+//     rating: 4.5,
+//     name: "NutriGrow Nutrimed...",
+//     price: 150000,
+//     unit: "Chai",
+//     originPrice: 180000,
+//     brand: "Dovev",
+//   },
+// ];
 
 const ProductDealsList: React.FC = () => {
+  const { fetchProductBestDeal, productBestDeal } = useProduct();
+  const [topN, setTopN] = useState(5);
+  useEffect(() => {
+    fetchProductBestDeal();
+  }, []);
+
+  console.log("productBestDeal", productBestDeal);
+
   return (
     <div className="w-full max-md:px-5 max-md:max-w-full">
       <Link href="/bo-suu-tap/deals-tot-nhat-danh-cho-ban">
@@ -90,9 +99,10 @@ const ProductDealsList: React.FC = () => {
 
       <div className="self-center mt-5 w-full max-md:max-w-full">
         <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
-          {productData.map((product: any, index: any) => (
-            <ProductDealsCard key={index} {...product} />
-          ))}
+          {productBestDeal &&
+            productBestDeal.map((product: any, index: any) => (
+              <ProductDealsCard key={index} product={product} />
+            ))}
         </div>
       </div>
     </div>

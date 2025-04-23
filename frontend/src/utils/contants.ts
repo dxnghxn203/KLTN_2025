@@ -10,4 +10,5 @@ const routerAdmin = {
     ACCOUNT: '/thong-tin-tai-khoan',
     CHANGE_PASSWORD: '/doi-mat-khau-admin',
     PARTNER: '/partner/partner-order',
+    FORGOT_PASSWORD: '/quen-mat-khau-admin',
 }

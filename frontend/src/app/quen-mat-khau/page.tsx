@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@/hooks/useUser";
-import { validateEmptyFields } from "@/utils/validation";
+import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { useToast } from "@/providers/toastProvider";
 
 const ForgetPassword = () => {
@@ -12,6 +12,7 @@ const ForgetPassword = () => {
   const [formData, setFormData] = useState({
     email: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -20,21 +21,30 @@ const ForgetPassword = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     const emptyFieldErrors = validateEmptyFields(formData);
     const errors: { [key: string]: string } = { ...emptyFieldErrors };
 
+    if (!errors.email && !validateEmail(formData.email)) {
+      errors.email = errors.email;
+    }
+
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
+      setIsLoading(false);
       return;
     }
     forgotPasswordUser(
       formData,
       (message) => {
         toast.showToast(message, "success");
+        setIsLoading(false);
         setFormData({ email: "" });
+        setErrors({});
       },
       (message) => {
         toast.showToast(message, "error");
+        setIsLoading(false);
       }
     );
   };
@@ -43,7 +53,7 @@ const ForgetPassword = () => {
       <main className="flex flex-col items-center w-full pt-14 mb-10">
         <div className="w-full px-6 items-center">
           <Link
-            href="/dang-ky"
+            href="/dang-nhap"
             className="inline-flex items-center text-blue-700 hover:text-[#002E99] transition-colors"
           >
             <ChevronLeft size={20} />
@@ -74,10 +84,15 @@ const ForgetPassword = () => {
           </div>
 
           <button
+            disabled={isLoading}
             type="submit"
-            className="w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors"
+            className={`w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors ${
+              isLoading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-[#0053E2] hover:bg-blue-600"
+            }`}
           >
-            Gửi yêu cầu
+            {isLoading ? "Đang gửi yêu cầu..." : "Gửi yêu cầu"}
           </button>
         </form>
       </main>

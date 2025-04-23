@@ -28,6 +28,10 @@ import {
     fetchAllProductGetProductFeaturedStart,
     fetchAllProductGetProductFeaturedSuccess,
     fetchAllProductGetProductFeaturedFailed,
+
+    fetchAllProductBestDealStart,
+    fetchAllProductBestDealSuccess,
+    fetchAllProductBestDealFailed,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -234,6 +238,21 @@ function* handlerGetAllProductRelated(action: any): Generator<any, void, any> {
         yield put(fetchAllProductRelatedFailed("Failed to fetch product by slug"));
     }
 }
+
+// Fetch all product best deal
+function* handlerGetAllProductBestDeal(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const product = yield call(productService.getProductsBestDeal, payload);
+        if (product.status_code === 200) {
+            yield put(fetchAllProductBestDealSuccess(product.data));
+            return;
+        }
+        yield put(fetchAllProductBestDealFailed("Product not found"));
+    } catch (error) {
+        yield put(fetchAllProductBestDealFailed("Failed to fetch product by slug"));
+    }
+}
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
     yield takeLatest(fetchAddProductStart.type, handlerAddProduct);
@@ -242,4 +261,5 @@ export function* productSaga() {
     yield takeLatest(fetchAllProductRelatedStart.type, handlerGetAllProductRelated);
     yield takeLatest(fetchAllProductGetRecentlyViewedStart.type, fetchGetProductGetRecentlyViewed);
     yield takeLatest(fetchAllProductGetProductFeaturedStart.type, fetchProductFeatured);
+    yield takeLatest(fetchAllProductBestDealStart.type, handlerGetAllProductBestDeal);
 }

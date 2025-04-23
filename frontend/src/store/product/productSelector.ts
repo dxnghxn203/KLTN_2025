@@ -9,3 +9,4 @@ export const selectProductTopSelling = (state: any) => state.product.productsTop
 export const selectProductRelated = (state: any) => state.product.productsRelated;
 export const selectProductGetRecentlyViewed = (state: any) => state.product.productsGetRecentlyViewed;
 export const selectProductProductFeatured = (state: any) => state.product.productProductFeatured;
+export const selectProductBestDeal = (state: any) => state.product.productsBestDeal;

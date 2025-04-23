@@ -13,6 +13,7 @@ const LoginForm = () => {
   const { signInWithGoogle, login } = useAuth();
   const [localLoading, setLocalLoading] = useState(false);
   const [localLoadingGG, setLocalLoadingGG] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const [formData, setFormData] = useState({
     email: "",
@@ -24,6 +25,7 @@ const LoginForm = () => {
   const handleGoogleSignIn = async (e: React.MouseEvent) => {
     setLocalLoadingGG(true);
     e.preventDefault();
+
     try {
       await signInWithGoogle();
       setLocalLoadingGG(false);
@@ -41,6 +43,8 @@ const LoginForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setIsLoading(true);
     const emptyFieldErrors = validateEmptyFields(formData);
     const errors: { [key: string]: string } = { ...emptyFieldErrors };
     if (!errors.email) {
@@ -51,6 +55,7 @@ const LoginForm = () => {
     }
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
+      setIsLoading(false);
       return;
     }
     setLocalLoading(true);
@@ -59,10 +64,12 @@ const LoginForm = () => {
       () => {
         toast.showToast("Đăng nhập thành công", ToastType.SUCCESS);
         setLocalLoading(false);
+        setIsLoading(false);
       },
       (message: any) => {
         toast.showToast(message, ToastType.ERROR);
         setLocalLoading(false);
+        setIsLoading(false);
       }
     );
   };
@@ -143,10 +150,14 @@ const LoginForm = () => {
 
         <button
           type="submit"
-          className="w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors"
-          disabled={localLoading}
+          className={`w-full h-[55px] rounded-3xl bg-[#0053E2] text-white font-bold hover:bg-[#0042b4] transition-colors ${
+            isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#0053E2] hover:bg-blue-600"
+          }`}
+          disabled={isLoading}
         >
-          {localLoading ? "Đang xử lý..." : "Đăng nhập"}
+          {isLoading ? "Đang xử lý..." : "Đăng nhập"}
         </button>
       </form>
 
