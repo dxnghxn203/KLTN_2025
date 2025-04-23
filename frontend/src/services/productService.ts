@@ -142,3 +142,18 @@ export const getProductsBestDeal = async (params: any) => {
         }
     }
 }
+
+export const deleteProduct = async (product_id: any) => {
+    try {
+        const params = `/v1/product/delete?product_id=${product_id}`;
+        const response: any = await axiosClient.delete(params);
+        return {
+          status_code: response.status_code,
+          message: response.message,
+          data: response.data,
+        };
+      } catch (error: any) {
+          throw error;
+        }
+      
+}

@@ -134,6 +134,20 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+
+        // delete product
+        fetchDeleteProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchDeleteProductSuccess(state, action: PayloadAction<any[]>) {
+
+            state.loading = false;
+            state.error = null;
+        },
+        fetchDeleteProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -169,6 +183,12 @@ export const {
     fetchAllProductBestDealFailed,
     fetchAllProductBestDealStart,
     fetchAllProductBestDealSuccess,
+
+    fetchDeleteProductFailed,
+    fetchDeleteProductStart,
+    fetchDeleteProductSuccess,
+
+
     
 } = productSlice.actions;
 

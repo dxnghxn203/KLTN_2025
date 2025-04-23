@@ -32,6 +32,10 @@ import {
     fetchAllProductBestDealStart,
     fetchAllProductBestDealSuccess,
     fetchAllProductBestDealFailed,
+
+    fetchDeleteProductFailed,
+    fetchDeleteProductStart,
+    fetchDeleteProductSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -253,6 +257,32 @@ function* handlerGetAllProductBestDeal(action: any): Generator<any, void, any> {
         yield put(fetchAllProductBestDealFailed("Failed to fetch product by slug"));
     }
 }
+
+// Fetch delete product
+function* handlerDeleteProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+
+        const {
+            product_id,
+            onSuccess = (message: any) => {},
+            onFailure = (message: any) => {}
+        } = payload;
+        const product = yield call(productService.deleteProduct, product_id);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchDeleteProductSuccess(product.message));
+            return;
+        }
+        onFailure(product.message);
+        yield put(fetchDeleteProductFailed(product.message));
+
+    } catch (error) {
+        yield put(fetchDeleteProductFailed("Failed to fetch product by slug"));
+    }
+}
+
+
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
     yield takeLatest(fetchAddProductStart.type, handlerAddProduct);
@@ -262,4 +292,5 @@ export function* productSaga() {
     yield takeLatest(fetchAllProductGetRecentlyViewedStart.type, fetchGetProductGetRecentlyViewed);
     yield takeLatest(fetchAllProductGetProductFeaturedStart.type, fetchProductFeatured);
     yield takeLatest(fetchAllProductBestDealStart.type, handlerGetAllProductBestDeal);
+    yield takeLatest(fetchDeleteProductStart.type, handlerDeleteProduct);
 }

@@ -1,4 +1,4 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchDeleteProductStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -85,6 +85,14 @@ export function useProduct() {
         }))
     }
 
+    const deleteProduct = async (product_id: any, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchDeleteProductStart({
+            product_id: product_id,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }))
+    }
+
 
 
     return {
@@ -107,6 +115,7 @@ export function useProduct() {
         fetchProductFeatured,
         productBestDeal,
         fetchProductBestDeal,
+        deleteProduct,
     };
 }
 
