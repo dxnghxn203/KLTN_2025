@@ -81,16 +81,16 @@ def generate_password():
     lower_case = string.ascii_lowercase
     upper_case = string.ascii_uppercase
     digits = string.digits
-    special_chars = string.punctuation
+    safe_special_chars = ''.join(c for c in string.punctuation if c not in ['\\', '"', "'"])
 
     password_chars = [
         random.choice(lower_case),
         random.choice(upper_case),
         random.choice(digits),
-        random.choice(special_chars)
+        random.choice(safe_special_chars)
     ]
 
-    all_chars = lower_case + upper_case + digits + special_chars
+    all_chars = lower_case + upper_case + digits + safe_special_chars
     password_chars += random.choices(all_chars, k=8)
 
     random.shuffle(password_chars)
