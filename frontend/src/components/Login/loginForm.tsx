@@ -8,12 +8,14 @@ import { ToastType } from "@/components/Toast/toast";
 import { useAuth } from "@/hooks/useAuth";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginForm = () => {
   const { signInWithGoogle, login } = useAuth();
   const [localLoading, setLocalLoading] = useState(false);
   const [localLoadingGG, setLocalLoadingGG] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const toast = useToast();
   const [formData, setFormData] = useState({
     email: "",
@@ -33,12 +35,17 @@ const LoginForm = () => {
       setLocalLoadingGG(false);
     }
   };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { id, value } = e.target;
     setFormData((prev) => ({ ...prev, [id]: value }));
     setErrors((prev) => ({ ...prev, [id]: "" }));
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,17 +132,25 @@ const LoginForm = () => {
           <label htmlFor="password" className="text-sm font-medium">
             Mật khẩu
           </label>
-          <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+          <div className="relative w-full">
             <input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleChange}
-              className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
+              className="w-full h-[55px] rounded-3xl px-4 pr-12 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
             />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
           {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password}</p>
+            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
           )}
         </div>
 
