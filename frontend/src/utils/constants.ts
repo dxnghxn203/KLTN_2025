@@ -6,6 +6,9 @@ export const ADMIN_ROUTES = [
   '/san-pham',
   '/quan-ly-danh-muc',
   '/dang-nhap-admin',
+  '/thong-tin-tai-khoan',
+  '/doi-mat-khau-admin',
+  '/quen-mat-khau-admin',
   
 ] as const;
 

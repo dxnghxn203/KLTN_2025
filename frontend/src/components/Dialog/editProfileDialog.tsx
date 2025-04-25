@@ -49,7 +49,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                   type={item.type || "text"}
                   value={formData[item.label]}
                   onChange={(e) => handleChange(item.label, e.target.value)}
-                  className="px-4 py-4 rounded-3xl outline-none border border-gray-300 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
+                  className="px-4 py-4 rounded-lg outline-none border border-gray-300 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none"
                 />
               </div>
@@ -62,7 +62,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                 <select
                   value={formData["Giới tính"]}
                   onChange={(e) => handleChange("Giới tính", e.target.value)}
-                  className="px-4 py-4 rounded-3xl outline-none border border-gray-300 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
+                  className="px-4 py-4 rounded-lg outline-none border border-gray-300 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none"
                 >
                   <option value="Nam">Nam</option>
@@ -77,7 +77,7 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
                   type="date"
                   value={formData["Ngày sinh"]}
                   onChange={(e) => handleChange("Ngày sinh", e.target.value)}
-                  className="px-4 py-4 rounded-3xl outline-none border border-gray-300 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
+                  className="px-4 py-4 rounded-lg outline-none border border-gray-300 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none"
                 />
               </div>
@@ -89,11 +89,11 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
         <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={onClose}
-            className="bg-[#EAEFFA] text-[#0053E2] font-semibold w-[140px] py-3 rounded-full"
+            className="bg-[#EAEFFA] text-[#0053E2] font-semibold w-[140px] py-3 rounded-lg"
           >
             Hủy
           </button>
-          <button className="bg-[#0053E2] text-white font-semibold w-[140px] py-3 rounded-full hover:bg-blue-700">
+          <button className="bg-[#0053E2] text-white font-semibold w-[140px] py-3 rounded-lg hover:bg-blue-700">
             Cập nhật
           </button>
         </div>

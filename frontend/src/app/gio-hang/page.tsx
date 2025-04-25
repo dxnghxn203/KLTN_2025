@@ -32,8 +32,7 @@ export default function Cart() {
   };
   useEffect(() => {
     fetchingCart();
-  }
-    , []);
+  }, []);
 
   const [isCheckout, setIsCheckout] = useState(false);
   const [productForCheckOut, setProductForCheckOut] = useState<any[]>([]);
@@ -57,11 +56,17 @@ export default function Cart() {
       return false;
     }
 
-    if (!addressInf || !addressInf.address || !addressInf.cityCode || !addressInf.districtCode || !addressInf.wardCode) {
+    if (
+      !addressInf ||
+      !addressInf.address ||
+      !addressInf.cityCode ||
+      !addressInf.districtCode ||
+      !addressInf.wardCode
+    ) {
       return false;
     }
     return true;
-  }
+  };
 
   const [shippingFee, setShippingFee] = useState<any>({});
 
@@ -77,20 +82,20 @@ export default function Cart() {
         },
       },
       (data: any) => {
-        if (data && data?.shipping_fee) {
+        if (data) {
           setShippingFee(data);
         }
       },
       (error: any) => {
         toast.showToast("Lỗi khi kiểm tra phí vận chuyển", error);
       }
-    )
-  }
+    );
+  };
 
   useEffect(() => {
     checkShippingFeeUI();
   }, [data]);
-  
+
   const checkOrderStatus = () => {
     if (!validateData()) {
       toast.showToast("Vui lòng nhập đầy đủ thông tin", "error");
@@ -124,8 +129,8 @@ export default function Cart() {
         toast.showToast("Đặt hàng thất bại", error);
         setLoadingCheckout(false);
       }
-    )
-  }
+    );
+  };
   const handleCheckout = () => {
     checkOrderStatus();
   };
@@ -136,57 +141,71 @@ export default function Cart() {
     setProductForCheckOut([]);
     setLoadingCheckout(false);
     setImageQR(null);
-  }
+  };
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
-      {
-        isQR && orderID && imageQR && productForCheckOut ? (
-          <QRPayment image={imageQR} order_id={orderID} price={priceOrder} setClose={closeQR} />
-        ) : (
-          <>
-            {
-              isCheckout ? (
-                <>
-                  <Checkout back={() => setIsCheckout(false)} price={priceOrder} productForCheckOut={productForCheckOut} setData={setData} handleCheckout={handleCheckout} shippingFee={shippingFee}/>
-                  {
-                    loadingCheckout && <LoaingCenter />
-                  }
-                </>
-              ) : (
-                <main className="flex flex-col space-y-8 w-full">
-                  <div className="flex flex-col px-5 ">
-                    <div className="pt-14">
-                      <Link
-                        href="/"
-                        className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
-                      >
-                        <ChevronLeft size={20} />
-                        <span>Tiếp tục mua sắm</span>
-                      </Link>
-                    </div>
-                    {
-                      loadingGetCart ? (
-                        <Loading />
-                      ) : (
-                        <>
-                          {cart && cart?.length ? <ShoppingCart cart={cart} setIsCheckout={setIsCheckout} setProductForCheckOut={setProductForCheckOut} setPriceOrder={setPriceOrder} /> : <CartEmpty />}
-                        </>
-                      )}
-                  </div>
+      {isQR && orderID && imageQR && productForCheckOut ? (
+        <QRPayment
+          image={imageQR}
+          order_id={orderID}
+          price={priceOrder}
+          setClose={closeQR}
+        />
+      ) : (
+        <>
+          {isCheckout ? (
+            <>
+              <Checkout
+                back={() => setIsCheckout(false)}
+                price={priceOrder}
+                productForCheckOut={productForCheckOut}
+                setData={setData}
+                handleCheckout={handleCheckout}
+                shippingFee={shippingFee}
+              />
+              {loadingCheckout && <LoaingCenter />}
+            </>
+          ) : (
+            <main className="flex flex-col space-y-8 w-full">
+              <div className="flex flex-col px-5 ">
+                <div className="pt-14">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
+                  >
+                    <ChevronLeft size={20} />
+                    <span>Tiếp tục mua sắm</span>
+                  </Link>
+                </div>
+                {loadingGetCart ? (
+                  <Loading />
+                ) : (
+                  <>
+                    {cart && cart?.length ? (
+                      <ShoppingCart
+                        cart={cart}
+                        setIsCheckout={setIsCheckout}
+                        setProductForCheckOut={setProductForCheckOut}
+                        setPriceOrder={setPriceOrder}
+                      />
+                    ) : (
+                      <CartEmpty />
+                    )}
+                  </>
+                )}
+              </div>
 
-                  <div className="self-start text-2xl font-extrabold text-black px-5">
-                    Sản phẩm vừa xem
-                  </div>
-                  <div className="px-5">
-                    <ProductsViewedList />
-                  </div>
-                </main>
-              )
-            }
-          </>
-        )
-      }
+              <div className="self-start text-2xl font-extrabold text-black px-5">
+                Sản phẩm vừa xem
+              </div>
+              <div className="px-5">
+                <ProductsViewedList />
+              </div>
+            </main>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import Link from "next/link";
 import HistoryOrder from "@/components/Profile/historyOrder";
 import PersonalInfomation from "./personalInfo";
 import { HiOutlineUserCircle } from "react-icons/hi";
+import { MdLockOutline } from "react-icons/md";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -58,6 +59,19 @@ const Sidebar = () => {
               >
                 <LuFileClock className="mr-2 text-xl" />
                 Lịch sử đơn hàng
+              </button>
+            </Link>
+            <Link href="/ca-nhan/doi-mat-khau">
+              <button
+                className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
+                ${
+                  pathname === "/ca-nhan/doi-mat-khau"
+                    ? "bg-[#F0F5FF] text-[#0053E2]"
+                    : "text-gray-800 hover:bg-[#EBEBEB]"
+                }`}
+              >
+                <MdLockOutline className="mr-2 text-xl" />
+                Đổi mật khẩu
               </button>
             </Link>
 

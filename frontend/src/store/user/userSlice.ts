@@ -5,12 +5,14 @@ interface UserSliceState {
     responseInsertUser: any;
     loading: boolean;
     allUserAdmin: any[];
+    token: any;
 }
 
 const initialState: UserSliceState = {
     responseInsertUser: null,
     loading: false,
-    allUserAdmin: []
+    allUserAdmin: [],
+    token: null,
 };
 
 export const userSlice = createSlice({
@@ -60,6 +62,51 @@ export const userSlice = createSlice({
         fetchGetAllUserAdminFailure: (state) => {
             state.loading = false;
         },
+
+        // forgotPassword:
+        fetchForgotPasswordStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchForgotPasswordSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchForgotPasswordFailure: (state) => {
+            state.loading = false;
+        },
+        // changePassword:
+        fetchChangePasswordStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchChangePasswordSuccess: (state) => {
+            state.token = true;
+            state.loading = false;
+        },
+        fetchChangePasswordFailure: (state) => {
+            state.loading = false;
+        },
+        // changePasswordAdmin:
+        fetchChangePasswordAdminStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchChangePasswordAdminSuccess: (state) => {
+            state.token = true;
+            state.loading = false;
+        },
+        fetchChangePasswordAdminFailure: (state) => {
+            state.loading = false;
+        },
+
+        //forgotPasswordAdmin
+        fetchForgotPasswordAdminStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchForgotPasswordAdminSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchForgotPasswordAdminFailure: (state) => {
+            state.loading = false;
+        },
+
     },
 });
 
@@ -79,6 +126,22 @@ export const {
     fetchGetAllUserAdminStart,
     fetchGetAllUserAdminSuccess,
     fetchGetAllUserAdminFailure,
+
+    fetchForgotPasswordFailure,
+    fetchForgotPasswordStart,
+    fetchForgotPasswordSuccess,
+
+    fetchChangePasswordFailure,
+    fetchChangePasswordStart,
+    fetchChangePasswordSuccess,
+
+    fetchChangePasswordAdminFailure,
+    fetchChangePasswordAdminStart,
+    fetchChangePasswordAdminSuccess,
+
+    fetchForgotPasswordAdminFailure,
+    fetchForgotPasswordAdminStart,
+    fetchForgotPasswordAdminSuccess,
 
 } = userSlice.actions;
 

@@ -1,21 +1,41 @@
-import React from "react";
+import React, { use } from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import bin from "@/images/delete.png";
+import { useProduct } from "@/hooks/useProduct";
+import { useToast } from "@/providers/toastProvider";
+import { ToastType } from "@/components/Toast/toast";
+import { on } from "events";
 
 interface DeleteDialogProps {
-  // productId: string | null;
-  // priceId: string | null;
+  //   selectedChildId: string;
+  isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onDelete: () => void;
 }
 
 const DeleteProductDialog: React.FC<DeleteDialogProps> = ({
-  // productId,
-  // priceId,
+  //   selectedChildId,
+  isOpen,
   onClose,
-  onConfirm,
+  onDelete,
 }) => {
+  if (!isOpen) return null;
+  //   const handleDeleteChildProduct = () => {
+  //     fetchDeleteChildProduct(
+  //       selectedChildId,
+  //       () => {
+  //         toast.showToast("Xóa danh mục thành công!", ToastType.SUCCESS);
+  //         fetchGetAllProductForAdmin();
+  //         onClose();
+  //       },
+  //       (message) => {
+  //         toast.showToast(message, ToastType.ERROR);
+  //       }
+  //     );
+
+  // console.log("Delete category with ID:", selectedC hildId);
+  //   };
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white p-6 rounded-lg flex flex-col items-center justify-center relative w-[350px]">
@@ -28,7 +48,7 @@ const DeleteProductDialog: React.FC<DeleteDialogProps> = ({
         <Image src={bin} alt="" width={300} height={300} />
         <p className="text-center mt-2 font-semibold text-black">Thông báo</p>
         <p className="text-center mt-2 font-sm text-black">
-          Bạn chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?
+          Bạn chắc chắn muốn xóa sản phẩm?
         </p>
         <div className="flex justify-end gap-4">
           <button
@@ -38,7 +58,7 @@ const DeleteProductDialog: React.FC<DeleteDialogProps> = ({
             Hủy
           </button>
           <button
-            onClick={onConfirm}
+            onClick={onDelete}
             className="mt-10 bg-[#0053E2] text-white font-semibold w-[120px] py-3 rounded-full hover:bg-[#002E99]"
           >
             Xóa

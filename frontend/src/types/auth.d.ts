@@ -39,6 +39,7 @@ export interface Admin {
 export interface AuthState {
     user: any | null;
     admin: any | null;
+    isAdmin: boolean;
     token: string | null;
     isAuthenticated: boolean;
     loading: boolean;

@@ -8,11 +8,18 @@ import { IoImage } from "react-icons/io5";
 import Image from "next/image";
 import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
 import { MdOutlineModeEdit } from "react-icons/md";
+import { Delete } from "lucide-react";
+import DeleteProductDialog from "../../Dialog/confirmDeleteProductDialog";
+import { useToast } from "@/providers/toastProvider";
 
 const TableProduct = () => {
-  const { allProductAdmin, getAllProductsAdmin } = useProduct();
+  const { allProductAdmin, getAllProductsAdmin, deleteProduct } = useProduct();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  const toast = useToast();
   const productsPerPage = 5;
 
   useEffect(() => {
@@ -41,6 +48,7 @@ const TableProduct = () => {
   const currentProducts = allProductAdmin
     ? allProductAdmin.slice(indexOfFirstProduct, indexOfLastProduct)
     : [];
+  console.log("Product ID đã chọn:", selectedProduct?.product_id);
 
   return (
     <>
@@ -174,7 +182,13 @@ const TableProduct = () => {
                               <span>Sửa</span>
                             </button>
                             <div className="border-t border-gray-200"></div>
-                            <button className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500">
+                            <button
+                              className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500"
+                              onClick={() => {
+                                setSelectedProduct(product); // Lưu product hiện tại
+                                setIsOpenDialog(true); // Mở dialog xác nhận xóa
+                              }}
+                            >
                               <ImBin className="text-base text-sm" />
                               <span>Xóa</span>
                             </button>
@@ -195,6 +209,24 @@ const TableProduct = () => {
           </table>
         </div>
       </div>
+      <DeleteProductDialog
+        onClose={() => setIsOpenDialog(false)}
+        onDelete={() => {
+          deleteProduct(
+            selectedProduct.product_id,
+            (message) => {
+              toast.showToast(message, "success");
+              getAllProductsAdmin();
+              setIsOpenDialog(false);
+              setSelectedProduct(null);
+            },
+            (message) => {
+              toast.showToast(message, "error");
+            }
+          );
+        }}
+        isOpen={isOpenDialog}
+      />
 
       {/* Phân trang */}
       <div className="flex justify-center p-6">

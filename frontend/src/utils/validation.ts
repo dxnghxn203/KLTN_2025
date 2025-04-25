@@ -46,6 +46,8 @@ export const validatePassword = (value: string): string | null => {
       main_category_slug: "URL danh mục chính",
       sub_category_name: "Tên danh mục cấp 1",
       sub_category_slug: "URL danh mục cấp 1",
+      old_password: "Mật khẩu cũ",
+      new_password: "Mật khẩu mới",
       
     };
     

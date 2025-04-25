@@ -27,6 +27,7 @@ import {
 } from './reviewSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 import * as reviewService from '@/services/reviewService';
+import { setClientToken } from '@/utils/configs/axiosClient';
 
 function* fetchGetAllReview(action: any): Generator<any, void, any> {
     try {
@@ -143,9 +144,9 @@ function* answerWorkerSaga(action: any): Generator<any, void, any> {
             onSuccess =()=> {},
             onFailure =()=> {},
         } = payload; 
-        
         try {
-            const response = yield call(reviewService.insertAnswer, payload);
+            const response = 
+            yield call(reviewService.insertAnswer, payload) ;
             console.log("payload: ", payload);
             if (response.status_code === 200) {
                 yield put(fetchAnswerSuccess());

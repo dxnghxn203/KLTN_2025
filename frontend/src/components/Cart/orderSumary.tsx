@@ -15,7 +15,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   totalOriginPrice,
   totalDiscount,
   totalSave,
-  checkout
+  checkout,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -42,17 +42,17 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </div>
           <div className="flex justify-between text-black mt-5">
             <div>Giảm giá trực tiếp</div>
-            <div className="text-amber-300">
+            <div className="text-amber-500">
               - {totalDiscount.toLocaleString("vi-VN")}đ
             </div>
           </div>
           <div className="flex justify-between text-black mt-5">
             <div>Giảm giá voucher</div>
-            <div className="text-amber-300">0đ</div>
+            <div className="text-amber-500">0đ</div>
           </div>
           <div className="flex justify-between text-black mt-5">
             <div>Tiết kiệm được</div>
-            <div className="text-amber-300">
+            <div className="text-amber-500">
               {totalSave.toLocaleString("vi-VN")}đ
             </div>
           </div>
@@ -63,13 +63,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         <div className="flex gap-5 justify-between items-center mt-3 ml-2.5 max-w-full w-[337px]">
           <div className="text-xl text-black">Thành tiền</div>
           <div className="flex gap-2 whitespace-nowrap">
-            {
-              totalDiscount > 0 && (
-                <div className="text-[16px] pt-1 text-gray-500 line-through">
-                  {totalOriginPrice.toLocaleString("vi-VN")}đ
-                </div>
-              )
-            }
+            {totalDiscount > 0 && (
+              <div className="text-xl text-gray-500 line-through">
+                {totalOriginPrice.toLocaleString("vi-VN")}đ
+              </div>
+            )}
             <div className="text-xl font-bold text-blue-700">
               {" "}
               {totalAmount.toLocaleString("vi-VN")}đ
@@ -78,10 +76,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         </div>
         <div className="flex justify-center w-full">
           <button
-            className={`w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white rounded-3xl ${totalAmount === 0
+            className={`w-full px-[120px] py-4 mt-7 mx-auto block text-base font-bold text-white rounded-3xl ${
+              totalAmount === 0
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-blue-700 hover:bg-[#002E99]"
-              }`}
+            }`}
             onClick={checkout}
             disabled={totalAmount === 0}
           >
@@ -89,7 +88,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           </button>
         </div>
         {totalAmount === 0 && (
-          <div className="mt-2 text-center text-red-500">
+          <div className="mt-2 text-center text-red-500 text-sm">
             Vui lòng chọn sản phẩm để mua hàng!
           </div>
         )}
