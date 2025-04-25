@@ -1,0 +1,133 @@
+_format_version: "3.0"
+
+services:
+  - name: tracking-api-service  
+    protocol: http
+    host: https://kltn-2025-tracking-api-ek34.onrender.com
+    port: 3000                
+    path: /                    
+    connect_timeout: 5000
+    read_timeout: 60000
+    write_timeout: 60000
+
+routes:
+  # --- Nhóm Auth (Tracking API) ---
+  - name: tracking-auth-prefix-route
+    paths:
+      - /v1/auth/ # Match /v1/auth/google-auth, /v1/auth/login, ...
+    strip_path: false # Backend tracking-api nhận /v1/auth/...
+    service: tracking-api-service # Trỏ về tracking-api
+
+  # --- Nhóm Admin (Tracking API) ---
+  - name: tracking-admin-prefix-route
+    paths:
+      - /v1/admin/ # Match /v1/admin/register, /v1/admin/otp, ...
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Users (Tracking API) ---
+  - name: tracking-users-prefix-route
+    paths:
+      - /v1/users/ # Match /v1/users/all-user-admin, /v1/users/otp, ...
+      - /v1/user/  # Match /v1/user/register_email
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Products (Tracking API) ---
+  - name: tracking-products-prefix-route
+    paths:
+      - /v1/products/ # Match /v1/products/top-selling, /v1/products/all-product-admin, ...
+      - /v1/product/  # Match /v1/product/add, /v1/product/(slug), ...
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Order (Tracking API) ---
+  - name: tracking-order-prefix-route
+    paths:
+      - /v1/order/ # Match /v1/order/check_shipping_fee, /v1/order/add, ...
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Cart (Tracking API) ---
+  - name: tracking-cart-prefix-route
+    paths:
+      - /v1/cart/
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Location (Tracking API) ---
+  - name: tracking-location-prefix-route
+    paths:
+      - /v1/location/ # Match /v1/location/cities, /v1/location/districts/(code), ...
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Category (Tracking API) ---
+  - name: tracking-category-prefix-route
+    paths:
+      - /v1/category/ # Match /v1/category/, /v1/category/(slug), /v1/category/(slug)/sub-category/, ...
+      - /v1/categories/ # Match /v1/categories/get-all-for-admin
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Review (Tracking API) ---
+  - name: tracking-review-prefix-route
+    paths:
+      - /v1/review/
+    strip_path: false
+    service: tracking-api-service
+
+  # --- Nhóm Comment (Tracking API) ---
+  - name: tracking-comment-prefix-route
+    paths:
+      - /v1/comment/
+    strip_path: false
+    service: tracking-api-service
+
+  - name: tracking-fee-route
+    paths:
+      - /v1/fee
+    strip_path: false
+    service: tracking-api-service
+
+  - name: tracking-time-route
+    paths:
+      - /v1/time
+    strip_path: false
+    service: tracking-api-service
+
+  - name: tracking-read-root-route
+    paths:
+      - /read-root
+    strip_path: false
+    service: tracking-api-service
+
+  - name: tracking-root-route 
+    paths:
+      - / # Đặt cuối cùng
+    strip_path: false
+    service: tracking-api-service
+
+plugins:
+  - name: key-auth
+    service: tracking-api-service 
+    config:
+      key_names: ["apikey", "Authorization"]
+      hide_credentials: true
+      run_on_preflight: false
+
+  - name: rate-limiting
+    service: tracking-api-service
+    config:
+      minute: 200 
+      policy: local
+
+  - name: cors
+    service: tracking-api-service 
+    config:
+      origins: ["http://localhost:3000", "https://kltn-2025.vercel.app"]
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+      headers: ["Content-Type", "Authorization", "apikey"]
+      exposed_headers: ["Content-Length", "Content-Type"]
+      credentials: true
+      max_age: 3600
