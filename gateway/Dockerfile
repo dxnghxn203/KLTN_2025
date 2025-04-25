@@ -1,4 +1,4 @@
-FROM kong:3.6
+FROM kong:3.7.1
 
 COPY kong.yml /etc/kong/kong.yml
 
