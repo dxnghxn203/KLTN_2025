@@ -1,12 +1,17 @@
 from datetime import datetime
-
+import platform
 import pdfkit
 import os
 
 from app.entities.order.response import ItemOrderRes
 
 def get_wkhtmltopdf_path():
-    return os.path.join(os.getcwd(), "app", "static", "wkhtmltopdf", "bin", "wkhtmltopdf.exe")
+    if platform.system() == "Windows":
+        # Nếu là Windows thì lấy file .exe trong static
+        return os.path.join(os.getcwd(), "app", "static", "wkhtmltopdf", "bin", "wkhtmltopdf.exe")
+    else:
+        # Nếu là Linux thì assume wkhtmltopdf đã được cài global
+        return "/usr/bin/wkhtmltopdf"
 
 def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
     try:
