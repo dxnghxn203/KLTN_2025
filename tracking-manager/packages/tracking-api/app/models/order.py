@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import io
 from datetime import datetime, timedelta
 from typing import Optional, List, Tuple
 
@@ -8,6 +9,7 @@ import httpx
 from bson import ObjectId
 from bson.errors import InvalidId
 from starlette import status
+from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq
@@ -18,6 +20,7 @@ from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX, get_update_status_queue
 from app.helpers.es_helpers import search_es
+from app.helpers.pdf_helpers import export_invoice_to_pdf
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
 from app.models.cart import remove_product_from_cart
 from app.models.fee import calculate_shipping_fee
@@ -445,3 +448,32 @@ async def cancel_order(order_id: str):
         logger.error(f"Failed [cancel_order]: {e}")
         raise e
 
+async def get_order_invoice(order_id: str):
+    try:
+        order = await get_order_by_id(order_id)
+        if not order:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy đơn hàng"
+            )
+        user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order.created_by)))
+        user_name = "Khách lẻ"
+        if user_info:
+            user_name = user_info.user_name
+        pdf_bytes = export_invoice_to_pdf(order, user_name)
+        if not pdf_bytes:
+            raise response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Không thể tạo file PDF"
+            )
+
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{order_id}.pdf"'
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed [get_order_invoice]: {e}")
+        raise e
