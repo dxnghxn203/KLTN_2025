@@ -24,3 +24,4 @@ opensearch-py~=2.8.0
 requests~=2.32.3
 email-validator~=2.2.0
 cryptography~=44.0.0
+pdfkit~=1.0.0
