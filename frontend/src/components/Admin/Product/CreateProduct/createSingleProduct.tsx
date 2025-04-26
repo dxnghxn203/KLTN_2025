@@ -5,7 +5,7 @@ import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
 
 const CreateSingleProduct = () => {
-  const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai"];
+  const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
 
   const { addProduct } = useProduct();
 
@@ -378,11 +378,11 @@ const CreateSingleProduct = () => {
         ?.value
     )
       newErrors.uses = "Vui lòng điền thông tin công dụng";
-    if (
-      !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
-        ?.value
-    )
-      newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
+    // if (
+    //   !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
+    //     ?.value
+    // )
+    //   newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
 
     if (
       !document.querySelector<HTMLInputElement>('input[name="inventory"]')
@@ -499,13 +499,13 @@ const CreateSingleProduct = () => {
     formData.set("manufacturer", JSON.stringify(manufacturer));
     formData.set("category", JSON.stringify(category));
 
-    const formDataObj: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      formDataObj[key] = value;
-    });
+    // const formDataObj: Record<string, any> = {};
+    // formData.forEach((value, key) => {
+    //   formDataObj[key] = value;
+    // });
 
     await addProduct(
-      formDataObj,
+      formData,
       (message: any) => {
         toast.showToast(message, "success");
         resetForm(); // Reset the form after successful submission
@@ -514,6 +514,7 @@ const CreateSingleProduct = () => {
         toast.showToast(message, "error");
       }
     );
+    console.log("formData", formData);
   };
 
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
@@ -1044,6 +1045,9 @@ const CreateSingleProduct = () => {
                         }
                         className="border rounded-lg p-2 w-full"
                       />
+                      <label className="block text-sm font-medium mb-1">
+                        (kg)
+                      </label>
                     </div>
                   </div>
                 </div>

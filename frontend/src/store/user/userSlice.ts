@@ -65,12 +65,15 @@ export const userSlice = createSlice({
 
         // forgotPassword:
         fetchForgotPasswordStart: (state, action) => {
+            console.log("fetchForgotPasswordStart")
             state.loading = true;
         },
         fetchForgotPasswordSuccess: (state) => {
+            console.log("fetchForgotPasswordSuccess")
             state.loading = false;
         },
         fetchForgotPasswordFailure: (state) => {
+            console.log("fetchForgotPasswordFailure")
             state.loading = false;
         },
         // changePassword:
@@ -98,12 +101,16 @@ export const userSlice = createSlice({
 
         //forgotPasswordAdmin
         fetchForgotPasswordAdminStart: (state, action) => {
+            console.log("fetchForgotPasswordAdminStart")
             state.loading = true;
+
         },
         fetchForgotPasswordAdminSuccess: (state) => {
+            console.log("fetchForgotPasswordAdminSuccess")
             state.loading = false;
         },
         fetchForgotPasswordAdminFailure: (state) => {
+            console.log("fetchForgotPasswordAdminFailure")
             state.loading = false;
         },
 

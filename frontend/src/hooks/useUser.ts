@@ -1,4 +1,4 @@
-import { fetchChangePasswordAdminStart, fetchChangePasswordStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
+import { fetchChangePasswordAdminStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
 import { insertUserSelector, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
@@ -139,7 +139,7 @@ export function useUser() {
     onSuccess: (message: string) => void,
     onFailure: (message: string) => void
   ) => {
-    dispatch(fetchForgotPasswordStart({
+    dispatch(fetchForgotPasswordAdminStart({
       ...params,
       onSuccess,
       onFailure

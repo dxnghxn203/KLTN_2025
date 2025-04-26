@@ -211,9 +211,11 @@ export function* userForgotPasswordAdminWorkerSaga(action: any): Generator<any, 
         if (response.status_code === 200) {
             yield put(fetchForgotPasswordAdminSuccess(response.data));
             onSuccess(response.message);
+            console.log("response", response)
         } else {
             yield put(fetchForgotPasswordAdminFailure());
             onFailure(response.message);
+        console.log("response", response)
         }
     }
     catch (error: any) {

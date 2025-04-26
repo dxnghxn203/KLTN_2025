@@ -25,8 +25,11 @@ const ForgetPassword = () => {
     const emptyFieldErrors = validateEmptyFields(formData);
     const errors: { [key: string]: string } = { ...emptyFieldErrors };
 
-    if (!errors.email && !validateEmail(formData.email)) {
-      errors.email = errors.email;
+    if (!errors.email) {
+      const emailError = validateEmail(formData.email);
+      if (emailError) {
+        errors.email = emailError;
+      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -38,12 +41,14 @@ const ForgetPassword = () => {
       formData,
       (message) => {
         toast.showToast(message, "success");
+        console.log("result:", message);
         setIsLoading(false);
         setFormData({ email: "" });
         setErrors({});
       },
       (message) => {
         toast.showToast(message, "error");
+        console.log("result:", message);
         setIsLoading(false);
       }
     );

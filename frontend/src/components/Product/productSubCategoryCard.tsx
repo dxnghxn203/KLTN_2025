@@ -14,12 +14,13 @@ const ProductSubCategoryCard: React.FC<ProductSubCategoryCardProps> = ({
   mainCategoryName,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const slug = products?.slug;
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
         <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
           {/* Ảnh sản phẩm */}
-          <Link href="/chi-tiet-san-pham" legacyBehavior>
+          <Link href={`/chi-tiet-san-pham/${slug}`} legacyBehavior>
             <div className="py-4 flex flex-col items-center">
               <div className="flex justify-end w-full">
                 {products?.prices[0]?.discount !== 0 ? (

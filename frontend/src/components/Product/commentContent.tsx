@@ -3,6 +3,8 @@ import CommentDialog from "../Dialog/commentDialog";
 import { useReview } from "@/hooks/useReview";
 import { formatCommentTime } from "@/utils/formatTime";
 import ReplyFormComment from "./replyFormComment";
+import starrating from "@/images/starrating.png";
+import Image from "next/image";
 interface CommentContentProps {
   productId: any;
 }
@@ -74,6 +76,17 @@ const CommentContent: React.FC<CommentContentProps> = ({ productId }) => {
           </button>
         ))}
       </div>
+
+      {(allComment?.comments?.length === 0 || !allComment?.comments) && (
+        <div>
+          <div className="flex items-center justify-center mt-4">
+            <Image src={starrating} alt="No reviews" width={150} height={150} />
+          </div>
+          <div className="text-center text-gray-500 text-sm">
+            Chưa có hỏi đáp nào
+          </div>
+        </div>
+      )}
 
       {allComment?.comments?.slice(0, visibleAQ).map((comment: any) => (
         <div key={comment._id} className="pb-4 space-y-4">

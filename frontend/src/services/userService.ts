@@ -66,6 +66,8 @@ export const forgotPasswordUser = async (params: any): Promise<any> => {
     try {
         const url = "/v1/users/forgot-password";
         const result: any = await axiosClient.post(url, params);
+        
+        console.log("result:", result);
         return {
             status_code: result.status_code,
             message: result.message,
@@ -126,6 +128,7 @@ export const forgotPasswordAdmin = async (params: any): Promise<any> => {
     try {
         const url = "/v1/admin/forgot-password";
         const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
         return {
             status_code: result.status_code,
             message: result.message,

@@ -29,21 +29,24 @@ const ChangePasswordComponent = () => {
     const emptyFieldErrors = validateEmptyFields(formData);
     const errors: { [key: string]: string } = { ...emptyFieldErrors };
     const oldPasswordError = validatePassword(formData.old_password);
-    const newPasswordError = validatePassword(formData.new_password);
     if (oldPasswordError) {
-      setErrors((prev) => ({ ...prev, old_password: oldPasswordError }));
-      return;
-    }
-    if (newPasswordError) {
-      setErrors((prev) => ({ ...prev, new_password: newPasswordError }));
-      return;
+      errors.old_password = oldPasswordError;
     }
 
-    if (formData.new_password !== confirmPassword) {
-      errors.confirmPassword = "Mật khẩu không khớp!";
+    // Validate mật khẩu mới
+    const newPasswordError = validatePassword(formData.new_password);
+    if (newPasswordError) {
+      errors.new_password = newPasswordError;
     }
+
+    // Check mật khẩu mới và nhập lại mật khẩu có khớp không
+    if (formData.new_password !== confirmPassword) {
+      errors.confirmPassword = "Mật khẩu mới và nhập lại mật khẩu không khớp!";
+    }
+
+    // Check mật khẩu mới không được giống mật khẩu cũ
     if (formData.new_password === formData.old_password) {
-      errors.new_password = "Mật khẩu mới không được giống mật khẩu cũ!";
+      errors.new_password = "Mật khẩu mới không được trùng mật khẩu cũ!";
     }
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
@@ -122,9 +125,6 @@ const ChangePasswordComponent = () => {
           </div>
         </div>
         <div className="flex justify-center gap-4 mt-6 text-sm">
-          <button className="bg-[#EAEFFA] text-[#0053E2] font-semibold w-[100px] py-3 rounded-xl">
-            Hủy
-          </button>
           <button className="bg-[#0053E2] text-white font-semibold w-[100px] py-3 rounded-xl hover:bg-blue-700">
             Cập nhật
           </button>

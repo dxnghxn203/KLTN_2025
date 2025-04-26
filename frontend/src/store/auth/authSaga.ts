@@ -61,8 +61,8 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
         if (response.status_code === 200) {
             onSuccess();
             console.log('Login success:', response);
-             setClientToken(response?.token);
-             setToken(response?.token);
+            setClientToken(response?.token);
+            setToken(response?.token);
             yield put(
                 loginSuccess({
                     user: response?.user || null,

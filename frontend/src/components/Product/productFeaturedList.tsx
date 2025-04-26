@@ -48,18 +48,18 @@ export default function ProductFeaturedList({
   });
 
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const sortedAndFilteredProducts = [...productRelated]
-    .filter(
-      (product) =>
-        product.price >= priceFilter.min &&
-        product.price <= priceFilter.max &&
-        (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
-    )
-    .sort((a, b) => {
-      if (sortOrder === "asc") return a.price - b.price;
-      if (sortOrder === "desc") return b.price - a.price;
-      return 0;
-    });
+  // const sortedAndFilteredProducts = [...productRelated]
+  //   .filter(
+  //     (product) =>
+  //       product.price >= priceFilter.min &&
+  //       product.price <= priceFilter.max &&
+  //       (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
+  //   )
+  //   .sort((a, b) => {
+  //     if (sortOrder === "asc") return a.price - b.price;
+  //     if (sortOrder === "desc") return b.price - a.price;
+  //     return 0;
+  //   });
 
   return (
     <div className="w-full max-md:px-5 max-md:max-w-full mt-6">

@@ -147,33 +147,33 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
             onfailed = () => { }
         } = payload;
 
-        const formData = new FormData();
+        // const formData = new FormData();
 
-        Object.entries(form).forEach(([key, value]) => {
-            if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
-                formData.append(key, value as string);
-            }
-        });
+        // Object.entries(form).forEach(([key, value]) => {
+        //     if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
+        //         formData.append(key, value as string);
+        //     }
+        // });
 
-        if (form.thumbnail instanceof File) {
-            formData.append('thumbnail', form.thumbnail);
-        }
+        // if (form.thumbnail instanceof File) {
+        //     formData.append('thumbnail', form.thumbnail);
+        // }
 
-        if (form.images && Array.isArray(form.images)) {
-            form.images.forEach((file: File, index: number) => {
-                if (file instanceof File) {
-                    formData.append(`images[${index}]`, file);
-                }
-            });
-        }
+        // if (form.images && Array.isArray(form.images)) {
+        //     form.images.forEach((file: File, index: number) => {
+        //         if (file instanceof File) {
+        //             formData.append(`images[${index}]`, file);
+        //         }
+        //     });
+        // }
 
-        if (form.attributes && typeof form.attributes === 'object') {
-            formData.append('attributes', JSON.stringify(form.attributes));
-        }
+        // if (form.attributes && typeof form.attributes === 'object') {
+        //     formData.append('attributes', JSON.stringify(form.attributes));
+        // }
 
-        console.log("formData", formData);
+        // console.log("formData", formData);
 
-        const product = yield call(productService.addProduct, formData);
+        const product = yield call(productService.addProduct, form);
         console.log("product", product);
         if (product.status_code === 200) {
             onsucces(product.message);

@@ -28,8 +28,11 @@ export default function LoginPage() {
     const emptyFieldErrors = validateEmptyFields(formData);
     const errors: { [key: string]: string } = { ...emptyFieldErrors };
 
-    if (!errors.email && !validateEmail(formData.email)) {
-      errors.email = errors.email;
+    if (!errors.email) {
+      const emailError = validateEmail(formData.email);
+      if (emailError) {
+        errors.email = emailError;
+      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -48,6 +51,7 @@ export default function LoginPage() {
       },
       (error: any) => {
         showToast(error, "error");
+        console.error("Error:", error);
         setIsLoading(false);
       }
     );
@@ -99,7 +103,6 @@ export default function LoginPage() {
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-[#0053E2] hover:bg-blue-600"
               }`}
-              type="submit"
             >
               {isLoading ? "Đang gửi yêu cầu..." : "Gửi yêu cầu"}
             </button>
