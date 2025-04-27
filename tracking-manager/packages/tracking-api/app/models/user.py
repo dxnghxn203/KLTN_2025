@@ -112,7 +112,15 @@ async def update_user_verification(email: str):
 async def get_by_id(user_id: str):
     try:
         collection = database.db[collection_name]
-        user_info = collection.find_one({"_id": ObjectId(user_id)})
+
+        query = {"_id": user_id}
+        if len(user_id) == 24:
+            try:
+                query["_id"] = ObjectId(user_id)
+            except bson_errors.InvalidId:
+                pass
+
+        user_info = collection.find_one(query)
         if not user_info:
             raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,

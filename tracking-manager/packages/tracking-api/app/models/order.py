@@ -346,7 +346,7 @@ async def add_order(item: OrderRequest):
         rabbitmq.send_message(get_create_order_queue(), order_json)
 
         order_res = ItemOrderRes(**order_dict)
-        user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_res.created_by)))
+        user_info = ItemUserRes.from_mongo(await get_by_id(order_res.created_by))
         user_name = "Khách lẻ"
         if user_info:
             user_name = user_info.user_name
