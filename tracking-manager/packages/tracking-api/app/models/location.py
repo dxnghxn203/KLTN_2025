@@ -106,6 +106,7 @@ async def create_location(item: ItemLocationReq, token: str):
             "location_id": location_id,
             "name": item.name,
             "phone_number": item.phone_number,
+            "email": item.email,
             "address": item.address,
             "ward": item.ward,
             "district": item.district,
