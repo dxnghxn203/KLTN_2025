@@ -346,10 +346,13 @@ async def add_order(item: OrderRequest):
         rabbitmq.send_message(get_create_order_queue(), order_json)
 
         order_res = ItemOrderRes(**order_dict)
-        user_info = ItemUserRes.from_mongo(await get_by_id(order_res.created_by))
+
         user_name = "Khách lẻ"
-        if user_info:
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_res.created_by)))
             user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order_res.created_by}")
 
         pdf_bytes = export_invoice_to_pdf(order_res, user_name)
         if not pdf_bytes:
@@ -360,7 +363,7 @@ async def add_order(item: OrderRequest):
 
         send_invoice_email(order_res.pick_to.email, pdf_bytes, order_res.order_id)
 
-        await remove_item_cart_by_order(ItemOrderReq(**order_dict), order_dict["created_by"])
+        await remove_item_cart_by_order(order_res, order_res.created_by)
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
@@ -472,10 +475,14 @@ async def get_order_invoice(order_id: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Không tìm thấy đơn hàng"
             )
-        user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order.created_by)))
+
         user_name = "Khách lẻ"
-        if user_info:
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order.created_by)))
             user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order.created_by}")
+
         pdf_bytes = export_invoice_to_pdf(order, user_name)
         if not pdf_bytes:
             raise response.JsonException(
