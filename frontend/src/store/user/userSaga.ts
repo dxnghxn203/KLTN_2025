@@ -33,8 +33,11 @@ import {
     fetchForgotPasswordAdminFailure,
     fetchForgotPasswordAdminStart,
     fetchForgotPasswordAdminSuccess,
+    fetchUpdateStatusUserSuccess,
+    fetchUpdateStatusUserFailure,
+    fetchUpdateStatusUserStart,
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin } from "@/services/userService";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -223,6 +226,26 @@ export function* userForgotPasswordAdminWorkerSaga(action: any): Generator<any, 
         yield put(fetchForgotPasswordAdminFailure());
     }
 }
+
+function* updateStatusUserWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;    
+    try {
+        const response = yield call(updateStatusUser, payload);
+        if (response.status_code === 200) {
+            yield put(fetchUpdateStatusUserSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchUpdateStatusUserFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchUpdateStatusUserFailure());
+    }
+}
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
@@ -232,5 +255,6 @@ export function* userSaga() {
     yield takeLatest(fetchChangePasswordStart.type, userChangePasswordWorkerSaga);
     yield takeLatest(fetchChangePasswordAdminStart.type, userChangePasswordAdminWorkerSaga);
     yield takeLatest(fetchForgotPasswordAdminStart.type, userForgotPasswordAdminWorkerSaga);
+    yield takeLatest(fetchUpdateStatusUserStart.type, updateStatusUserWorkerSaga);
 }
 

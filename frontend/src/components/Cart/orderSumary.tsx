@@ -64,7 +64,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           <div className="text-xl text-black">Thành tiền</div>
           <div className="flex gap-2 whitespace-nowrap">
             {totalDiscount > 0 && (
-              <div className="text-xl text-gray-500 line-through">
+              <div className="text-lg text-gray-500 line-through mt-0.5">
                 {totalOriginPrice.toLocaleString("vi-VN")}đ
               </div>
             )}

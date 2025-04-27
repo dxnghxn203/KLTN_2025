@@ -31,7 +31,7 @@ const UserManagement = () => {
     password: string;
     confirmPassword: string;
   }) => {
-    console.log("User added:", newUser);
+    // console.log("User added:", newUser);
   };
 
   return (
@@ -53,7 +53,7 @@ const UserManagement = () => {
             onClick={() => setShowFilter(!showFilter)}
           >
             <IoFilter className="text-lg" />
-            Filter
+            Bộ lọc
           </button>
           <div className="justify-end flex items-center gap-4">
             <button
@@ -78,7 +78,7 @@ const UserManagement = () => {
           users={allUserAdmin}
           currentPage={page}
           pageSize={pageSize}
-          totalUsers={0}
+          totalUsers={allUserAdmin.length}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}
         />

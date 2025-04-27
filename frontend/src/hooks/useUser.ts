@@ -1,4 +1,4 @@
-import { fetchChangePasswordAdminStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchVerifyOtpStart } from "@/store";
+import { fetchChangePasswordAdminStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchUpdateStatusUserStart, fetchVerifyOtpStart } from "@/store";
 import { insertUserSelector, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
@@ -145,6 +145,18 @@ export function useUser() {
       onFailure
     }));
   }
+
+  const updateStatusUser = (
+    params: { user_id: string; status_user: boolean },
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+  ) => {
+    dispatch(fetchUpdateStatusUserStart({
+      ...params,
+      onSuccess,
+      onFailure
+    }));
+  }
   
 
   return {
@@ -170,6 +182,8 @@ export function useUser() {
     changePasswordUser,
     changePasswordAdmin,
     forgotPasswordAdmin,
+
+    updateStatusUser,
   };
 }
 

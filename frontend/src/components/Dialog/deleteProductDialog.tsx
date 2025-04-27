@@ -4,15 +4,15 @@ import Image from "next/image";
 import bin from "@/images/delete.png";
 
 interface DeleteDialogProps {
-  // productId: string | null;
-  // priceId: string | null;
+  productId: string | null;
+  priceId: string | null;
   onClose: () => void;
   onConfirm: () => void;
 }
 
 const DeleteProductDialog: React.FC<DeleteDialogProps> = ({
-  // productId,
-  // priceId,
+  productId,
+  priceId,
   onClose,
   onConfirm,
 }) => {

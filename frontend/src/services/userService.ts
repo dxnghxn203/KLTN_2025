@@ -145,3 +145,27 @@ export const forgotPasswordAdmin = async (params: any): Promise<any> => {
     }
 }
 
+export const updateStatusUser = async (params: { user_id: string; status_user: boolean }): Promise<any> => {
+    try {
+        const url = "/v1/users/status";
+        const result: any = await axiosClient.put(url, null, {
+            params: {
+                user_id: params.user_id,
+                status_user: params.status_user,
+            },
+        });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message || "Server error",
+            data: null,
+        };
+    }
+};
+
+

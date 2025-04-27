@@ -113,6 +113,16 @@ export const userSlice = createSlice({
             console.log("fetchForgotPasswordAdminFailure")
             state.loading = false;
         },
+        // update statusUser
+        fetchUpdateStatusUserStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchUpdateStatusUserSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchUpdateStatusUserFailure: (state) => {
+            state.loading = false;
+        },
 
     },
 });
@@ -149,6 +159,10 @@ export const {
     fetchForgotPasswordAdminFailure,
     fetchForgotPasswordAdminStart,
     fetchForgotPasswordAdminSuccess,
+
+    fetchUpdateStatusUserFailure,
+    fetchUpdateStatusUserStart,
+    fetchUpdateStatusUserSuccess,
 
 } = userSlice.actions;
 
