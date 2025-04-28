@@ -141,37 +141,37 @@ const TableOrdersAdmin = () => {
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left uppercase tracking-wider"
+                    className="px-6 py-4 text-left uppercase tracking-wider"
                   >
                     Mã đơn hàng
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left  uppercase tracking-wider"
+                    className="px-6 py-4 text-left  uppercase tracking-wider"
                   >
                     Trạng thái
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left  uppercase tracking-wider"
+                    className="px-4 py-4 text-left  uppercase tracking-wider"
                   >
                     Người nhận
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left uppercase tracking-wider"
+                    className="px-6 py-4 text-left uppercase tracking-wider"
                   >
                     Sản phẩm
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left uppercase tracking-wider"
+                    className="px-6 py-4 text-left uppercase tracking-wider"
                   >
                     Tổng tiền
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-right uppercase tracking-wider"
+                    className="px-6 py-4 text-right uppercase tracking-wider"
                   >
                     Thao tác
                   </th>
@@ -289,28 +289,41 @@ const TableOrdersAdmin = () => {
                           <div className="rounded-lg border border-gray-200 p-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               {/* Thông tin sản phẩm */}
-                              <div>
-                                <div className="font-semibold text-gray-900 mb-3 text-sm">
+                              <div className="pr-6 border-r border-gray-200">
+                                <div className="font-semibold text-gray-900 mb-3">
                                   Sản phẩm đặt hàng
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                   {order.product.map(
                                     (item: any, idx: number) => (
                                       <div
                                         key={idx}
-                                        className="flex justify-between py-2 border-b border-gray-100"
+                                        className={`flex justify-between py-2 ${
+                                          idx !== order.product.length - 1
+                                            ? "border-b border-gray-100"
+                                            : ""
+                                        }`}
                                       >
                                         <div>
-                                          <div className="text-sm font-medium">
-                                            {item.product_name}
+                                          <div className="flex justify-between text-sm space-x-4">
+                                            <div>{item.product_name}</div>
+                                            <div className="text-gray-500">
+                                              x{item.quantity}
+                                            </div>
                                           </div>
-                                          <div className="text-xs text-gray-500">
-                                            {item.quantity} x{" "}
+
+                                          <div className="text-xs text-gray-500 line-through">
+                                            {formatCurrency(
+                                              item.original_price
+                                            )}{" "}
+                                            ({item.unit})
+                                          </div>
+                                          <div className="text-sm text-gray-500 font-medium">
                                             {formatCurrency(item.price)} (
                                             {item.unit})
                                           </div>
                                         </div>
-                                        <div className="text-sm font-medium">
+                                        <div className="text-sm font-medium text-blue-600">
                                           {formatCurrency(
                                             item.price * item.quantity
                                           )}
@@ -319,7 +332,7 @@ const TableOrdersAdmin = () => {
                                     )
                                   )}
 
-                                  <div className="flex justify-between py-2 font-medium">
+                                  <div className="flex justify-between py-2 font-semibold text-blue-700">
                                     <div>Tổng cộng</div>
                                     <div>
                                       {formatCurrency(
@@ -330,16 +343,15 @@ const TableOrdersAdmin = () => {
                                 </div>
                               </div>
 
+                              {/* Thông tin vận chuyển */}
                               <div>
-                                <div className="font-semibold text-gray-900 mb-3 text-sm">
+                                <div className="font-semibold text-gray-900 mb-4">
                                   Thông tin vận chuyển
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-700">
-                                      Người gửi
-                                    </h5>
-                                    <div className="text-sm mt-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div className="space-y-2">
+                                    <h5 className="text-sm">Người gửi</h5>
+                                    <div className="text-sm mt-1 font-semibold">
                                       {order.pick_from.name}
                                     </div>
                                     <div className="text-xs text-gray-500">
@@ -350,11 +362,9 @@ const TableOrdersAdmin = () => {
                                     </div>
                                   </div>
 
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-700">
-                                      Người nhận
-                                    </h5>
-                                    <div className="text-sm mt-1">
+                                  <div className="space-y-2">
+                                    <h5 className="text-sm">Người nhận</h5>
+                                    <div className="text-sm mt-1 font-medium">
                                       {order.pick_to.name}
                                     </div>
                                     <div className="text-xs text-gray-500">

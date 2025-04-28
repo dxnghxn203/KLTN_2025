@@ -52,13 +52,13 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
         ordererInfo: {
           fullName: dataLocation?.name,
           phone: dataLocation?.phone_number,
-          email: ordererInfo.email,
+          email: dataLocation?.email,
         },
         note: note,
         addressInfo: {
           fullName: dataLocation?.name,
           phone: dataLocation?.phone_number,
-          email: ordererInfo.email,
+          email: dataLocation?.email,
           city: dataLocation?.province,
           district: dataLocation?.district,
           ward: dataLocation?.ward,
@@ -88,7 +88,7 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
     note,
     dataLocation,
   ]);
-
+  console.log("dataLocation", dataLocation);
   const [requireInvoice, setRequireInvoice] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -132,10 +132,10 @@ const Delivery: React.FC<DeliveryProps> = ({ setData }) => {
             Yêu cầu xuất hóa đơn điện tử
           </p>
           <p className="text-xs font-normal text-black/50">
-            (Hóa đơn sẽ được gửi qua email của bạn)
+            (Hóa đơn sẽ được tự động gửi qua email của bạn)
           </p>
         </div>
-        <Toggle isActive={requireInvoice} onChange={setRequireInvoice} />
+        {/* <Toggle isActive={requireInvoice} onChange={setRequireInvoice} /> */}
       </div>
 
       <h2 className="my-6 text-sm font-medium text-black">

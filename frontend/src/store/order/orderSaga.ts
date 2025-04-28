@@ -138,8 +138,11 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
             "payment_type": orderData.paymentMethod,
         };
         const rs = yield call(orderService.checkShippingFee, apiPayload);
+        console.log("email", rs.data)
         if (rs.status_code === 200) {
             onSuccess(rs.data);
+            
+            
             yield put(fetchCheckShippingFeeSuccess(rs.data));
             onSuccess(rs.data);
             return;
@@ -249,6 +252,7 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
         };
 
         const rs = yield call(orderService.checkOrder, apiPayload, session);
+        console.log("eeeee", rs.data)
         if (rs.status_code === 200) {
             yield put(fetchCheckOrderSuccess(rs.data));
             if (rs?.data?.qr_code && rs?.data?.qr_code !== "") {

@@ -1,7 +1,7 @@
 export interface AddressFormData {
     fullName: string;
     phone: string;
-    email?: string;
+    email: string;
     city: string;
     cityCode: any;
     districtCode: any;
@@ -15,11 +15,11 @@ export interface AddressFormData {
   export interface OrdererInfo {
     fullName: string;
     phone: string;
-    email?: string;
+    email: string;
   }
   export interface OrdererInfoPickup {
     fullName: string;
     phone: string;
-    email?: string;
+    email: string;
   }
   

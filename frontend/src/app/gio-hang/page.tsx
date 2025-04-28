@@ -52,7 +52,7 @@ export default function Cart() {
     }
     const orderInf = data?.ordererInfo;
     const addressInf = data?.addressInfo;
-    if (!orderInf || !orderInf.fullName || !orderInf.phone) {
+    if (!orderInf || !orderInf.fullName || !orderInf.phone || !orderInf.email) {
       return false;
     }
 
@@ -142,6 +142,8 @@ export default function Cart() {
     setLoadingCheckout(false);
     setImageQR(null);
   };
+
+  console.log("data");
 
   return (
     <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
