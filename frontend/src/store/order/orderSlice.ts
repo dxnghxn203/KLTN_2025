@@ -106,6 +106,20 @@ export const orderSlice = createSlice({
         fetchGetTrackingCodeFailed(state) {
             state.loading = false;
         }, 
+
+        // download invoice
+        fetchDownloadInvoiceStart(state, action: PayloadAction<any>) {
+            console.log('fetchDownloadInvoiceStart')
+            state.loading = true;
+        },
+        fetchDownloadInvoiceSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchDownloadInvoiceSuccess')
+            state.loading = false; 
+        },
+        fetchDownloadInvoiceFailed(state) {
+            console.log('fetchDownloadInvoiceFailed')
+            state.loading = false;
+        },
     },
 });
 
@@ -141,6 +155,10 @@ export const {
     fetchGetTrackingCodeStart,
     fetchGetTrackingCodeSuccess,
     fetchGetTrackingCodeFailed,
+
+    fetchDownloadInvoiceFailed,
+    fetchDownloadInvoiceStart,
+    fetchDownloadInvoiceSuccess,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

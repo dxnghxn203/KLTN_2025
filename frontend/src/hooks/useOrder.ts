@@ -1,4 +1,4 @@
-import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart } from "@/store/order";
+import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart } from "@/store/order";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -66,6 +66,14 @@ export function useOrder() {
         }));
     }
 
+    const downloadInvoice = async (order_id: any, onSuccess: (blob: any) => void, onFailed: () => void) => {
+        dispatch(fetchDownloadInvoiceStart({
+            order_id,
+            onSuccess,
+            onFailed,
+        }));
+    }
+
     return {
         allOrder,
         checkOrder,
@@ -80,7 +88,8 @@ export function useOrder() {
         callWebHook,
         checkShippingFee,
         cancelOrder,
-        getTrackingCode
+        getTrackingCode,
+        downloadInvoice
     }
 }
 

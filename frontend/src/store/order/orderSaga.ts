@@ -33,6 +33,10 @@ import {
     fetchGetTrackingCodeSuccess,
     fetchGetTrackingCodeFailed,
 
+    fetchDownloadInvoiceFailed,
+    fetchDownloadInvoiceStart,
+    fetchDownloadInvoiceSuccess,
+
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
 
@@ -309,6 +313,29 @@ function* fetchGetOrderByUser(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchDownloadInvoice(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+            order_id
+        } = payload;
+        const blob = yield call(orderService.downloadInvoice, order_id);
+
+        if (blob) {
+            yield put(fetchDownloadInvoiceSuccess(blob));
+            onSuccess(blob); // truyền blob vào success callback
+            return;
+        }
+        onFailed(blob.message);
+        yield put(fetchDownloadInvoiceFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchDownloadInvoiceFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -318,4 +345,5 @@ export function* orderSaga() {
     yield takeLatest(fetchCheckShippingFeeStart.type, fetchCheckShippingFee);
     yield takeLatest(fetchCancelOrderStart.type, fetchCancelOrder);
     yield takeLatest(fetchGetTrackingCodeStart.type, fetchGetTrackingCode);
+    yield takeLatest(fetchDownloadInvoiceStart.type, fetchDownloadInvoice);
 }

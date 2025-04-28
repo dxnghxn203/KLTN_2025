@@ -243,3 +243,17 @@ export const getTrackingOrder = async (order_id: any) => {
         }
     }
 }
+
+export const downloadInvoice = async (order_id: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/invoice?order_id=${order_id}`, {
+            responseType: 'blob', // <<< THÊM responseType blob
+        });
+        return response;
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi tải hóa đơn',
+        }
+    }
+}
