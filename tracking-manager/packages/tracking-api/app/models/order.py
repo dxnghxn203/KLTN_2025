@@ -12,6 +12,7 @@ from starlette import status
 from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
+from app.core.mail import send_invoice_email
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq
 from app.entities.order.response import ItemOrderRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
@@ -344,7 +345,25 @@ async def add_order(item: OrderRequest):
 
         rabbitmq.send_message(get_create_order_queue(), order_json)
 
-        await remove_item_cart_by_order(ItemOrderReq(**order_dict), order_dict["created_by"])
+        order_res = ItemOrderRes(**order_dict)
+
+        user_name = "Khách lẻ"
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_res.created_by)))
+            user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order_res.created_by}")
+
+        pdf_bytes = export_invoice_to_pdf(order_res, user_name)
+        if not pdf_bytes:
+            raise response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Không thể tạo file PDF"
+            )
+
+        send_invoice_email(order_res.pick_to.email, pdf_bytes, order_res.order_id)
+
+        await remove_item_cart_by_order(order_res, order_res.created_by)
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
@@ -456,10 +475,14 @@ async def get_order_invoice(order_id: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Không tìm thấy đơn hàng"
             )
-        user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order.created_by)))
+
         user_name = "Khách lẻ"
-        if user_info:
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order.created_by)))
             user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order.created_by}")
+
         pdf_bytes = export_invoice_to_pdf(order, user_name)
         if not pdf_bytes:
             raise response.JsonException(

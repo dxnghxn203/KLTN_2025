@@ -384,19 +384,12 @@ async def delete_product(product_id: str):
         collection = db[collection_name]
         product = collection.find_one({"product_id": product_id})
         if not product:
-            raise response.JsonException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                message="Không tìm thấy sản phẩm"
-            )
-
-        product = ItemProductDBRes(**product)
-
-        delete_result = collection.delete_one({"product_id": product.product_id})
-        if delete_result.deleted_count == 0:
-            raise response.JsonException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                message="Xóa sản phẩm không thành công"
-            )
+            logger.info(f"Product not found for product_id: {product_id}")
+        else:
+            product = ItemProductDBRes(**product)
+            delete_result = collection.delete_one({"product_id": product.product_id})
+            if delete_result.deleted_count == 0:
+                logger.info(f"Product not deleted for product_id: {product_id}")
 
         redis.delete_product(product_id)
         logger.info(f"Đã xóa sản phẩm vào Redis với key: {product_id}")

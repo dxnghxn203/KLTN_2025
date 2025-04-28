@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class ItemLocationReq(BaseModel):
     name: str
     phone_number: str
+    email: str
     address: str
     ward: str
     district:  str
