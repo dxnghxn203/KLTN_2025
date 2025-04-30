@@ -34,7 +34,7 @@ export default function ProductDetails() {
     setCategories([...categories, newCategory]);
     setIsAddCategoriesDialogOpen(false);
   };
-  
+
   const handleAddProductTemplate = (newProductTemplate: string) => {
     setProductTemplate([...productTemplate, newProductTemplate]);
     setIsAddProductTemplateDialogOpen(false);
@@ -105,7 +105,11 @@ export default function ProductDetails() {
       {isAddCategoriesDialogOpen && (
         <AddCategoryDialog
           onClose={() => setIsAddCategoriesDialogOpen(false)}
-          onConfirm={handleAddCategory}
+          // onConfirm={handleAddCategory}
+          onConfirm={(newCategory: string) => {
+            handleAddCategory(newCategory);
+          }}
+          isOpen={isAddCategoriesDialogOpen}
         />
       )}
       {isAddProductTemplateDialogOpen && (

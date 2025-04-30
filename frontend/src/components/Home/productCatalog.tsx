@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import categories1 from "@/images/categories1.png";
-import categories2 from "@/images/categories2.png";
-import categories3 from "@/images/categories3.png";
-import categories4 from "@/images/categories4.png";
-import categories5 from "@/images/categories5.png";
-import categories6 from "@/images/categories6.png";
-import categories7 from "@/images/categories7.png";
+import categories1 from "@/images/ct.jpg";
+import categories2 from "@/images/2.jpg";
+import categories3 from "@/images/3.jpg";
+import categories4 from "@/images/4.jpg";
+import categories5 from "@/images/5.jpg";
+import categories6 from "@/images/6.jpg";
+import categories7 from "@/images/7.jpg";
 import categories8 from "@/images/categories8.png";
 import slider1 from "@/images/83.png";
 import slider2 from "@/images/slider2.png";
@@ -29,14 +29,14 @@ const ProductCatalog: React.FC = () => {
 
   const categories = [
     {
-      title: "Sức khỏe sinh sản",
-      description: "Hỗ trợ tình dục...",
+      title: "Mẹ và bé",
+      description: "Sữa cho mẹ, tinh dầu bé...",
       imageSrc: categories1,
       bgColor: "bg-red-100",
-      path: "/reproductive-health", // Đường dẫn đã có
+      path: "/me-va-be",
     },
     {
-      title: "Dụng cụ y tế",
+      title: "Thiết bị y tế",
       description: "Gạc, Bông gòn, Cồn...",
       imageSrc: categories2,
       bgColor: "bg-cyan-100",
@@ -51,7 +51,7 @@ const ProductCatalog: React.FC = () => {
     },
     {
       title: "Thuốc",
-      description: "Da liễu, Dị ứng...",
+      description: "Thuốc kê đơn, không kê đơn...",
       imageSrc: categories4,
       bgColor: "bg-lime-100",
       path: "/thuoc",
@@ -211,7 +211,7 @@ const ProductCatalog: React.FC = () => {
                     alt={category.title}
                     width={88}
                     height={88}
-                    className="object-contain shrink-0 self-end mt-6 aspect-square"
+                    className="object-contain shrink-0 self-end mt-6 aspect-square w-111px h-111px rounded-br-xl"
                   />
                 </div>
               </Link>

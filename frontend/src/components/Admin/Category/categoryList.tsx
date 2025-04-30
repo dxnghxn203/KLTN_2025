@@ -145,6 +145,10 @@ export default function QuanLyDanhMuc() {
       <AddNewCategoryDialog
         isOpen={isAddNewDialogOpen}
         onClose={() => setAddNewDialogOpen(false)}
+        onConfirm={() => {
+          fetchGetAllCategoryForAdmin();
+          setAddNewDialogOpen(false);
+        }}
       />
       <DeleteCategoryDialog
         isOpen={isDialogDeleteMain}

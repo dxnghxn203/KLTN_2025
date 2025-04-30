@@ -28,19 +28,20 @@ export default function MenuHeader() {
               {allCategory.map((category: any) => (
                 <li
                   key={category.main_category_slug}
-                  className="menu-container group menu-item-with-dropdown"
+                  // className="menu-container group menu-item-with-dropdown"
                 >
                   <button
-                    id="mega-menu-full-dropdown-button"
+                    // id="mega-menu-full-dropdown-button"
                     onClick={() => action(category)}
-                    data-collapse-toggle="mega-menu-full-dropdown"
+                    // data-collapse-toggle="mega-menu-full-dropdown"
                     className="flex items-center justify-between w-full py-2 px-3 text-[#002E99] rounded-sm md:w-auto md:hover:bg-transparent md:border-0 md:hover:text-blue-600 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-blue-500 md:dark:hover:bg-transparent dark:border-gray-700"
                   >
                     {category.main_category_name}
                   </button>
                   <div
                     key={category.main_category_slug}
-                    className="mega-menu-full-dropdown w-full absolute left-0 top-full mt-1 z-50 hidden group-hover:block animate-fadeIn"
+                    // className="mega-menu-full-dropdown w-full absolute left-0 top-full mt-1 z-50 hidden group-hover:block animate-fadeIn"
+                    className="w-full absolute left-0 top-full mt-1 z-50 hidden group-hover:block animate-fadeIn"
                   >
                     <div className="bg-white backdrop-blur-sm p-6 rounded-lg shadow-lg w-full">
                       {/* <MenuFullDropdown
