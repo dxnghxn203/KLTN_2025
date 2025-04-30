@@ -24,7 +24,6 @@ const AllLocationDialog = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center overflow-auto">
       <div className="bg-white rounded-lg w-auto shadow-lg relative my-10 transition-all duration-300">
-        {/* Header */}
         <div className="flex items-center justify-center relative p-4  bg-white rounded-t-lg">
           <div className="absolute top-2 right-2">
             <button
@@ -37,9 +36,7 @@ const AllLocationDialog = ({
           <div className="text-xl text-black">Chọn địa chỉ nhận hàng</div>
         </div>
 
-        {/* Nội dung có hiệu ứng slide */}
         <div className="relative w-full overflow-hidden transition-all duration-300 mb-4">
-          {/* Slide 1: Danh sách địa chỉ */}
           <div
             className={`transition-transform duration-500 ease-in-out ${
               onAddLocation || updateLocation
@@ -58,7 +55,6 @@ const AllLocationDialog = ({
             />
           </div>
 
-          {/* Slide 2: Thêm / Cập nhật địa chỉ */}
           <div
             className={`transition-transform duration-500 ease-in-out ${
               onAddLocation || updateLocation
