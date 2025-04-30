@@ -9,11 +9,13 @@ import { ToastType } from "@/components/Toast/toast";
 interface AddNewCategoryDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  onConfirm: (newCategory: string) => void;
 }
 
 const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
   isOpen,
   onClose,
+  onConfirm,
 }) => {
   const toast = useToast();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -90,6 +92,7 @@ const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
       () => {
         toast.showToast("Thêm danh mục thành công!", ToastType.SUCCESS);
         onClose();
+        // onConfirm(newCategory);
         fetchGetAllCategoryForAdmin();
         setMainCategory({
           main_category_name: "",
