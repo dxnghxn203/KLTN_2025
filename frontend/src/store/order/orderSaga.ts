@@ -36,6 +36,9 @@ import {
     fetchDownloadInvoiceFailed,
     fetchDownloadInvoiceStart,
     fetchDownloadInvoiceSuccess,
+    fetchGetStatistics365DaysSuccess,
+    fetchGetStatistics365DaysFailed,
+    fetchGetStatistics365DaysStart,
 
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
@@ -336,6 +339,29 @@ function* fetchDownloadInvoice(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchGetStatistics365Days (action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+        
+        } = payload;
+        const rs = yield call(orderService.getStatistics365Days);
+        if (rs.status_code === 200) {
+            yield put(fetchGetStatistics365DaysSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetStatistics365DaysFailed());
+    }
+    catch (error) {
+        console.log(error);
+        yield put(fetchGetStatistics365DaysFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -346,4 +372,5 @@ export function* orderSaga() {
     yield takeLatest(fetchCancelOrderStart.type, fetchCancelOrder);
     yield takeLatest(fetchGetTrackingCodeStart.type, fetchGetTrackingCode);
     yield takeLatest(fetchDownloadInvoiceStart.type, fetchDownloadInvoice);
+    yield takeLatest(fetchGetStatistics365DaysStart.type, fetchGetStatistics365Days);
 }
