@@ -142,19 +142,23 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
             "payment_type": orderData.paymentMethod,
         };
         const rs = yield call(orderService.checkShippingFee, apiPayload);
-        console.log("email", rs.data)
         if (rs.status_code === 200) {
             onSuccess(rs.data);
-            
-            
             yield put(fetchCheckShippingFeeSuccess(rs.data));
             onSuccess(rs.data);
             return;
         }
-        onFailed(rs.message);
         yield put(fetchCheckShippingFeeFailed());
+        let error = {
+            ...rs,
+            isOutOfStock: rs.status_code === 400
+        }
+        if (rs.status_code === 400) {
+            const targetIdSet = new Set(rs.data.out_of_stock_ids);
+            error.data = orderData.product.filter((product: { product_id: string, products_name: string }) => targetIdSet.has(product.product_id));
+        }
+        onFailed(error);
     } catch (error) {
-        console.log(error);
         yield put(fetchCheckShippingFeeFailed());
     }
 }
