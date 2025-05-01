@@ -69,3 +69,27 @@ def upload_file(file, folder: str):
     except Exception as e:
         logger.error(f"S3 Failed to upload file: {str(e)}")
 
+def upload_any_file(file, folder: str):
+    try:
+        create_bucket_if_not_exists(AWS_BUCKET)
+        name = str(int(time.time()))
+        s3_key = f"{folder}/{name}"
+        content_type = file.content_type or 'application/octet-stream'
+
+        s3_client.upload_fileobj(
+            file.file,
+            AWS_BUCKET,
+            s3_key,
+            ExtraArgs={'ContentType': content_type}
+        )
+
+        file_url = f"https://{AWS_BUCKET}.{AWS_S3_ENDPOINT}/{s3_key}"
+        logger.info(f"File uploaded successfully: {file_url}")
+        return file_url
+    except NoCredentialsError:
+        logger.error("S3 Credentials not available.")
+    except Exception as e:
+        logger.error(f"S3 Failed to upload file: {str(e)}")
+        return None
+
+

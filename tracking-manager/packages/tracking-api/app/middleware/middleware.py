@@ -51,6 +51,14 @@ def verify_token_admin(cred: HTTPAuthorizationCredentials = Depends(security)):
 
     return cred.credentials
 
+def verify_token_pharmacist(cred: HTTPAuthorizationCredentials = Depends(security)):
+    payload = validate_and_decode_token(cred)
+
+    if not payload.get("role_id") or payload.get("role_id") != "pharmacist":
+        raise response.JsonException(status_code=status.HTTP_403_FORBIDDEN, message="Không có quyền truy cập")
+
+    return cred.credentials
+
 def destroy_token(cred: HTTPAuthorizationCredentials = Depends(security)):
     payload = validate_and_decode_token(cred)
     update_destroy_token(payload)
