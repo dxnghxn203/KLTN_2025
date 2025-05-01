@@ -31,7 +31,10 @@ try:
     logger.info("MongoDB connection successful!")
 
     existing_collections = db.list_collection_names()
-    collections = ['admin', 'categories', 'orders', 'comments', 'products', 'reviews', 'users','trackings']
+    collections = [
+        'admin', 'categories', 'orders',
+        'comments', 'products', 'reviews',
+        'users','trackings', 'pharmacists']
     for collection in collections:
         if collection not in existing_collections:
             db.create_collection(collection)

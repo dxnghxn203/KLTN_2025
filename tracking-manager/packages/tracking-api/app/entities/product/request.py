@@ -180,6 +180,11 @@ class ItemProductDBReq(BaseModel):
     manufacturer: ItemManufacturerDBReq = None
     dosage_form: str = ""
     brand: str = ""
+    registration_number: str = ""
+    certificate_file: str = ""
+    active: bool = False
+    prescription_required: bool = False
+    verified_by: str = ""
 
 class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")
@@ -200,9 +205,13 @@ class ItemProductDBInReq(BaseModel):
     manufacturer: Optional[ItemManufacturerDBReq] = Field(None)
     dosage_form: Optional[str] = Field(default="")
     brand: Optional[str] = Field(default="")
+    prescription_required: bool = False
 
 class UpdateCategoryReq(BaseModel):
     product_id: str = ""
     main_category_id: str = ""
     sub_category_id: str = ""
     child_category_id: str = ""
+
+class ApproveProductReq(BaseModel):
+    product_id: str = ""

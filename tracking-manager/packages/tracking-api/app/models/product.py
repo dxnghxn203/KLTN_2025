@@ -6,7 +6,7 @@ from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
-    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq
+    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
@@ -19,7 +19,11 @@ collection_category = "categories"
 async def get_product_by_slug(slug: str):
     try:
         collection = db[collection_name]
-        cur = collection.find_one({"slug": slug})
+        cur = collection.find_one({
+            "slug": slug,
+            "verified_by": {"$nin": [None, ""]},
+            "active": True
+        })
         if cur:
             count_review = await count_reviews(cur["product_id"])
             count_comment = await count_comments(cur["product_id"])
@@ -128,7 +132,11 @@ async def get_product_by_cart_mongo(product_ids, cart):
 async def get_product_by_cart_id(product_ids, cart):
     try:
         collection = db[collection_name]
-        products = list(collection.find({"product_id": {"$in": product_ids}}, {"_id": 0}))
+        products = list(collection.find({
+            "product_id": {"$in": product_ids},
+            "verified_by": {"$nin": [None, ""]},
+            "active": True
+        }, {"_id": 0}))
         detailed_cart = []
         for cart_item in cart:
             product_id = cart_item["product_id"]
@@ -156,7 +164,11 @@ async def get_product_by_cart_id(product_ids, cart):
 async def get_product_by_list_id(product_ids):
     try:
         collection = db[collection_name]
-        product_list = collection.find({"product_id": {"$in": product_ids}})
+        product_list = collection.find({
+            "product_id": {"$in": product_ids},
+            "verified_by": {"$nin": [None, ""]},
+            "active": True
+        })
         enriched_products = []
 
         for prod in product_list:
@@ -220,8 +232,10 @@ async def get_product_featured(main_category_id, sub_category_id=None, child_cat
             message="Internal server error",
         )
 
-async def add_product_db(item: ItemProductDBInReq, images_primary, images):
+async def add_product_db(item: ItemProductDBInReq, images_primary, images, certificate_file=None):
     try:
+        certificate_url = (upload_file(certificate_file, "certificates") or "") if certificate_file else ""
+
         image_list = []
         if images:
             image_list = [
@@ -302,6 +316,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images):
             ingredients=ingredients_list,
             images_primary=images_primary_url,
             category=category_obj,
+            certificate_file=certificate_url
         )
 
         collection = db[collection_name]
@@ -403,10 +418,12 @@ async def get_product_by_id(product_id: str, price_id: str):
     try:
         collection = db[collection_name]
 
-        product = collection.find_one(
-            {"product_id": product_id, "prices.price_id": price_id},
-            {"_id": 0}
-        )
+        product = collection.find_one({
+            "product_id": product_id,
+            "prices.price_id": price_id,
+            "verified_by": {"$nin": [None, ""]},
+            "active": True
+        },{"_id": 0})
 
         if not product:
             raise response.JsonException(
@@ -490,3 +507,26 @@ async def get_product_best_deals(top_n: int):
             status="failed",
             message="Internal server error"
         )
+
+async def approve_product(item: ApproveProductReq, verified_by: str):
+    try:
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": item.product_id})
+        if not product:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found"
+            )
+        product_info = ItemProductDBRes(**product)
+        if product_info.verified_by:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Product already approved"
+            )
+        collection.update_one({"product_id": item.product_id}, {"$set": {"active": True, "verified_by": verified_by}})
+        logger.info(f"Product approved successfully for product_id: {item.product_id}")
+
+        return response.SuccessResponse(message="Product approved successfully")
+    except Exception as e:
+        logger.error(f"Error approving product: {str(e)}")
+        raise e

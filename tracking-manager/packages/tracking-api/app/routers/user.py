@@ -26,7 +26,7 @@ async def register_email(item: ItemUserRegisReq):
         )
 
 @router.get("/users/all-user-admin", response_model=BaseResponse)
-async def get_all_user_admin(page: int = 1, page_size: int = 10):
+async def get_all_user_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
     try:
         result = await user.get_all_user(page, page_size)
         return SuccessResponse(data=result)

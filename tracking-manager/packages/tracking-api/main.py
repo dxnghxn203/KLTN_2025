@@ -18,7 +18,8 @@ from app.routers import (
     comment_router,
     cart_router,
     fee_router,
-    time_router
+    time_router,
+    pharmacist_router
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -49,6 +50,7 @@ app.add_exception_handler(RequestValidationError, exception.validation_exception
 # Routers
 app.include_router(authen_router, prefix="/v1", tags=["Auth"])
 app.include_router(admin_router, prefix="/v1", tags=["Admin"])
+app.include_router(pharmacist_router, prefix="/v1", tags=["Pharmacist"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(product_router, prefix="/v1", tags=["Product"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])
