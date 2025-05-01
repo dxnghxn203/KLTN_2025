@@ -159,7 +159,7 @@ const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
               className="w-full mt-2 p-3 border rounded-lg border-black/10 
             focus:ring-1 focus:ring-[#0053E2] 
             outline-none placeholder:font-normal placeholder:text-sm"
-              placeholder="URL danh mục chính"
+              placeholder="Slug danh mục chính"
               value={mainCategory.main_category_slug}
               onChange={(e) =>
                 setMainCategory({
@@ -208,7 +208,7 @@ const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
                 className="w-full mt-2 p-3 border rounded-lg border-black/10 
             focus:ring-1 focus:ring-[#0053E2] 
             outline-none placeholder:font-normal placeholder:text-sm"
-                placeholder="URL danh mục cấp 1"
+                placeholder="Slug danh mục cấp 1"
                 value={subCategory.sub_category_slug}
                 onChange={(e) =>
                   setSubCategories((prevState) => {
@@ -257,7 +257,7 @@ const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
                       className="w-full mt-2 p-3 border rounded-lg border-black/10 
                 focus:ring-1 focus:ring-[#0053E2] 
                 outline-none placeholder:font-normal placeholder:text-sm"
-                      placeholder="URL danh mục cấp 2"
+                      placeholder="Slug danh mục cấp 2"
                       value={child_category.child_category_slug}
                       onChange={(e) =>
                         setSubCategories((prevState) => {

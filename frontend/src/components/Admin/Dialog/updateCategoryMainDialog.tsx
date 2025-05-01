@@ -50,7 +50,7 @@ const UpdateMainCategoryDialog: React.FC<UpdateMainCategoryDialogProps> = ({
     const updatedCategory = {
       main_category_id: selectedMainId,
       main_category_name: formData["Tên danh mục chính"],
-      main_category_slug: formData["URL danh mục chính"],
+      main_category_slug: formData["Slug danh mục chính"],
     };
     fetchUpdateMainCategory(
       updatedCategory,

@@ -83,7 +83,7 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
     const updatedCategory = {
       sub_category_id: selectedSubId,
       sub_category_name: formData["Tên danh mục cấp 1"],
-      sub_category_slug: formData["URL danh mục cấp 1"],
+      sub_category_slug: formData["Slug danh mục cấp 1"],
     };
 
     const data = {
@@ -97,7 +97,7 @@ const UpdateSubCategoryDialog: React.FC<UpdateSubCategoryDialogProps> = ({
         categorySubInfo.find((item) => item.label === "Tên danh mục cấp 1")
           ?.value ||
       updatedCategory.sub_category_slug !==
-        categorySubInfo.find((item) => item.label === "URL danh mục cấp 1")
+        categorySubInfo.find((item) => item.label === "Slug danh mục cấp 1")
           ?.value;
 
     if (isCategoryUpdated) {
