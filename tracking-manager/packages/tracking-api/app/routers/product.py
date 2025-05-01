@@ -9,11 +9,10 @@ from app.core.s3 import upload_any_file
 from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq, ApproveProductReq
 from app.helpers.redis import get_session, get_recently_viewed, save_recently_viewed, save_session
 from app.middleware import middleware
-from app.models import order, pharmacist
+from app.models import order, pharmacist, user
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
     get_product_best_deals, approve_product
-from app.models.user import get_current
 
 router = APIRouter()
 
@@ -76,7 +75,7 @@ async def get_product(slug: str, session_id: str = None):
 @router.get("/product/{slug}/", response_model=response.BaseResponse)
 async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
     try:
-        us = await get_current(token)
+        us = await user.get_current(token)
         if not us:
             return response.BaseResponse(
                 status="error",
@@ -226,7 +225,7 @@ async def get_recently_viewed_session(session: str):
 @router.get("/products/get-recently-viewed", response_model=response.BaseResponse)
 async def get_recently_viewed_token(token: str = Depends(middleware.verify_token)):
     try:
-        us = await get_current(token)
+        us = await user.get_current(token)
         if not us:
             return response.BaseResponse(
                 status="error",
