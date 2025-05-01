@@ -41,11 +41,7 @@ export const login = async (data: any): Promise<any> => {
 // Logout
 export const logout = async (token: string): Promise<boolean> => {
     try {
-        // await axiosClient.post('/v1/authen/logout', {}, {
-        //     headers: {
-        //         Authorization: `Bearer ${token}`,
-        //     },
-        // });
+        await axiosClient.get('/v1/auth/logout')
         return true;
     } catch (error) {
         console.error('Logout error:', error);

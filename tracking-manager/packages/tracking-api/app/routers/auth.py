@@ -44,6 +44,11 @@ async def login(request: GoogleAuthRequest):
 async def login(email: str = Form(), password: str = Form(), device_id: Optional[str] = Form(None)):
     try:
         us = await user.get_by_email_and_auth_provider(email, "email")
+        if not us:
+            raise JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Người dùng không tồn tại."
+            )
         if not await auth.verify_password(us["password"], password, us["active"]):
             raise JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

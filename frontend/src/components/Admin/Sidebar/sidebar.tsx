@@ -11,7 +11,11 @@ import { usePathname } from "next/navigation";
 import logo from "@/images/MM.png";
 import textlogo from "@/images/medicare2.png";
 import { IoMdSettings } from "react-icons/io";
-import { IoSettingsOutline } from "react-icons/io5";
+import { IoInformationCircleOutline, IoSettingsOutline } from "react-icons/io5";
+import { MdLockOutline } from "react-icons/md";
+import { LuLockKeyhole } from "react-icons/lu";
+import { SlInfo } from "react-icons/sl";
+import { ImInfo } from "react-icons/im";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -52,9 +56,15 @@ const menuHomeItems = [
 const menuSettingsItems = [
   {
     id: "Settings",
-    icon: <IoSettingsOutline />,
-    label: "Cài đặt",
-    path: "/cai-dat",
+    icon: <ImInfo />,
+    label: "Thông tin tài khoản",
+    path: "/thong-tin-tai-khoan",
+  },
+  {
+    id: "Settings",
+    icon: <LuLockKeyhole />,
+    label: "Đổi mật khẩu",
+    path: "/doi-mat-khau-admin",
   },
 ];
 

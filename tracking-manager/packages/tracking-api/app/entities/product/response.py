@@ -80,6 +80,11 @@ class ItemProductDBRes(BaseModel):
     count_review: Optional[Union[int, None]] = None
     count_comment: Optional[Union[int, None]] = None
     rating: Optional[Union[float, None]] = None
+    registration_number: Optional[Union[str, None]] = None
+    certificate_file: Optional[Union[str, None]] = None
+    active: bool = False
+    prescription_required: bool = False
+    verified_by: Optional[Union[str, None]] = None
 
     @classmethod
     def from_mongo(cls, data):

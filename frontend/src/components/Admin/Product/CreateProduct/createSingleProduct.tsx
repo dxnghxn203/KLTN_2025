@@ -1,16 +1,11 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
-import Thumbnail from "./thumbnail";
-import ProductDetails from "./productDetails";
-import General from "./general";
-import UnitAndPrice from "./unitPrice";
 import { useProduct } from "@/hooks/useProduct";
 import { useCategory } from "@/hooks/useCategory";
-import Toast from "@/components/Toast/toast";
 import { useToast } from "@/providers/toastProvider";
 
 const CreateSingleProduct = () => {
-  const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai"];
+  const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
 
   const { addProduct } = useProduct();
 
@@ -85,6 +80,18 @@ const CreateSingleProduct = () => {
   });
 
   const [productName, setProductName] = useState<string>("");
+  const [namePrimary, setNamePrimary] = useState<string>("");
+  const [origin, setOrigin] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [inventory, setInventory] = useState<number>(0);
+  const [brand, setBrand] = useState<string>("");
+  const [uses, setUses] = useState<string>("");
+  const [dosageForm, setDosageForm] = useState<string>("");
+  const [dosage, setDosage] = useState<string>("");
+  const [side_effects, setSideEffects] = useState<string>("");
+  const [precautions, setPrecautions] = useState<string>("");
+  const [storage, setStorage] = useState<string>("");
+
   const [slug, setSlug] = useState<string>("");
   const toast = useToast();
 
@@ -93,6 +100,7 @@ const CreateSingleProduct = () => {
   const [primaryImage, setPrimaryImage] = useState<File | null>(null);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>("");
+  const primaryImageInputRef = useRef<HTMLInputElement | null>(null);
 
   // Add state for validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -370,11 +378,11 @@ const CreateSingleProduct = () => {
         ?.value
     )
       newErrors.uses = "Vui lòng điền thông tin công dụng";
-    if (
-      !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
-        ?.value
-    )
-      newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
+    // if (
+    //   !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
+    //     ?.value
+    // )
+    //   newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
 
     if (
       !document.querySelector<HTMLInputElement>('input[name="inventory"]')
@@ -393,63 +401,10 @@ const CreateSingleProduct = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-    const isValid = validateForm();
-    if (!isValid) {
-      const firstErrorElement = document.querySelector('[data-error="true"]');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-      return;
+  const resetForm = () => {
+    if (primaryImageInputRef.current) {
+      primaryImageInputRef.current.value = "";
     }
-
-    const formData = new FormData(e.currentTarget);
-
-    formData.delete("images");
-    formData.delete("images_primary");
-
-    images.forEach((image) => {
-      formData.append("images", image);
-    });
-
-    if (primaryImage) {
-      formData.append("images_primary", primaryImage);
-    }
-
-    formData.set("ingredients", JSON.stringify({ ingredients }));
-    formData.set("full_description", JSON.stringify({ full_descriptions }));
-    formData.set("prices", JSON.stringify({ prices }));
-    formData.set("manufacturer", JSON.stringify(manufacturer));
-    formData.set("category", JSON.stringify(category));
-
-    const formDataObj: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      formDataObj[key] = value;
-    });
-
-    await addProduct(
-      formDataObj,
-      (message: any) => {
-        toast.showToast(message, "success");
-        resetForm(e.currentTarget as HTMLFormElement);
-      },
-      (message: any) => {
-        toast.showToast(message, "error");
-      }
-    );
-  };
-
-  const resetForm = (form: HTMLFormElement) => {
-    // Reset form element
-    form.reset();
-
-    // Reset React state
     setProductName("");
     setSlug("");
     setPrices([
@@ -493,12 +448,73 @@ const CreateSingleProduct = () => {
     setImagePreviewUrls([]);
     setPrimaryImagePreview("");
 
+    setNamePrimary("");
+    setOrigin("");
+    setDescription("");
+    setInventory(0);
+    setBrand("");
+    setUses("");
+    setDosageForm("");
+    setDosage("");
+    setSideEffects("");
+    setPrecautions("");
+    setStorage("");
+
     // Reset validation state
     setErrors({});
     setFormSubmitted(false);
+  };
 
-    // Scroll to top of form
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    const isValid = validateForm();
+    if (!isValid) {
+      const firstErrorElement = document.querySelector('[data-error="true"]');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+
+    formData.delete("images");
+    formData.delete("images_primary");
+
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+
+    if (primaryImage) {
+      formData.append("images_primary", primaryImage);
+    }
+
+    formData.set("ingredients", JSON.stringify({ ingredients }));
+    formData.set("full_description", JSON.stringify({ full_descriptions }));
+    formData.set("prices", JSON.stringify({ prices }));
+    formData.set("manufacturer", JSON.stringify(manufacturer));
+    formData.set("category", JSON.stringify(category));
+
+    // const formDataObj: Record<string, any> = {};
+    // formData.forEach((value, key) => {
+    //   formDataObj[key] = value;
+    // });
+
+    await addProduct(
+      formData,
+      (message: any) => {
+        toast.showToast(message, "success");
+        resetForm(); // Reset the form after successful submission
+      },
+      (message: any) => {
+        toast.showToast(message, "error");
+      }
+    );
+    console.log("formData", formData);
   };
 
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
@@ -648,6 +664,8 @@ const CreateSingleProduct = () => {
                       className={`border rounded-lg p-2 w-full ${
                         hasError("name_primary") ? "border-red-500" : ""
                       }`}
+                      value={namePrimary}
+                      onChange={(e) => setNamePrimary(e.target.value)}
                     />
                     {hasError("name_primary") && (
                       <ErrorMessage message={errors.name_primary} />
@@ -681,6 +699,8 @@ const CreateSingleProduct = () => {
                       className={`border rounded-lg p-2 w-full ${
                         hasError("origin") ? "border-red-500" : ""
                       }`}
+                      onChange={(e) => setOrigin(e.target.value)}
+                      value={origin}
                     />
                     {hasError("origin") && (
                       <ErrorMessage message={errors.origin} />
@@ -697,6 +717,8 @@ const CreateSingleProduct = () => {
                     className={`border rounded-lg p-2 w-full ${
                       hasError("description") ? "border-red-500" : ""
                     }`}
+                    onChange={(e) => setDescription(e.target.value)}
+                    value={description}
                   ></textarea>
                   {hasError("description") && (
                     <ErrorMessage message={errors.description} />
@@ -1023,6 +1045,9 @@ const CreateSingleProduct = () => {
                         }
                         className="border rounded-lg p-2 w-full"
                       />
+                      <label className="block text-sm font-medium mb-1">
+                        (kg)
+                      </label>
                     </div>
                   </div>
                 </div>
@@ -1043,6 +1068,8 @@ const CreateSingleProduct = () => {
                 type="number"
                 name="inventory"
                 className="border rounded-lg p-2 w-full"
+                onChange={(e) => setInventory(Number(e.target.value))}
+                value={inventory}
               />
             </div>
 
@@ -1180,6 +1207,8 @@ const CreateSingleProduct = () => {
                     type="text"
                     name="brand"
                     className="border rounded-lg p-2 w-full"
+                    onChange={(e) => setBrand(e.target.value)}
+                    value={brand}
                   />
                 </div>
               </div>
@@ -1201,6 +1230,8 @@ const CreateSingleProduct = () => {
                     className={`border rounded-lg p-2 w-full ${
                       hasError("uses") ? "border-red-500" : ""
                     }`}
+                    onChange={(e) => setUses(e.target.value)}
+                    value={uses}
                   ></textarea>
                   {hasError("uses") && <ErrorMessage message={errors.uses} />}
                 </div>
@@ -1212,6 +1243,8 @@ const CreateSingleProduct = () => {
                     name="dosage"
                     rows={3}
                     className="border rounded-lg p-2 w-full"
+                    onChange={(e) => setDosage(e.target.value)}
+                    value={dosage}
                   ></textarea>
                 </div>
                 <div>
@@ -1222,6 +1255,8 @@ const CreateSingleProduct = () => {
                     type="text"
                     name="dosage_form"
                     className="border rounded-lg p-2 w-full"
+                    onChange={(e) => setDosageForm(e.target.value)}
+                    value={dosageForm}
                   />
                 </div>
                 <div>
@@ -1232,6 +1267,8 @@ const CreateSingleProduct = () => {
                     name="side_effects"
                     rows={3}
                     className="border rounded-lg p-2 w-full"
+                    onChange={(e) => setSideEffects(e.target.value)}
+                    value={side_effects}
                   ></textarea>
                 </div>
                 <div>
@@ -1242,6 +1279,8 @@ const CreateSingleProduct = () => {
                     name="precautions"
                     rows={3}
                     className="border rounded-lg p-2 w-full"
+                    onChange={(e) => setPrecautions(e.target.value)}
+                    value={precautions}
                   ></textarea>
                 </div>
                 <div>
@@ -1252,6 +1291,8 @@ const CreateSingleProduct = () => {
                     name="storage"
                     rows={3}
                     className="border rounded-lg p-2 w-full"
+                    onChange={(e) => setStorage(e.target.value)}
+                    value={storage}
                   ></textarea>
                 </div>
                 {/* Enhanced Product Images Section */}
@@ -1365,6 +1406,7 @@ const CreateSingleProduct = () => {
                   <input
                     type="file"
                     name="images_primary"
+                    ref={primaryImageInputRef}
                     onChange={handlePrimaryImageChange}
                     className={`border rounded-lg p-2 w-full ${
                       hasError("images_primary") ? "border-red-500" : ""

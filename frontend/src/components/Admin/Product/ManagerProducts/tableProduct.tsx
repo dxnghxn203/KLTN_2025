@@ -7,12 +7,26 @@ import { ImBin } from "react-icons/im";
 import { IoImage } from "react-icons/io5";
 import Image from "next/image";
 import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
-import { MdOutlineModeEdit } from "react-icons/md";
+import {
+  MdNavigateBefore,
+  MdNavigateNext,
+  MdOutlineModeEdit,
+} from "react-icons/md";
+import { Delete } from "lucide-react";
+import DeleteProductDialog from "../../Dialog/confirmDeleteProductDialog";
+import { useToast } from "@/providers/toastProvider";
 
 const TableProduct = () => {
-  const { allProductAdmin, getAllProductsAdmin } = useProduct();
+  const { allProductAdmin, getAllProductsAdmin, deleteProduct } = useProduct();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const onPageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const toast = useToast();
   const productsPerPage = 5;
 
   useEffect(() => {
@@ -41,6 +55,8 @@ const TableProduct = () => {
   const currentProducts = allProductAdmin
     ? allProductAdmin.slice(indexOfFirstProduct, indexOfLastProduct)
     : [];
+  // console.log("Product ID đã chọn:", selectedProduct?.product_id);
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
 
   return (
     <>
@@ -174,7 +190,13 @@ const TableProduct = () => {
                               <span>Sửa</span>
                             </button>
                             <div className="border-t border-gray-200"></div>
-                            <button className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500">
+                            <button
+                              className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500"
+                              onClick={() => {
+                                setSelectedProduct(product); // Lưu product hiện tại
+                                setIsOpenDialog(true); // Mở dialog xác nhận xóa
+                              }}
+                            >
                               <ImBin className="text-base text-sm" />
                               <span>Xóa</span>
                             </button>
@@ -195,15 +217,86 @@ const TableProduct = () => {
           </table>
         </div>
       </div>
+      <DeleteProductDialog
+        onClose={() => setIsOpenDialog(false)}
+        onDelete={() => {
+          deleteProduct(
+            selectedProduct.product_id,
+            (message) => {
+              toast.showToast(message, "success");
+              getAllProductsAdmin();
+              setIsOpenDialog(false);
+              setSelectedProduct(null);
+            },
+            (message) => {
+              toast.showToast(message, "error");
+            }
+          );
+        }}
+        isOpen={isOpenDialog}
+      />
 
       {/* Phân trang */}
-      <div className="flex justify-center p-6">
-        <CustomPagination
-          current={currentPage}
-          total={totalProducts}
-          pageSize={productsPerPage}
-          onChange={(page) => setCurrentPage(page)}
-        />
+      <div className="flex items-center justify-center space-x-2 py-4">
+        {/* Nút previous */}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+        >
+          <MdNavigateBefore className="text-xl" />
+        </button>
+
+        {/* Các nút số trang */}
+        {Array.from({ length: totalPages }, (_, index) => {
+          const pageNumber = index + 1;
+
+          // Quy tắc ẩn bớt số
+          if (
+            pageNumber === 1 ||
+            pageNumber === totalPages ||
+            (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1) ||
+            (currentPage <= 3 && pageNumber <= 5) ||
+            (currentPage >= totalPages - 2 && pageNumber >= totalPages - 4)
+          ) {
+            return (
+              <button
+                key={pageNumber}
+                onClick={() => onPageChange(pageNumber)}
+                className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
+                  currentPage === pageNumber
+                    ? "bg-blue-700 text-white"
+                    : "text-black hover:bg-gray-200"
+                }`}
+              >
+                {pageNumber}
+              </button>
+            );
+          }
+
+          // Hiển thị dấu ...
+          if (
+            (pageNumber === currentPage - 2 && currentPage > 4) ||
+            (pageNumber === currentPage + 2 && currentPage < totalPages - 3)
+          ) {
+            return (
+              <span key={pageNumber} className="px-2 text-gray-500">
+                ...
+              </span>
+            );
+          }
+
+          return null;
+        })}
+
+        {/* Nút next */}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+        >
+          <MdNavigateNext className="text-xl" />
+        </button>
       </div>
     </>
   );

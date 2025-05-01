@@ -33,6 +33,13 @@ import {
     fetchGetTrackingCodeSuccess,
     fetchGetTrackingCodeFailed,
 
+    fetchDownloadInvoiceFailed,
+    fetchDownloadInvoiceStart,
+    fetchDownloadInvoiceSuccess,
+    fetchGetStatistics365DaysSuccess,
+    fetchGetStatistics365DaysFailed,
+    fetchGetStatistics365DaysStart,
+
 } from './orderSlice';
 import { getSession, getToken } from '@/utils/cookie';
 
@@ -144,10 +151,17 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
             onSuccess(rs.data);
             return;
         }
-        onFailed(rs.message);
         yield put(fetchCheckShippingFeeFailed());
+        let error = {
+            ...rs,
+            isOutOfStock: rs.status_code === 400
+        }
+        if (rs.status_code === 400) {
+            const targetIdSet = new Set(rs.data.out_of_stock_ids);
+            error.data = orderData.product.filter((product: { product_id: string, products_name: string }) => targetIdSet.has(product.product_id));
+        }
+        onFailed(error);
     } catch (error) {
-        console.log(error);
         yield put(fetchCheckShippingFeeFailed());
     }
 }
@@ -249,6 +263,7 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
         };
 
         const rs = yield call(orderService.checkOrder, apiPayload, session);
+        console.log("eeeee", rs.data)
         if (rs.status_code === 200) {
             yield put(fetchCheckOrderSuccess(rs.data));
             if (rs?.data?.qr_code && rs?.data?.qr_code !== "") {
@@ -305,6 +320,52 @@ function* fetchGetOrderByUser(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchDownloadInvoice(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+            order_id
+        } = payload;
+        const blob = yield call(orderService.downloadInvoice, order_id);
+
+        if (blob) {
+            yield put(fetchDownloadInvoiceSuccess(blob));
+            onSuccess(blob); // truyền blob vào success callback
+            return;
+        }
+        onFailed(blob.message);
+        yield put(fetchDownloadInvoiceFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchDownloadInvoiceFailed());
+    }
+}
+
+function* fetchGetStatistics365Days (action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => { },
+            onFailed = () => { },
+        
+        } = payload;
+        const rs = yield call(orderService.getStatistics365Days);
+        if (rs.status_code === 200) {
+            yield put(fetchGetStatistics365DaysSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetStatistics365DaysFailed());
+    }
+    catch (error) {
+        console.log(error);
+        yield put(fetchGetStatistics365DaysFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -314,4 +375,6 @@ export function* orderSaga() {
     yield takeLatest(fetchCheckShippingFeeStart.type, fetchCheckShippingFee);
     yield takeLatest(fetchCancelOrderStart.type, fetchCancelOrder);
     yield takeLatest(fetchGetTrackingCodeStart.type, fetchGetTrackingCode);
+    yield takeLatest(fetchDownloadInvoiceStart.type, fetchDownloadInvoice);
+    yield takeLatest(fetchGetStatistics365DaysStart.type, fetchGetStatistics365Days);
 }

@@ -126,7 +126,15 @@ async def get_by_id(user_id: str):
 async def update_status(user_id: str, status: bool):
     try:
         collection = database.db[collection_name]
-        collection.update_one({"_id": ObjectId(user_id)}, {"$set": {"active": status}})
+        collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {
+                "$set": {
+                    "active": status,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
         return response.SuccessResponse(message=f"Cập nhật trạng thái user thành {status}")
     except Exception as e:
         logger.error(f"Error updating user status: {str(e)}")
@@ -149,7 +157,9 @@ async def get_current(token: str) -> ItemUserRes:
 async def update_user_password(email: str, new_password: str):
     try:
         collection = database.db[collection_name]
-        collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
+        collection.update_one(
+            {"email": email, "auth_provider": "email"},
+            {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
         return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
     except response.JsonException as je:
         raise je

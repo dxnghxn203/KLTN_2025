@@ -1,4 +1,4 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchDeleteProductStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -10,6 +10,7 @@ export function useProduct() {
     const productRelated = useSelector(selectProductRelated);
     const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
     const productGetFeatured = useSelector(selectProductRelated);
+    const productBestDeal = useSelector(selectProductTopSelling);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -78,6 +79,20 @@ export function useProduct() {
         dispatch(fetchAllProductGetRecentlyViewedStart())
     }
 
+    const fetchProductBestDeal = () => {
+        dispatch(fetchAllProductBestDealStart({
+            top_n: top_n
+        }))
+    }
+
+    const deleteProduct = async (product_id: any, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchDeleteProductStart({
+            product_id: product_id,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }))
+    }
+
 
 
     return {
@@ -98,6 +113,9 @@ export function useProduct() {
         fetchProductRecentlViewed,
         productGetFeatured,
         fetchProductFeatured,
+        productBestDeal,
+        fetchProductBestDeal,
+        deleteProduct,
     };
 }
 

@@ -14,7 +14,11 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   // Nếu đang ở trang login thì không render layout
-  if (pathname === "/dang-nhap-admin" || pathname === "/dang-ky-admin") {
+  if (
+    pathname === "/dang-nhap-admin" ||
+    pathname === "/dang-ky-admin" ||
+    pathname === "/quen-mat-khau-admin"
+  ) {
     return <>{children}</>;
   }
 

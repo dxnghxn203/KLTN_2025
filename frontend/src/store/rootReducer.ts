@@ -30,6 +30,7 @@ const rootReducer = (state: any, action: any) => {
   }   
 
   const token = getToken();
+  // console.log("Token from cookie:", token);
 
   if (token) {
     setClientToken(token);

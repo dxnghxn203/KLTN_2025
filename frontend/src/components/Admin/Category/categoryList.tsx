@@ -29,7 +29,7 @@ export default function QuanLyDanhMuc() {
   const mainCategoryInfo = [
     { label: "ID danh mục chính", value: selectedMain?.main_category_id },
     { label: "Tên danh mục chính", value: selectedMain?.main_category_name },
-    { label: "URL danh mục chính", value: selectedMain?.main_category_slug },
+    { label: "Slug danh mục chính", value: selectedMain?.main_category_slug },
   ];
   useEffect(() => {
     fetchGetAllCategoryForAdmin();
@@ -71,14 +71,14 @@ export default function QuanLyDanhMuc() {
               {categoryMain?.main_category_name}
             </h3>
             <div className="space-y-1 text-sm text-center">
-              {/* URL */}
+              {/* Slug */}
               <p>
                 <span
                   className={
                     "font-medium rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-sm w-fit"
                   }
                 >
-                  URL: {categoryMain?.main_category_slug}
+                  Slug: {categoryMain?.main_category_slug}
                 </span>
               </p>
 
@@ -145,6 +145,10 @@ export default function QuanLyDanhMuc() {
       <AddNewCategoryDialog
         isOpen={isAddNewDialogOpen}
         onClose={() => setAddNewDialogOpen(false)}
+        onConfirm={() => {
+          fetchGetAllCategoryForAdmin();
+          setAddNewDialogOpen(false);
+        }}
       />
       <DeleteCategoryDialog
         isOpen={isDialogDeleteMain}

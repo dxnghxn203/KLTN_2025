@@ -20,7 +20,7 @@ const ProductChildCategoryCard: React.FC<ProductChildCategoryCardProps> = ({
   return (
     <>
       <div className="flex text-xs font-bold whitespace-normal">
-        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] ">
+        <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[130px] hover:border-blue-600 hover:shadow-md transition-all duration-300 ">
           {/* Ảnh sản phẩm */}
           <Link href="/chi-tiet-san-pham" legacyBehavior>
             <div className="py-4 flex flex-col items-center">

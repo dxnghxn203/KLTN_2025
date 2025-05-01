@@ -40,14 +40,14 @@ export function useAuth() {
     };
     const loginAdmin = (
         credentials: any,
-        onSuccess: () => void,
-    onFailure: (message: any) => void,
+        onSuccess: (message: any) => void,
+        onFailure: (message: any) => void,
   ) => {
-    dispatch(loginAdminStart({
-        ...credentials,
-      onSuccess,
-      onFailure,
-    }));
+        dispatch(loginAdminStart({
+            ...credentials,
+        onSuccess : onSuccess,
+        onFailure: onFailure,
+        }));
         
     };
     

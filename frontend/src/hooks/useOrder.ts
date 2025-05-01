@@ -1,4 +1,5 @@
-import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart } from "@/store/order";
+import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart } from "@/store/order";
+import { on } from "events";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -7,8 +8,10 @@ export function useOrder() {
     const allOrder = useSelector(selectAllOrder);
     const allOrderAdmin = useSelector(selectAllOrderAdmin);
     const ordersUser = useSelector(selectOrdersByUser);
+    const statistics365Days = useSelector((state: any) => state.order.statistics365Days);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+
 
     useEffect(() => {
         dispatch(fetchGetAllOrderStart({
@@ -66,6 +69,22 @@ export function useOrder() {
         }));
     }
 
+    const downloadInvoice = async (order_id: any, onSuccess: (blob: any) => void, onFailed: () => void) => {
+        dispatch(fetchDownloadInvoiceStart({
+            order_id,
+            onSuccess,
+            onFailed,
+        }));
+    }
+
+    const allStatistics365Days = async (onSuccess: () => void, onFailed: () => void) => {
+        dispatch(fetchGetStatistics365DaysStart({
+            onSuccess,
+            onFailed,
+
+        }))
+    }
+
     return {
         allOrder,
         checkOrder,
@@ -80,7 +99,11 @@ export function useOrder() {
         callWebHook,
         checkShippingFee,
         cancelOrder,
-        getTrackingCode
+        getTrackingCode,
+        downloadInvoice,
+
+        allStatistics365Days,
+        statistics365Days,
     }
 }
 

@@ -2,16 +2,15 @@ import React, { use, useEffect } from "react";
 import ProductsViewCard from "./productsRelatedCard";
 import { useProduct } from "@/hooks/useProduct";
 
-const ProductsRelatedList=({product}:any) => {
-  const { productRelated , fetchProductRelated} = useProduct();
+const ProductsRelatedList = ({ product }: any) => {
+  const { productRelated, fetchProductRelated } = useProduct();
 
   useEffect(() => {
-    const product_id =product?.product_id ;
+    const product_id = product?.product_id;
     if (product_id) {
       fetchProductRelated(product_id);
     }
-  }
-  , []);
+  }, []);
 
   return (
     <div className="w-full max-md:px-5 max-md:max-w-full mt-6">
@@ -27,10 +26,11 @@ const ProductsRelatedList=({product}:any) => {
         </div>
       </div>
       <div className="self-center mt-5 w-full max-md:max-w-full">
-        <div className="grid grid-cols-4 gap-6 max-md:grid-cols-1">
-          {productRelated && productRelated.map((product: any, index: any) => (
-            <ProductsViewCard key={index} product={product} />
-          ))}
+        <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
+          {productRelated &&
+            productRelated.map((product: any, index: any) => (
+              <ProductsViewCard key={index} product={product} />
+            ))}
         </div>
       </div>
     </div>

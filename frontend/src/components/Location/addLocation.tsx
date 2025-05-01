@@ -68,6 +68,7 @@ const AddLocation = ({
         name: ordererInfo.fullName,
         phone_number: ordererInfo.phone,
         address: addressInfo.address,
+        email: ordererInfo.email,
         province: addressInfo.city,
         province_code: addressInfo.cityCode,
         district_code: addressInfo.districtCode,

@@ -51,6 +51,14 @@ def verify_token_admin(cred: HTTPAuthorizationCredentials = Depends(security)):
 
     return cred.credentials
 
+def verify_token_pharmacist(cred: HTTPAuthorizationCredentials = Depends(security)):
+    payload = validate_and_decode_token(cred)
+
+    if not payload.get("role_id") or payload.get("role_id") != "pharmacist":
+        raise response.JsonException(status_code=status.HTTP_403_FORBIDDEN, message="Không có quyền truy cập")
+
+    return cred.credentials
+
 def destroy_token(cred: HTTPAuthorizationCredentials = Depends(security)):
     payload = validate_and_decode_token(cred)
     update_destroy_token(payload)
@@ -81,16 +89,16 @@ def generate_password():
     lower_case = string.ascii_lowercase
     upper_case = string.ascii_uppercase
     digits = string.digits
-    special_chars = string.punctuation
+    safe_special_chars = ''.join(c for c in string.punctuation if c not in ['\\', '"', "'"])
 
     password_chars = [
         random.choice(lower_case),
         random.choice(upper_case),
         random.choice(digits),
-        random.choice(special_chars)
+        random.choice(safe_special_chars)
     ]
 
-    all_chars = lower_case + upper_case + digits + special_chars
+    all_chars = lower_case + upper_case + digits + safe_special_chars
     password_chars += random.choices(all_chars, k=8)
 
     random.shuffle(password_chars)

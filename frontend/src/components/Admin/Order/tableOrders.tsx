@@ -15,13 +15,18 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useToast } from "@/providers/toastProvider";
+import {
+  MdNavigateBefore,
+  MdNavigateNext,
+  MdOutlineMoreHoriz,
+} from "react-icons/md";
 
 const statusConfig: Record<
   string,
   { label: string; color: string; textColor: string }
 > = {
-  create_order: {
-    label: "Đã tạo đơn",
+  created: {
+    label: "Đã tạo",
     color: "bg-blue-100",
     textColor: "text-blue-700",
   },
@@ -40,7 +45,7 @@ const statusConfig: Record<
     color: "bg-purple-100",
     textColor: "text-purple-700",
   },
-  delivered: {
+  delivery_success: {
     label: "Đã giao hàng",
     color: "bg-green-100",
     textColor: "text-green-700",
@@ -72,6 +77,10 @@ const TableOrdersAdmin = () => {
 
   const totalOrders = allOrderAdmin ? allOrderAdmin.length : 0;
   const totalPages = Math.ceil(totalOrders / pageSize);
+  const currentPage = page;
+  const onPageChange = (pageNumber: number) => {
+    paginate(pageNumber);
+  };
 
   const calculateOrderTotal = (products: any[]) => {
     return products.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -132,37 +141,37 @@ const TableOrdersAdmin = () => {
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left uppercase tracking-wider"
+                    className="px-6 py-4 text-left uppercase tracking-wider"
                   >
                     Mã đơn hàng
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left  uppercase tracking-wider"
+                    className="px-6 py-4 text-left  uppercase tracking-wider"
                   >
                     Trạng thái
                   </th>
                   <th
                     scope="col"
-                    className="px-4 py-3 text-left  uppercase tracking-wider"
+                    className="px-4 py-4 text-left  uppercase tracking-wider"
                   >
                     Người nhận
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left uppercase tracking-wider"
+                    className="px-6 py-4 text-left uppercase tracking-wider"
                   >
                     Sản phẩm
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left uppercase tracking-wider"
+                    className="px-6 py-4 text-left uppercase tracking-wider"
                   >
                     Tổng tiền
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-right uppercase tracking-wider"
+                    className="px-6 py-4 text-right uppercase tracking-wider"
                   >
                     Thao tác
                   </th>
@@ -210,15 +219,13 @@ const TableOrdersAdmin = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-medium 
-                                                    ${
-                                                      statusConfig[order.status]
-                                                        ?.color || "bg-gray-100"
-                                                    } 
-                                                    ${
-                                                      statusConfig[order.status]
-                                                        ?.textColor ||
-                                                      "text-gray-800"
-                                                    }`}
+                            ${
+                              statusConfig[order.status]?.color || "bg-gray-100"
+                            } 
+                            ${
+                              statusConfig[order.status]?.textColor ||
+                              "text-gray-800"
+                            }`}
                         >
                           {statusConfig[order.status]?.label || order.status}
                         </span>
@@ -239,13 +246,19 @@ const TableOrdersAdmin = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                         {formatCurrency(calculateOrderTotal(order.product))}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                         <div className="relative">
                           <button
                             onClick={() => toggleActions(order.order_id)}
-                            className="text-gray-400 hover:text-gray-600"
+                            className={`text-gray-400 p-2 rounded-full transition
+                              ${
+                                showActions === order.order_id
+                                  ? "bg-gray-200"
+                                  : "hover:bg-gray-200"
+                              }
+                            `}
                           >
-                            <RiMore2Fill size={20} />
+                            <MdOutlineMoreHoriz size={20} />
                           </button>
 
                           {showActions === order.order_id && (
@@ -276,28 +289,41 @@ const TableOrdersAdmin = () => {
                           <div className="rounded-lg border border-gray-200 p-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                               {/* Thông tin sản phẩm */}
-                              <div>
-                                <div className="font-semibold text-gray-900 mb-3 text-sm">
+                              <div className="pr-6 border-r border-gray-200">
+                                <div className="font-semibold text-gray-900 mb-3">
                                   Sản phẩm đặt hàng
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                   {order.product.map(
                                     (item: any, idx: number) => (
                                       <div
                                         key={idx}
-                                        className="flex justify-between py-2 border-b border-gray-100"
+                                        className={`flex justify-between py-2 ${
+                                          idx !== order.product.length - 1
+                                            ? "border-b border-gray-100"
+                                            : ""
+                                        }`}
                                       >
                                         <div>
-                                          <div className="text-sm font-medium">
-                                            {item.product_name}
+                                          <div className="flex justify-between text-sm space-x-4">
+                                            <div>{item.product_name}</div>
+                                            <div className="text-gray-500">
+                                              x{item.quantity}
+                                            </div>
                                           </div>
-                                          <div className="text-xs text-gray-500">
-                                            {item.quantity} x{" "}
+
+                                          <div className="text-xs text-gray-500 line-through">
+                                            {formatCurrency(
+                                              item.original_price
+                                            )}{" "}
+                                            ({item.unit})
+                                          </div>
+                                          <div className="text-sm text-gray-500 font-medium">
                                             {formatCurrency(item.price)} (
                                             {item.unit})
                                           </div>
                                         </div>
-                                        <div className="text-sm font-medium">
+                                        <div className="text-sm font-medium text-blue-600">
                                           {formatCurrency(
                                             item.price * item.quantity
                                           )}
@@ -306,7 +332,7 @@ const TableOrdersAdmin = () => {
                                     )
                                   )}
 
-                                  <div className="flex justify-between py-2 font-medium">
+                                  <div className="flex justify-between py-2 font-semibold text-blue-700">
                                     <div>Tổng cộng</div>
                                     <div>
                                       {formatCurrency(
@@ -317,16 +343,15 @@ const TableOrdersAdmin = () => {
                                 </div>
                               </div>
 
+                              {/* Thông tin vận chuyển */}
                               <div>
-                                <div className="font-semibold text-gray-900 mb-3 text-sm">
+                                <div className="font-semibold text-gray-900 mb-4">
                                   Thông tin vận chuyển
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-700">
-                                      Người gửi
-                                    </h5>
-                                    <div className="text-sm mt-1">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div className="space-y-2">
+                                    <h5 className="text-sm">Người gửi</h5>
+                                    <div className="text-sm mt-1 font-semibold">
                                       {order.pick_from.name}
                                     </div>
                                     <div className="text-xs text-gray-500">
@@ -337,11 +362,9 @@ const TableOrdersAdmin = () => {
                                     </div>
                                   </div>
 
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-700">
-                                      Người nhận
-                                    </h5>
-                                    <div className="text-sm mt-1">
+                                  <div className="space-y-2">
+                                    <h5 className="text-sm">Người nhận</h5>
+                                    <div className="text-sm mt-1 font-medium">
                                       {order.pick_to.name}
                                     </div>
                                     <div className="text-xs text-gray-500">
@@ -376,78 +399,67 @@ const TableOrdersAdmin = () => {
           </div>
 
           {/* Phân trang */}
-          <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
-            <div className="flex items-center mb-4 sm:mb-0">
-              <span className="text-sm text-gray-700 mr-4">
-                Hiển thị {(page - 1) * pageSize + 1} -{" "}
-                {Math.min(page * pageSize, totalOrders || 0)} trong{" "}
-                {totalOrders || 0} đơn hàng
-              </span>
-              <select
-                className="border border-gray-300 rounded-md text-sm px-2 py-1"
-                value={pageSize}
-                onChange={handlePageSizeChange}
-              >
-                <option value={1}>1 / trang</option>
-                <option value={2}>2 / trang</option>
-                <option value={5}>5 / trang</option>
-                <option value={50}>50 / trang</option>
-              </select>
-            </div>
+          <div className="flex items-center justify-center space-x-2 py-4">
+            {/* Nút previous */}
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+            >
+              <MdNavigateBefore className="text-xl" />
+            </button>
 
-            <div className="flex items-center space-x-2">
-              <button
-                // onClick={() => paginate(page - 1)}
-                disabled={page === 1}
-                className={`px-2 py-1 border border-gray-300 rounded-md ${
-                  page === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <ChevronLeft size={16} />
-              </button>
+            {/* Các nút số trang */}
+            {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1;
 
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                // Logic hiển thị số trang
-                let pageToShow;
-                if (totalPages <= 5) {
-                  pageToShow = i + 1;
-                } else if (page <= 3) {
-                  pageToShow = i + 1;
-                } else if (page >= totalPages - 2) {
-                  pageToShow = totalPages - 4 + i;
-                } else {
-                  pageToShow = page - 2 + i;
-                }
-
+              // Quy tắc ẩn bớt số
+              if (
+                pageNumber === 1 ||
+                pageNumber === totalPages ||
+                (pageNumber >= currentPage - 1 &&
+                  pageNumber <= currentPage + 1) ||
+                (currentPage <= 3 && pageNumber <= 5) ||
+                (currentPage >= totalPages - 2 && pageNumber >= totalPages - 4)
+              ) {
                 return (
                   <button
-                    key={i}
-                    onClick={() => paginate(pageToShow)}
-                    className={`px-3 py-1 border ${
-                      page === pageToShow
-                        ? "bg-blue-50 border-blue-500 text-blue-600"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    } rounded-md`}
+                    key={pageNumber}
+                    onClick={() => onPageChange(pageNumber)}
+                    className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
+                      currentPage === pageNumber
+                        ? "bg-blue-700 text-white"
+                        : "text-black hover:bg-gray-200"
+                    }`}
                   >
-                    {pageToShow}
+                    {pageNumber}
                   </button>
                 );
-              })}
+              }
 
-              <button
-                onClick={() => paginate(page + 1)}
-                disabled={page === totalPages}
-                className={`px-2 py-1 border border-gray-300 rounded-md ${
-                  page === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
+              // Hiển thị dấu ...
+              if (
+                (pageNumber === currentPage - 2 && currentPage > 4) ||
+                (pageNumber === currentPage + 2 && currentPage < totalPages - 3)
+              ) {
+                return (
+                  <span key={pageNumber} className="px-2 text-gray-500">
+                    ...
+                  </span>
+                );
+              }
+
+              return null;
+            })}
+
+            {/* Nút next */}
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+            >
+              <MdNavigateNext className="text-xl" />
+            </button>
           </div>
         </>
       ) : (

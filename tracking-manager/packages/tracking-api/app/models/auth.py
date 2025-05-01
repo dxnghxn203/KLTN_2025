@@ -69,6 +69,7 @@ async def handle_password_verification(email: str):
 
         password =  generate_password()
         mail.send_new_password_email(email, password)
+        redis.update_otp_request_count_value(email)
         return password
     except Exception as e:
         logger.error(f"Error handle_password_verification: {e}")

@@ -62,3 +62,110 @@ export const getAllUserAdmin = async (params: any): Promise<any> => {
     }
 }
 
+export const forgotPasswordUser = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/users/forgot-password";
+        const result: any = await axiosClient.post(url, params);
+        
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message,
+            data: null
+        }
+
+    }
+}
+
+export const changePasswordUser = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/users/change-password";
+        const result: any = await axiosClient.post(url, params);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message,
+            data: null
+        }
+
+    }
+}
+
+export const changePasswordAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/change-password";
+        const result: any = await axiosClient.post(url, params);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data,
+            data: null
+        }
+
+    }
+}
+
+export const forgotPasswordAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/forgot-password";
+        const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message,
+            data: null
+        }
+
+    }
+}
+
+export const updateStatusUser = async (params: { user_id: string; status_user: boolean }): Promise<any> => {
+    try {
+        const url = "/v1/users/status";
+        const result: any = await axiosClient.put(url, null, {
+            params: {
+                user_id: params.user_id,
+                status_user: params.status_user,
+            },
+        });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message || "Server error",
+            data: null,
+        };
+    }
+};
+
+

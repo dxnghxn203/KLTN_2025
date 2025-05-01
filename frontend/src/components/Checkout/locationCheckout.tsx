@@ -28,12 +28,12 @@ const LocationCheckout = ({
     getAllLocation(
       () => {
         setLoadingGetLocation(false);
-        const location_default = getLocationDefault(
-          allLocation?.default_location,
-          allLocation?.locations
-        );
-        setDataLocation(location_default);
-        setSelectedLocation(location_default);
+        // const location_default = getLocationDefault(
+        //   allLocation?.default_location,
+        //   allLocation?.locations
+        // );
+        // setDataLocation(location_default);
+        // setSelectedLocation(location_default);
       },
       () => {
         setLoadingGetLocation(false);
@@ -51,6 +51,16 @@ const LocationCheckout = ({
     }
   }, [selectedLocation]);
 
+  useEffect(() => {
+    if (allLocation && allLocation.locations?.length > 0) {
+      const location_default = getLocationDefault(
+        allLocation.default_location,
+        allLocation.locations
+      );
+      setDataLocation(location_default);
+      setSelectedLocation(location_default);
+    }
+  }, [allLocation]);
   return (
     <section className="flex flex-col">
       <header className="flex self-start text-black gap-1">

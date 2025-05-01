@@ -12,6 +12,8 @@ import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import "dayjs/locale/en"; // Import locale nếu cần
 import TableOrdersAdmin from "./tableOrders";
+import { useOrder } from "@/hooks/useOrder";
+import { all } from "axios";
 
 const { RangePicker } = DatePicker;
 const statuses = [
@@ -49,15 +51,8 @@ const Order = () => {
     dayjs().startOf("month"), // Ngày đầu tháng hiện tại
     dayjs().endOf("month"), // Ngày cuối tháng hiện tại
   ]);
-  const toggleMenu = (productId: string | number) => {
-    setMenuOpen(menuOpen === productId ? null : productId);
-  };
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
+  const { allStatistics365Days, statistics365Days } = useOrder();
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!(event.target as HTMLElement).closest(".menu-container")) {
@@ -78,11 +73,17 @@ const Order = () => {
   }) => {
     console.log("User added:", newUser);
   };
+  useEffect(() => {
+    allStatistics365Days(
+      () => {},
+      () => {}
+    );
+  }, [statistics365Days]);
 
   return (
     <div>
       <div className="space-y-6">
-        <h2 className="text-2xl font-extrabold text-black">Order Management</h2>
+        <h2 className="text-2xl font-extrabold text-black">Quản lý đơn hàng</h2>
         <div className="my-4 text-sm">
           <Link href="/dashboard" className="hover:underline text-blue-600">
             Dashboard
@@ -97,7 +98,7 @@ const Order = () => {
             <div className="space-y-2 relative z-10">
               <span className="text-black font-medium">Tổng đơn hàng</span>
               <div className="flex text-[#1E4DB7] text-2xl items-center">
-                <span className="font-medium">63.879.0</span>
+                <span className="font-medium">{statistics365Days?.total}</span>
               </div>
               <div className="text-sm text-gray-500">
                 Tổng số đơn hàng trong 365 ngày qua
@@ -113,7 +114,7 @@ const Order = () => {
             <div className="space-y-2 relative z-10">
               <span className="text-black font-medium">Đơn hàng mới</span>
               <div className="flex text-[#00C292] text-2xl items-center">
-                <span className="font-medium">63.879.0</span>
+                <span className="font-medium">{statistics365Days?.new}</span>
               </div>
               <div className="text-sm text-gray-500">
                 Đơn hàng mới trong 365 ngày qua
@@ -131,7 +132,9 @@ const Order = () => {
                 Đơn hàng hoàn thành
               </span>
               <div className="flex text-[#FD5171] text-2xl items-center">
-                <span className="font-medium">63.879.0</span>
+                <span className="font-medium">
+                  {statistics365Days?.completed}
+                </span>
               </div>
               <div className="text-sm text-gray-500">
                 Đơn hàng hoàn thành trong 365 ngày qua
@@ -147,7 +150,7 @@ const Order = () => {
             <div className="space-y-2 relative z-10">
               <span className="text-black font-medium">Đơn hàng hủy</span>
               <div className="flex text-[#FDC90F] text-2xl items-center">
-                <span className="font-medium">63.879.0</span>
+                <span className="font-medium">{statistics365Days?.cancel}</span>
               </div>
               <div className="text-sm text-gray-500">
                 Đơn hàng hủy trong 365 ngày qua

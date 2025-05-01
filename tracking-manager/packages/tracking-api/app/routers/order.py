@@ -1,4 +1,5 @@
 from fastapi import APIRouter, status, Depends
+from starlette.responses import FileResponse
 
 from app.core import logger, response
 from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq
@@ -180,6 +181,19 @@ async def cancel_order(order_id: str):
         raise je
     except Exception as e:
         logger.error(f"Error cancelling order: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/order/invoice", response_model=response.BaseResponse)
+async def get_invoice(order_id: str):
+    try:
+        return await order.get_order_invoice(order_id)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting invoice: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

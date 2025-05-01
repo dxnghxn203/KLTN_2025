@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Form
+from fastapi.exceptions import RequestValidationError
 from starlette import status
 
 from app.core import response, logger
@@ -13,7 +14,6 @@ from app.helpers.redis import delete_otp
 from app.middleware import middleware
 from app.models import auth, admin
 from app.models.auth import handle_otp_verification, handle_password_verification
-
 router = APIRouter()
 
 @router.post("/admin/register")
@@ -57,7 +57,7 @@ async def send_otp(item: ItemAdminOtpReq):
         )
 
 @router.post("/admin/verify-email", response_model=BaseResponse)
-async def verify_user(request: ItemAdminVerifyEmailReq):
+async def verify_admin(request: ItemAdminVerifyEmailReq):
     try:
         email, otp = request.email, request.otp
         admin_info = await admin.get_by_email(email)
@@ -133,7 +133,7 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
         )
 
 @router.get("/admin/current", response_model=BaseResponse)
-async def get_admin(token: str = Depends(middleware.verify_token)):
+async def get_admin(token: str = Depends(middleware.verify_token_admin)):
     try:
         data = await admin.get_current(token)
         return SuccessResponse(data=data)

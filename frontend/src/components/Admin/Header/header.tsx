@@ -9,6 +9,7 @@ import { MdOutlineAccountCircle } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { useAuth } from "@/hooks/useAuth";
 import { IoMdLogOut } from "react-icons/io";
+import { useEffect, useRef } from "react";
 
 const Header = ({
   sidebarOpen,
@@ -19,15 +20,19 @@ const Header = ({
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [search, setSearch] = useState("");
-  const { admin } = useAuth();
-  console.log(admin);
+  const { admin, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <header className="w-full bg-[#FAFBFB] p-3 flex items-center justify-between border-b border-gray-200">
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="text-gray-600 hover:text-gray-900"
-      >
+      <button className="text-gray-600 hover:text-gray-900">
         <IoMenuOutline size={24} />
       </button>
 
@@ -45,8 +50,7 @@ const Header = ({
       {/* Profile Dropdown */}
       <div
         className="relative"
-        onMouseEnter={() => setShowDropdown(true)}
-        onMouseLeave={() => setShowDropdown(false)}
+        // ref={dropdownRef}
       >
         <div
           className="flex items-center cursor-pointer px-2 py-1 rounded-full hover:bg-gray-100 transition"
@@ -100,12 +104,12 @@ const Header = ({
                   </div>
                 </div>
               </Link>
-              <Link href="/personal/order-history">
-                <div className="flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1">
-                  <IoMdLogOut className="text-lg text-red-600 " />
-                  <div className="text-red-600 text-sm">Đăng xuất</div>
+              <div className="flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1">
+                <IoMdLogOut className="text-lg text-red-600 " />
+                <div className="text-red-600 text-sm" onClick={handleLogout}>
+                  Đăng xuất
                 </div>
-              </Link>
+              </div>
             </div>
           </div>
         )}

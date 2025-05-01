@@ -30,9 +30,15 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
               </span>
             </div>
             <div className="w-[15%] text-center flex flex-col items-center">
-              <span className="text-lg font-semibold text-[#0053E2]">
-                {product.price.price.toLocaleString("vi-VN")}đ
-              </span>
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-gray-500 line-through font-semibold text-base">
+                  {product.price.original_price.toLocaleString("vi-VN")}đ
+                </span>
+
+                <span className="text-lg font-semibold text-[#0053E2]">
+                  {product.price.price.toLocaleString("vi-VN")}đ
+                </span>
+              </div>
             </div>
             <div className="w-[15%] text-center">
               x{product.quantity} {product.price.unit}

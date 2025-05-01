@@ -107,7 +107,9 @@ async def get_current(token: str) -> ItemAdminRes:
 async def update_admin_password(email: str, new_password: str):
     try:
         collection = database.db[collection_name]
-        collection.update_one({"email": email}, {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
+        collection.update_one(
+            {"email": email},
+            {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
         return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
     except response.JsonException as je:
         raise je

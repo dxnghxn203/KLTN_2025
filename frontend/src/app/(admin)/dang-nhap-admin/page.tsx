@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import imgLoginAdmin from "@/images/loginAdmin.png";
 import { useToast } from "@/providers/toastProvider";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
+import { message } from "antd";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -46,13 +47,16 @@ export default function LoginPage() {
     setIsLoading(true);
     loginAdmin(
       formData,
-      () => {
+      (message: any) => {
         console.log("formData", admin);
-        toast.showToast("Đăng nhập thành công", ToastType.SUCCESS);
+        toast.showToast(message, "success");
+        setIsLoading(false);
         router.push("/dashboard");
       },
-      () => {
-        toast.showToast("Đăng nhập thất bại", ToastType.ERROR);
+      (error: any) => {
+        console.log("gdefhe");
+        toast.showToast(error, "error");
+        console.log("message", error);
         setIsLoading(false);
       }
     );
@@ -123,7 +127,7 @@ export default function LoginPage() {
             </div>
             <div className="flex items-center justify-end mb-4">
               <a
-                href="#"
+                href="/quen-mat-khau-admin"
                 className="text-sm text-[#0053E2] hover:underline font-medium"
               >
                 Quên mật khẩu?

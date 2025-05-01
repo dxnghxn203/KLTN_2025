@@ -19,7 +19,7 @@ class InfoAddressOrderRes(BaseModel):
     address:  AddressOrderRes
 
 class ItemOrderRes(BaseModel):
-    id: str = Field(..., alias='_id')
+    id: Optional[str] = Field(None, alias="_id")
     order_id: Optional[Union[str, None]] = None
     tracking_id: Optional[Union[str, None]] = None
     status: Optional[Union[str, None]] = None

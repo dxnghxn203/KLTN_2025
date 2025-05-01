@@ -117,7 +117,7 @@ const AddSubCategoryDialog: React.FC<AddSubCategoryDialogProps> = ({
           <div className="w-full">
             <input
               type="text"
-              placeholder="URL danh mục cấp 1"
+              placeholder="Slug danh mục cấp 1"
               className="w-full mt-2 p-3 border rounded-lg text-sm focus:ring-[#0053E2] outline-none focus:ring-1"
               value={subCategory.sub_category_slug}
               onChange={(e) => {
@@ -156,7 +156,7 @@ const AddSubCategoryDialog: React.FC<AddSubCategoryDialogProps> = ({
               />
               <input
                 type="text"
-                placeholder="URL danh mục cấp 2"
+                placeholder="Slug danh mục cấp 2"
                 className="w-full mt-2 p-3 border rounded-lg text-sm focus:ring-[#0053E2] outline-none focus:ring-1"
                 onChange={(e) => {
                   const updated = [...childCategory];

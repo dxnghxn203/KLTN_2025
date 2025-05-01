@@ -13,7 +13,7 @@ const ReplyFormComment = ({
   product_id: any;
 }) => {
   const { user } = useAuth();
-  const { fetchInsertAnswer } = useReview();
+  const { fetchInsertAnswer, insertAnswer } = useReview();
   const toast = useToast();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -46,6 +46,7 @@ const ReplyFormComment = ({
         param: formData,
         onSuccess: (message: string) => {
           toast.showToast(message, "success");
+          console.log("insertAnswer", insertAnswer);
           setReplyingTo(null);
           setFormData({ comment_id: comment_id, comment: "" });
           setShowReplyForm(false);

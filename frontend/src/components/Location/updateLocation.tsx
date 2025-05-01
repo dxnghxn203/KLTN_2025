@@ -19,7 +19,7 @@ const UpdateLocation = ({
   const [ordererInfo, setOrdererInfo] = useState<OrdererInfoType>({
     fullName: location.name,
     phone: location.phone_number,
-    email: "",
+    email: location.email,
   });
 
   const [addressInfo, setAddressInfo] = useState<AddressFormData>({
@@ -49,6 +49,7 @@ const UpdateLocation = ({
         phone_number: ordererInfo.phone,
         address: addressInfo.address,
         province: addressInfo.city,
+          email:ordererInfo.email ,
         province_code: addressInfo.cityCode,
         district_code: addressInfo.districtCode,
         district: addressInfo.district,

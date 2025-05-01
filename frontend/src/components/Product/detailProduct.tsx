@@ -304,18 +304,28 @@ const DetailProduct = ({ product }: any) => {
                       {product?.category?.child_category_name}
                     </td>
                   </tr>
-                  <tr>
-                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
-                      Dạng bào chế
-                    </td>
-                    <td className="pl-0 py-3 w-2/3">{product?.dosage_form}</td>
-                  </tr>
-                  <tr>
-                    <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Quy cách</td>
-                    <td className="pl-0 py-3 w-2/3">
-                      {product?.prices[0]?.amount_per_unit}
-                    </td>
-                  </tr>
+                  {product?.dosage_form && (
+                    <tr>
+                      <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                        Dạng bào chế
+                      </td>
+                      <td className="pl-0 py-3 w-2/3">{product.dosage_form}</td>
+                    </tr>
+                  )}
+
+                  {product?.prices?.length > 0 && (
+                    <tr>
+                      <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                        Quy cách
+                      </td>
+                      <td className="pl-0 py-3 w-2/3">
+                        {product.prices.length === 1
+                          ? product.prices[0].unit
+                          : `${product.prices[0].unit} ${product.prices[0].amount} ${product.prices[1]?.unit}`}
+                      </td>
+                    </tr>
+                  )}
+
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
                       Xuất xứ thương hiệu

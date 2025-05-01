@@ -1,35 +1,35 @@
 version: '3.8'
 
 services:
-  rabbitmq:
-    build:
-      context: .
-      dockerfile: ./rabbitmq/Dockerfile
-    container_name: tracking-rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=kltn_2025
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-          cpus: '0.3'
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "5m"
-        max-file: "2"
+  # rabbitmq:
+  #   build:
+  #     context: .
+  #     dockerfile: ./rabbitmq/Dockerfile
+  #   container_name: tracking-rabbitmq
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER=admin
+  #     - RABBITMQ_DEFAULT_PASS=kltn_2025
+  #   volumes:
+  #     - rabbitmq-data:/var/lib/rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 200M
+  #         cpus: '0.3'
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "rabbitmqctl", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "5m"
+  #       max-file: "2"
 
   elasticsearch:
     build:
@@ -64,7 +64,7 @@ services:
         max-file: "2"
 
 volumes:
-  rabbitmq-data:
-    driver: local
+  # rabbitmq-data:
+  #   driver: local
   elasticsearch-data:
     driver: local

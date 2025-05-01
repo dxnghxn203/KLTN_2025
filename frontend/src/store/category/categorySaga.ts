@@ -348,9 +348,12 @@ function* fetchAddSubCategory(action: any): Generator<any, void, any> {
         onFailure(category.message || "Thêm danh mục thất bại.");
         yield put(fetchAddSubCategoryFailed(category.message || "Thêm danh mục thất bại."));
       }
-    } catch (error) {
-      console.error("Error in fetchAddSubCategory:", error);
-      yield put(fetchAddSubCategoryFailed("Đã xảy ra lỗi khi thêm danh mục"));
+    } catch (error: any) {
+        const { payload } = action;
+        const { onFailure = (message: any) => {} } = payload;
+        const errorMessage = error?.response?.data?.message;
+        onFailure(errorMessage);
+      yield put(fetchAddSubCategoryFailed(errorMessage));
     }
 }
 

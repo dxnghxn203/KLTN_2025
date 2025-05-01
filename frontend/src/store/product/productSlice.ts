@@ -7,6 +7,7 @@ interface ProductState {
     productsRelated: any[];
     productsGetRecentlyViewed: any[];
     productProductFeatured: any[];
+    productsBestDeal: any[];
     product: any;
     loading: boolean;
     error: string | null;
@@ -19,6 +20,7 @@ const initialState: ProductState = {
     productsGetRecentlyViewed: [],
     productProductFeatured: [],
     productsRelated: [],
+    productsBestDeal: [],
     product: null,
     loading: false,
     error: null,
@@ -49,8 +51,9 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
-        fetchAddProductFailed(state) {
+        fetchAddProductFailed(state, action: PayloadAction<string>) {
             state.loading = false;
+            state.error = action.payload;
         },
 
         // Fetch all product admin
@@ -117,7 +120,34 @@ export const productSlice = createSlice({
         fetchAllProductGetProductFeaturedFailed(state) {
             state.productProductFeatured = [];
             state.loading = false;
-        }
+        },
+        //fetch all product best deal
+        fetchAllProductBestDealStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchAllProductBestDealSuccess(state, action: PayloadAction<any[]>) {
+            state.productsBestDeal = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAllProductBestDealFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        // delete product
+        fetchDeleteProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchDeleteProductSuccess(state, action: PayloadAction<any[]>) {
+
+            state.loading = false;
+            state.error = null;
+        },
+        fetchDeleteProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -149,6 +179,16 @@ export const {
     fetchAllProductGetProductFeaturedStart,
     fetchAllProductGetProductFeaturedSuccess,
     fetchAllProductGetProductFeaturedFailed,
+
+    fetchAllProductBestDealFailed,
+    fetchAllProductBestDealStart,
+    fetchAllProductBestDealSuccess,
+
+    fetchDeleteProductFailed,
+    fetchDeleteProductStart,
+    fetchDeleteProductSuccess,
+
+
     
 } = productSlice.actions;
 

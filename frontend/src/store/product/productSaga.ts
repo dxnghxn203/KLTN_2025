@@ -28,6 +28,14 @@ import {
     fetchAllProductGetProductFeaturedStart,
     fetchAllProductGetProductFeaturedSuccess,
     fetchAllProductGetProductFeaturedFailed,
+
+    fetchAllProductBestDealStart,
+    fetchAllProductBestDealSuccess,
+    fetchAllProductBestDealFailed,
+
+    fetchDeleteProductFailed,
+    fetchDeleteProductStart,
+    fetchDeleteProductSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -139,41 +147,54 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
             onfailed = () => { }
         } = payload;
 
-        const formData = new FormData();
+        // const formData = new FormData();
 
-        Object.entries(form).forEach(([key, value]) => {
-            if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
-                formData.append(key, value as string);
-            }
-        });
+        // Object.entries(form).forEach(([key, value]) => {
+        //     if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
+        //         formData.append(key, value as string);
+        //     }
+        // });
 
-        if (form.thumbnail instanceof File) {
-            formData.append('thumbnail', form.thumbnail);
-        }
+        // if (form.thumbnail instanceof File) {
+        //     formData.append('thumbnail', form.thumbnail);
+        // }
 
-        if (form.images && Array.isArray(form.images)) {
-            form.images.forEach((file: File, index: number) => {
-                if (file instanceof File) {
-                    formData.append(`images[${index}]`, file);
-                }
-            });
-        }
+        // if (form.images && Array.isArray(form.images)) {
+        //     form.images.forEach((file: File, index: number) => {
+        //         if (file instanceof File) {
+        //             formData.append(`images[${index}]`, file);
+        //         }
+        //     });
+        // }
 
-        if (form.attributes && typeof form.attributes === 'object') {
-            formData.append('attributes', JSON.stringify(form.attributes));
-        }
+        // if (form.attributes && typeof form.attributes === 'object') {
+        //     formData.append('attributes', JSON.stringify(form.attributes));
+        // }
 
-        const product = yield call(productService.addProduct, formData);
+        // console.log("formData", formData);
+
+        const product = yield call(productService.addProduct, form);
+        console.log("product", product);
         if (product.status_code === 200) {
             onsucces(product.message);
             yield put(fetchAddProductSuccess());
             return;
         }
+        console.log("test",product.message);
         onfailed(product.message);
-        yield put(fetchAddProductFailed());
+        
+        yield put(fetchAddProductFailed(
+            product.message || "Failed to add product"
+
+        ));
 
     } catch (error) {
-        yield put(fetchAddProductFailed());
+        yield put(fetchAddProductFailed(
+            "Failed to add product"
+        ));
+        
+        console.log("final",error);
+
     }
 }
 
@@ -221,6 +242,47 @@ function* handlerGetAllProductRelated(action: any): Generator<any, void, any> {
         yield put(fetchAllProductRelatedFailed("Failed to fetch product by slug"));
     }
 }
+
+// Fetch all product best deal
+function* handlerGetAllProductBestDeal(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const product = yield call(productService.getProductsBestDeal, payload);
+        if (product.status_code === 200) {
+            yield put(fetchAllProductBestDealSuccess(product.data));
+            return;
+        }
+        yield put(fetchAllProductBestDealFailed("Product not found"));
+    } catch (error) {
+        yield put(fetchAllProductBestDealFailed("Failed to fetch product by slug"));
+    }
+}
+
+// Fetch delete product
+function* handlerDeleteProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+
+        const {
+            product_id,
+            onSuccess = (message: any) => {},
+            onFailure = (message: any) => {}
+        } = payload;
+        const product = yield call(productService.deleteProduct, product_id);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchDeleteProductSuccess(product.message));
+            return;
+        }
+        onFailure(product.message);
+        yield put(fetchDeleteProductFailed(product.message));
+
+    } catch (error) {
+        yield put(fetchDeleteProductFailed("Failed to fetch product by slug"));
+    }
+}
+
+
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
     yield takeLatest(fetchAddProductStart.type, handlerAddProduct);
@@ -229,4 +291,6 @@ export function* productSaga() {
     yield takeLatest(fetchAllProductRelatedStart.type, handlerGetAllProductRelated);
     yield takeLatest(fetchAllProductGetRecentlyViewedStart.type, fetchGetProductGetRecentlyViewed);
     yield takeLatest(fetchAllProductGetProductFeaturedStart.type, fetchProductFeatured);
+    yield takeLatest(fetchAllProductBestDealStart.type, handlerGetAllProductBestDeal);
+    yield takeLatest(fetchDeleteProductStart.type, handlerDeleteProduct);
 }

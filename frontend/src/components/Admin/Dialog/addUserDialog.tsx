@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useToast } from "@/providers/toastProvider";
+import { validateEmail, validateEmptyFields } from "@/utils/validation";
 
 interface AddUserDialogProps {
   isOpen: boolean;
@@ -25,15 +27,25 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("User");
+  const toast = useToast();
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = () => {
-    if (!name || !email || !phoneNumber || !password || !confirmPassword) {
-      alert("Please enter all fields!");
-      return;
-    }
+    const dataToValidate = { name, phoneNumber, email, password };
+    const emptyFieldErrors = validateEmptyFields(dataToValidate);
+    const errors: { [key: string]: string } = { ...emptyFieldErrors };
 
+    if (!errors.email) {
+      const emailError = validateEmail(dataToValidate.email);
+      if (emailError) {
+        errors.email = emailError;
+      }
+    }
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      errors.confirmPassword = "Mật khẩu không khớp!";
+    }
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
       return;
     }
 
@@ -54,28 +66,39 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
           <X size={24} />
         </button>
 
-        <h2 className="text-lg text-center font-semibold">Add New User</h2>
+        <h2 className="text-lg text-center font-semibold">Thêm người dùng</h2>
 
         {/* Input Name & Phone */}
         <div className="flex gap-4">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full mt-2 p-3 border rounded-lg border-black/10 
+          <div>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full mt-2 p-3 border rounded-lg border-black/10 
             focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
             outline-none placeholder:font-normal"
-            placeholder="Enter name"
-          />
-          <input
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full mt-2 p-3 border rounded-lg border-black/10 
+              placeholder="Tên người dùng"
+            />
+            {errors.name && (
+              <span className="text-red-500 text-sm">{errors.name}</span>
+            )}
+          </div>
+
+          <div>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="w-full mt-2 p-3 border rounded-lg border-black/10 
             focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
             outline-none placeholder:font-normal"
-            placeholder="Enter phone number"
-          />
+              placeholder="Số điện thoại"
+            />
+            {errors.phoneNumber && (
+              <span className="text-red-500 text-sm">{errors.phoneNumber}</span>
+            )}
+          </div>
         </div>
 
         {/* Input Email */}
@@ -86,8 +109,11 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
           className="w-full mt-2 p-3 border rounded-lg border-black/10 
           focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none placeholder:font-normal"
-          placeholder="Enter email"
+          placeholder="Email"
         />
+        {errors.email && (
+          <span className="text-red-500 text-sm">{errors.email}</span>
+        )}
 
         {/* Input Password */}
         <input
@@ -97,8 +123,11 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
           className="w-full mt-2 p-3 border rounded-lg border-black/10 
           focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none placeholder:font-normal"
-          placeholder="Enter password"
+          placeholder="Mật khẩu"
         />
+        {errors.password && (
+          <span className="text-red-500 text-sm">{errors.password}</span>
+        )}
 
         {/* Confirm Password */}
         <input
@@ -108,8 +137,11 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
           className="w-full mt-2 p-3 border rounded-lg border-black/10 
           focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] 
           outline-none placeholder:font-normal"
-          placeholder="Confirm password"
+          placeholder="Nhập lại mật khẩu"
         />
+        {errors.confirmPassword && (
+          <span className="text-red-500 text-sm">{errors.confirmPassword}</span>
+        )}
 
         {/* Select Role */}
         <select
@@ -123,18 +155,18 @@ const AddUserDialog: React.FC<AddUserDialogProps> = ({
           <option value="Admin">Admin</option>
         </select>
 
-        <div className="flex justify-center mt-4 space-x-4">
+        <div className="flex justify-center mt-6 space-x-4">
           <button
             onClick={onClose}
-            className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-xl"
+            className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-lg"
           >
-            Cancel
+            Hủy
           </button>
           <button
             onClick={handleSubmit}
-            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-xl hover:bg-[#002E99]"
+            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
           >
-            Add
+            Thêm
           </button>
         </div>
       </div>

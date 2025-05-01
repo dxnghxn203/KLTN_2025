@@ -18,6 +18,7 @@ import { getSession, signIn, signOut } from 'next-auth/react';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { removeToken, setToken, getToken } from '@/utils/cookie';
 import { getDeviceId } from '@/utils/deviceId';
+import { setClientToken } from '@/utils/configs/axiosClient';
 
 // Google Login
 function* handleGoogleLogin(): Generator<any, void, any> {
@@ -60,6 +61,7 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
         if (response.status_code === 200) {
             onSuccess();
             console.log('Login success:', response);
+            setClientToken(response?.token);
             setToken(response?.token);
             yield put(
                 loginSuccess({
@@ -95,6 +97,7 @@ function* handleLogout(): Generator<any, void, any> {
         //     window.location.href = '/dang-nhap';
         // }
     } catch (error: any) {
+        console.log('Logout error:', error);
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
         // Still remove token and redirect even if server request fails
         localStorage.removeItem('token');
@@ -109,7 +112,7 @@ function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any
     const { payload } = action;
     const {
         onSuccess = () => { },
-        onFailed = () => { },
+        onFailure  = () => { },
         ...credentials
     } = payload;
     const device_id = getDeviceId();
@@ -120,23 +123,25 @@ function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any
     try {
         const response = yield call(authService.loginAdmin, form);
         if (response.success) {
-            onSuccess();
-            setToken(response?.token);
+            onSuccess(response?.message);
+            setClientToken(response?.token);
+             setToken(response?.token);
             yield put(
                 loginAdminSuccess({
                     admin: response?.admin || null,
                     token: response?.token || null,
+                    
                 })
             );
-            // console.log('Login admin succddddess:', response.admin);
+             console.log('Login admin succddddess:', response.admin);
         } else {
             console.log('Login failed:', response.message);
-            onFailed(response.message);
-            yield put(loginAdminFailure(response.message || 'Đăng nhập thất bại'));
+            onFailure (response.message);
+            yield put(loginAdminFailure(response.message));
         }
     }
     catch (error: any) {
-        onFailed(error?.message || 'Đăng nhập thất bại');
+        onFailure (error?.message || 'Đăng nhập thất bại');
         yield put(loginAdminFailure(error.message || 'Đăng nhập thất bại'));
     }
 }

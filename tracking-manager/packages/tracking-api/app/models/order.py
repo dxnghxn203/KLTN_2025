@@ -1,25 +1,34 @@
 import base64
 import json
 import os
+import io
 from datetime import datetime, timedelta
 from typing import Optional, List, Tuple
 
 import httpx
+from bson import ObjectId
+from bson.errors import InvalidId
 from starlette import status
+from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
+from app.core.mail import send_invoice_email
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq
 from app.entities.order.response import ItemOrderRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
+from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX, get_update_status_queue
 from app.helpers.es_helpers import search_es
+from app.helpers.pdf_helpers import export_invoice_to_pdf
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
+from app.models.cart import remove_product_from_cart
 from app.models.fee import calculate_shipping_fee
 from app.models.location import determine_route
 from app.models.product import get_product_by_id, restore_product_sell
 from app.models.time import get_range_time
+from app.models.user import get_by_id
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -123,6 +132,9 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
 
     for product in products:
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
+        if isinstance(product_info, response.JsonException):
+            out_of_stock_ids.append(product.product_id)
+            continue
         data = redis.get_product_transaction(product_id=product.product_id)
         logger.info(f"Product data from Redis: {data}")
 
@@ -248,9 +260,20 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
 async def remove_item_cart_by_order(orders: ItemOrderReq, identifier: str):
     try:
-        for product in orders.product:
-            remove_cart_item(identifier, product.product_id)
-        return True
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(identifier)))
+        except (InvalidId, TypeError):
+            user_info = None
+        logger.info(f"user_info: {user_info}")
+        if user_info:
+            for product in orders.product:
+                logger.info(f"product: {product}")
+                await remove_product_from_cart(user_info.id, product.product_id, product.price_id)
+            return True
+        else:
+            for product in orders.product:
+                remove_cart_item(identifier, f"{product.product_id}_{product.price_id}")
+            return True
     except Exception as e:
         logger.error(f"Failed [remove_item_cart_by_order]: {e}")
         return False
@@ -325,7 +348,25 @@ async def add_order(item: OrderRequest):
 
         rabbitmq.send_message(get_create_order_queue(), order_json)
 
-        await remove_item_cart_by_order(ItemOrderReq(**order_dict), order_dict["created_by"])
+        order_res = ItemOrderRes(**order_dict)
+
+        user_name = "Khách lẻ"
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_res.created_by)))
+            user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order_res.created_by}")
+
+        pdf_bytes = export_invoice_to_pdf(order_res, user_name)
+        if not pdf_bytes:
+            raise response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Không thể tạo file PDF"
+            )
+
+        send_invoice_email(order_res.pick_to.email, pdf_bytes, order_res.order_id)
+
+        await remove_item_cart_by_order(order_res, order_res.created_by)
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
@@ -429,3 +470,36 @@ async def cancel_order(order_id: str):
         logger.error(f"Failed [cancel_order]: {e}")
         raise e
 
+async def get_order_invoice(order_id: str):
+    try:
+        order = await get_order_by_id(order_id)
+        if not order:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy đơn hàng"
+            )
+
+        user_name = "Khách lẻ"
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order.created_by)))
+            user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order.created_by}")
+
+        pdf_bytes = export_invoice_to_pdf(order, user_name)
+        if not pdf_bytes:
+            raise response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Không thể tạo file PDF"
+            )
+
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{order_id}.pdf"'
+            }
+        )
+    except Exception as e:
+        logger.error(f"Failed [get_order_invoice]: {e}")
+        raise e

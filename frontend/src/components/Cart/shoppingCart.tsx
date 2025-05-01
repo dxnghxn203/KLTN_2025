@@ -121,7 +121,6 @@ const ShoppingCart = ({
     setSelectedPriceId(price_id);
     setIsDeleteDialogOpen(true);
   };
-  
 
   const handleCloseDialog = () => {
     setIsDeleteDialogOpen(false);
@@ -148,7 +147,12 @@ const ShoppingCart = ({
     );
   };
 
-  const handleUnitChange = (id: string, newUnit: string, quantity: any, old_unit: string) => {
+  const handleUnitChange = (
+    id: string,
+    newUnit: string,
+    quantity: any,
+    old_unit: string
+  ) => {
     addProductTocart(
       id,
       newUnit,
@@ -187,7 +191,7 @@ const ShoppingCart = ({
             {price.price.toLocaleString("vi-VN")}đ
           </span>
           {price.original_price !== price.price && price.original_price > 0 && (
-            <span className="text-sm text-gray-500 line-through">
+            <span className="text-sm text-gray-500 line-through font-semibold">
               {price?.original_price.toLocaleString("vi-VN")} đ
             </span>
           )}
@@ -327,7 +331,10 @@ const ShoppingCart = ({
                   <div className="w-[15%] text-center text-black/50 hover:text-black transition-colors">
                     <button
                       onClick={() =>
-                        handleDeleteClick(product.product.product_id, product.price_id)
+                        handleDeleteClick(
+                          product.product.product_id,
+                          product.price_id
+                        )
                       }
                     >
                       <ImBin size={18} />
