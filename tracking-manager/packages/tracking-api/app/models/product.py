@@ -531,22 +531,12 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
         logger.error(f"Error approving product: {str(e)}")
         raise e
 
-async def get_not_approved_product():
+async def get_approved_product(email: str):
     try:
         collection = db[collection_name]
-        product_list = collection.find({"verified_by": {"$in": [None, ""]}})
+        product_list = collection.find({"verified_by": {"$in": [None, "", email]}})
         logger.info(f"{product_list}")
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
         logger.error(f"Failed [get_not_approved_product]: {e}")
-        raise e
-
-async def get_approved_product(email: str):
-    try:
-        collection = db[collection_name]
-        product_list = collection.find({"verified_by": email})
-        logger.info(f"{product_list}")
-        return [ItemProductDBRes(**product) for product in product_list]
-    except Exception as e:
-        logger.error(f"Failed [get_approved_product]: {e}")
         raise e
