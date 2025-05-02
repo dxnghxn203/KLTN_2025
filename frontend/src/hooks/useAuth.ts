@@ -16,8 +16,6 @@ import {
 // import {getToken} from '@/utils/cookie';
 //
 
-///
-
 export function useAuth() {
     const dispatch = useDispatch();
     const {data: session} = useSession();
