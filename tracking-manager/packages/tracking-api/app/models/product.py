@@ -530,3 +530,13 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
     except Exception as e:
         logger.error(f"Error approving product: {str(e)}")
         raise e
+
+async def get_not_approved_product():
+    try:
+        collection = db[collection_name]
+        product_list = collection.find({"verified_by": {"$in": [None, ""]}})
+        logger.info(f"{product_list}")
+        return [ItemProductDBRes(**product) for product in product_list]
+    except Exception as e:
+        logger.error(f"Failed [get_approved_product]: {e}")
+        raise e

@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, UploadFile, File, Depends
 from pyfa_converter_v2 import BodyDepends
 
 from app.core import logger, response
-from app.core.response import JsonException
+from app.core.response import JsonException, SuccessResponse
 from app.core.s3 import upload_any_file
 from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq, ApproveProductReq
 from app.helpers.redis import get_session, get_recently_viewed, save_recently_viewed, save_session
@@ -12,7 +12,7 @@ from app.middleware import middleware
 from app.models import order, pharmacist, user
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
-    get_product_best_deals, approve_product
+    get_product_best_deals, approve_product, get_not_approved_product
 
 router = APIRouter()
 
@@ -292,6 +292,27 @@ async def pharmacist_approve_product(item: ApproveProductReq, token: str = Depen
         raise je
     except Exception as e:
         logger.error("Error approving product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/get-approve-product", response_model=response.BaseResponse)
+async def pharmacist_get_product(token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Dược sĩ không tồn tại."
+            )
+        return SuccessResponse(
+            data=await get_not_approved_product()
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting approve product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
