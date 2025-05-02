@@ -15,7 +15,7 @@ env:
 
   # --- Vault Config ---
   VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-  VAULT_SECRET_PATH: production/data/.env # Đường dẫn KVv2
+  VAULT_SECRET_PATH: secret/data/production/.env # Đường dẫn KVv2
 
   # --- VPS Config ---
   VPS_HOST: ${{ secrets.VPS_HOST }}
