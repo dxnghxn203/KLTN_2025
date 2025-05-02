@@ -1,12 +1,12 @@
 import asyncio
-
 from starlette import status
 
 from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
-    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq
+    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
+    AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
@@ -15,6 +15,8 @@ from app.models.review import count_reviews, average_rating
 
 collection_name = "products"
 collection_category = "categories"
+
+VALID_MEDIA_TYPES = {"images", "images_primary", "certificate_file"}
 
 async def get_product_by_slug(slug: str):
     try:
@@ -234,6 +236,14 @@ async def get_product_featured(main_category_id, sub_category_id=None, child_cat
 
 async def add_product_db(item: ItemProductDBInReq, images_primary, images, certificate_file=None):
     try:
+        collection = db[collection_name]
+        cur = collection.find_one({"slug": item.slug})
+        if cur:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Sản phẩm đã tồn tại: {item.slug}"
+            )
+
         certificate_url = (upload_file(certificate_file, "certificates") or "") if certificate_file else ""
 
         image_list = []
@@ -319,7 +329,6 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
             certificate_file=certificate_url
         )
 
-        collection = db[collection_name]
         insert_result = collection.insert_one(item_data.dict())
 
         logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
@@ -551,4 +560,198 @@ async def get_approved_product(email: str):
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
         logger.error(f"Failed [get_not_approved_product]: {e}")
+        raise e
+
+async def update_product_status(item: UpdateProductStatusReq):
+    try:
+        collection = db[collection_name]
+        collection.update_one({"product_id": item.product_id},{"$set": {"active": item.status}})
+        return response.SuccessResponse(message="Product status updated successfully")
+    except Exception as e:
+        logger.error(f"Error updating product status: {str(e)}")
+        raise e
+
+async def add_product_media(item: AddProductMediaReq, files):
+    try:
+        media_type = item.media_type.lower()
+        if media_type not in VALID_MEDIA_TYPES:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
+
+        if not files or len(files) == 0:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
+
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": item.product_id})
+        if not product:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
+
+        if files:
+            if media_type == "images":
+                new_images = [
+                    {
+                        "images_id": generate_id("IMAGE"),
+                        "images_url": upload_file(file, "images")
+                    } for file in files if upload_file(file, "images")
+                ]
+                collection.update_one(
+                    {"product_id": item.product_id},
+                    {"$push": {"images": {"$each": new_images}}}
+                )
+            elif media_type == "images_primary":
+                file = files[0] if files else None
+                url = upload_file(file, "images_primary") if file else ""
+                collection.update_one(
+                    {"product_id": item.product_id},
+                    {"$set": {"images_primary": url}}
+                )
+            elif media_type == "certificate_file":
+                file = files[0] if files else None
+                url = upload_file(file, "certificates") if file else ""
+                collection.update_one(
+                    {"product_id": item.product_id},
+                    {"$set": {"certificate_file": url}}
+                )
+            else:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
+        return response.SuccessResponse(message="Thêm media thành công")
+    except Exception as e:
+        logger.error(f"Error adding product media: {str(e)}")
+        raise e
+
+async def delete_product_media(item: DeleteProductMediaReq):
+    try:
+        media_type = item.media_type.lower()
+        if media_type not in VALID_MEDIA_TYPES:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
+
+        if not item.target_urls:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh sách URL cần xóa không hợp lệ")
+
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": item.product_id})
+        if not product:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
+
+        if media_type == "images":
+            for url in item.target_urls:
+                collection.update_one(
+                    {"product_id": item.product_id},
+                    {"$pull": {"images": {"images_url": url}}}
+                )
+        elif media_type == "images_primary":
+            if product.get("images_primary") in item.target_urls:
+                collection.update_one(
+                    {"product_id": item.product_id},
+                    {"$set": {"images_primary": ""}}
+                )
+        elif media_type == "certificate_file":
+            if product.get("certificate_file") in item.target_urls:
+                collection.update_one(
+                    {"product_id": item.product_id},
+                    {"$set": {"certificate_file": ""}}
+                )
+        else:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
+        return response.SuccessResponse(message="Xóa media thành công")
+    except Exception as e:
+        logger.error(f"Error deleting product media: {str(e)}")
+        raise e
+
+async def update_product_fields(update_data: ItemUpdateProductReq):
+    try:
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": update_data.product_id})
+        if not product:
+
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        collection = db[collection_name]
+        cur = collection.find_one({
+            "slug": update_data.slug,
+            "product_id": {"$ne": update_data.product_id}
+        })
+        if cur:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Sản phẩm đã tồn tại với slug: {update_data.slug}"
+            )
+
+        update_fields = {}
+
+        for field in [
+            "product_name", "name_primary", "inventory", "slug", "description", "origin",
+            "uses", "dosage", "side_effects", "precautions", "storage", "dosage_form", "brand",
+            "prescription_required", "registration_number", "full_description"
+        ]:
+            value = getattr(update_data, field, None)
+            if value is not None:
+                update_fields[field] = value
+
+        if update_data.prices and update_data.prices.prices:
+            update_fields["prices"] = [
+                ItemPriceDBReq(
+                    price_id=generate_id("PRICE"),
+                    price=price.original_price * (100 - price.discount) / 100,
+                    discount=price.discount,
+                    unit=price.unit,
+                    weight=price.weight,
+                    amount=price.amount,
+                    original_price=price.original_price,
+                ).dict()
+                for price in update_data.prices.prices
+            ]
+
+        if update_data.ingredients and update_data.ingredients.ingredients:
+            update_fields["ingredients"] = [i.dict() for i in update_data.ingredients.ingredients]
+
+        if update_data.manufacturer:
+            update_fields["manufacturer"] = update_data.manufacturer.dict()
+
+        if update_data.category:
+            category_collection = db[collection_category]
+            main_category = category_collection.find_one({"main_category_id": update_data.category.main_category_id})
+            if not main_category:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh mục chính không hợp lệ")
+
+            sub_category = next(
+                (sub for sub in main_category.get("sub_category", []) if sub["sub_category_id"] == update_data.category.sub_category_id),
+                None
+            )
+            if not sub_category:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh mục phụ không hợp lệ")
+
+            child_category = next(
+                (child for child in sub_category.get("child_category", []) if child["child_category_id"] == update_data.category.child_category_id),
+                None
+            )
+            if not child_category:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh mục con không hợp lệ")
+
+            category_obj = ItemCategoryDBReq(
+                main_category_id=update_data.category.main_category_id,
+                main_category_name=main_category.get("main_category_name", ""),
+                main_category_slug=main_category.get("main_category_slug", ""),
+                sub_category_id=update_data.category.sub_category_id,
+                sub_category_name=sub_category.get("sub_category_name", ""),
+                sub_category_slug=sub_category.get("sub_category_slug", ""),
+                child_category_id=update_data.category.child_category_id,
+                child_category_name=child_category.get("child_category_name", ""),
+                child_category_slug=child_category.get("child_category_slug", "")
+            )
+            update_fields["category"] = category_obj.dict()
+
+        if update_fields:
+            update_fields.update({
+                "is_approved": False,
+                "verified_by": "",
+                "rejected_note": ""
+            })
+            collection.update_one({"product_id": update_data.product_id}, {"$set": update_fields})
+
+        return response.SuccessResponse(message="Cập nhật sản phẩm thành công")
+    except Exception as e:
+        logger.error(f"Error updating product fields: {str(e)}")
         raise e

@@ -6,13 +6,15 @@ from pyfa_converter_v2 import BodyDepends
 from app.core import logger, response
 from app.core.response import JsonException, SuccessResponse
 from app.core.s3 import upload_any_file
-from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq, ApproveProductReq
+from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq, ApproveProductReq, \
+    UpdateProductStatusReq, AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq
 from app.helpers.redis import get_session, get_recently_viewed, save_recently_viewed, save_session
 from app.middleware import middleware
-from app.models import order, pharmacist, user
+from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
-    get_product_best_deals, approve_product, get_approved_product
+    get_product_best_deals, approve_product, get_approved_product, update_product_status, add_product_media, \
+    delete_product_media, update_product_fields
 
 router = APIRouter()
 
@@ -313,6 +315,62 @@ async def pharmacist_get_product(token: str = Depends(middleware.verify_token_ph
         raise je
     except Exception as e:
         logger.error("Error getting approve product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/products/update-status", response_model=response.BaseResponse)
+async def admin_update_product_status(item: UpdateProductStatusReq, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        return await update_product_status(item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating product status", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/add-media", response_model=response.BaseResponse)
+async def admin_add_product_media(item: AddProductMediaReq,
+                                  files: Optional[List[UploadFile]] = File(None),
+                                  token: str = Depends(middleware.verify_token_admin)
+                                  ):
+    try:
+        return await add_product_media(item, files)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error adding product media", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/delete-media", response_model=response.BaseResponse)
+async def admin_delete_product_media(item: DeleteProductMediaReq, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        return await delete_product_media(item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error adding product media", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/products/update-product", response_model=response.BaseResponse)
+async def admin_update_product(item: ItemUpdateProductReq,
+                               token: str = Depends(middleware.verify_token_admin)):
+    try:
+        return await update_product_fields(item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

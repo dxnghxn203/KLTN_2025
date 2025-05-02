@@ -143,6 +143,20 @@ async def get_admin(token: str = Depends(middleware.verify_token_admin)):
             message="Internal server error"
         )
 
+@router.get("/admin/all-admin", response_model=BaseResponse)
+async def get_all_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        result = await admin.get_all_admin(page, page_size)
+        return SuccessResponse(data=result)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting all admin: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/admin/forgot-password")
 async def forgot_password(item: ItemAdminOtpReq):
     try:
