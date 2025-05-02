@@ -1,16 +1,17 @@
-name: Build Frontend KLTN2025
+# Tên file: .github/workflows/build-frontend.yml
+name: Build Frontend KLTN2025 # Tên hiển thị trên GitHub Actions UI
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'front-end/**'
-      - '.github/workflows/build-frontend-nextjs.yml'
+      - '.github/workflows/build-frontend.yml' # Đảm bảo tên file ở đây khớp
   pull_request:
     branches: [ main ]
     paths:
       - 'front-end/**'
-      - '.github/workflows/build-frontend-nextjs.yml'
+      - '.github/workflows/build-frontend.yml' # Đảm bảo tên file ở đây khớp
 
 jobs:
   build:
@@ -40,7 +41,7 @@ jobs:
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: secret/production/.env * | ;
+          secrets: secret/data/production/.env * | ;
 
       - name: Install Dependencies (using cache)
         run: yarn install --frozen-lockfile
@@ -55,6 +56,6 @@ jobs:
           path: |
             front-end/.next
             front-end/package.json
-            front-end/yarn.lock 
+            front-end/yarn.lock
             # front-end/public
-          retention-days: 5 
+          retention-days: 5
