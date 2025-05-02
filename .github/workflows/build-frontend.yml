@@ -53,12 +53,11 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            NEXT_PUBLIC_API_URL | ${{ env.VAULT_SECRET_PATH }} NEXT_PUBLIC_API_URL ;
-      #            GOOGLE_CLIENT_ID | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_ID ;
-      #            GOOGLE_CLIENT_SECRET | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_SECRET ;
-      #            NEXTAUTH_SECRET | ${{ env.VAULT_SECRET_PATH }}#NEXTAUTH_SECRET ;
-      #            NEXT_PUBLIC_WEBHOOK_TOKEN | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_WEBHOOK_TOKEN ;
-      # --- Kết thúc phần Vault ---
+            NEXT_PUBLIC_API_URL         | ${{ env.VAULT_SECRET_PATH }} NEXT_PUBLIC_API_URL ;
+            GOOGLE_CLIENT_ID            | ${{ env.VAULT_SECRET_PATH }} GOOGLE_CLIENT_ID ;
+            GOOGLE_CLIENT_SECRET        | ${{ env.VAULT_SECRET_PATH }} GOOGLE_CLIENT_SECRET ;
+            NEXTAUTH_SECRET             | ${{ env.VAULT_SECRET_PATH }} NEXTAUTH_SECRET ;
+            NEXT_PUBLIC_WEBHOOK_TOKEN   | ${{ env.VAULT_SECRET_PATH }} NEXT_PUBLIC_WEBHOOK_TOKEN ;
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
