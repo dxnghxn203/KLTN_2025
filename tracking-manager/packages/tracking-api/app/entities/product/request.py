@@ -157,7 +157,7 @@ class ItemProductDBReq(BaseModel):
     brand: str = ""
     registration_number: str = ""
     certificate_file: str = ""
-    active: bool = False
+    active: bool = True
     prescription_required: bool = False
     verified_by: str = ""
 
