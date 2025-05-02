@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'frontend/**' # Sử dụng tên thư mục đúng là front-end
+      #      - 'frontend/**' # Sử dụng tên thư mục đúng là front-end
       - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
