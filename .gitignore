@@ -50,12 +50,9 @@ data/db/
 *.ipr
 *.iws
 *.hprof
-*.lock
 *.jks
 *.keystore
 ./build/
 .dart_tool/
 
-/frontend/yarn.lock
 /frontend/next-env.d.ts
-/frontend/package-lock.json
