@@ -45,7 +45,7 @@ async def get_category_by_slug(main_slug: str):
         product_collection = db[product_collection_name]
         products = list(product_collection.find({
             "category.main_category_slug": main_slug,
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         }, {"_id": 0}))
         enriched_products = []
@@ -90,7 +90,7 @@ async def get_sub_category(main_slug: str, sub_slug: str):
         products = list(product_collection.find({
             "category.main_category_slug": main_slug,
             "category.sub_category_slug": sub_slug,
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         },{"_id": 0}))
         enriched_products = []
@@ -139,7 +139,7 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
                         "category.main_category_slug": main_slug,
                         "category.sub_category_slug": sub_slug,
                         "category.child_category_slug": child_slug,
-                        "verified_by": {"$nin": [None, ""]},
+                        "is_approved": True,
                         "active": True
                     }, {"_id": 0}))
                 enriched_products = []

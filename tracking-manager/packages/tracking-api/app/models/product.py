@@ -21,7 +21,7 @@ async def get_product_by_slug(slug: str):
         collection = db[collection_name]
         cur = collection.find_one({
             "slug": slug,
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         })
         if cur:
@@ -134,7 +134,7 @@ async def get_product_by_cart_id(product_ids, cart):
         collection = db[collection_name]
         products = list(collection.find({
             "product_id": {"$in": product_ids},
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         }, {"_id": 0}))
         detailed_cart = []
@@ -166,7 +166,7 @@ async def get_product_by_list_id(product_ids):
         collection = db[collection_name]
         product_list = collection.find({
             "product_id": {"$in": product_ids},
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         })
         enriched_products = []
@@ -421,7 +421,7 @@ async def get_product_by_id(product_id: str, price_id: str):
         product = collection.find_one({
             "product_id": product_id,
             "prices.price_id": price_id,
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         },{"_id": 0})
 
@@ -518,13 +518,25 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
                 message="Product not found"
             )
         product_info = ItemProductDBRes(**product)
-        if product_info.verified_by:
+        if product_info.is_approved:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Product already approved"
             )
-        collection.update_one({"product_id": item.product_id}, {"$set": {"active": True, "verified_by": verified_by}})
-        logger.info(f"Product approved successfully for product_id: {item.product_id}")
+        if product_info.verified_by != verified_by:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="You are not authorized to approve this product"
+            )
+        collection.update_one({
+            "product_id": item.product_id},
+            {"$set": {
+                "is_approved": item.is_approved,
+                "verified_by": verified_by,
+                "rejected_note": item.rejected_note
+            }
+        })
+        logger.info(f"Product approved successfully for {item.product_id} by {verified_by} with: {item.is_approved}")
 
         return response.SuccessResponse(message="Product approved successfully")
     except Exception as e:

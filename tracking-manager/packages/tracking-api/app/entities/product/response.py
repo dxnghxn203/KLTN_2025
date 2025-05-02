@@ -80,6 +80,8 @@ class ItemProductDBRes(BaseModel):
     active: bool = False
     prescription_required: bool = False
     verified_by: Optional[Union[str, None]] = None
+    is_approved: bool = False
+    rejected_note: Optional[Union[str, None]] = None
 
     @classmethod
     def from_mongo(cls, data):
