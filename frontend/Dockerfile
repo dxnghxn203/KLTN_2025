@@ -1,5 +1,5 @@
 
-FROM node:22-alpine AS builder
+FROM node:20-alpine AS builder
 ARG NEXT_PUBLIC_API_URL
 ARG GOOGLE_CLIENT_ID
 ARG GOOGLE_CLIENT_SECRET
@@ -9,7 +9,7 @@ ARG NEXT_PUBLIC_WEBHOOK_TOKEN
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
@@ -21,7 +21,7 @@ ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 
 RUN yarn build
 
-FROM node:22-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
