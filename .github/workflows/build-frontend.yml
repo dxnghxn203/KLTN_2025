@@ -1,61 +1,99 @@
-name: Build Frontend KLTN2025
+name: Deploy Frontend (Next.js) to VPS
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'front-end/**'
-      - '.github/workflows/build-frontend.yml'
-  pull_request:
-    branches: [ main ]
-    paths:
-      - 'front-end/**'
-      - '.github/workflows/build-frontend.yml'
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/medicare-frontend-repo
+  VAULT_SECRET_PATH: production/data/.env
+  CONTAINER_NAME: kltn-2025-frontend-shop
+  VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+  VPS_HOST: ${{ secrets.VPS_HOST }}
+  VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
 
 jobs:
-  build:
-    name: Build Next.js App
+  build-and-deploy:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./frontend
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js v20 with Yarn Cache
+      - name: Set up Node.js and Yarn
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'yarn'
-          cache-dependency-path: frontend/yarn.lock
 
-      - name: Import Frontend Secrets from Vault
+      - name: Install Yarn dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Import Secrets from Vault
         id: vault-secrets
         uses: hashicorp/vault-action@v3
         with:
-          url: ${{ secrets.VAULT_ADDR }}
+          url: ${{ env.VAULT_ADDR }}
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            production/.env | .;
+            NEXT_PUBLIC_API_URL | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_API_URL ;
+            GOOGLE_CLIENT_ID | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_ID ;
+            GOOGLE_CLIENT_SECRET | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_SECRET ;
+            NEXTAUTH_SECRET | ${{ env.VAULT_SECRET_PATH }}#NEXTAUTH_SECRET ;
+            NEXT_PUBLIC_WEBHOOK_TOKEN | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_WEBHOOK_TOKEN
 
-      - name: Install Dependencies (using cache)
-        run: yarn install --frozen-lockfile
-
-      - name: Build Next.js Application
-        run: yarn build
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          name: frontend-build
-          path: |
-            front-end/.next
-            front-end/package.json
-            front-end/yarn.lock
-            # front-end/public
-          retention-days: 5
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
+            GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
+            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
+            NEXT_PUBLIC_WEBHOOK_TOKEN=${{ env.NEXT_PUBLIC_WEBHOOK_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ env.VPS_HOST }}
+          username: ${{ env.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          script: |
+            echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+
+            docker pull ${{ env.IMAGE_NAME }}:latest
+
+            docker stop ${{ env.CONTAINER_NAME }} || true
+
+            docker rm ${{ env.CONTAINER_NAME }} || true
+
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              -p 3000:3000 \
+              --restart always \
+              ${{ env.IMAGE_NAME }}:latest
+
+            docker image prune -f
+
+            echo "Deployment completed successfully!"
