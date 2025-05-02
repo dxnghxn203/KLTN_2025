@@ -3,22 +3,21 @@ name: Build and Deploy Frontend (Next.js)
 on:
   push:
     branches: [ main ]
-    paths: # Chỉ kích hoạt khi có thay đổi trong thư mục front-end hoặc workflow này
-      - 'frontend/**'
-      - '.github/workflows/build-frontend.yml'
-  workflow_dispatch: # Cho phép chạy thủ công
+    paths:
+      - 'frontend/**' # Sử dụng tên thư mục đúng là front-end
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
 
 env:
-  # --- Tên Image và thư mục ---
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/frontend-kltn2025-req # Tên image theo yêu cầu
-  FRONTEND_DIR: ./frontend # Thư mục chứa code frontend và Dockerfile
-  CONTAINER_NAME: frontend-kltn2025-container # Tên container sẽ chạy trên VPS
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/frontend-kltn2025-req
+  FRONTEND_DIR: ./frontend # Sử dụng tên thư mục đúng
+  CONTAINER_NAME: frontend-kltn2025-container
 
-  # --- Cấu hình Vault (Lấy từ secrets) - Bỏ qua nếu không dùng Vault ---
+  # --- Vault Config ---
   VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-  VAULT_SECRET_PATH: production/data/.env # Đường dẫn tới secret trong Vault (KVv2)
+  VAULT_SECRET_PATH: production/data/.env # Đường dẫn KVv2
 
-  # --- Cấu hình VPS (Lấy từ secrets) ---
+  # --- VPS Config ---
   VPS_HOST: ${{ secrets.VPS_HOST }}
   VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
 
@@ -26,8 +25,8 @@ jobs:
   build-push-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read    # Quyền đọc code để checkout
-      packages: write   # Quyền ghi (push) image lên GHCR
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -36,15 +35,15 @@ jobs:
       - name: Set up Node.js and Yarn in frontend dir
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Hoặc phiên bản Node.js bạn dùng
+          node-version: '20'
           cache: 'yarn'
-          cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock # Đường dẫn đúng tới yarn.lock
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/yarn.lock
 
       - name: Install Yarn dependencies in frontend dir
-        working-directory: ${{ env.FRONTEND_DIR }} # Chạy trong thư mục front-end
+        working-directory: ${{ env.FRONTEND_DIR }}
         run: yarn install --frozen-lockfile
 
-      # --- Bước lấy Secrets từ Vault - Bỏ qua nếu không dùng ---
+      # --- Bước lấy Secrets từ Vault (ĐÃ SỬA) ---
       - name: Import Secrets from Vault
         id: vault-secrets
         uses: hashicorp/vault-action@v3
@@ -53,12 +52,13 @@ jobs:
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
+          # exportEnv: true là mặc định
           secrets: |
             NEXT_PUBLIC_API_URL | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_API_URL ;
             GOOGLE_CLIENT_ID | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_ID ;
             GOOGLE_CLIENT_SECRET | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_SECRET ;
             NEXTAUTH_SECRET | ${{ env.VAULT_SECRET_PATH }}#NEXTAUTH_SECRET ;
-            NEXT_PUBLIC_WEBHOOK_TOKEN | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_WEBHOOK_TOKEN
+            NEXT_PUBLIC_WEBHOOK_TOKEN | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_WEBHOOK_TOKEN ;
       # --- Kết thúc phần Vault ---
 
       - name: Log in to GitHub Container Registry
@@ -66,25 +66,23 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GHCR_PAT }} # Cần secret GHCR_PAT đã tạo
+          password: ${{ secrets.GHCR_PAT }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ env.FRONTEND_DIR }} # Ngữ cảnh build là thư mục front-end
-          file: ${{ env.FRONTEND_DIR }}/Dockerfile # Đường dẫn tới Dockerfile
+          context: ${{ env.FRONTEND_DIR }}
+          file: ${{ env.FRONTEND_DIR }}/Dockerfile
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }} # Tag với cả mã commit SHA
-          # --- Truyền build-args từ Vault - Bỏ qua nếu không dùng Vault ---
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
           build-args: |
             NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }}
             GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }}
             GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }}
             NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
             NEXT_PUBLIC_WEBHOOK_TOKEN=${{ env.NEXT_PUBLIC_WEBHOOK_TOKEN }}
-          # --- Kết thúc phần build-args ---
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -93,30 +91,23 @@ jobs:
         with:
           host: ${{ env.VPS_HOST }}
           username: ${{ env.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }} # Cần secret VPS_SSH_PRIVATE_KEY
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           script: |
-            set -e # Thoát ngay nếu có lỗi
-
+            set -e
             echo "Logging into GHCR..."
             echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-
             echo "Pulling latest image: ${{ env.IMAGE_NAME }}:latest"
             docker pull ${{ env.IMAGE_NAME }}:latest
-
             echo "Stopping old container (if exists): ${{ env.CONTAINER_NAME }}"
-            docker stop ${{ env.CONTAINER_NAME }} || true # || true để không báo lỗi nếu container chưa có
-
+            docker stop ${{ env.CONTAINER_NAME }} || true
             echo "Removing old container (if exists): ${{ env.CONTAINER_NAME }}"
             docker rm ${{ env.CONTAINER_NAME }} || true
-
             echo "Running new container: ${{ env.CONTAINER_NAME }}"
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               -p 3000:3000 \
               --restart always \
               ${{ env.IMAGE_NAME }}:latest
-
             echo "Pruning old Docker images..."
-            docker image prune -af # Xóa các image không được tag và không dùng
-
+            docker image prune -af
             echo "Deployment completed successfully!"
