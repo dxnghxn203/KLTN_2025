@@ -52,10 +52,9 @@ jobs:
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
-          # exportEnv: true là mặc định
           secrets: |
-            ${{ env.VAULT_SECRET_PATH }}.NEXT_PUBLIC_API_URL | NEXT_PUBLIC_API_URL;
-      #             | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_ID | GOOGLE_CLIENT_ID ;
+            NEXT_PUBLIC_API_URL | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_API_URL ;
+      #            GOOGLE_CLIENT_ID | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_ID ;
       #            GOOGLE_CLIENT_SECRET | ${{ env.VAULT_SECRET_PATH }}#GOOGLE_CLIENT_SECRET ;
       #            NEXTAUTH_SECRET | ${{ env.VAULT_SECRET_PATH }}#NEXTAUTH_SECRET ;
       #            NEXT_PUBLIC_WEBHOOK_TOKEN | ${{ env.VAULT_SECRET_PATH }}#NEXT_PUBLIC_WEBHOOK_TOKEN ;
