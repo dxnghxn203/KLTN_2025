@@ -7,7 +7,7 @@ import { useToast } from "@/providers/toastProvider";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { message } from "antd";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import { MdLockOutline, MdOutlineEmail } from "react-icons/md";
 export default function LoginPage() {
@@ -16,7 +16,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { showToast } = useToast();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { forgotPasswordAdmin } = useUser();
+  const { forgotPasswordAdmin, forgotPasswordPharmacist } = useUser();
+  const searchParams = useSearchParams();
+  const role = searchParams.get("role") || "admin"; // Mặc định là admin
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -41,20 +43,35 @@ export default function LoginPage() {
       return;
     }
 
-    forgotPasswordAdmin(
-      formData,
-      (message: any) => {
-        showToast(message, "success");
-        setIsLoading(false);
-        setFormData({ email: "" });
-        setErrors({});
-      },
-      (error: any) => {
-        showToast(error, "error");
-        console.error("Error:", error);
-        setIsLoading(false);
-      }
-    );
+    if (role === "pharmacist") {
+      forgotPasswordPharmacist(
+        formData,
+        (message) => {
+          showToast(message, "success");
+          setIsLoading(false);
+          setFormData({ email: "" });
+          setErrors({});
+        },
+        (error) => {
+          showToast(error, "error");
+          setIsLoading(false);
+        }
+      );
+    } else {
+      forgotPasswordAdmin(
+        formData,
+        (message) => {
+          showToast(message, "success");
+          setIsLoading(false);
+          setFormData({ email: "" });
+          setErrors({});
+        },
+        (error) => {
+          showToast(error, "error");
+          setIsLoading(false);
+        }
+      );
+    }
   };
 
   return (

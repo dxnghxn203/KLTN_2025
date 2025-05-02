@@ -157,3 +157,20 @@ export const deleteProduct = async (product_id: any) => {
         }
       
 }
+
+export const getAllProductApproved = async () => {
+    try {
+        const response: any = await axiosClient.get("/v1/products/get-approve-product");
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

@@ -1,4 +1,4 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchDeleteProductStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchDeleteProductStart, fetchProductApprovedStart, fetchProductBySlugStart, selectProductAdmin, selectProductApproved, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -11,6 +11,7 @@ export function useProduct() {
     const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
     const productGetFeatured = useSelector(selectProductRelated);
     const productBestDeal = useSelector(selectProductTopSelling);
+    const productApproved = useSelector(selectProductApproved);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -93,6 +94,12 @@ export function useProduct() {
         }))
     }
 
+    const fetchProductApproved = () => {
+        dispatch(fetchProductApprovedStart({
+            
+        }))
+    }
+
 
 
     return {
@@ -116,6 +123,8 @@ export function useProduct() {
         productBestDeal,
         fetchProductBestDeal,
         deleteProduct,
+        fetchProductApproved,
+        productApproved,
     };
 }
 

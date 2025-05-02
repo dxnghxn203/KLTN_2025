@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { MdLockOutline, MdOutlineEmail } from "react-icons/md";
 export default function LoginPage() {
-  const { loginAdmin, admin } = useAuth();
+  const { loginAdmin, admin, loginPharmacist, pharmacist } = useAuth();
+  const [role, setRole] = useState<"admin" | "pharmacist">("admin");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -45,21 +46,40 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-    loginAdmin(
-      formData,
-      (message: any) => {
-        console.log("formData", admin);
-        toast.showToast(message, "success");
-        setIsLoading(false);
-        router.push("/dashboard");
-      },
-      (error: any) => {
-        console.log("gdefhe");
-        toast.showToast(error, "error");
-        console.log("message", error);
-        setIsLoading(false);
-      }
-    );
+    if (role === "admin") {
+      loginAdmin(
+        formData,
+        (message: any) => {
+          console.log("formData", admin);
+          toast.showToast(message, "success");
+          setIsLoading(false);
+          router.push("/dashboard");
+        },
+        (error: any) => {
+          console.log("gdefhe");
+          toast.showToast(error, "error");
+          console.log("message", error);
+          setIsLoading(false);
+        }
+      );
+    }
+    if (role === "pharmacist") {
+      loginPharmacist(
+        formData,
+        (message: any) => {
+          console.log("formData", pharmacist);
+          toast.showToast(message, "success");
+          setIsLoading(false);
+          router.push("/dashboard-duoc-si");
+        },
+        (error: any) => {
+          console.log("gdefhe");
+          toast.showToast(error, "error");
+          console.log("message", error);
+          setIsLoading(false);
+        }
+      );
+    }
   };
 
   return (
@@ -127,12 +147,13 @@ export default function LoginPage() {
             </div>
             <div className="flex items-center justify-end mb-4">
               <a
-                href="/quen-mat-khau-admin"
+                href={`/quen-mat-khau-role?role=${role}`}
                 className="text-sm text-[#0053E2] hover:underline font-medium"
               >
                 Quên mật khẩu?
               </a>
             </div>
+
             <button
               disabled={isLoading}
               className={`w-full text-white text-sm font-semibold py-3 px-4 rounded-lg transition duration-300 ${
@@ -144,6 +165,7 @@ export default function LoginPage() {
             >
               {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
+
             <div className="mt-4 text-center text-sm text-gray-600">
               Bạn chưa có tài khoản?{" "}
               <a
@@ -152,6 +174,35 @@ export default function LoginPage() {
               >
                 Đăng ký
               </a>
+            </div>
+            <div className="mb-4 mt-4">
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Phân quyền
+              </label>
+              <div className="flex items-center gap-6 text-sm justify-center">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="admin"
+                    checked={role === "admin"}
+                    onChange={() => setRole("admin")}
+                    className="w-4 h-4 text-blue-600 accent-blue-600 mr-2"
+                  />
+                  Admin
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="pharmacist"
+                    checked={role === "pharmacist"}
+                    onChange={() => setRole("pharmacist")}
+                    className="w-4 h-4 text-blue-600 accent-blue-600 mr-2"
+                  />
+                  Dược sĩ
+                </label>
+              </div>
             </div>
           </form>
         </div>

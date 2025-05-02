@@ -13,6 +13,9 @@ import {
     loginAdminStart,
     loginAdminSuccess,
     loginAdminFailure,
+    loginPharmacistStart,
+    loginPharmacistSuccess,
+    loginPharmacistFailure,
 } from './authSlice';
 import { getSession, signIn, signOut } from 'next-auth/react';
 import { PayloadAction } from '@reduxjs/toolkit';
@@ -146,10 +149,50 @@ function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any
     }
 }
 
+// loginPharmacist
+function* handleLoginPharmacist(action: PayloadAction<any>): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess = () => { },
+        onFailure  = () => { },
+        ...credentials
+    } = payload;
+    const device_id = getDeviceId();
+    const form = new FormData();
+    form.append('email', credentials.email);
+    form.append('password', credentials.password);
+    form.append('device_id', device_id);
+    try {
+        const response = yield call(authService.loginPharmacist, form);
+        if (response.success) {
+            onSuccess(response?.message);
+            setClientToken(response?.token);
+             setToken(response?.token);
+            yield put(
+                loginPharmacistSuccess({
+                    pharmacist: response?.pharmacist || null,
+                    token: response?.token || null,
+                    
+                })
+            );
+             console.log('Login admin succddddess:', response.pharmacist);
+        } else {
+            console.log('Login failed:', response.message);
+            onFailure (response.message);
+            yield put(loginPharmacistFailure(response.message));
+        }
+    }
+    catch (error: any) {
+        onFailure (error?.message || 'Đăng nhập thất bại');
+        yield put(loginPharmacistFailure(error.message || 'Đăng nhập thất bại'));
+    }
+}
+
 // Check auth status
 export function* authSaga() {
     yield takeLatest(googleLoginStart.type, handleGoogleLogin);
     yield takeLatest(loginStart.type, handleLogin);
     yield takeLatest(logoutStart.type, handleLogout);
     yield takeLatest(loginAdminStart.type, handleLoginAdmin);
+    yield takeLatest(loginPharmacistStart.type, handleLoginPharmacist);
 }

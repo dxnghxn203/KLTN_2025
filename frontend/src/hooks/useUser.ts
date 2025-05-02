@@ -1,4 +1,4 @@
-import { fetchChangePasswordAdminStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchUpdateStatusUserStart, fetchVerifyOtpStart } from "@/store";
+import { fetchChangePasswordAdminStart, fetchChangePasswordPharmacistStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordPharmacistStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchUpdateStatusUserStart, fetchVerifyOtpStart } from "@/store";
 import { insertUserSelector, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
@@ -157,6 +157,30 @@ export function useUser() {
       onFailure
     }));
   }
+
+  const changePasswordPharmacist = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+  ) => {
+    dispatch(fetchChangePasswordPharmacistStart({
+      ...params,
+      onSuccess,
+      onFailure
+    }));
+  }
+
+  const forgotPasswordPharmacist = (
+    credentials: any,
+    onSuccess: (message: any) => void,
+    onFailure: (message: any) => void,
+) => {
+    dispatch(fetchForgotPasswordPharmacistStart({
+        ...credentials,
+        onSuccess: onSuccess,
+        onFailure: onFailure,
+    }));
+}
   
 
   return {
@@ -184,6 +208,8 @@ export function useUser() {
     forgotPasswordAdmin,
 
     updateStatusUser,
+    changePasswordPharmacist,
+    forgotPasswordPharmacist,
   };
 }
 

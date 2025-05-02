@@ -73,9 +73,6 @@ const CreateSingleProduct = () => {
   const [ingredients, setIngredients] = useState<IngredientItem[]>([
     { ingredient_name: "", ingredient_amount: "" },
   ]);
-  const [full_descriptions, setFullDescription] = useState<FullDescription[]>([
-    { title: "", content: "" },
-  ]);
 
   const [manufacturer, setManufacturer] = useState<Manufacturer>({
     manufacture_name: "",
@@ -104,6 +101,7 @@ const CreateSingleProduct = () => {
   const [uses, setUses] = useState<string>("");
   const [dosageForm, setDosageForm] = useState<string>("");
   const [dosage, setDosage] = useState<string>("");
+  const [full_description, setFullDescription] = useState<string>("");
   const [side_effects, setSideEffects] = useState<string>("");
   const [precautions, setPrecautions] = useState<string>("");
   const [storage, setStorage] = useState<string>("");
@@ -195,16 +193,8 @@ const CreateSingleProduct = () => {
     ]);
   };
 
-  const addFullDescriptionItem = () => {
-    setFullDescription([...full_descriptions, { title: "", content: "" }]);
-  };
-
   const removeIngredientItem = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
-  };
-
-  const removeFullDescriptionItem = (index: number) => {
-    setFullDescription(full_descriptions.filter((_, i) => i !== index));
   };
 
   const updateIngredientItem = (
@@ -218,19 +208,6 @@ const CreateSingleProduct = () => {
       [field]: value,
     };
     setIngredients(updatedIngredients);
-  };
-
-  const updateFullDescriptionItem = (
-    index: number,
-    field: keyof FullDescription,
-    value: string
-  ) => {
-    const updatedFullDescription = [...full_descriptions];
-    updatedFullDescription[index] = {
-      ...updatedFullDescription[index],
-      [field]: value,
-    };
-    setFullDescription(updatedFullDescription);
   };
 
   // Enhanced image handlers
@@ -420,7 +397,6 @@ const CreateSingleProduct = () => {
       },
     ]);
     setIngredients([{ ingredient_name: "", ingredient_amount: "" }]);
-    setFullDescription([{ title: "", content: "" }]);
     setManufacturer({
       manufacture_name: "",
       manufacture_address: "",
@@ -462,7 +438,8 @@ const CreateSingleProduct = () => {
     setSideEffects("");
     setPrecautions("");
     setStorage("");
-    setPrescriptionRequired(false);
+    setFullDescription("");
+    setPrescriptionRequired;
 
     // Reset validation state
     setErrors({});
@@ -498,7 +475,6 @@ const CreateSingleProduct = () => {
     }
 
     formData.set("ingredients", JSON.stringify({ ingredients }));
-    formData.set("full_description", JSON.stringify({ full_descriptions }));
     formData.set("prices", JSON.stringify({ prices }));
     formData.set("manufacturer", JSON.stringify(manufacturer));
     formData.set("category", JSON.stringify(category));
@@ -508,6 +484,7 @@ const CreateSingleProduct = () => {
     formData.set("side_effects", side_effects);
     formData.set("precautions", precautions);
     formData.set("storage", storage);
+    formData.set("full_description", full_description);
 
     formData.set("prescription_required", JSON.stringify(prescriptionRequired));
 
@@ -768,69 +745,12 @@ const CreateSingleProduct = () => {
                   <h3 className="block text-sm font-medium mb-1">
                     Mô tả đầy đủ
                   </h3>
-
-                  {full_descriptions.map((fullDescription, index) => (
-                    <div key={index} className="mb-3 p-3 border rounded-lg">
-                      <div className="flex justify-between mb-2">
-                        <h4 className="font-medium">Mô tả {index + 1}</h4>
-                        {full_descriptions.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeFullDescriptionItem(index)}
-                            className="text-red-500 text-sm"
-                          >
-                            Xóa
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Tên tiêu đề mô tả
-                          </label>
-                          <input
-                            type="text"
-                            value={fullDescription.title}
-                            onChange={(e) =>
-                              updateFullDescriptionItem(
-                                index,
-                                "title",
-                                e.target.value
-                              )
-                            }
-                            className="border rounded-lg p-2 w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Nội dung
-                          </label>
-                          <textarea
-                            value={fullDescription.content}
-                            onChange={(e) =>
-                              updateFullDescriptionItem(
-                                index,
-                                "content",
-                                e.target.value
-                              )
-                            }
-                            rows={5}
-                            className="border rounded-lg p-2 w-full"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {hasError("full_descriptions") && (
-                    <ErrorMessage message={errors.full_descriptions} />
-                  )}
-                  <button
-                    type="button"
-                    onClick={addFullDescriptionItem}
-                    className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
-                  >
-                    + Thêm mô tả
-                  </button>
+                  <ReactQuill
+                    name="full_description"
+                    onChange={(value: any) => setFullDescription(value)}
+                    value={full_description}
+                    modules={{ toolbar: toolbarOptions }}
+                  />
                 </div>
               </div>
 

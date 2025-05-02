@@ -4,8 +4,10 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 const initialState: AuthState = {
     user: null,
     admin: null,
+    pharmacist: null,
     token: null,
     isAdmin: false,
+    isPharmacist: false,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -60,13 +62,15 @@ export const authSlice = createSlice({
             state.loading = false;
             state.isAuthenticated = false;
             if (state.isAdmin){
-                state.admin = null; // Reset admin on logout
+                state.admin = null; 
             }
             else {
-                state.user = null; // Reset user on logout
+                state.user = null; 
             }
+            state.pharmacist = null;
             state.token = null;
-            state.isAdmin = false; // Reset isAdmin on logout
+            state.isAdmin = false; 
+            state.isPharmacist = false;
         },
         logoutFailure: (state, action: PayloadAction<string>) => {
             console.log("logoutFailure", action.payload);
@@ -92,6 +96,25 @@ export const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // login pharmacist
+        loginPharmacistStart: (state) => {
+            console.log("loginPharmacistStart");
+            state.loading = true;
+            state.error = null;
+        },
+        loginPharmacistSuccess: (state, action: PayloadAction<{ pharmacist: any; token: string}>) => {
+            console.log("loginPharmacistSuccess", action.payload);
+            state.loading = false;
+            state.pharmacist = action.payload.pharmacist;
+            state.token = action.payload.token;
+            state.isPharmacist = true;
+           
+        },
+        loginPharmacistFailure: (state, action: PayloadAction<string>) => {
+            console.log("loginPharmacistFailure", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -109,6 +132,10 @@ export const {
     loginAdminStart,
     loginAdminSuccess,
     loginAdminFailure,
+
+    loginPharmacistStart,
+    loginPharmacistSuccess,
+    loginPharmacistFailure,
 } = authSlice.actions;
 
 export default authSlice.reducer;

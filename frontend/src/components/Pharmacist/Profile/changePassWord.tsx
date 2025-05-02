@@ -5,7 +5,7 @@ import { validateEmptyFields, validatePassword } from "@/utils/validation";
 import React from "react";
 
 const ChangePasswordComponent = () => {
-  const { changePasswordAdmin } = useUser();
+  const { changePasswordPharmacist } = useUser();
   const toast = useToast();
   const [formData, setFormData] = React.useState({
     old_password: "",
@@ -55,11 +55,12 @@ const ChangePasswordComponent = () => {
     // If there are any errors, set them and return early
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+
       return;
     }
 
     // Call the changePasswordAdmin function with success and error handling
-    changePasswordAdmin(
+    changePasswordPharmacist(
       formData,
       (message) => {
         toast.showToast(message, "success");

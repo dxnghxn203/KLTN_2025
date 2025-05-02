@@ -5,17 +5,14 @@ import {
     googleLoginStart,
     googleLoginSuccess,
     loginAdminStart,
+    loginPharmacistStart,
     loginStart,
     logoutStart,
     selectAdminAuth,
     selectAuth,
+    selectPharmacistAuth,
     selectUserAuth
 } from '@/store';
-
-
-// import {getToken} from '@/utils/cookie';
-//
-//
 
 export function useAuth() {
     const dispatch = useDispatch();
@@ -23,6 +20,7 @@ export function useAuth() {
     const {loading, error, isAuthenticated} = useSelector(selectAuth);
     const user = useSelector(selectUserAuth);
     const admin = useSelector(selectAdminAuth);
+    const pharmacist = useSelector(selectPharmacistAuth);
 
     useEffect(() => {
         if (session?.user && !isAuthenticated) {
@@ -64,6 +62,20 @@ export function useAuth() {
 
     };
 
+    const loginPharmacist = (
+        credentials: any,
+        onSuccess: (message: any) => void,
+        onFailure: (message: any) => void,
+    ) => {
+        dispatch(loginPharmacistStart({
+            ...credentials,
+            onSuccess: onSuccess,
+            onFailure: onFailure,
+        }));
+    }
+
+    
+
 
     return {
         user: user || session?.user || null,
@@ -75,5 +87,7 @@ export function useAuth() {
         logout,
         loginAdmin,
         admin: admin || null,
+        loginPharmacist,
+        pharmacist: pharmacist || null,
     };
 }
