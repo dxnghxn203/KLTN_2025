@@ -32,7 +32,10 @@ const Header = ({
 
   return (
     <header className="w-full bg-[#FAFBFB] p-3 flex items-center justify-between border-b border-gray-200">
-      <button className="text-gray-600 hover:text-gray-900">
+      <button
+        className="text-gray-600 hover:text-gray-900"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
         <IoMenuOutline size={24} />
       </button>
 
