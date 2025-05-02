@@ -1,17 +1,16 @@
-# Tên file: .github/workflows/build-frontend.yml
-name: Build Frontend KLTN2025 # Tên hiển thị trên GitHub Actions UI
+name: Build Frontend KLTN2025
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'front-end/**'
-      - '.github/workflows/build-frontend.yml' # Đảm bảo tên file ở đây khớp
+      - '.github/workflows/build-frontend.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'front-end/**'
-      - '.github/workflows/build-frontend.yml' # Đảm bảo tên file ở đây khớp
+      - '.github/workflows/build-frontend.yml'
 
 jobs:
   build:
@@ -20,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./front-end
+        working-directory: ./frontend
 
     steps:
       - name: Checkout code
@@ -31,7 +30,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
-          cache-dependency-path: front-end/yarn.lock
+          cache-dependency-path: frontend/yarn.lock
 
       - name: Import Frontend Secrets from Vault
         id: vault-secrets
