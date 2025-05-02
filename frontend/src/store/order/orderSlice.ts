@@ -4,6 +4,7 @@ interface OrderState {
     orders: any[];
     ordersAdmin: any[];
     ordersByUser: any[];
+    statistics365Days: any[];
     loading: boolean;
     error: string | null;
 }
@@ -12,6 +13,7 @@ const initialState: OrderState = {
     orders: [],
     ordersAdmin: [],
     ordersByUser: [],
+    statistics365Days: [],
     loading: false,
     error: null,
 };
@@ -120,6 +122,21 @@ export const orderSlice = createSlice({
             console.log('fetchDownloadInvoiceFailed')
             state.loading = false;
         },
+
+        // statistics365days
+        fetchGetStatistics365DaysStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetStatistics365DaysStart')
+            state.loading = true;
+        },
+        fetchGetStatistics365DaysSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetStatistics365DaysSuccess')
+            state.statistics365Days = action.payload
+            state.loading = false; 
+        },
+        fetchGetStatistics365DaysFailed(state) {
+            console.log('fetchGetStatistics365DaysFailed')
+            state.loading = false;
+        },
     },
 });
 
@@ -159,6 +176,10 @@ export const {
     fetchDownloadInvoiceFailed,
     fetchDownloadInvoiceStart,
     fetchDownloadInvoiceSuccess,
+
+    fetchGetStatistics365DaysFailed,
+    fetchGetStatistics365DaysStart,
+    fetchGetStatistics365DaysSuccess,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

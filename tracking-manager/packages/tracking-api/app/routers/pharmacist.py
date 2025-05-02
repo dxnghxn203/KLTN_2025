@@ -6,20 +6,20 @@ from starlette import status
 
 from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
-from app.entities.admin.request import ItemAdminRegisReq, ItemAdminOtpReq, ItemAdminVerifyEmailReq, \
-    ItemAdminChangePassReq
-from app.entities.admin.response import ItemAdminRes
+from app.entities.pharmacist.response import ItemPharmacistRes
+from app.entities.pharmacist.request import ItemPharmacistRegisReq, ItemPharmacistOtpReq, ItemPharmacistVerifyEmailReq, \
+    ItemPharmacistChangePassReq
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
-from app.models import auth, admin
+from app.models import auth, pharmacist
 from app.models.auth import handle_otp_verification, handle_password_verification
 router = APIRouter()
 
-@router.post("/admin/register")
-async def register_email(item: ItemAdminRegisReq):
+@router.post("/pharmacist/insert")
+async def insert_pharmacist(item: ItemPharmacistRegisReq, token: str = Depends(middleware.verify_token_admin)):
     try:
-        return await admin.create_admin(item)
+        return await pharmacist.create_pharmacist(item)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -29,17 +29,17 @@ async def register_email(item: ItemAdminRegisReq):
             message="Internal server error"
         )
 
-@router.post("/admin/otp")
-async def send_otp(item: ItemAdminOtpReq):
+@router.post("/pharmacist/otp")
+async def send_otp(item: ItemPharmacistOtpReq):
     try:
         email = item.email
-        admin_info = await admin.get_by_email(email)
+        pharmacist_info = await pharmacist.get_by_email(email)
         if not admin_info:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Quản trị viên không tồn tại."
+                message="Dược sĩ không tồn tại."
             )
-        if admin_info.get("verified_email_at"):
+        if pharmacist_info.get("verified_email_at"):
             raise response.JsonException(
                 status_code=status.HTTP_207_MULTI_STATUS,
                 message="Tài khoản đã được xác thực."
@@ -56,19 +56,19 @@ async def send_otp(item: ItemAdminOtpReq):
             message="Internal server error"
         )
 
-@router.post("/admin/verify-email", response_model=BaseResponse)
-async def verify_admin(request: ItemAdminVerifyEmailReq):
+@router.post("/pharmacist/verify-email", response_model=BaseResponse)
+async def verify_pharmacist(request: ItemPharmacistVerifyEmailReq):
     try:
         email, otp = request.email, request.otp
-        admin_info = await admin.get_by_email(email)
+        pharmacist_info = await pharmacist.get_by_email(email)
 
-        if not admin_info:
+        if not pharmacist_info:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Quản trị viên không tồn tại."
+                message="Dược sĩ không tồn tại."
             )
 
-        if admin_info.get("verified_email_at"):
+        if pharmacist_info.get("verified_email_at"):
             raise response.JsonException(
                 status_code=status.HTTP_207_MULTI_STATUS,
                 message="Tài khoản đã được xác thực."
@@ -82,7 +82,7 @@ async def verify_admin(request: ItemAdminVerifyEmailReq):
 
         delete_otp(email)
 
-        return await admin.update_admin_verification(email)
+        return await pharmacist.update_pharmacist_verification(email)
     except response.JsonException as je:
         raise je
     except Exception as e:
@@ -92,22 +92,22 @@ async def verify_admin(request: ItemAdminVerifyEmailReq):
             message="Internal server error"
         )
 
-@router.post("/admin/login")
+@router.post("/pharmacist/login")
 async def login(email: str = Form(), password: str = Form(), device_id: Optional[str] = Form(None)):
     try:
-        ad = await admin.get_by_email(email)
-        if not ad:
+        pt = await pharmacist.get_by_email(email)
+        if not pt:
             raise JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Quản trị viên không tồn tại."
+                message="Dược sĩ không tồn tại."
             )
-        if not await auth.verify_password(ad["password"], password, ad["active"]):
+        if not await auth.verify_password(pt["password"], password, pt["active"]):
             raise JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Tên đăng nhập hoặc mật khẩu không đúng!"
             )
 
-        if ad.get("verified_email_at") is None:
+        if pt.get("verified_email_at") is None:
             await handle_otp_verification(email)
             return BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -117,10 +117,10 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
         device_id = device_id if device_id else "web"
 
         jwt_token = await auth.get_token(
-            username=str(ad.get("_id")),
-            role_id=ad.get("role_id"),
+            username=str(pt.get("_id")),
+            role_id=pt.get("role_id"),
             device_id=device_id)
-        res = ItemAdminRes.from_mongo(ad)
+        res = ItemPharmacistRes.from_mongo(pt)
         res.token = jwt_token
         return SuccessResponse(message="Đăng nhập thành công", data=res)
     except JsonException as je:
@@ -132,10 +132,10 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
             message="Internal server error"
         )
 
-@router.get("/admin/current", response_model=BaseResponse)
-async def get_admin(token: str = Depends(middleware.verify_token_admin)):
+@router.get("/pharmacist/current", response_model=BaseResponse)
+async def get_pharmacist(token: str = Depends(middleware.verify_token_pharmacist)):
     try:
-        data = await admin.get_current(token)
+        data = await pharmacist.get_current(token)
         return SuccessResponse(data=data)
     except Exception as e:
         raise response.JsonException(
@@ -143,17 +143,17 @@ async def get_admin(token: str = Depends(middleware.verify_token_admin)):
             message="Internal server error"
         )
 
-@router.post("/admin/forgot-password")
-async def forgot_password(item: ItemAdminOtpReq):
+@router.post("/pharmacist/forgot-password")
+async def forgot_password(item: ItemPharmacistOtpReq):
     try:
-        admin_info = await admin.get_by_email(item.email)
-        if not admin_info:
+        pharmacist_info = await pharmacist.get_by_email(item.email)
+        if not pharmacist_info:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Quản trị viên không tồn tại."
+                message="Dược sĩ không tồn tại."
             )
         new_password = await handle_password_verification(item.email)
-        await admin.update_admin_password(item.email, new_password)
+        await pharmacist.update_pharmacist_password(item.email, new_password)
         return SuccessResponse(message="Mật khẩu mới đã được gửi đến email của bạn.")
     except response.JsonException as je:
         raise je
@@ -164,26 +164,59 @@ async def forgot_password(item: ItemAdminOtpReq):
             message="Internal server error"
         )
 
-@router.post("/admin/change-password")
-async def change_password(item: ItemAdminChangePassReq, token: str = Depends(middleware.verify_token_admin)):
+@router.post("/pharmacist/change-password")
+async def change_password(item: ItemPharmacistChangePassReq, token: str = Depends(middleware.verify_token_pharmacist)):
     try:
-        admin_info = await admin.get_current(token)
-        if not admin_info:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Quản trị viên không tồn tại."
+                message="Dược sĩ không tồn tại."
             )
 
-        if not await auth.verify_password(admin_info.password, item.old_password, admin_info.active):
+        if not await auth.verify_password(pharmacist_info.password, item.old_password, pharmacist_info.active):
             raise response.JsonException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 message="Mật khẩu cũ không đúng!"
             )
-        return await admin.update_admin_password(admin_info.email, item.new_password)
+        return await pharmacist.update_pharmacist_password(pharmacist_info.email, item.new_password)
     except JsonException as je:
         raise je
     except Exception as e:
         logger.error(f"Error change password: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/pharmacist/all-pharmacist-admin", response_model=BaseResponse)
+async def get_all_pharmacist_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        result = await pharmacist.get_all_pharmacist(page, page_size)
+        return SuccessResponse(data=result)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting all pharmacist: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/pharmacist/status", response_model=BaseResponse)
+async def update_status_pharmacist(pharmacist_id: str, status_pharmacist: bool, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        pharmacist_info = await pharmacist.get_by_id(pharmacist_id)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Pharmacist not found"
+            )
+        return await pharmacist.update_status(pharmacist_id, status_pharmacist)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting current user: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

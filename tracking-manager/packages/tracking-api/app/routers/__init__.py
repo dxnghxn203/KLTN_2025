@@ -10,11 +10,13 @@ from .comment import router as comment_router
 from .cart import router as cart_router
 from .fee import router as fee_router
 from .time import router as time_router
+from .pharmacist import router as pharmacist_router
 __all__ = [
     'cart_router',
     'user_router',
     'authen_router',
     'admin_router',
+    'pharmacist_router',
     'order_router',
     'product_router',
     'location_router',

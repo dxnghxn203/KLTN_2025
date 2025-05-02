@@ -3,6 +3,22 @@ import Link from "next/link";
 import { useProduct } from "@/hooks/useProduct";
 import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
+import { BsFiletypePdf } from "react-icons/bs";
+import { TbFileTypePdf } from "react-icons/tb";
+import { FaImage } from "react-icons/fa";
+import { BiSolidImageAdd } from "react-icons/bi";
+import "react-quill/dist/quill.snow.css"; // Import styles
+import ReactQuill from "react-quill"; // Import ReactQuill
+import "@/styles/globals.css";
+
+const toolbarOptions = [
+  [{ header: "1" }, { header: "2" }, { font: [] }],
+  [{ size: [] }],
+  ["bold", "italic", "underline", "strike", "blockquote"],
+  [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+  ["link", "image", "video"],
+  ["clean"], // remove formatting button
+];
 
 const CreateSingleProduct = () => {
   const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
@@ -91,6 +107,8 @@ const CreateSingleProduct = () => {
   const [side_effects, setSideEffects] = useState<string>("");
   const [precautions, setPrecautions] = useState<string>("");
   const [storage, setStorage] = useState<string>("");
+  const [prescriptionRequired, setPrescriptionRequired] =
+    useState<boolean>(false);
 
   const [slug, setSlug] = useState<string>("");
   const toast = useToast();
@@ -353,14 +371,6 @@ const CreateSingleProduct = () => {
     if (ingredientErrors.length > 0) {
       newErrors.ingredients = ingredientErrors.join("; ");
     }
-    // Validate full descriptions
-    const fullDescriptionErrors: string[] = [];
-    full_descriptions.forEach((full_descriptions, index) => {
-      if (!full_descriptions.title)
-        fullDescriptionErrors.push(
-          `Mô tả ${index + 1}: Vui lòng điền tiêu đề mô tả`
-        );
-    });
 
     // Validate manufacturer
     if (!manufacturer.manufacture_name)
@@ -373,16 +383,9 @@ const CreateSingleProduct = () => {
       )?.value
     )
       newErrors.description = "Vui lòng điền mô tả ngắn";
-    if (
-      !document.querySelector<HTMLTextAreaElement>('textarea[name="uses"]')
-        ?.value
-    )
+    if (!uses || uses.trim() === "" || uses === "<p><br></p>") {
       newErrors.uses = "Vui lòng điền thông tin công dụng";
-    // if (
-    //   !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
-    //     ?.value
-    // )
-    //   newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
+    }
 
     if (
       !document.querySelector<HTMLInputElement>('input[name="inventory"]')
@@ -459,6 +462,7 @@ const CreateSingleProduct = () => {
     setSideEffects("");
     setPrecautions("");
     setStorage("");
+    setPrescriptionRequired(false);
 
     // Reset validation state
     setErrors({});
@@ -498,6 +502,14 @@ const CreateSingleProduct = () => {
     formData.set("prices", JSON.stringify({ prices }));
     formData.set("manufacturer", JSON.stringify(manufacturer));
     formData.set("category", JSON.stringify(category));
+    formData.set("uses", uses);
+    formData.set("dosage_form", dosageForm);
+    formData.set("dosage", dosage);
+    formData.set("side_effects", side_effects);
+    formData.set("precautions", precautions);
+    formData.set("storage", storage);
+
+    formData.set("prescription_required", JSON.stringify(prescriptionRequired));
 
     // const formDataObj: Record<string, any> = {};
     // formData.forEach((value, key) => {
@@ -616,6 +628,21 @@ const CreateSingleProduct = () => {
     return formSubmitted && !!errors[fieldName];
   };
 
+  const [file, setFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && selectedFile.type === "application/pdf") {
+      setFile(selectedFile);
+    } else {
+      alert("Vui lòng chọn tệp PDF");
+    }
+  };
+
+  const removeFile = () => {
+    setFile(null);
+  };
+
   return (
     <div className="">
       <h2 className="text-2xl font-extrabold text-black">Thêm sản phẩm</h2>
@@ -707,6 +734,19 @@ const CreateSingleProduct = () => {
                     )}
                   </div>
                 </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <input
+                    type="checkbox"
+                    id="prescription_required"
+                    name="prescription_required"
+                    checked={prescriptionRequired}
+                    onChange={(e) => setPrescriptionRequired(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 accent-blue-600"
+                  />
+                  <label htmlFor="prescription_required" className="text-sm">
+                    Thuốc kê toa
+                  </label>
+                </div>
                 <div className="mt-3" data-error={hasError("description")}>
                   <label className="block text-sm font-medium mb-1">
                     Mô tả ngắn <span className="text-red-500">*</span>
@@ -726,7 +766,7 @@ const CreateSingleProduct = () => {
                 </div>
                 <div className="mt-3">
                   <h3 className="block text-sm font-medium mb-1">
-                    Mô tả đầy đủ <span className="text-red-500">*</span>
+                    Mô tả đầy đủ
                   </h3>
 
                   {full_descriptions.map((fullDescription, index) => (
@@ -946,121 +986,75 @@ const CreateSingleProduct = () => {
 
             {/* Prices Section */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">
-                Giá và đơn vị <span className="text-red-500">*</span>
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Chi tiết sản phẩm</h3>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Dạng bào chế
+                </label>
+                <input
+                  type="text"
+                  name="dosage_form"
+                  className="border rounded-lg p-2 w-full"
+                  onChange={(e) => setDosageForm(e.target.value)}
+                  value={dosageForm}
+                />
+              </div>
+              <div data-error={hasError("uses")} className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Công dụng <span className="text-red-500">*</span>
+                </label>
+                <ReactQuill
+                  name="uses"
+                  onChange={(value: any) => setUses(value)}
+                  value={uses}
+                  modules={{ toolbar: toolbarOptions }}
+                />
+                {hasError("uses") && <ErrorMessage message={errors.uses} />}
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Liều lượng
+                </label>
+                <ReactQuill
+                  name="dosage"
+                  onChange={(value: any) => setDosage(value)}
+                  value={dosage}
+                  modules={{ toolbar: toolbarOptions }}
+                />
+              </div>
 
-              {prices.map((price, index) => (
-                <div key={index} className="mb-4 p-3 border rounded-lg">
-                  <div className="flex justify-between mb-2">
-                    <h4 className="font-medium">Tùy chọn giá {index + 1}</h4>
-                    {prices.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removePriceItem(index)}
-                        className="text-red-500 text-sm"
-                      >
-                        Xóa
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 mb-2">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Giá gốc <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={price.original_price}
-                        onChange={(e) =>
-                          updatePriceItem(
-                            index,
-                            "original_price",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Giảm giá
-                      </label>
-                      <input
-                        type="number"
-                        value={price.discount}
-                        onChange={(e) =>
-                          updatePriceItem(
-                            index,
-                            "discount",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Số lượng tương ứng
-                      </label>
-                      <input
-                        type="text"
-                        value={price.amount}
-                        onChange={(e) =>
-                          updatePriceItem(index, "amount", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Tác dụng phụ
+                </label>
+                <ReactQuill
+                  name="side_effects"
+                  onChange={(value: any) => setSideEffects(value)}
+                  value={side_effects}
+                  modules={{ toolbar: toolbarOptions }}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">Lưu ý</label>
+                <ReactQuill
+                  name="precautions"
+                  onChange={(value: any) => setPrecautions(value)}
+                  value={precautions}
+                  modules={{ toolbar: toolbarOptions }}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Hướng dẫn bảo quản
+                </label>
+                <ReactQuill
+                  name="storage"
+                  onChange={(value: any) => setStorage(value)}
+                  value={storage}
+                  modules={{ toolbar: toolbarOptions }}
+                />
+              </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Đơn vị <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={price.unit}
-                        onChange={(e) =>
-                          updatePriceItem(index, "unit", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      >
-                        <option value="">Chọn 1 đơn vị</option>
-                        {unitOptions.map((unit, idx) => (
-                          <option key={idx} value={unit}>
-                            {unit}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Trọng lượng
-                      </label>
-                      <input
-                        type="text"
-                        value={price.weight}
-                        onChange={(e) =>
-                          updatePriceItem(index, "weight", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                      <label className="block text-sm font-medium mb-1">
-                        (kg)
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {hasError("prices") && <ErrorMessage message={errors.prices} />}
-              <button
-                type="button"
-                onClick={addPriceItem}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
-              >
-                + Thêm tùy chọn giá mới
-              </button>
               <label className="block text-sm font-medium mb-1 mt-3">
                 Số lượng sản phẩm
               </label>
@@ -1075,9 +1069,7 @@ const CreateSingleProduct = () => {
 
             {/* Ingredients Section */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">
-                Thành phần <span className="text-red-500">*</span>
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Thành phần</h3>
 
               {ingredients.map((ingredient, index) => (
                 <div key={index} className="mb-3 p-3 border rounded-lg">
@@ -1218,221 +1210,294 @@ const CreateSingleProduct = () => {
           <div className="w-1/3 flex flex-col space-y-5">
             {/* Additional Product Details */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">Chi tiết sản phẩm</h3>
+              <h3 className="text-lg font-semibold mb-3">Giá và đơn vị</h3>
               <div className="space-y-4">
-                <div data-error={hasError("uses")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Công dụng <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="uses"
-                    rows={3}
-                    className={`border rounded-lg p-2 w-full ${
-                      hasError("uses") ? "border-red-500" : ""
-                    }`}
-                    onChange={(e) => setUses(e.target.value)}
-                    value={uses}
-                  ></textarea>
-                  {hasError("uses") && <ErrorMessage message={errors.uses} />}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Liều lượng
-                  </label>
-                  <textarea
-                    name="dosage"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setDosage(e.target.value)}
-                    value={dosage}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Dạng bào chế
-                  </label>
-                  <input
-                    type="text"
-                    name="dosage_form"
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setDosageForm(e.target.value)}
-                    value={dosageForm}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Tác dụng phụ
-                  </label>
-                  <textarea
-                    name="side_effects"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setSideEffects(e.target.value)}
-                    value={side_effects}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Lưu ý
-                  </label>
-                  <textarea
-                    name="precautions"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setPrecautions(e.target.value)}
-                    value={precautions}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Hướng dẫn bảo quản
-                  </label>
-                  <textarea
-                    name="storage"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setStorage(e.target.value)}
-                    value={storage}
-                  ></textarea>
-                </div>
-                {/* Enhanced Product Images Section */}
-                <div data-error={hasError("images")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Hình ảnh sản phẩm <span className="text-red-500">*</span>{" "}
-                    <span className="text-blue-500">
-                      (Cho phép nhiều hình ảnh)
-                    </span>
-                  </label>
-
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
-                      isDragging
-                        ? "border-blue-500 bg-blue-50"
-                        : hasError("images")
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  >
-                    <div className="text-center py-4">
-                      <svg
-                        className="mx-auto h-12 w-12 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 48 48"
-                      >
-                        <path
-                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                        />
-                      </svg>
-
-                      <div className="flex flex-col items-center text-sm text-gray-600">
-                        <p className="font-medium">
-                          Kéo và thả hình ảnh vào đây hoặc
-                        </p>
-                        <label className="mt-2 cursor-pointer text-blue-600 hover:text-blue-800">
-                          <span>Bấm để chọn tệp</span>
-                          <input
-                            type="file"
-                            name="images"
-                            multiple
-                            onChange={handleImagesChange}
-                            className="hidden"
-                            accept="image/*"
-                          />
-                        </label>
-                      </div>
-
-                      <p className="mt-1 text-xs text-gray-500">
-                        PNG, JPG, GIF tối đa 10MB mỗi tệp
-                      </p>
-                    </div>
-                  </div>
-                  {hasError("images") && (
-                    <ErrorMessage message={errors.images} />
-                  )}
-                  {imagePreviewUrls.length > 0 && (
-                    <div className="mt-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm font-medium">
-                          {images.length} ảnh{images.length !== 1 ? "s" : ""}{" "}
-                          được chọn
-                        </p>
+                {prices.map((price, index) => (
+                  <div key={index} className="p-3 border rounded-lg">
+                    <div className="flex justify-between mb-2">
+                      <h4 className="font-medium">Tùy chọn giá {index + 1}</h4>
+                      {prices.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => {
-                            setImages([]);
-                            setImagePreviewUrls([]);
-                          }}
-                          className="text-xs text-red-500 hover:text-red-700"
+                          onClick={() => removePriceItem(index)}
+                          className="text-red-500 text-sm"
                         >
-                          Xóa hết
+                          Xóa
                         </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 mb-2">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Giá gốc <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={price.original_price}
+                          onChange={(e) =>
+                            updatePriceItem(
+                              index,
+                              "original_price",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="border rounded-lg p-2 w-full"
+                        />
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {imagePreviewUrls.map((url, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={url}
-                              alt={`Preview ${index}`}
-                              className="h-20 w-20 object-cover rounded border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                              title="Remove"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Giảm giá
+                        </label>
+                        <input
+                          type="number"
+                          value={price.discount}
+                          onChange={(e) =>
+                            updatePriceItem(
+                              index,
+                              "discount",
+                              Number(e.target.value)
+                            )
+                          }
+                          className="border rounded-lg p-2 w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Số lượng tương ứng
+                        </label>
+                        <input
+                          type="text"
+                          value={price.amount}
+                          onChange={(e) =>
+                            updatePriceItem(index, "amount", e.target.value)
+                          }
+                          className="border rounded-lg p-2 w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Đơn vị <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={price.unit}
+                          onChange={(e) =>
+                            updatePriceItem(index, "unit", e.target.value)
+                          }
+                          className="border rounded-lg p-2 w-full"
+                        >
+                          <option value="">Chọn 1 đơn vị</option>
+                          {unitOptions.map((unit, idx) => (
+                            <option key={idx} value={unit}>
+                              {unit}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Trọng lượng (kg)
+                        </label>
+                        <input
+                          type="text"
+                          value={price.weight}
+                          onChange={(e) =>
+                            updatePriceItem(index, "weight", e.target.value)
+                          }
+                          className="border rounded-lg p-2 w-full"
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
 
-                {/* Primary Image */}
-                <div data-error={hasError("images_primary")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Ảnh chính<span className="text-red-500">*</span>
-                  </label>
+                {hasError("prices") && <ErrorMessage message={errors.prices} />}
+                <button
+                  type="button"
+                  onClick={addPriceItem}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  + Thêm tùy chọn giá mới
+                </button>
+              </div>
+            </div>
+            <div className="bg-white shadow-sm rounded-2xl p-5">
+              <h3 className="text-lg font-semibold mb-3">Hình ảnh</h3>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  File giấy công bố sản phẩm
+                </label>
+
+                <label className="text-sm flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition duration-200 w-fit">
+                  <TbFileTypePdf className="mr-1" />
+                  Chọn file PDF
+                  <input
+                    type="file"
+                    name="certificate_file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </label>
+                {file && (
+                  <div className="relative py-3 rounded-md max-w-xs">
+                    {/* Nút x ở góc phải */}
+                    <button
+                      onClick={removeFile}
+                      className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-lg font-bold"
+                      aria-label="Xóa file"
+                    >
+                      &times;
+                    </button>
+
+                    <p className="text-sm text-gray-800 truncate">
+                      📄 {file.name}
+                    </p>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Chỉ chấp nhận tệp PDF
+                </p>
+              </div>
+
+              {/* Enhanced Product Images Section */}
+              <div data-error={hasError("images")}>
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Hình ảnh sản phẩm <span className="text-red-500">*</span>{" "}
+                  <span className="text-blue-500">
+                    (Cho phép nhiều hình ảnh)
+                  </span>
+                </label>
+
+                <div
+                  className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
+                    isDragging
+                      ? "border-blue-500 bg-blue-50"
+                      : hasError("images")
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <div className="text-center py-4">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 48 48"
+                    >
+                      <path
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+
+                    <div className="flex flex-col items-center text-sm text-gray-600">
+                      <p className="font-medium">
+                        Kéo và thả hình ảnh vào đây hoặc
+                      </p>
+                      <label className="mt-2 cursor-pointer text-blue-600 hover:text-blue-800">
+                        <span>Bấm để chọn tệp</span>
+                        <input
+                          type="file"
+                          name="images"
+                          multiple
+                          onChange={handleImagesChange}
+                          className="hidden"
+                          accept="image/*"
+                        />
+                      </label>
+                    </div>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      PNG, JPG, GIF tối đa 10MB mỗi tệp
+                    </p>
+                  </div>
+                </div>
+                {hasError("images") && <ErrorMessage message={errors.images} />}
+                {imagePreviewUrls.length > 0 && (
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-medium">
+                        {images.length} ảnh{images.length !== 1 ? "s" : ""} được
+                        chọn
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImages([]);
+                          setImagePreviewUrls([]);
+                        }}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Xóa hết
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {imagePreviewUrls.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index}`}
+                            className="h-20 w-20 object-cover rounded border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                            title="Remove"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Primary Image */}
+              <div data-error={hasError("images_primary")}>
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Ảnh chính<span className="text-red-500">*</span>
+                </label>
+                <label className="flex text-sm items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition duration-200 w-fit">
+                  <BiSolidImageAdd className="mr-1" />
+                  Chọn ảnh chính
                   <input
                     type="file"
                     name="images_primary"
                     ref={primaryImageInputRef}
                     onChange={handlePrimaryImageChange}
-                    className={`border rounded-lg p-2 w-full ${
-                      hasError("images_primary") ? "border-red-500" : ""
-                    }`}
+                    className="hidden"
                     accept="image/*"
                   />
-                  {hasError("images_primary") && (
-                    <ErrorMessage message={errors.images_primary} />
-                  )}
-                  {primaryImagePreview && (
-                    <div className="mt-2 relative inline-block">
-                      <img
-                        src={primaryImagePreview}
-                        alt="Primary image preview"
-                        className="h-24 w-24 object-cover rounded border"
-                      />
-                      <button
-                        type="button"
-                        onClick={removePrimaryImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
+                </label>
+
+                {hasError("images_primary") && (
+                  <ErrorMessage message={errors.images_primary} />
+                )}
+                {primaryImagePreview && (
+                  <div className="mt-2 relative inline-block">
+                    <img
+                      src={primaryImagePreview}
+                      alt="Primary image preview"
+                      className="h-24 w-24 object-cover rounded border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removePrimaryImage}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

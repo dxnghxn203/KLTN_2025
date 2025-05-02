@@ -132,6 +132,9 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
 
     for product in products:
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
+        if isinstance(product_info, response.JsonException):
+            out_of_stock_ids.append(product.product_id)
+            continue
         data = redis.get_product_transaction(product_id=product.product_id)
         logger.info(f"Product data from Redis: {data}")
 

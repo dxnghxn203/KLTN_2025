@@ -21,23 +21,6 @@ const Header = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [search, setSearch] = useState("");
   const { admin, logout } = useAuth();
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const handleLogout = async () => {
     try {
@@ -50,8 +33,8 @@ const Header = ({
   return (
     <header className="w-full bg-[#FAFBFB] p-3 flex items-center justify-between border-b border-gray-200">
       <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
         className="text-gray-600 hover:text-gray-900"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
       >
         <IoMenuOutline size={24} />
       </button>
@@ -70,9 +53,7 @@ const Header = ({
       {/* Profile Dropdown */}
       <div
         className="relative"
-        onMouseEnter={() => setShowDropdown(true)}
-        ref={dropdownRef}
-        // onMouseLeave={() => setShowDropdown(false)}
+        // ref={dropdownRef}
       >
         <div
           className="flex items-center cursor-pointer px-2 py-1 rounded-full hover:bg-gray-100 transition"

@@ -6,28 +6,30 @@ from starlette import status
 from app.core import database, logger, response, mail
 from app.entities.admin.request import ItemAdminRegisReq
 from app.entities.admin.response import ItemAdminRes
+from app.entities.pharmacist.request import ItemPharmacistRegisReq
+from app.entities.pharmacist.response import ItemPharmacistRes
 from app.helpers import redis
 from app.middleware import middleware
 from app.middleware.middleware import decode_jwt, generate_password
 
-collection_name = "admin"
+collection_name = "pharmacists"
 
 async def get_by_email(email: str):
     collection = database.db[collection_name]
     return collection.find_one({"email": email})
 
-async def get_all_admin(page: int, page_size: int):
+async def get_all_pharmacist(page: int, page_size: int):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
-    admin_list = collection.find().skip(skip_count).limit(page_size)
-    return [ItemAdminRes.from_mongo(admin) for admin in admin_list]
+    pharmacist_list = collection.find().skip(skip_count).limit(page_size)
+    return [ItemPharmacistRes.from_mongo(pharmacist) for pharmacist in pharmacist_list]
 
-async def create_admin(item: ItemAdminRegisReq):
+async def create_pharmacist(item: ItemPharmacistRegisReq):
     try:
         if not item:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message='Vui lòng nhập thông tin admin.'
+                message='Vui lòng nhập thông tin pharmacist.'
             )
 
         if await get_by_email(item.email):
@@ -38,73 +40,74 @@ async def create_admin(item: ItemAdminRegisReq):
         collection = database.db[collection_name]
         item_dict = item.dict()
 
-        item_dict["password"] = middleware.hash_password(item.password)
+        password = generate_password()
+        item_dict["password"] = middleware.hash_password(password)
 
         item_dict.update({
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow(),
             "verified_email_at": None,
-            "role_id": "admin",
+            "role_id": "pharmacist",
             "active": True,
             "auth_provider": "email",
         })
 
         insert_result = collection.insert_one(item_dict)
-        logger.info(f"[create_admin] Đã thêm admin mới, ID: {insert_result.inserted_id}")
-        admin_id = insert_result.inserted_id
+        logger.info(f"[create_pharmacist] Đã thêm pharmacist mới, ID: {insert_result.inserted_id}")
+        pharmacist_id = insert_result.inserted_id
         try:
             otp = middleware.generate_otp()
             redis.save_otp_and_update_request_count(item.email, otp)
-            mail.send_otp_email(item.email, otp)
+            mail.send_new_pharmacist_email(item.email, otp, password)
 
             return response.BaseResponse(
                 status_code=status.HTTP_201_CREATED,
                 status="created",
-                message="Đã Đăng ký thành công"
+                message="Đã tạo dược sĩ thành công"
             )
         except Exception as e:
-            logger.error("Failed [create_admin] :", error=e)
+            logger.error("Failed [create_pharmacist] :", error=e)
             collection = database.db[collection_name]
-            collection.delete_one({"_id": admin_id})
+            collection.delete_one({"_id": pharmacist_id})
             raise e
     except Exception as e:
-        logger.error(f"Failed [create_admin] :{e}")
+        logger.error(f"Failed [create_pharmacist] :{e}")
         raise e
 
-async def update_admin_verification(email: str):
+async def update_pharmacist_verification(email: str):
     collection = database.db[collection_name]
     collection.update_one({"email": email}, {"$set": {"verified_email_at": datetime.utcnow()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
-async def get_by_id(admin_id: str):
+async def get_by_id(pharmacist_id: str):
     try:
         collection = database.db[collection_name]
-        admin_info = collection.find_one({"_id": ObjectId(admin_id)})
-        if not admin_info:
+        pharmacist_info = collection.find_one({"_id": ObjectId(pharmacist_id)})
+        if not pharmacist_info:
             raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                message="Admin not found"
+                message="Pharmacist not found"
             )
-        return admin_info
+        return pharmacist_info
     except Exception as e:
-        logger.error(f"Error getting admin by id: {str(e)}")
+        logger.error(f"Error getting pharmacist by id: {str(e)}")
         raise e
 
-async def get_current(token: str) -> ItemAdminRes:
+async def get_current(token: str) -> ItemPharmacistRes:
     try:
         payload = decode_jwt(token=token)
-        admin_info = await get_by_id(payload.get("username"))
-        if admin_info:
-            admin_info['token'] = token
-            return ItemAdminRes.from_mongo(admin_info)
+        pharmacist_info = await get_by_id(payload.get("username"))
+        if pharmacist_info:
+            pharmacist_info['token'] = token
+            return ItemPharmacistRes.from_mongo(pharmacist_info)
         return None
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error(f"Error get_current admin: {str(e)}")
+        logger.error(f"Error get_current pharmacist: {str(e)}")
         raise e
 
-async def update_admin_password(email: str, new_password: str):
+async def update_pharmacist_password(email: str, new_password: str):
     try:
         collection = database.db[collection_name]
         collection.update_one(
@@ -114,5 +117,22 @@ async def update_admin_password(email: str, new_password: str):
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error(f"[update_admin_password] Lỗi: {str(e)}")
+        logger.error(f"[update_pharmacist_password] Lỗi: {str(e)}")
+        raise e
+
+async def update_status(pharmacist_id: str, status: bool):
+    try:
+        collection = database.db[collection_name]
+        collection.update_one(
+            {"_id": ObjectId(pharmacist_id)},
+            {
+                "$set": {
+                    "active": status,
+                    "updated_at": datetime.utcnow()
+                }
+            }
+        )
+        return response.SuccessResponse(message=f"Cập nhật trạng thái pharmacist thành {status}")
+    except Exception as e:
+        logger.error(f"Error updating pharmacist status: {str(e)}")
         raise e

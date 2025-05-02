@@ -257,3 +257,19 @@ export const downloadInvoice = async (order_id: any) => {
         }
     }
 }
+
+export const getStatistics365Days = async () => {
+    try {
+        const response: any = await axiosClient.get('/v1/order/statistic-last-365-days');
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi lấy thống kê 365 ngày',
+        }
+    }
+}

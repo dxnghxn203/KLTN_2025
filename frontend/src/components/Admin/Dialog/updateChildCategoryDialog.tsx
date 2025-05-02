@@ -40,7 +40,7 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
     if (mode === "add") {
       return {
         "Tên danh mục cấp 2": "",
-        "URL danh mục cấp 2": "",
+        "Slug danh mục cấp 2": "",
       };
     } else {
       return categoryChildInfo.reduce((acc, item) => {
@@ -55,7 +55,7 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
       if (mode === "add") {
         setFormData({
           "Tên danh mục cấp 2": "",
-          "URL danh mục cấp 2": "",
+          "Slug danh mục cấp 2": "",
         });
       } else {
         const updatedData = Object.fromEntries(
@@ -103,7 +103,7 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
     const updatedCategory = {
       child_category_id: selectedChildId,
       child_category_name: formData["Tên danh mục cấp 2"],
-      child_category_slug: formData["URL danh mục cấp 2"],
+      child_category_slug: formData["Slug danh mục cấp 2"],
     };
     const data = {
       child_category_id: selectedChildId,
@@ -115,7 +115,7 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
         categoryChildInfo.find((item) => item.label === "Tên danh mục cấp 2")
           ?.value ||
       updatedCategory.child_category_slug !==
-        categoryChildInfo.find((item) => item.label === "URL danh mục cấp 2")
+        categoryChildInfo.find((item) => item.label === "Slug danh mục cấp 2")
           ?.value;
 
     if (isCategoryUpdated) {
@@ -169,7 +169,7 @@ const UpdateChildCategoryDialog: React.FC<UpdateChildCategoryDialogProps> = ({
       main_slug: main_slug,
       sub_slug: sub_slug,
       child_category_name: formData["Tên danh mục cấp 2"],
-      child_category_slug: formData["URL danh mục cấp 2"],
+      child_category_slug: formData["Slug danh mục cấp 2"],
     };
     // console.log("newCategory", newCategory);
 

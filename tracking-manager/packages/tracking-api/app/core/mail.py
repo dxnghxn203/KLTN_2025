@@ -45,8 +45,8 @@ def send_otp_email(email: str, otp_code: str) -> bool:
     html_content = f"""
         <html>
         <body>
-            <h3>Your OTP Code is: <strong>{otp_code}</strong></h3>
-            <p>This code is valid for 5 minutes.</p>
+            <h3>Mã OTP của bạn là: <strong>{otp_code}</strong></h3>
+            <p>Mã chỉ có hiệu lực 5 phút</p>
         </body>
         </html>
     """
@@ -78,3 +78,17 @@ def send_invoice_email(email: str, pdf_bytes: bytes, order_id: str) -> bool:
     """
     attachment = [(f"{order_id}.pdf", pdf_bytes)]
     return send_email(email, subject, html_content, attachments=attachment)
+
+def send_new_pharmacist_email(email: str, otp_code: str, password: str) -> bool:
+    subject = "Tài khoản dược sĩ của bạn đã được tạo"
+    html_content = f"""
+            <html>
+            <body>
+                <h3>Mã OTP của bạn là: <strong>{otp_code}</strong></h3>
+                <p>Mã chỉ có hiệu lực 5 phút. Vui lòng xác thực tài khoản trước khi đăng nhập</p>
+                <h3>Mật khẩu của bạn là: <strong>{password}</strong></h3>
+                <p>Vui lòng đăng nhập và đổi mật khẩu sau khi đăng nhập để đảm bảo an toàn.</p>
+            </body>
+            </html>
+        """
+    return send_email(email, subject, html_content)

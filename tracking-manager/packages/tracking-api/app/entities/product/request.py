@@ -117,31 +117,6 @@ class ListIngredientDBReq(BaseModel):
             return data
         raise ValueError("Invalid ListIngredientDBReq format")
 
-class ItemFullDescriptionDBReq(BaseModel):
-    title: str = ""
-    content: str = ""
-
-    @model_validator(mode="before")
-    @classmethod
-    def to_py_dict(cls, data):
-        if isinstance(data, str):
-            return json.loads(data)
-        elif isinstance(data, dict):
-            return data
-        raise ValueError("Invalid ItemFullDescriptionDBReq format")
-
-class ListFullDescriptionDBReq(BaseModel):
-    full_descriptions: List[ItemFullDescriptionDBReq]
-
-    @model_validator(mode="before")
-    @classmethod
-    def to_py_dict(cls, data):
-        if isinstance(data, str):
-            return json.loads(data)
-        elif isinstance(data, dict):
-            return data
-        raise ValueError("Invalid ListIngredientDBReq format")
-
 class ItemManufacturerDBReq(BaseModel):
     manufacture_name: str = ""
     manufacture_address: str = ""
@@ -166,7 +141,7 @@ class ItemProductDBReq(BaseModel):
     delivery: int = 0
     slug: str = ""
     description: str = ""
-    full_descriptions: List[ItemFullDescriptionDBReq] = None
+    full_descriptions: str = ""
     images_primary: str = ""
     images: List[ItemImageDBReq] = None
     category: ItemCategoryDBReq
@@ -180,6 +155,11 @@ class ItemProductDBReq(BaseModel):
     manufacturer: ItemManufacturerDBReq = None
     dosage_form: str = ""
     brand: str = ""
+    registration_number: str = ""
+    certificate_file: str = ""
+    active: bool = False
+    prescription_required: bool = False
+    verified_by: str = ""
 
 class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")
@@ -188,7 +168,7 @@ class ItemProductDBInReq(BaseModel):
     inventory: Optional[int] = Field(default=0)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
-    full_description: Optional[ListFullDescriptionDBReq] = Field(None)
+    full_description: Optional[str] = Field(default="")
     category: Optional[ItemCategoryDBInReq] = Field(None)
     origin: Optional[str] = Field(default="")
     ingredients: Optional[ListIngredientDBReq] = Field(None)
@@ -200,9 +180,14 @@ class ItemProductDBInReq(BaseModel):
     manufacturer: Optional[ItemManufacturerDBReq] = Field(None)
     dosage_form: Optional[str] = Field(default="")
     brand: Optional[str] = Field(default="")
+    prescription_required: bool = False
+    registration_number: Optional[str] = Field(default="")
 
 class UpdateCategoryReq(BaseModel):
     product_id: str = ""
     main_category_id: str = ""
     sub_category_id: str = ""
     child_category_id: str = ""
+
+class ApproveProductReq(BaseModel):
+    product_id: str = ""

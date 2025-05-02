@@ -48,11 +48,6 @@ class ItemManufacturerDBRes(BaseModel):
     manufacture_address: Optional[Union[str, None]] = None
     manufacture_contact: Optional[Union[str, None]] = None
 
-class ItemFullDescriptionDBRes(BaseModel):
-    title: Optional[Union[str, None]] = None
-    content: Optional[Union[str, None]] = None
-
-
 class ItemProductDBRes(BaseModel):
     product_id: Optional[Union[str, None]] = None
     product_name: Optional[Union[str, None]] = None
@@ -63,7 +58,7 @@ class ItemProductDBRes(BaseModel):
     delivery: Optional[Union[int, None]] = None
     slug: Optional[Union[str, None]] = None
     description: Optional[Union[str, None]] = None
-    full_descriptions: List[Optional[Union[ItemFullDescriptionDBRes, None]]] = None
+    full_descriptions: Optional[Union[str, None]] = None
     images_primary: Optional[Union[str, None]] = None
     images: List[Optional[Union[ItemImageDBRes, None]]] = None
     category: Optional[Union[ItemCategoryDBInRes, None]] = None
@@ -80,6 +75,11 @@ class ItemProductDBRes(BaseModel):
     count_review: Optional[Union[int, None]] = None
     count_comment: Optional[Union[int, None]] = None
     rating: Optional[Union[float, None]] = None
+    registration_number: Optional[Union[str, None]] = None
+    certificate_file: Optional[Union[str, None]] = None
+    active: bool = False
+    prescription_required: bool = False
+    verified_by: Optional[Union[str, None]] = None
 
     @classmethod
     def from_mongo(cls, data):

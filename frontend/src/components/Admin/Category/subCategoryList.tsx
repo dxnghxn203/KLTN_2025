@@ -48,14 +48,14 @@ export default function SubCategoryList({ selectedMainId }: any) {
   const categorySubInfo = [
     { label: "ID danh mục cấp 1", value: selectedLevel1?.sub_category_id },
     { label: "Tên danh mục cấp 1", value: selectedLevel1?.sub_category_name },
-    { label: "URL danh mục cấp 1", value: selectedLevel1?.sub_category_slug },
+    { label: "Slug danh mục cấp 1", value: selectedLevel1?.sub_category_slug },
   ];
   // const selectedChildId =
   const categoryChildInfo =
     mode === "add"
       ? [
           { label: "Tên danh mục cấp 2", value: "" },
-          { label: "URL danh mục cấp 2", value: "" },
+          { label: "Slug danh mục cấp 2", value: "" },
         ]
       : [
           {
@@ -67,7 +67,7 @@ export default function SubCategoryList({ selectedMainId }: any) {
             value: selectedChildCategory?.child_category_name,
           },
           {
-            label: "URL danh mục cấp 2",
+            label: "Slug danh mục cấp 2",
             value: selectedChildCategory?.child_category_slug,
           },
         ];
@@ -123,7 +123,7 @@ export default function SubCategoryList({ selectedMainId }: any) {
                       </div>
 
                       <span className="font-medium rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-sm w-fit">
-                        URL: {l1?.sub_category_slug}
+                        Slug: {l1?.sub_category_slug}
                       </span>
                     </div>
                   </div>
@@ -191,7 +191,7 @@ export default function SubCategoryList({ selectedMainId }: any) {
                             {lv2?.child_category_name}
                           </h4>
                           <span className="font-medium rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-sm w-fit">
-                            URL: {lv2?.child_category_slug}
+                            Slug: {lv2?.child_category_slug}
                           </span>
                         </div>
                       </div>
