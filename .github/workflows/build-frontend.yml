@@ -4,14 +4,14 @@ on:
   push:
     branches: [ main ]
     paths: # Chỉ kích hoạt khi có thay đổi trong thư mục front-end hoặc workflow này
-      - 'front-end/**'
+      - 'frontend/**'
       - '.github/workflows/build-frontend.yml'
   workflow_dispatch: # Cho phép chạy thủ công
 
 env:
   # --- Tên Image và thư mục ---
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/frontend-kltn2025-req # Tên image theo yêu cầu
-  FRONTEND_DIR: ./front-end # Thư mục chứa code frontend và Dockerfile
+  FRONTEND_DIR: ./frontend # Thư mục chứa code frontend và Dockerfile
   CONTAINER_NAME: frontend-kltn2025-container # Tên container sẽ chạy trên VPS
 
   # --- Cấu hình Vault (Lấy từ secrets) - Bỏ qua nếu không dùng Vault ---
