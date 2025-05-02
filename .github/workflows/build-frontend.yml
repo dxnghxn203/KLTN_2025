@@ -41,7 +41,7 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            production/.env | .
+            production/.env | .;
 
       - name: Install Dependencies (using cache)
         run: yarn install --frozen-lockfile
