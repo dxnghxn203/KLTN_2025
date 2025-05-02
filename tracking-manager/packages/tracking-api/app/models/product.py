@@ -538,5 +538,15 @@ async def get_not_approved_product():
         logger.info(f"{product_list}")
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
+        logger.error(f"Failed [get_not_approved_product]: {e}")
+        raise e
+
+async def get_approved_product(email: str):
+    try:
+        collection = db[collection_name]
+        product_list = collection.find({"verified_by": email})
+        logger.info(f"{product_list}")
+        return [ItemProductDBRes(**product) for product in product_list]
+    except Exception as e:
         logger.error(f"Failed [get_approved_product]: {e}")
         raise e

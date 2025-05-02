@@ -12,7 +12,7 @@ from app.middleware import middleware
 from app.models import order, pharmacist, user
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
-    get_product_best_deals, approve_product, get_not_approved_product
+    get_product_best_deals, approve_product, get_not_approved_product, get_approved_product
 
 router = APIRouter()
 
@@ -313,6 +313,27 @@ async def pharmacist_get_product(token: str = Depends(middleware.verify_token_ph
         raise je
     except Exception as e:
         logger.error("Error getting approve product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/get-approved-product-by-pharmacist", response_model=response.BaseResponse)
+async def pharmacist_get_approved_product(token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Dược sĩ không tồn tại."
+            )
+        return SuccessResponse(
+            data=await get_approved_product(pharmacist_info.email)
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting approved product", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
