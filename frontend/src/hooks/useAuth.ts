@@ -11,7 +11,8 @@ import {
     selectAuth,
     selectUserAuth
 } from '@/store';
-import {getToken} from '@/utils/cookie';
+
+// import {getToken} from '@/utils/cookie';
 
 export function useAuth() {
     const dispatch = useDispatch();
@@ -20,7 +21,6 @@ export function useAuth() {
     const user = useSelector(selectUserAuth);
     const admin = useSelector(selectAdminAuth);
 
-    
     useEffect(() => {
         if (session?.user && !isAuthenticated) {
             dispatch(googleLoginSuccess(session.user));
