@@ -40,7 +40,8 @@ jobs:
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: secret/data/production/.env * | ;
+          secrets: |
+            secret/data/production/.env * | file:.env
 
       - name: Install Dependencies (using cache)
         run: yarn install --frozen-lockfile
