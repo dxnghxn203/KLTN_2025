@@ -98,5 +98,25 @@ export const loginAdmin = async (data: any): Promise<AuthResponse> => {
     
 };
 
+export const loginPharmacist = async (data: any): Promise<AuthResponse> => {
+    try {
+        const response: any = await axiosClient.post('/v1/pharmacist/login', data);
+        return {
+            success: true,
+            pharmacist: response?.data || null,
+            token: response?.data?.token || null,
+            message: response?.message || 'Đăng nhập thành công',
+            
+        };
+    } catch (error: any) {
+        console.error('Login error:', error);
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Đăng nhập thất bại'
+        };
+    }
+    
+}
+
 
 

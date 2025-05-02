@@ -1,26 +1,15 @@
 "use client";
 
-import Sidebar from "@/components/Admin/Sidebar/sidebar";
-import Header from "@/components/Admin/Header/header";
+import Sidebar from "@/components/Pharmacist/Sidebar/sidebar";
+import Header from "@/components/Pharmacist/Header/header";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 
-export default function AdminLayout({
+export default function PharmacistLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const pathname = usePathname();
-
-  // Nếu đang ở trang login thì không render layout
-  if (
-    pathname === "/dang-nhap-admin" ||
-    pathname === "/dang-ky-admin" ||
-    pathname === "/quen-mat-khau-role"
-  ) {
-    return <>{children}</>;
-  }
 
   return (
     <div className="admin-layout">

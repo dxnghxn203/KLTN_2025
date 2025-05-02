@@ -168,4 +168,45 @@ export const updateStatusUser = async (params: { user_id: string; status_user: b
     }
 };
 
+export const changePasswordPharmacist = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/pharmacist/change-password";
+        const result: any = await axiosClient.post(url, params);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message,
+            data: null
+        }
+
+    }
+}
+
+export const forgotPasswordPharmacist = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/pharmacist/forgot-password";
+        const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message,
+            data: null
+        }
+
+    }
+}
+
 

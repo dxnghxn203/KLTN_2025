@@ -63,33 +63,51 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
               {products?.name_primary}
             </div>
 
-            {/* Giá sản phẩm */}
-            <div className="mt-2">
-              <div
-                className={`text-sm text-zinc-400 line-through ${
-                  products?.prices[0]?.original_price &&
-                  products?.prices[0]?.original_price !==
-                    products?.prices[0]?.price
-                    ? "opacity-100"
-                    : "opacity-0"
-                }`}
-              >
-                {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}đ
+            {!products?.prescription_required && (
+              <div className="mt-2">
+                <div
+                  className={`text-sm text-zinc-400 line-through ${
+                    products?.prices[0]?.original_price &&
+                    products?.prices[0]?.original_price !==
+                      products?.prices[0]?.price
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                >
+                  {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}
+                  đ
+                </div>
+                <div className="text-lg font-bold text-[#0053E2]">
+                  {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
+                  {products?.prices[0]?.unit}
+                </div>
               </div>
-              <div className="text-lg font-bold text-[#0053E2]">
-                {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
-                {products?.prices[0]?.unit}
-              </div>
-            </div>
+            )}
 
             {/* Nút chọn sản phẩm */}
-            <div className="mt-2 flex justify-center">
-              <button
-                className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
-                onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
-              >
-                + Chọn sản phẩm
-              </button>
+            <div className="mt-2 flex justify-center w-full">
+              {products?.prescription_required ? (
+                <div className="flex flex-col justify-start w-full">
+                  <p className="text-[#A7A8B0] text-sm font-semibold">
+                    Cần tư vấn từ dược sĩ
+                  </p>
+                  <button
+                    className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-semibold"
+                    onClick={() =>
+                      (window.location.href = `/chi-tiet-san-pham/${slug}`)
+                    }
+                  >
+                    Xem chi tiết
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="w-full py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 rounded-3xl font-semibold"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  + Chọn sản phẩm
+                </button>
+              )}
             </div>
           </div>
         </div>

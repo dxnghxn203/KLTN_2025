@@ -8,8 +8,16 @@ export const ADMIN_ROUTES = [
   '/dang-nhap-admin',
   '/thong-tin-tai-khoan',
   '/doi-mat-khau-admin',
-  '/quen-mat-khau-admin',
+  '/quen-mat-khau',
+
   
+] as const;
+export const PHARMACIST_ROUTES = [
+  '/dashboard-duoc-si',
+  '/kiem-duyet-thuoc',
+  '/thong-tin-tai-khoan-duoc-si',
+  '/doi-mat-khau-duoc-si',
+  '/quen-mat-khau-duoc-si',
 ] as const;
 
 export const PARTNER_ROUTES = [

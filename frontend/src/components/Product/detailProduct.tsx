@@ -92,6 +92,9 @@ const DetailProduct = ({ product }: any) => {
   const selectedPrice: any = useMemo(() => {
     return getPriceFromProduct(product, selectedUnit);
   }, [selectedUnit]);
+  const sortedPrices = [...(product?.prices || [])].sort(
+    (a, b) => b.amount - a.amount
+  );
 
   return (
     <div className="">
@@ -251,50 +254,53 @@ const DetailProduct = ({ product }: any) => {
                 {product?.count_comment} bình luận
               </a>
             </div>
-            <div className="flex-col space-y-4 gap-2 mt-3 items-center">
-              {selectedPrice?.discount > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-2 text-sm font-medium text-black bg-amber-300 rounded-lg flex items-center justify-center">
-                    Giảm {selectedPrice.discount}%
-                  </span>
-                  {selectedPrice?.original_price && (
-                    <span className="text-2xl font-bold text-zinc-400 line-through flex items-center">
-                      {selectedPrice.original_price.toLocaleString("vi-VN")}đ
+            {product?.prescription_required !== true && (
+              <div className="flex-col space-y-4 gap-2 mt-3 items-center">
+                {selectedPrice?.discount > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-2 text-sm font-medium text-black bg-amber-300 rounded-lg flex items-center justify-center">
+                      Giảm {selectedPrice.discount}%
                     </span>
-                  )}
-                </div>
-              )}
-              {selectedPrice?.price && (
-                <p className="text-[#0053E2] text-4xl font-bold">
-                  {selectedPrice.price.toLocaleString("vi-VN")}
-                  đ/ {selectedPrice.unit}
-                </p>
-              )}
-            </div>
+                    {selectedPrice?.original_price && (
+                      <span className="text-2xl font-bold text-zinc-400 line-through flex items-center">
+                        {selectedPrice.original_price.toLocaleString("vi-VN")}đ
+                      </span>
+                    )}
+                  </div>
+                )}
+                {selectedPrice?.price && (
+                  <p className="text-[#0053E2] text-4xl font-bold">
+                    {selectedPrice.price.toLocaleString("vi-VN")}đ/{" "}
+                    {selectedPrice.unit}
+                  </p>
+                )}
+              </div>
+            )}
 
-            <div className="flex items-center space-x-24">
-              <p className="text-[#4A4F63] font-normal">Chọn đơn vị tính</p>
-              <div className="flex space-x-2">
-                {product?.prices.map((price: any) => (
-                  <>
+            {product?.prescription_required !== true && (
+              <div className="flex items-center space-x-24">
+                <p className="text-[#4A4F63] font-normal">Chọn đơn vị tính</p>
+                <div className="flex space-x-2">
+                  {product?.prices.map((price: any) => (
                     <button
                       key={price?.price_id}
                       onClick={() => {
                         setSelectedUnit(price?.price_id);
                       }}
                       className={`flex items-center justify-center px-6 py-2 rounded-full border text-lg font-normal
-        ${
-          selectedUnit === price?.price_id
-            ? "border-blue-500 text-black font-semibold"
-            : "border-gray-300 text-gray-500"
-        }`}
+          ${
+            selectedUnit === price?.price_id
+              ? "border-blue-500 text-black font-semibold"
+              : "border-gray-300 text-gray-500"
+          }`}
                     >
                       {price?.unit}
                     </button>
-                  </>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="table-auto w-full text-left">
                 <tbody>
@@ -304,6 +310,17 @@ const DetailProduct = ({ product }: any) => {
                       {product?.category?.child_category_name}
                     </td>
                   </tr>
+                  {product?.category?.registration_number?.trim() ? (
+                    <tr>
+                      <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
+                        Số đăng ký
+                      </td>
+                      <td className="pl-0 py-3 w-2/3 text-[#0053E2] font-semibold">
+                        {product.category.registration_number}
+                      </td>
+                    </tr>
+                  ) : null}
+
                   {product?.dosage_form && (
                     <tr>
                       <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
@@ -319,9 +336,30 @@ const DetailProduct = ({ product }: any) => {
                         Quy cách
                       </td>
                       <td className="pl-0 py-3 w-2/3">
-                        {product.prices.length === 1
-                          ? product.prices[0].unit
-                          : `${product.prices[0].unit} ${product.prices[0].amount} ${product.prices[1]?.unit}`}
+                        {(() => {
+                          const sortedPrices = [...product.prices].sort(
+                            (a, b) => b.amount - a.amount
+                          ); // Lớn đến bé
+
+                          if (sortedPrices.length === 1) {
+                            return sortedPrices[0].unit;
+                          }
+
+                          if (sortedPrices.length === 2) {
+                            const [larger, smaller] = sortedPrices;
+                            const ratio = larger.amount / smaller.amount;
+                            return `${larger.unit} ${ratio} ${smaller.unit}`;
+                          }
+
+                          if (sortedPrices.length >= 3) {
+                            const [largest, middle, smallest] = sortedPrices;
+                            const ratio1 = largest.amount / middle.amount;
+                            const ratio2 = middle.amount / smallest.amount;
+                            return `${largest.unit} ${ratio1} ${middle.unit} x ${ratio2} ${smallest.unit}`;
+                          }
+
+                          return null;
+                        })()}
                       </td>
                     </tr>
                   )}
@@ -371,58 +409,87 @@ const DetailProduct = ({ product }: any) => {
                       )}
                     </td>
                   </tr>
+                  {product?.prescription_required === true && (
+                    <tr>
+                      <td className="pr-4 pt-4 pb-6 w-1/3 text-[#4A4F63]">
+                        Thuốc cần kê toa
+                      </td>
+                      <td>Có</td>
+                    </tr>
+                  )}
+
                   <tr>
                     <td className="pr-4 pt-4 pb-6 w-1/3 text-[#4A4F63]">
                       Mô tả ngắn
                     </td>
                     <td className="pt-4 mb-6">{product?.description}</td>
                   </tr>
-                  <tr>
-                    <td className="pr-4 py-4 w-1/3 text-[#4A4F63]">
-                      Chọn số lượng
-                    </td>
-                    <td className="pl-0 py-4 w-2/3">
-                      <div className="flex items-center">
-                        <div className="flex items-center border rounded-lg">
-                          <button
-                            className="px-3 py-2"
-                            onClick={() =>
-                              setQuantity(Math.max(1, quantity - 1))
-                            }
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="px-4">{quantity}</span>
-                          <button
-                            className="px-3 py-2"
-                            onClick={() => setQuantity(quantity + 1)}
-                          >
-                            <Plus size={16} />
-                          </button>
+                  {product?.prescription_required !== true && (
+                    <tr>
+                      <td className="pr-4 py-4 w-1/3 text-[#4A4F63]">
+                        Chọn số lượng
+                      </td>
+                      <td className="pl-0 py-4 w-2/3">
+                        <div className="flex items-center">
+                          <div className="flex items-center border rounded-lg">
+                            <button
+                              className="px-3 py-2"
+                              onClick={() =>
+                                setQuantity(Math.max(1, quantity - 1))
+                              }
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="px-4">{quantity}</span>
+                            <button
+                              className="px-3 py-2"
+                              onClick={() => setQuantity(quantity + 1)}
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
 
-            <button
-              className="mt-6 w-full bg-blue-700 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800"
-              onClick={handleAddToCart}
-              disabled={loadingToAddToCart}
-            >
-              Chọn mua
-            </button>
+            {product?.prescription_required ? (
+              <div className="mt-6">
+                <p className="text-[#0053E2] text-sm font-semibold mb-2">
+                  Sản phẩm cần tư vấn từ dược sĩ.
+                </p>
+                <div className="flex space-x-4">
+                  <button className="bg-[#0053E2] hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-full w-full">
+                    Tư vấn ngay
+                  </button>
+                  <button className="bg-[#EAEFFA] text-[#0053E2] font-semibold py-4 px-6 rounded-full w-full">
+                    Gửi đơn thuốc
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="mt-6 w-full bg-blue-700 text-white py-3 rounded-full font-bold text-lg hover:bg-blue-800"
+                onClick={handleAddToCart}
+                disabled={loadingToAddToCart}
+              >
+                Chọn mua
+              </button>
+            )}
 
-            <p className="mt-2 flex items-center whitespace-nowrap text-sm">
-              <span className="text-orange-500 font-bold flex items-center">
-                ⚡Sản phẩm đang được chú ý,
-              </span>
-              <span className="text-black ml-1">
-                có 7 người thêm vào giỏ hàng & 18 người đang xem
-              </span>
-            </p>
+            {product?.prescription_required !== true && (
+              <p className="mt-2 flex items-center whitespace-nowrap text-sm">
+                <span className="text-orange-500 font-bold flex items-center">
+                  ⚡Sản phẩm đang được chú ý,
+                </span>
+                <span className="text-black ml-1">
+                  có 7 người thêm vào giỏ hàng & 18 người đang xem
+                </span>
+              </p>
+            )}
 
             <div className="mt-4 flex pb-4 font-medium items-center space-x-4">
               <div className="flex items-center space-x-2">

@@ -8,6 +8,7 @@ interface ProductState {
     productsGetRecentlyViewed: any[];
     productProductFeatured: any[];
     productsBestDeal: any[];
+    productApproved: any[];
     product: any;
     loading: boolean;
     error: string | null;
@@ -21,6 +22,7 @@ const initialState: ProductState = {
     productProductFeatured: [],
     productsRelated: [],
     productsBestDeal: [],
+    productApproved: [],
     product: null,
     loading: false,
     error: null,
@@ -148,6 +150,20 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // fetch product approved
+        fetchProductApprovedStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchProductApprovedSuccess(state, action: PayloadAction<any[]>) {
+            state.productApproved = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchProductApprovedFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
     },
 });
 
@@ -187,6 +203,10 @@ export const {
     fetchDeleteProductFailed,
     fetchDeleteProductStart,
     fetchDeleteProductSuccess,
+
+    fetchProductApprovedFailed,
+    fetchProductApprovedStart,
+    fetchProductApprovedSuccess
 
 
     
