@@ -532,7 +532,7 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Product already approved"
             )
-        if product_info.verified_by != verified_by:
+        if product_info.verified_by and product_info.verified_by != verified_by:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="You are not authorized to approve this product"
