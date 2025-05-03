@@ -1,4 +1,4 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchDeleteProductStart, fetchProductApprovedStart, fetchProductBySlugStart, selectProductAdmin, selectProductApproved, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
+import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchApproveProductByPharmacistStart, fetchDeleteProductStart, fetchProductApprovedStart, fetchProductBySlugStart, selectProductAdmin, selectProductApproved, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -100,6 +100,21 @@ export function useProduct() {
         }))
     }
 
+    const fetchApproveProductByPharmacist = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+      ) => {
+        dispatch(
+          fetchApproveProductByPharmacistStart({
+            ...params,
+            onSuccess,
+            onFailure: onFailed
+          })
+        );
+      };
+      
+
 
 
     return {
@@ -125,6 +140,7 @@ export function useProduct() {
         deleteProduct,
         fetchProductApproved,
         productApproved,
+        fetchApproveProductByPharmacist,
     };
 }
 

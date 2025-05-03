@@ -174,3 +174,20 @@ export const getAllProductApproved = async () => {
         }
     }
 }
+
+export const approveProductByPharmacist = async (params: any) => {
+    try {
+        const response: any = await axiosClient.post("/v1/products/approve", params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

@@ -13,6 +13,9 @@ import {
   MdNavigateNext,
   MdOutlineModeEdit,
 } from "react-icons/md";
+import ApproveProductDialog from "../Dialog/approveProductDialog";
+import { FiEye } from "react-icons/fi";
+import { LuBadgeCheck, LuEye } from "react-icons/lu";
 
 const MedicineCensorshipList = () => {
   const { productApproved, fetchProductApproved } = useProduct();
@@ -169,19 +172,43 @@ const MedicineCensorshipList = () => {
 
                       <td className="py-4 px-2 text-center w-fit">
                         <span
-                          className={`${
-                            product.verified_by !== ""
+                          className={`px-2 py-1 rounded-full ${
+                            product.verified_by === ""
+                              ? "bg-yellow-100 text-yellow-700"
+                              : product.is_approved === true
                               ? "bg-green-100 text-green-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          } px-2 py-1 rounded-full`}
+                              : "bg-red-100 text-red-700"
+                          }`}
                         >
-                          {product.verified_by !== "" ? "Đã duyệt" : "Đang chờ"}
+                          {product.verified_by === ""
+                            ? "Đang chờ"
+                            : product.is_approved === true
+                            ? "Đã duyệt"
+                            : "Từ chối"}
                         </span>
                       </td>
 
-                      <td className="py-4 px-4 text-center relative">
-                        {product.verified_by === "" && (
-                          <button className="px-3 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm">
+                      <td className="py-4 px-2 text-center relative w-[120px]">
+                        {product.verified_by !== "" ? (
+                          <button
+                            className="px-3 py-2 font-medium flex items-center gap-1 text-sm text-gray-500"
+                            onClick={() => {
+                              setDialogOpen(true);
+                              setSelectedProductApproved(product);
+                            }}
+                          >
+                            <FiEye className="text-gray-500 text-lg" />
+                            Chi tiết
+                          </button>
+                        ) : (
+                          <button
+                            className="underline px-3 py-2 text-blue-600 font-medium rounded-lg  flex items-center gap-2 text-sm"
+                            onClick={() => {
+                              setDialogOpen(true);
+                              setSelectedProductApproved(product);
+                            }}
+                          >
+                            <LuBadgeCheck className="text-blue-600 text-lg" />
                             Duyệt
                           </button>
                         )}
@@ -264,107 +291,12 @@ const MedicineCensorshipList = () => {
         </div>
         {/* Drawer (Chi tiết đơn hàng) */}
       </div>
-      {isDrawerOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div className="bg-white w-[400px] h-full shadow-lg p-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-semibold">
-                ProductApproved #{selectedProductApproved?.id}
-              </h3>
-              <button
-                onClick={() => setIsDrawerOpen(false)}
-                className="absolute top-3 right-3 text-gray-500 hover:text-black"
-              >
-                <X className="text-2xl text-gray-700" />
-              </button>
-            </div>
-
-            <div>
-              <div className="mt-4">
-                <h2 className="text-lg font-semibold my-4">
-                  ProductApproved items{" "}
-                  <span className="text-gray-500 ml-1">
-                    {selectedProductApproved?.products?.length || 0}
-                  </span>
-                </h2>
-
-                {Array.isArray(selectedProductApproved?.products) &&
-                  selectedProductApproved.products.map(
-                    (product: any, index: number) => (
-                      <div
-                        key={index}
-                        className="border-b pb-3 flex items-center space-x-4"
-                      >
-                        <Image
-                          src={product?.img}
-                          alt={product?.name}
-                          className="w-16 h-16 rounded-lg border border-gray-300"
-                        />
-                        <div className="flex-1">
-                          <p className="text-sm line-clamp-2">
-                            {product?.name}
-                          </p>
-                        </div>
-                        <span className="space-x-4">
-                          <span className="font-semibold">
-                            {product?.quantity || 0}
-                          </span>
-                          <span className="font-normal text-gray-500">x</span>
-                          <span className="font-semibold">
-                            {new Intl.NumberFormat("vi-VN", {
-                              style: "currency",
-                              currency: "VND",
-                            }).format(product?.price || 0)}
-                          </span>
-                        </span>
-                      </div>
-                    )
-                  )}
-
-                <div className="mt-3 text-right text-lg text-gray-500">
-                  Total
-                  <span className="ml-4 text-black font-semibold">
-                    {selectedProductApproved?.total?.toLocaleString("vi-VN")} ₫
-                  </span>
-                </div>
-                <h2 className="text-lg font-semibold my-4">Contact</h2>
-                <div className="gap-4">
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Customer:</p>
-                    <p className="w-2/3">
-                      {selectedProductApproved?.customer?.name}
-                    </p>
-                  </div>
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Phone:</p>
-                    <p className="w-2/3">
-                      {selectedProductApproved?.customer?.phone}
-                    </p>
-                  </div>
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Email:</p>
-                    <p className="w-2/3">
-                      {selectedProductApproved?.customer?.email}
-                    </p>
-                  </div>
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Address:</p>
-                    <p className="w-2/3">
-                      {selectedProductApproved?.customer?.address
-                        ? `${selectedProductApproved.customer.address.street}, ${selectedProductApproved.customer.address.ward}, ${selectedProductApproved.customer.address.district}, ${selectedProductApproved.customer.address.city}`
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-center mt-4">
-              <button className="bg-[#1E4DB7] text-white px-2 text-sm py-2 rounded-lg hover:bg-[#173F98]">
-                Download Bill
-              </button>
-            </div>
-          </div>
-        </div>
+      {isDialogOpen && selectedProductApproved && (
+        <ApproveProductDialog
+          isOpen={isDialogOpen}
+          onClose={() => setDialogOpen(false)}
+          productSelected={selectedProductApproved}
+        />
       )}
     </div>
   );

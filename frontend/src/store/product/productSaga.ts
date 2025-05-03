@@ -40,6 +40,10 @@ import {
     fetchProductApprovedFailed,
     fetchProductApprovedStart,
     fetchProductApprovedSuccess,
+
+    fetchApproveProductByPharmacistFailed,
+    fetchApproveProductByPharmacistStart,
+    fetchApproveProductByPharmacistSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -300,6 +304,35 @@ function* getAllProductApproved(action: any): Generator<any, void, any> {
     }
 }
 
+function * handleApproveProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            product_id,
+            rejected_note,
+            is_approved,
+            onSuccess = (message: any) => {},
+            onFailure = (message: any) => {}
+        } = payload;
+        const body = {
+            product_id,
+            rejected_note,
+            is_approved
+
+        };
+        const product = yield call(productService.approveProductByPharmacist, body);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchApproveProductByPharmacistSuccess(product.message));
+            return;
+        }
+        onFailure(product.message);
+        yield put(fetchApproveProductByPharmacistFailed(product.message));
+    } catch (error) {
+        yield put(fetchApproveProductByPharmacistFailed("Failed to fetch product by slug"));
+    }
+}
+
 
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
@@ -312,4 +345,5 @@ export function* productSaga() {
     yield takeLatest(fetchAllProductBestDealStart.type, handlerGetAllProductBestDeal);
     yield takeLatest(fetchDeleteProductStart.type, handlerDeleteProduct);
     yield takeLatest(fetchProductApprovedStart.type, getAllProductApproved);
+    yield takeLatest(fetchApproveProductByPharmacistStart.type, handleApproveProduct);
 }
