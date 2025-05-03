@@ -10,7 +10,7 @@ import {
 } from "@/utils/constants";
 import {getToken, getTokenAdmin, getTokenPharmacist} from "@/utils/cookie";
 
-export function RoleProvider({children}: { children: React.ReactNode }) {
+export function TemplateProvider({children}: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const isAdmin = ADMIN_ROUTES.some(

@@ -1,8 +1,8 @@
 import axios from "axios";
-import { removeToken } from "@/utils/cookie";
+import {removeToken, removeTokenAdmin, removeTokenPharmacist} from "@/utils/cookie";
 
 const axiosClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+    baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
     headers: {
         "Access-Control-Allow-Credentials": true,
         // "Access-Control-Allow-Private-Network": true,
@@ -43,12 +43,16 @@ axiosClient.interceptors.response.use(
     function (response: any) {
         if (response?.status_code === 401 || response?.status_code === 403) {
             removeToken();
+            removeTokenAdmin();
+            removeTokenPharmacist();
         }
         return response?.data;
     },
     function (error) {
         if (error.response?.status === 401 || error.response?.status === 403) {
             removeToken();
+            removeTokenAdmin();
+            removeTokenPharmacist();
         }
         return Promise.reject(error);
     }

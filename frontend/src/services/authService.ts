@@ -1,11 +1,10 @@
-
 import axiosClient from "@/utils/configs/axiosClient";
-import { AuthResponse } from "@/types/auth";
-import { message } from "antd";
+import {AuthResponse} from "@/types/auth";
+import {message} from "antd";
 
 export const signInWithGoogle = async (data: any) => {
     try {
-        const response: any= await axiosClient.post('/v1/auth/google-auth', data);
+        const response: any = await axiosClient.post('/v1/auth/google-auth', data);
         return {
             status_code: response?.status_code || 200,
             message: response?.message || 'Đăng nhập bằng Google thành công',
@@ -55,10 +54,10 @@ export const verifyToken = async (token: string) => {
         const response = await axiosClient.post("/auth/verify-token", {
             token: token,
         });
-        return { isValid: true, userData: response.data.user };
+        return {isValid: true, userData: response.data.user};
     } catch (error) {
         console.error("Error verifying token:", error);
-        return { isValid: false };
+        return {isValid: false};
     }
 };
 
@@ -86,7 +85,7 @@ export const loginAdmin = async (data: any): Promise<AuthResponse> => {
             admin: response?.data || null,
             token: response?.data?.token || null,
             message: response?.message || 'Đăng nhập thành công',
-            
+
         };
     } catch (error: any) {
         console.error('Login error:', error);
@@ -95,7 +94,7 @@ export const loginAdmin = async (data: any): Promise<AuthResponse> => {
             message: error.response?.data?.message || 'Đăng nhập thất bại'
         };
     }
-    
+
 };
 
 export const loginPharmacist = async (data: any): Promise<AuthResponse> => {
@@ -105,8 +104,7 @@ export const loginPharmacist = async (data: any): Promise<AuthResponse> => {
             success: true,
             pharmacist: response?.data || null,
             token: response?.data?.token || null,
-            message: response?.message || 'Đăng nhập thành công',
-            
+            message: response?.message || 'Đăng nhập thành công'
         };
     } catch (error: any) {
         console.error('Login error:', error);
@@ -115,7 +113,7 @@ export const loginPharmacist = async (data: any): Promise<AuthResponse> => {
             message: error.response?.data?.message || 'Đăng nhập thất bại'
         };
     }
-    
+
 }
 
 

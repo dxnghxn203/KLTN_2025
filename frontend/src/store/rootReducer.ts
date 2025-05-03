@@ -1,42 +1,52 @@
-import { combineReducers } from '@reduxjs/toolkit';
+import {combineReducers} from '@reduxjs/toolkit';
 import authReducer from './auth/authSlice';
 import cartReducer from './cart/cartSlice';
 import productReducer from './product/productSlice';
 import orderReducer from './order/orderSlice';
-import { locationSlice } from './location/locationSlice';
+import locationReducer from './location/locationSlice';
 import categoryReducer from './category/categorySlice';
 import userReducer from "./user/userSlice";
 import reviewReducer from "./review/reviewSlice";
-import { getToken } from '@/utils/cookie';
-import { setClientToken } from '@/utils/configs/axiosClient';
+import {getToken, getTokenAdmin, getTokenPharmacist} from '@/utils/cookie';
+import {setClientToken} from '@/utils/configs/axiosClient';
+import {ROLE_ACTIONS_ADMIN, ROLE_ACTIONS_PHARMACIST} from "@/utils/roleAction";
 
 // Import other reducers here
 
 const reducer = combineReducers({
-  auth: authReducer,
-  cart: cartReducer,
-  product: productReducer,
-  order: orderReducer,
-  location: locationSlice.reducer,
-  category: categoryReducer,
-  user:userReducer,
-  review: reviewReducer,
-  // Add other reducers here
+    auth: authReducer,
+    cart: cartReducer,
+    product: productReducer,
+    order: orderReducer,
+    location: locationReducer,
+    category: categoryReducer,
+    user: userReducer,
+    review: reviewReducer,
+    // Add other reducers here
 });
 
 const rootReducer = (state: any, action: any) => {
-  if (action.type === "authen/fetchLogoutStart") {
-    return reducer(undefined, action); 
-  }   
+    if (action.type === "authen/fetchLogoutStart") {
+        return reducer(undefined, action);
+    }
 
-  const token = getToken();
-  // console.log("Token from cookie:", token);
+    let token = null;
 
-  if (token) {
-    setClientToken(token);
-  }
+    const actionType = action.type.split('/')[1];
 
-  return reducer(state, action);
+    if ((ROLE_ACTIONS_ADMIN as string[]).includes(actionType as string)) {
+        token = getTokenAdmin()
+    } else if ((ROLE_ACTIONS_PHARMACIST as string[]).includes(actionType as string)) {
+        token = getTokenPharmacist()
+    } else {
+        token = getToken();
+    }
+
+    if (token) {
+        setClientToken(token);
+    }
+
+    return reducer(state, action);
 };
 
 export default rootReducer;
