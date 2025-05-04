@@ -4,6 +4,7 @@ from starlette import status
 from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file
+from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
     ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
     AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq
@@ -517,7 +518,7 @@ async def get_product_best_deals(top_n: int):
             message="Internal server error"
         )
 
-async def approve_product(item: ApproveProductReq, verified_by: str):
+async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes):
     try:
         collection = db[collection_name]
         product = collection.find_one({"product_id": item.product_id})
@@ -532,7 +533,7 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Product already approved"
             )
-        if product_info.verified_by and product_info.verified_by != verified_by:
+        if product_info.verified_by and product_info.verified_by != pharmacist.email:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="You are not authorized to approve this product"
@@ -541,8 +542,9 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
             "product_id": item.product_id},
             {"$set": {
                 "is_approved": item.is_approved,
-                "verified_by": verified_by,
-                "rejected_note": item.rejected_note
+                "verified_by": pharmacist.email,
+                "rejected_note": item.rejected_note,
+                "pharmacist_name": pharmacist.user_name
             }
         })
         logger.info(f"Product approved successfully for {item.product_id} by {verified_by} with: {item.is_approved}")
@@ -755,3 +757,33 @@ async def update_product_fields(update_data: ItemUpdateProductReq):
     except Exception as e:
         logger.error(f"Error updating product fields: {str(e)}")
         raise e
+
+async def update_pharmacist_name_for_all_products():
+    product_collection = db[collection_name]
+    pharmacist_collection = db["pharmacists"]
+
+    cursor = product_collection.find({
+        "verified_by": {"$ne": ""}
+    })
+
+    updated_count = 0
+    for product in cursor:
+        email = product.get("verified_by")
+        if not email:
+            continue
+
+        pharmacist = pharmacist_collection.find_one({"email": email})
+        if not pharmacist:
+            continue
+
+        pharmacist_name = pharmacist.get("user_name", "")
+        if not pharmacist_name:
+            continue
+
+        product_collection.update_one(
+            {"_id": product["_id"]},
+            {"$set": {"pharmacist_name": pharmacist_name}}
+        )
+        updated_count += 1
+
+    return updated_count
