@@ -3,6 +3,7 @@ from starlette.responses import FileResponse
 
 from app.core import logger, response
 from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq
+from app.helpers.constant import PAYMENT_COD
 from app.middleware import middleware
 from app.models import order, user
 
@@ -27,7 +28,6 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
             )
         return response.SuccessResponse(
             data=await order.check_shipping_fee(
-                item.sender_province_code,
                 item.receiver_province_code,
                 total_price,
                 weight
@@ -46,9 +46,19 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
 async def check_order(item: ItemOrderInReq, session: str= None, token: str = Depends(middleware.verify_token_optional)):
     try:
         user_id = session
+        is_session_user = True
+
         if token:
             user_info = await user.get_current(token)
             user_id = user_info.id
+            is_session_user = False
+
+        if is_session_user and item.payment_type == PAYMENT_COD:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Vui lòng đăng nhập để sử dụng phương thức thanh toán COD"
+            )
+
         return await order.check_order(item, user_id)
     except response.JsonException as je:
         raise je

@@ -423,10 +423,15 @@ async def update_child_category(child_category_id: str, child_category_name: str
 async def update_sub_category_image(sub_category_id: str, image: str):
     try:
         image_url = upload_file(image, "sub_category")
+        if not image_url:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không thể tải ảnh lên"
+            )
 
         collection = db[collection_name]
         result = collection.update_one(
-            {"sub_category.sub_category_id": sub_category_id},
+        {"sub_category.sub_category_id": sub_category_id},
             {"$set": {"sub_category.$.sub_image_url": image_url}}
         )
         if result.modified_count == 0:
@@ -442,6 +447,11 @@ async def update_child_category_image(child_category_id: str, image: str):
     try:
         image_url = upload_file(image, "child_category")
 
+        if not image_url:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không thể tải ảnh lên"
+            )
         collection = db[collection_name]
         result = collection.update_one(
             {"sub_category.child_category.child_category_id": child_category_id},
@@ -460,7 +470,11 @@ async def update_child_category_image(child_category_id: str, image: str):
 async def update_all_categories_image(image_url):
     try:
         image_url = upload_file(image_url, "default")
-
+        if not image_url:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không thể tải ảnh lên"
+            )
         collection = db[collection_name]
 
         categories = collection.find({})

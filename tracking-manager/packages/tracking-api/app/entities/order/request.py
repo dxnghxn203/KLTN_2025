@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
@@ -33,7 +34,7 @@ class ItemOrderReq(BaseModel):
     receiver_district_code: int
     receiver_commune_code: int
     created_by: str
-    delivery_time: str
+    delivery_time: datetime
     delivery_instruction: str = ""
     payment_type: str = ""
     weight: float = 0
@@ -43,11 +44,7 @@ class ItemOrderReq(BaseModel):
 
 class ItemOrderInReq(BaseModel):
     product: List[ItemProductInReq]
-    pick_from: InfoAddressOrderReq
     pick_to: InfoAddressOrderReq
-    sender_province_code: int
-    sender_district_code: int
-    sender_commune_code: int
     receiver_province_code: int
     receiver_district_code: int
     receiver_commune_code: int
@@ -63,3 +60,21 @@ class ItemUpdateStatusReq(BaseModel):
     shipper_id: str = ""
     shipper_name: str = ""
     delivery_instruction: str = ""
+
+class ItemOrderForPTReq(BaseModel):
+    status: str = "pending"
+    product: List[ItemProductInReq]
+    pick_to: InfoAddressOrderReq
+    receiver_province_code: int
+    receiver_district_code: int
+    receiver_commune_code: int
+    created_by: str
+    payment_type: str = ""
+    verified_by: str = ""
+
+class ItemOrderForPTInReq(BaseModel):
+    product: List[ItemProductInReq]
+    pick_to: InfoAddressOrderReq
+    receiver_province_code: int = 0
+    receiver_district_code: int = 0
+    receiver_commune_code: int = 0

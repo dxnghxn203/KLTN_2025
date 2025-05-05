@@ -8,6 +8,7 @@ from typing import Optional, List, Tuple
 import httpx
 from bson import ObjectId
 from bson.errors import InvalidId
+from dateutil.parser import parse
 from starlette import status
 from starlette.responses import StreamingResponse
 
@@ -19,7 +20,8 @@ from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, 
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
-    FEE_INDEX, get_update_status_queue
+    FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
+    SENDER_COMMUNE_CODE
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
@@ -174,14 +176,13 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
     return product_items, total_price, weight, out_of_stock_ids
 
 async def check_shipping_fee(
-        sender_province_code: int,
         receiver_province_code: int,
         product_price: float,
         weight: float
     ):
     try:
         route_code = await determine_route(
-                sender_code=sender_province_code,
+                sender_code=SENDER_PROVINCE_CODE,
                 receiver_code=receiver_province_code
             )
 
@@ -222,7 +223,6 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             )
 
         fee_data = await check_shipping_fee(
-            sender_province_code=item.sender_province_code,
             receiver_province_code=item.receiver_province_code,
             product_price=product_price,
             weight=weight
@@ -319,11 +319,15 @@ async def save_order_to_redis(
             tracking_id=tracking_id,
             status="created",
             created_by=user_id,
-            delivery_time=fee_data["delivery_time"],
+            delivery_time=parse(fee_data["delivery_time"]),
             shipping_fee=fee_data["shipping_fee"],
             product_fee=fee_data["product_fee"],
             total_fee=fee_data["total_fee"],
-            weight=fee_data["weight"]
+            weight=fee_data["weight"],
+            pick_from=WAREHOUSE_ADDRESS,
+            sender_province_code=SENDER_PROVINCE_CODE,
+            sender_district_code=SENDER_DISTRICT_CODE,
+            sender_commune_code=SENDER_COMMUNE_CODE,
         )
         logger.info("item", json=item_data)
 

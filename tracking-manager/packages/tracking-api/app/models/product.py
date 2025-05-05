@@ -272,7 +272,6 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
             ]
 
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
-        full_subscription_list = item.full_description.full_descriptions if item.full_description and item.full_description.full_descriptions else []
         images_primary_url = (upload_file(images_primary, "images_primary") or "") if images_primary else ""
 
         product_id = generate_id("PRODUCT")
@@ -323,7 +322,6 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
             product_id=product_id,
             prices=price_list,
             images=image_list,
-            full_descriptions=full_subscription_list,
             ingredients=ingredients_list,
             images_primary=images_primary_url,
             category=category_obj,
@@ -589,12 +587,14 @@ async def add_product_media(item: AddProductMediaReq, files):
 
         if files:
             if media_type == "images":
-                new_images = [
-                    {
-                        "images_id": generate_id("IMAGE"),
-                        "images_url": upload_file(file, "images")
-                    } for file in files if upload_file(file, "images")
-                ]
+                new_images = []
+                for file in files:
+                    url = upload_file(file, "images")
+                    if url:
+                        new_images.append({
+                            "images_id": generate_id("IMAGE"),
+                            "images_url": url
+                        })
                 collection.update_one(
                     {"product_id": item.product_id},
                     {"$push": {"images": {"$each": new_images}}}
