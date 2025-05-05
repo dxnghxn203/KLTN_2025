@@ -161,6 +161,7 @@ class ItemProductDBReq(BaseModel):
     active: bool = True
     prescription_required: bool = False
     verified_by: str = ""
+    pharmacist_name: str = ""
     is_approved: bool = False
     rejected_note: str = ""
 

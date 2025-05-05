@@ -14,7 +14,7 @@ from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
     get_product_best_deals, approve_product, get_approved_product, update_product_status, add_product_media, \
-    delete_product_media, update_product_fields
+    delete_product_media, update_product_fields, update_pharmacist_name_for_all_products
 
 router = APIRouter()
 
@@ -289,7 +289,7 @@ async def pharmacist_approve_product(item: ApproveProductReq, token: str = Depen
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Dược sĩ không tồn tại."
             )
-        return await approve_product(item, pharmacist_info.email)
+        return await approve_product(item, pharmacist_info)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -375,3 +375,12 @@ async def admin_update_product(item: ItemUpdateProductReq,
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.put("/products/update-pharmacist-name", response_model=response.BaseResponse)
+async def update_pharmacist_name_all():
+    try:
+        updated_count = await update_pharmacist_name_for_all_products()
+        return response.SuccessResponse(message=f"Đã cập nhật {updated_count} sản phẩm thành công")
+    except Exception as e:
+        logger.error(f"Error updating pharmacist_name: {str(e)}")
+        raise response.JsonException(status_code=500, message="Internal server error")
