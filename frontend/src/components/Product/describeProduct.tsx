@@ -1,6 +1,10 @@
 import { GoAlertFill } from "react-icons/go";
 import { useState } from "react";
 import DOMPurify from "dompurify";
+import { CheckCircle } from "lucide-react";
+import pharmacist_male from "@/images/pharmacist_male.png";
+import pharmacist_female from "@/images/pharmacist_male.png";
+import { FaArrowRightLong, FaCircleCheck } from "react-icons/fa6";
 
 const SafeHtmlDisplay = ({ htmlContent }: { htmlContent: string }) => {
   const cleanHtml = DOMPurify.sanitize(htmlContent); // Lọc HTML an toàn
@@ -99,6 +103,38 @@ const DescribeProduct = ({ product }: { product: any }) => {
       >
         {expanded ? "Thu gọn" : "Xem thêm"}
       </button>
+      <div className="flex items-start p-4 bg-[#EAEFFA] rounded-lg">
+        <img
+          src="/path/to/image.png"
+          alt="Pharmacist"
+          className="w-16 h-16 rounded-full object-cover mr-4"
+        />
+
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-gray-900">
+              Dược sĩ Đại học Nguyễn Thị Thảo Nguyên
+            </h3>
+            <div className="flex items-center text-green-600 text-sm font-medium">
+              <FaCircleCheck className="w-4 h-4 mr-2" />
+              Đã kiểm duyệt nội dung
+            </div>
+          </div>
+
+          <p className="text-gray-700 mt-1">
+            Tốt nghiệp Khoa Dược trường Đại học Nam Cần Thơ. Có nhiều năm kinh
+            nghiệm công tác trong lĩnh vực Dược phẩm. Hiện đang giảng viên cho
+            Dược sĩ tại Nhà thuốc Long Châu.
+          </p>
+
+          <a
+            href="#"
+            className="text-sm text-blue-600 hover:underline mt-2 inline-block flex items-center space-x-2"
+          >
+            Xem thêm thông tin <FaArrowRightLong className="ml-2" />
+          </a>
+        </div>
+      </div>
     </div>
   );
 };

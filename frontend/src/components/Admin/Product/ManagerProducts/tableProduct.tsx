@@ -1,20 +1,19 @@
 "use client";
 import { useProduct } from "@/hooks/useProduct";
 import { useEffect, useState } from "react";
-import { RiMore2Fill } from "react-icons/ri";
-import { BiEditAlt } from "react-icons/bi";
 import { ImBin } from "react-icons/im";
 import { IoImage } from "react-icons/io5";
 import Image from "next/image";
-import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
+import { useRouter } from "next/navigation";
 import {
+  MdMoreHoriz,
   MdNavigateBefore,
   MdNavigateNext,
   MdOutlineModeEdit,
 } from "react-icons/md";
-import { Delete } from "lucide-react";
 import DeleteProductDialog from "../../Dialog/confirmDeleteProductDialog";
 import { useToast } from "@/providers/toastProvider";
+import { FiEye } from "react-icons/fi";
 
 const TableProduct = () => {
   const { allProductAdmin, getAllProductsAdmin, deleteProduct } = useProduct();
@@ -22,12 +21,14 @@ const TableProduct = () => {
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const router = useRouter();
+
   const onPageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   const toast = useToast();
-  const productsPerPage = 5;
+  const productsPerPage = 20;
 
   useEffect(() => {
     getAllProductsAdmin();
@@ -52,11 +53,16 @@ const TableProduct = () => {
   const totalProducts = allProductAdmin ? allProductAdmin.length : 0;
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  console.log("Tổng số sản phẩm:", totalProducts);
   const currentProducts = allProductAdmin
     ? allProductAdmin.slice(indexOfFirstProduct, indexOfLastProduct)
     : [];
   // console.log("Product ID đã chọn:", selectedProduct?.product_id);
   const totalPages = Math.ceil(totalProducts / productsPerPage);
+  // console.log("Tổng số trang:", totalPages);
+  // console.log("Sản phẩm hiện tại:", currentProducts);
+  // console.log("Sản phẩm hiện tại:", currentProducts.length);
+  console.log("Sản phẩm hiện tại:", allProductAdmin);
 
   return (
     <>
@@ -177,21 +183,33 @@ const TableProduct = () => {
                     <td className="py-4 px-2 text-center relative">
                       <div className="menu-container">
                         <div
-                          className="py-4 px-2 rounded-full hover:text-[#1E4DB7] hover:bg-[#E7ECF7] cursor-pointer inline-flex items-center justify-center"
+                          className="p-2 rounded-full hover:text-[#1E4DB7] hover:bg-[#E7ECF7] cursor-pointer inline-flex items-center justify-center"
                           onClick={() => toggleMenu(product.product_id)}
                         >
-                          <RiMore2Fill className="text-xl" />
+                          <MdMoreHoriz className="text-xl" />
                         </div>
 
                         {menuOpen === product.product_id && (
-                          <div className="absolute right-0 bg-white border rounded-lg shadow-lg z-10">
-                            <button className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100">
+                          <div className="absolute right-0 bg-white border rounded-lg shadow-lg z-10 w-32 items-center">
+                            <button className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 space-x-1">
+                              <FiEye className="text-base" />
+                              <span>Chi tiết</span>
+                            </button>
+                            <button
+                              className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 space-x-1"
+                              onClick={() => {
+                                router.push(
+                                  `/san-pham/them-san-pham-don?edit=${product.slug}`
+                                );
+                              }}
+                            >
                               <MdOutlineModeEdit className="text-base" />
+
                               <span>Sửa</span>
                             </button>
-                            <div className="border-t border-gray-200"></div>
+
                             <button
-                              className="flex items-center gap-1 mr-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500"
+                              className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500 space-x-1"
                               onClick={() => {
                                 setSelectedProduct(product); // Lưu product hiện tại
                                 setIsOpenDialog(true); // Mở dialog xác nhận xóa

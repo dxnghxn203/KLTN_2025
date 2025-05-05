@@ -179,7 +179,19 @@ export const productSlice = createSlice({
             console.log("fetchApproveProductByPharmacistFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
-        }
+        },
+        // fetch update product
+        fetchUpdateProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
 
 
     },
@@ -229,6 +241,10 @@ export const {
     fetchApproveProductByPharmacistFailed,
     fetchApproveProductByPharmacistStart,
     fetchApproveProductByPharmacistSuccess,
+
+    fetchUpdateProductFailed,
+    fetchUpdateProductStart,
+    fetchUpdateProductSuccess,
 
 
     

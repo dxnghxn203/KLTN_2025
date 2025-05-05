@@ -295,15 +295,15 @@ function* forgotPasswordPharmacistWorkerSaga(action: any): Generator<any, void, 
     try {
         const response = yield call(forgotPasswordPharmacist, body);
         if (response.status_code === 200) {
-            yield put(fetchChangePasswordPharmacistSuccess(response.data));
+            yield put(fetchForgotPasswordPharmacistSuccess(response.data));
             onSuccess(response.message);
         } else {
-            yield put(fetchChangePasswordPharmacistFailure());
+            yield put(fetchForgotPasswordPharmacistFailure());
             onFailure(response.message);
         }
     } catch (error: any) {
         onFailure(error?.response?.data?.message);
-        yield put(fetchChangePasswordPharmacistFailure());
+        yield put(fetchForgotPasswordPharmacistFailure());
     }
 }
 export function* userSaga() {

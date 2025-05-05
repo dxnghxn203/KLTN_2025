@@ -191,3 +191,20 @@ export const approveProductByPharmacist = async (params: any) => {
         }
     }
 }
+
+export const updateProduct = async (params: any) => {
+    try {
+        const response: any = await axiosClient.put("/v1/products/update-product", params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

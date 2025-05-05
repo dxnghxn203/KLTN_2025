@@ -3,13 +3,12 @@ import Link from "next/link";
 import { useProduct } from "@/hooks/useProduct";
 import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
-import { BsFiletypePdf } from "react-icons/bs";
 import { TbFileTypePdf } from "react-icons/tb";
-import { FaImage } from "react-icons/fa";
 import { BiSolidImageAdd } from "react-icons/bi";
 import "react-quill/dist/quill.snow.css"; // Import styles
 import ReactQuill from "react-quill"; // Import ReactQuill
 import "@/styles/globals.css";
+import { useSearchParams } from "next/navigation";
 
 const toolbarOptions = [
   [{ header: "1" }, { header: "2" }, { font: [] }],
@@ -23,7 +22,13 @@ const toolbarOptions = [
 const CreateSingleProduct = () => {
   const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
 
-  const { addProduct } = useProduct();
+  const {
+    addProduct,
+    fetchUpdateProduct,
+    fetchProductBySlug,
+    getAllProductsAdmin,
+    allProductAdmin,
+  } = useProduct();
 
   interface PriceItem {
     original_price: number;
@@ -37,11 +42,6 @@ const CreateSingleProduct = () => {
     ingredient_name: string;
     ingredient_amount: string;
   }
-  interface FullDescription {
-    title: string;
-    content: string;
-  }
-
   interface Manufacturer {
     manufacture_name: string;
     manufacture_address: string;
@@ -118,9 +118,25 @@ const CreateSingleProduct = () => {
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>("");
   const primaryImageInputRef = useRef<HTMLInputElement | null>(null);
 
+  const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
+  const [selectedChildCategory, setSelectedChildCategory] =
+    useState<string>("");
+
+  const [availableSubCategories, setAvailableSubCategories] = useState<any[]>(
+    []
+  );
+  const [availableChildCategories, setAvailableChildCategories] = useState<
+    any[]
+  >([]);
+
   // Add state for validation
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const searchParams = useSearchParams();
+  const editSlug = searchParams.get("edit");
+  const parsedCategoryRef = useRef<any>(null);
 
   // Function to generate a slug from product name with Vietnamese character support
   const generateSlug = (title: string): string => {
@@ -445,86 +461,28 @@ const CreateSingleProduct = () => {
     setErrors({});
     setFormSubmitted(false);
   };
+  useEffect(() => {
+    if (selectedSubCategory && availableSubCategories.length > 0) {
+      const subCat = availableSubCategories.find(
+        (cat: any) => cat.sub_category_id === selectedSubCategory
+      );
+      if (subCat) {
+        setAvailableChildCategories(subCat.child_category || []);
+        setSelectedChildCategory("");
 
-  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-    const isValid = validateForm();
-    if (!isValid) {
-      const firstErrorElement = document.querySelector('[data-error="true"]');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
+        // Update category state with sub-category info
+        setCategory({
+          ...category,
+          sub_category_id: subCat.sub_category_id,
+          sub_category_name: subCat.sub_category_name,
+          sub_category_slug: subCat.sub_category_slug,
+          child_category_id: "",
+          child_category_name: "",
+          child_category_slug: "",
         });
       }
-      return;
     }
-
-    const formData = new FormData(e.currentTarget);
-
-    formData.delete("images");
-    formData.delete("images_primary");
-
-    images.forEach((image) => {
-      formData.append("images", image);
-    });
-
-    if (primaryImage) {
-      formData.append("images_primary", primaryImage);
-    }
-
-    formData.set("ingredients", JSON.stringify({ ingredients }));
-    formData.set("prices", JSON.stringify({ prices }));
-    formData.set("manufacturer", JSON.stringify(manufacturer));
-    formData.set("category", JSON.stringify(category));
-    formData.set("uses", uses);
-    formData.set("dosage_form", dosageForm);
-    formData.set("dosage", dosage);
-    formData.set("side_effects", side_effects);
-    formData.set("precautions", precautions);
-    formData.set("storage", storage);
-    formData.set("full_description", full_description);
-
-    formData.set("prescription_required", JSON.stringify(prescriptionRequired));
-
-    // const formDataObj: Record<string, any> = {};
-    // formData.forEach((value, key) => {
-    //   formDataObj[key] = value;
-    // });
-
-    await addProduct(
-      formData,
-      (message: any) => {
-        toast.showToast(message, "success");
-        resetForm(); // Reset the form after successful submission
-      },
-      (message: any) => {
-        toast.showToast(message, "error");
-      }
-    );
-    console.log("formData", formData);
-  };
-
-  const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
-  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedChildCategory, setSelectedChildCategory] =
-    useState<string>("");
-
-  const [availableSubCategories, setAvailableSubCategories] = useState<any[]>(
-    []
-  );
-  const [availableChildCategories, setAvailableChildCategories] = useState<
-    any[]
-  >([]);
-
-  // Fetch categories on component mount
-  useEffect(() => {
-    fetchGetAllCategoryForAdmin();
-  }, []);
-
-  // Update sub-categories when main category changes
+  }, [selectedSubCategory, availableSubCategories]);
   useEffect(() => {
     if (selectedMainCategory && categoryAdmin) {
       const mainCat = categoryAdmin.find(
@@ -553,30 +511,6 @@ const CreateSingleProduct = () => {
     }
   }, [selectedMainCategory, categoryAdmin]);
 
-  // Update child-categories when sub-category changes
-  useEffect(() => {
-    if (selectedSubCategory && availableSubCategories.length > 0) {
-      const subCat = availableSubCategories.find(
-        (cat: any) => cat.sub_category_id === selectedSubCategory
-      );
-      if (subCat) {
-        setAvailableChildCategories(subCat.child_category || []);
-        setSelectedChildCategory("");
-
-        // Update category state with sub-category info
-        setCategory({
-          ...category,
-          sub_category_id: subCat.sub_category_id,
-          sub_category_name: subCat.sub_category_name,
-          sub_category_slug: subCat.sub_category_slug,
-          child_category_id: "",
-          child_category_name: "",
-          child_category_slug: "",
-        });
-      }
-    }
-  }, [selectedSubCategory, availableSubCategories]);
-
   // Update category state when child category changes
   useEffect(() => {
     if (selectedChildCategory && availableChildCategories.length > 0) {
@@ -594,6 +528,150 @@ const CreateSingleProduct = () => {
       }
     }
   }, [selectedChildCategory, availableChildCategories]);
+
+  useEffect(() => {
+    if (!editSlug) return;
+    getAllProductsAdmin();
+  }, [editSlug]);
+
+  useEffect(() => {
+    if (
+      !editSlug ||
+      !allProductAdmin ||
+      allProductAdmin.length === 0 ||
+      !categoryAdmin
+    )
+      return;
+
+    const product = allProductAdmin.find((item: any) => item.slug === editSlug);
+    if (!product) {
+      toast.showToast("Không tìm thấy sản phẩm", "error");
+      return;
+    }
+
+    // Set state cơ bản
+    setProductName(product.product_name);
+    setSlug(product.slug);
+    setNamePrimary(product.name_primary);
+    setOrigin(product.origin);
+    setDescription(product.description);
+    setInventory(product.inventory);
+    setBrand(product.brand);
+    setUses(product.uses);
+    setDosageForm(product.dosage_form);
+    setDosage(product.dosage);
+    setSideEffects(product.side_effects);
+    setPrecautions(product.precautions);
+    setStorage(product.storage);
+    setFullDescription(product.full_descriptions);
+    setPrescriptionRequired(product.prescription_required);
+    setPrices(
+      product.prices.map((p: any) => ({
+        original_price: p.original_price,
+        discount: p.discount,
+        unit: p.unit,
+        amount: p.amount,
+        weight: p.weight,
+      }))
+    );
+    setIngredients(
+      product.ingredients.map((i: any) => ({
+        ingredient_name: i.ingredient_name,
+        ingredient_amount: i.ingredient_amount,
+      }))
+    );
+    setManufacturer({
+      manufacture_name: product.manufacturer.manufacture_name,
+      manufacture_address: product.manufacturer.manufacture_address,
+      manufacture_contact: product.manufacturer.manufacture_contact,
+    });
+
+    if (product.images && product.images.length > 0) {
+      const imageUrls = product.images.map((img: any) => img.images_url);
+      setImagePreviewUrls(imageUrls); // Cập nhật URL ảnh
+    } else {
+      setImagePreviewUrls([]); // Nếu không có ảnh, đặt mảng trống
+    }
+    setPrimaryImagePreview(product.images_primary);
+
+    setSelectedMainCategory(product.category.main_category_id);
+    setSelectedSubCategory(product.category.sub_category_id);
+    setSelectedChildCategory(product.category.child_category_id);
+  }, [allProductAdmin, editSlug, categoryAdmin]);
+
+  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    const isValid = validateForm();
+    if (!isValid) {
+      const firstErrorElement = document.querySelector('[data-error="true"]');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    formData.delete("images");
+    formData.delete("images_primary");
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+    if (primaryImage) {
+      formData.append("images_primary", primaryImage);
+    }
+    formData.set("ingredients", JSON.stringify({ ingredients }));
+    formData.set("prices", JSON.stringify({ prices }));
+    formData.set("manufacturer", JSON.stringify(manufacturer));
+    formData.set("category", JSON.stringify(category));
+    formData.set("uses", uses);
+    formData.set("dosage_form", dosageForm);
+    formData.set("dosage", dosage);
+    formData.set("side_effects", side_effects);
+    formData.set("precautions", precautions);
+    formData.set("storage", storage);
+    formData.set("full_description", full_description);
+    formData.set("prescription_required", JSON.stringify(prescriptionRequired));
+
+    if (editSlug) {
+      formData.set("product_id", editSlug);
+      await fetchUpdateProduct(
+        formData,
+        (message: any) => {
+          toast.showToast(message, "success");
+          resetForm(); // Reset the form after successful submission
+        },
+        (message: any) => {
+          toast.showToast(message, "error");
+        }
+      );
+      return;
+    } else {
+      await addProduct(
+        formData,
+        (message: any) => {
+          toast.showToast(message, "success");
+          resetForm(); // Reset the form after successful submission
+        },
+        (message: any) => {
+          toast.showToast(message, "error");
+        }
+      );
+    }
+    // console.log("formData", formData);
+  };
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    fetchGetAllCategoryForAdmin();
+  }, []);
+
+  // Update sub-categories when main category changes
+
+  // Update child-categories when sub-category changes
 
   // Helper components for displaying errors
   const ErrorMessage = ({ message }: { message: string }) => (
@@ -622,14 +700,16 @@ const CreateSingleProduct = () => {
 
   return (
     <div className="">
-      <h2 className="text-2xl font-extrabold text-black">Thêm sản phẩm</h2>
+      <h2 className="text-2xl font-extrabold text-black">
+        {editSlug ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm"}
+      </h2>
       <div className="my-4 text-sm">
         <Link href="/dashboard" className="hover:underline text-blue-600">
           Dashboard
         </Link>
         <span> / </span>
         <Link href="/create-single-product" className="text-gray-800">
-          Thêm sản phẩm đơn
+          {editSlug ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
         </Link>
       </div>
       <form onSubmit={submitProduct}>
@@ -1345,8 +1425,7 @@ const CreateSingleProduct = () => {
                   <div className="mt-3">
                     <div className="flex justify-between items-center mb-2">
                       <p className="text-sm font-medium">
-                        {images.length} ảnh{images.length !== 1 ? "s" : ""} được
-                        chọn
+                        {images.length} ảnh được chọn
                       </p>
                       <button
                         type="button"
@@ -1365,7 +1444,7 @@ const CreateSingleProduct = () => {
                           <img
                             src={url}
                             alt={`Preview ${index}`}
-                            className="h-20 w-20 object-cover rounded border"
+                            className="h-20 w-20 object-cover rounded border p-2"
                           />
                           <button
                             type="button"
@@ -1407,7 +1486,7 @@ const CreateSingleProduct = () => {
                     <img
                       src={primaryImagePreview}
                       alt="Primary image preview"
-                      className="h-24 w-24 object-cover rounded border"
+                      className="h-24 w-24 object-cover rounded border p-2"
                     />
                     <button
                       type="button"
@@ -1427,7 +1506,7 @@ const CreateSingleProduct = () => {
             type="submit"
             className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
           >
-            Thêm
+            {editSlug ? "Cập nhật" : "Tạo sản phẩm"}
           </button>
           <button
             type="button"

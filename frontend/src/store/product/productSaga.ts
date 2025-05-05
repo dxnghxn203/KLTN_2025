@@ -333,6 +333,88 @@ function * handleApproveProduct(action: any): Generator<any, void, any> {
     }
 }
 
+function* handleUpdateProduct(action: any): Generator<any, void, any> {
+    try {
+      const { payload } = action;
+      const {
+        product_id,
+        product_name,
+        name_primary,
+        prices,
+        inventory,
+        slug,
+        description,
+        full_description,
+        category,
+        origin,
+        ingredients,
+        uses,
+        dosage,
+        side_effects,
+        precautions,
+        storage,
+        manufacturer,
+        dosage_form,
+        brand,
+        prescription_required,
+        registration_number,
+        onSuccess = () => {},
+        onFailed = () => {},
+      } = payload;
+  
+      const body = {
+        product_id,
+        product_name,
+        name_primary,
+        prices: {
+          prices: prices?.prices || [],
+        },
+        inventory,
+        slug,
+        description,
+        full_description,
+        category: {
+          main_category_id: category?.main_category_id || '',
+          sub_category_id: category?.sub_category_id || '',
+          child_category_id: category?.child_category_id || '',
+        },
+        origin,
+        ingredients: {
+          ingredients: ingredients?.ingredients || [],
+        },
+        uses,
+        dosage,
+        side_effects,
+        precautions,
+        storage,
+        manufacturer: {
+          manufacture_name: manufacturer?.manufacture_name || '',
+          manufacture_address: manufacturer?.manufacture_address || '',
+          manufacture_contact: manufacturer?.manufacture_contact || '',
+        },
+        dosage_form,
+        brand,
+        prescription_required,
+        registration_number,
+      };
+  
+      const product = yield call(productService.updateProduct, body);
+      if (product.status_code === 200) {
+        onSuccess(product.message);
+        yield put(fetchAddProductSuccess());
+        return;
+      }
+  
+      onFailed(product.message);
+      yield put(
+        fetchAddProductFailed(product.message || 'Failed to update product')
+      );
+    } catch (error) {
+      yield put(fetchAddProductFailed('Failed to update product'));
+    }
+  }
+  
+
 
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
