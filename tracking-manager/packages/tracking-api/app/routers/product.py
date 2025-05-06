@@ -13,8 +13,7 @@ from app.middleware import middleware
 from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
-    get_product_best_deals, approve_product, get_approved_product, update_product_status, add_product_media, \
-    delete_product_media, update_product_fields, update_pharmacist_name_for_all_products, check_product_consistency, \
+    get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, update_pharmacist_name_for_all_products, check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file
 
 router = APIRouter()
