@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
 import { useProduct } from "@/hooks/useProduct";
@@ -9,9 +10,12 @@ import "react-quill/dist/quill.snow.css"; // Import styles
 import ReactQuill from "react-quill"; // Import ReactQuill
 import "@/styles/globals.css";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { send } from "process";
 
 const toolbarOptions = [
-  [{ header: "1" }, { header: "2" }, { font: [] }],
+  [{ header: [1, 2, 3, 4, false] }],
+  [{ font: [] }],
   [{ size: [] }],
   ["bold", "italic", "underline", "strike", "blockquote"],
   [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
@@ -21,13 +25,15 @@ const toolbarOptions = [
 
 const CreateSingleProduct = () => {
   const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
-
+  const router = useRouter();
   const {
     addProduct,
     fetchUpdateProduct,
-    fetchProductBySlug,
     getAllProductsAdmin,
     allProductAdmin,
+    fetchUpdateCertificateFileProduct,
+    fetchUpdateImagesPrimaryProduct,
+    fetchUpdateImagesProduct,
   } = useProduct();
 
   interface PriceItem {
@@ -101,7 +107,7 @@ const CreateSingleProduct = () => {
   const [uses, setUses] = useState<string>("");
   const [dosageForm, setDosageForm] = useState<string>("");
   const [dosage, setDosage] = useState<string>("");
-  const [full_description, setFullDescription] = useState<string>("");
+  const [full_descriptions, setFullDescription] = useState<string>("");
   const [side_effects, setSideEffects] = useState<string>("");
   const [precautions, setPrecautions] = useState<string>("");
   const [storage, setStorage] = useState<string>("");
@@ -117,6 +123,16 @@ const CreateSingleProduct = () => {
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>("");
   const primaryImageInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [certificate_file, setCertificateFile] = useState<File | null>(null);
+  const [certificatePreview, setCertificatePreview] = useState<string>("");
+  const certificateInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [hasCertificateChanged, setHasCertificateChanged] = useState(false);
+  const [hasPrimaryImageChanged, setHasPrimaryImageChanged] = useState(false);
+  const [hasImagesChanged, setHasImagesChanged] = useState(false);
+
+  // const [file, setFile] = useState<File | null>(null);
 
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
@@ -135,8 +151,13 @@ const CreateSingleProduct = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
   const searchParams = useSearchParams();
-  const editSlug = searchParams.get("edit");
+  const editId = searchParams.get("edit");
   const parsedCategoryRef = useRef<any>(null);
+  const detailId = searchParams.get("chi-tiet");
+  const isViewOnly = !!detailId;
+  const productId = editId || detailId;
+  // console.log("productId", editId);
+  // const detailId = query["chi-tiet"];
 
   // Function to generate a slug from product name with Vietnamese character support
   const generateSlug = (title: string): string => {
@@ -442,6 +463,8 @@ const CreateSingleProduct = () => {
     setPrimaryImage(null);
     setImagePreviewUrls([]);
     setPrimaryImagePreview("");
+    setCertificateFile(null);
+    setCertificatePreview("");
 
     setNamePrimary("");
     setOrigin("");
@@ -530,26 +553,29 @@ const CreateSingleProduct = () => {
   }, [selectedChildCategory, availableChildCategories]);
 
   useEffect(() => {
-    if (!editSlug) return;
+    if (!productId) return;
     getAllProductsAdmin();
-  }, [editSlug]);
+  }, [productId]);
 
   useEffect(() => {
     if (
-      !editSlug ||
+      !productId ||
       !allProductAdmin ||
       allProductAdmin.length === 0 ||
       !categoryAdmin
     )
       return;
 
-    const product = allProductAdmin.find((item: any) => item.slug === editSlug);
+    const product = allProductAdmin.find(
+      (item: any) => item.product_id === productId
+    );
     if (!product) {
       toast.showToast("Không tìm thấy sản phẩm", "error");
       return;
     }
 
     // Set state cơ bản
+
     setProductName(product.product_name);
     setSlug(product.slug);
     setNamePrimary(product.name_primary);
@@ -585,19 +611,19 @@ const CreateSingleProduct = () => {
       manufacture_address: product.manufacturer.manufacture_address,
       manufacture_contact: product.manufacturer.manufacture_contact,
     });
+    setImages(product.images.map((img: any) => img.images_url)); // Set images
+    setPrimaryImage(product.images_primary); // Set primary image
 
     if (product.images && product.images.length > 0) {
       const imageUrls = product.images.map((img: any) => img.images_url);
       setImagePreviewUrls(imageUrls); // Cập nhật URL ảnh
-    } else {
-      setImagePreviewUrls([]); // Nếu không có ảnh, đặt mảng trống
     }
     setPrimaryImagePreview(product.images_primary);
-
     setSelectedMainCategory(product.category.main_category_id);
     setSelectedSubCategory(product.category.sub_category_id);
     setSelectedChildCategory(product.category.child_category_id);
-  }, [allProductAdmin, editSlug, categoryAdmin]);
+    setCertificateFile(product.certificate_file);
+  }, [allProductAdmin, editId, categoryAdmin]);
 
   const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -623,6 +649,9 @@ const CreateSingleProduct = () => {
     if (primaryImage) {
       formData.append("images_primary", primaryImage);
     }
+    if (certificate_file) {
+      formData.append("certificate_file", certificate_file);
+    }
     formData.set("ingredients", JSON.stringify({ ingredients }));
     formData.set("prices", JSON.stringify({ prices }));
     formData.set("manufacturer", JSON.stringify(manufacturer));
@@ -633,28 +662,120 @@ const CreateSingleProduct = () => {
     formData.set("side_effects", side_effects);
     formData.set("precautions", precautions);
     formData.set("storage", storage);
-    formData.set("full_description", full_description);
+    formData.set("full_descriptions", full_descriptions);
     formData.set("prescription_required", JSON.stringify(prescriptionRequired));
 
-    if (editSlug) {
-      formData.set("product_id", editSlug);
-      await fetchUpdateProduct(
-        formData,
-        (message: any) => {
-          toast.showToast(message, "success");
-          resetForm(); // Reset the form after successful submission
-        },
-        (message: any) => {
-          toast.showToast(message, "error");
-        }
-      );
-      return;
+    const dataToSend = {
+      product_id: editId,
+      product_name: productName,
+      slug,
+      name_primary: namePrimary,
+      origin,
+      description,
+      inventory,
+      brand,
+      uses,
+      dosage_form: dosageForm,
+      dosage,
+      side_effects,
+      precautions,
+      storage,
+      full_descriptions,
+      prescription_required: prescriptionRequired,
+      prices: {
+        prices: prices.map((p) => ({
+          original_price: p.original_price,
+          discount: p.discount,
+          unit: p.unit,
+          amount: p.amount,
+          weight: p.weight,
+        })),
+      },
+
+      ingredients: {
+        ingredients: ingredients.map((i) => ({
+          ingredient_name: i.ingredient_name,
+          ingredient_amount: i.ingredient_amount,
+        })),
+      },
+
+      manufacturer,
+      category: {
+        main_category_id: selectedMainCategory,
+        sub_category_id: selectedSubCategory,
+        child_category_id: selectedChildCategory,
+      },
+      images: imagePreviewUrls,
+      images_primary: primaryImagePreview,
+    };
+
+    const formData_Certificate = new FormData(e.currentTarget);
+    if (certificate_file) {
+      formData_Certificate.append("file", certificate_file);
+    }
+    console.log("editId", editId);
+    if (editId) {
+      try {
+        console.log("primaryImage", primaryImage, typeof primaryImage);
+        console.log("images", images, typeof images);
+        const hasPrimaryImageUpdate = !!primaryImage;
+        const hasImagesUpdate = images && images.length > 0;
+        const hasProductUpdate = Object.keys(dataToSend).length > 0;
+        console.log("hasPrimaryImageUpdate", hasPrimaryImageUpdate);
+        console.log("hasImagesUpdate", hasImagesUpdate);
+        console.log("hasProductUpdate", hasProductUpdate);
+        const callUpdateCertificate = async () => {
+          console.log("formData_Certificate", formData_Certificate);
+          await fetchUpdateCertificateFileProduct(
+            { product_id: editId, file: formData_Certificate },
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        };
+
+        const callUpdatePrimaryImage = async () => {
+          await fetchUpdateImagesPrimaryProduct(
+            { product_id: editId, file: primaryImage },
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        };
+
+        const callUpdateImages = async () => {
+          await fetchUpdateImagesProduct(
+            { product_id: editId, images },
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        };
+
+        const callUpdateProduct = async () => {
+          await fetchUpdateProduct(
+            dataToSend,
+            (msg) => {
+              toast.showToast(msg, "success");
+              resetForm();
+            },
+            (msg) => Promise.reject(new Error(msg))
+          );
+        };
+
+        if (hasCertificateChanged) await callUpdateCertificate();
+        if (hasPrimaryImageUpdate) await callUpdatePrimaryImage();
+        if (hasImagesUpdate) await callUpdateImages();
+        if (hasProductUpdate) await callUpdateProduct();
+      } catch (error: any) {
+        toast.showToast(
+          error?.message || "Có lỗi khi cập nhật sản phẩm!",
+          "error"
+        );
+      }
     } else {
       await addProduct(
         formData,
         (message: any) => {
           toast.showToast(message, "success");
-          resetForm(); // Reset the form after successful submission
+          // resetForm();
         },
         (message: any) => {
           toast.showToast(message, "error");
@@ -664,44 +785,42 @@ const CreateSingleProduct = () => {
     // console.log("formData", formData);
   };
 
-  // Fetch categories on component mount
   useEffect(() => {
     fetchGetAllCategoryForAdmin();
   }, []);
 
-  // Update sub-categories when main category changes
-
-  // Update child-categories when sub-category changes
-
-  // Helper components for displaying errors
   const ErrorMessage = ({ message }: { message: string }) => (
     <p className="text-red-500 text-xs mt-1">{message}</p>
   );
 
-  // Function to determine if a field has an error
   const hasError = (fieldName: string): boolean => {
     return formSubmitted && !!errors[fieldName];
   };
 
-  const [file, setFile] = useState<File | null>(null);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
-      setFile(selectedFile);
+      setCertificateFile(selectedFile);
+      setHasCertificateChanged(true);
     } else {
       alert("Vui lòng chọn tệp PDF");
     }
   };
 
   const removeFile = () => {
-    setFile(null);
+    setCertificateFile(null);
   };
 
   return (
     <div className="">
       <h2 className="text-2xl font-extrabold text-black">
-        {editSlug ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm"}
+        <h1>
+          {editId
+            ? "Chỉnh sửa sản phẩm"
+            : detailId
+            ? "Xem chi tiết sản phẩm"
+            : "Thêm sản phẩm"}
+        </h1>
       </h2>
       <div className="my-4 text-sm">
         <Link href="/dashboard" className="hover:underline text-blue-600">
@@ -709,7 +828,11 @@ const CreateSingleProduct = () => {
         </Link>
         <span> / </span>
         <Link href="/create-single-product" className="text-gray-800">
-          {editSlug ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+          {editId
+            ? "Chỉnh sửa sản phẩm"
+            : detailId
+            ? "Xem chi tiết sản phẩm"
+            : "Thêm sản phẩm"}
         </Link>
       </div>
       <form onSubmit={submitProduct}>
@@ -733,6 +856,7 @@ const CreateSingleProduct = () => {
                       className={`border rounded-lg p-2 w-full ${
                         hasError("product_name") ? "border-red-500" : ""
                       }`}
+                      disabled={isViewOnly}
                     />
                     {hasError("product_name") && (
                       <ErrorMessage message={errors.product_name} />
@@ -750,6 +874,7 @@ const CreateSingleProduct = () => {
                       }`}
                       value={namePrimary}
                       onChange={(e) => setNamePrimary(e.target.value)}
+                      disabled={isViewOnly}
                     />
                     {hasError("name_primary") && (
                       <ErrorMessage message={errors.name_primary} />
@@ -767,6 +892,7 @@ const CreateSingleProduct = () => {
                       className={`border rounded-lg p-2 w-full ${
                         hasError("slug") ? "border-red-500" : ""
                       }`}
+                      disabled={isViewOnly}
                     />
                     {hasError("slug") && <ErrorMessage message={errors.slug} />}
                     <p className="text-xs text-gray-500 mt-1">
@@ -785,6 +911,7 @@ const CreateSingleProduct = () => {
                       }`}
                       onChange={(e) => setOrigin(e.target.value)}
                       value={origin}
+                      disabled={isViewOnly}
                     />
                     {hasError("origin") && (
                       <ErrorMessage message={errors.origin} />
@@ -799,6 +926,7 @@ const CreateSingleProduct = () => {
                     checked={prescriptionRequired}
                     onChange={(e) => setPrescriptionRequired(e.target.checked)}
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 accent-blue-600"
+                    disabled={isViewOnly}
                   />
                   <label htmlFor="prescription_required" className="text-sm">
                     Thuốc kê toa
@@ -816,6 +944,7 @@ const CreateSingleProduct = () => {
                     }`}
                     onChange={(e) => setDescription(e.target.value)}
                     value={description}
+                    disabled={isViewOnly}
                   ></textarea>
                   {hasError("description") && (
                     <ErrorMessage message={errors.description} />
@@ -826,10 +955,11 @@ const CreateSingleProduct = () => {
                     Mô tả đầy đủ
                   </h3>
                   <ReactQuill
-                    name="full_description"
+                    name="full_descriptions"
                     onChange={(value: any) => setFullDescription(value)}
-                    value={full_description}
+                    value={full_descriptions}
                     modules={{ toolbar: toolbarOptions }}
+                    readOnly={isViewOnly}
                   />
                 </div>
               </div>
@@ -851,6 +981,7 @@ const CreateSingleProduct = () => {
                       }`}
                       value={selectedMainCategory}
                       onChange={(e) => setSelectedMainCategory(e.target.value)}
+                      disabled={isViewOnly}
                     >
                       <option value="">Chọn danh mục chính</option>
                       {categoryAdmin &&
@@ -877,6 +1008,7 @@ const CreateSingleProduct = () => {
                         className="border rounded-lg p-2 w-full"
                         value={selectedSubCategory}
                         onChange={(e) => setSelectedSubCategory(e.target.value)}
+                        disabled={isViewOnly}
                       >
                         <option value="">Chọn danh mục cấp 1</option>
                         {availableSubCategories.map((subCat: any) => (
@@ -902,6 +1034,7 @@ const CreateSingleProduct = () => {
                         onChange={(e) =>
                           setSelectedChildCategory(e.target.value)
                         }
+                        disabled={isViewOnly}
                       >
                         <option value="">Chọn danh mục cấp 2</option>
                         {availableChildCategories.map((childCat: any) => (
@@ -997,6 +1130,7 @@ const CreateSingleProduct = () => {
                   className="border rounded-lg p-2 w-full"
                   onChange={(e) => setDosageForm(e.target.value)}
                   value={dosageForm}
+                  disabled={isViewOnly}
                 />
               </div>
               <div data-error={hasError("uses")} className="mb-2">
@@ -1008,6 +1142,7 @@ const CreateSingleProduct = () => {
                   onChange={(value: any) => setUses(value)}
                   value={uses}
                   modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
                 />
                 {hasError("uses") && <ErrorMessage message={errors.uses} />}
               </div>
@@ -1020,6 +1155,7 @@ const CreateSingleProduct = () => {
                   onChange={(value: any) => setDosage(value)}
                   value={dosage}
                   modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
                 />
               </div>
 
@@ -1032,6 +1168,7 @@ const CreateSingleProduct = () => {
                   onChange={(value: any) => setSideEffects(value)}
                   value={side_effects}
                   modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
                 />
               </div>
               <div className="mb-2">
@@ -1041,6 +1178,7 @@ const CreateSingleProduct = () => {
                   onChange={(value: any) => setPrecautions(value)}
                   value={precautions}
                   modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
                 />
               </div>
               <div className="mb-2">
@@ -1052,6 +1190,7 @@ const CreateSingleProduct = () => {
                   onChange={(value: any) => setStorage(value)}
                   value={storage}
                   modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
                 />
               </div>
 
@@ -1064,6 +1203,7 @@ const CreateSingleProduct = () => {
                 className="border rounded-lg p-2 w-full"
                 onChange={(e) => setInventory(Number(e.target.value))}
                 value={inventory}
+                disabled={isViewOnly}
               />
             </div>
 
@@ -1101,6 +1241,7 @@ const CreateSingleProduct = () => {
                           )
                         }
                         className="border rounded-lg p-2 w-full"
+                        disabled={isViewOnly}
                       />
                     </div>
                     <div>
@@ -1118,6 +1259,7 @@ const CreateSingleProduct = () => {
                           )
                         }
                         className="border rounded-lg p-2 w-full"
+                        disabled={isViewOnly}
                       />
                     </div>
                   </div>
@@ -1151,6 +1293,7 @@ const CreateSingleProduct = () => {
                         manufacture_name: e.target.value,
                       })
                     }
+                    disabled={isViewOnly}
                     className={`border rounded-lg p-2 w-full ${
                       hasError("manufacture_name") ? "border-red-500" : ""
                     }`}
@@ -1172,6 +1315,7 @@ const CreateSingleProduct = () => {
                         manufacture_contact: e.target.value,
                       })
                     }
+                    disabled={isViewOnly}
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
@@ -1188,6 +1332,7 @@ const CreateSingleProduct = () => {
                         manufacture_address: e.target.value,
                       })
                     }
+                    disabled={isViewOnly}
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
@@ -1201,6 +1346,7 @@ const CreateSingleProduct = () => {
                     className="border rounded-lg p-2 w-full"
                     onChange={(e) => setBrand(e.target.value)}
                     value={brand}
+                    disabled={isViewOnly}
                   />
                 </div>
               </div>
@@ -1241,6 +1387,7 @@ const CreateSingleProduct = () => {
                               Number(e.target.value)
                             )
                           }
+                          disabled={isViewOnly}
                           className="border rounded-lg p-2 w-full"
                         />
                       </div>
@@ -1258,6 +1405,7 @@ const CreateSingleProduct = () => {
                               Number(e.target.value)
                             )
                           }
+                          disabled={isViewOnly}
                           className="border rounded-lg p-2 w-full"
                         />
                       </div>
@@ -1272,6 +1420,7 @@ const CreateSingleProduct = () => {
                             updatePriceItem(index, "amount", e.target.value)
                           }
                           className="border rounded-lg p-2 w-full"
+                          disabled={isViewOnly}
                         />
                       </div>
 
@@ -1285,6 +1434,7 @@ const CreateSingleProduct = () => {
                             updatePriceItem(index, "unit", e.target.value)
                           }
                           className="border rounded-lg p-2 w-full"
+                          disabled={isViewOnly}
                         >
                           <option value="">Chọn 1 đơn vị</option>
                           {unitOptions.map((unit, idx) => (
@@ -1306,6 +1456,7 @@ const CreateSingleProduct = () => {
                             updatePriceItem(index, "weight", e.target.value)
                           }
                           className="border rounded-lg p-2 w-full"
+                          disabled={isViewOnly}
                         />
                       </div>
                     </div>
@@ -1338,21 +1489,25 @@ const CreateSingleProduct = () => {
                     accept=".pdf"
                     className="hidden"
                     onChange={handleFileChange}
+                    ref={certificateInputRef}
+                    disabled={isViewOnly}
                   />
                 </label>
-                {file && (
+                {certificate_file && (
                   <div className="relative py-3 rounded-md max-w-xs">
                     {/* Nút x ở góc phải */}
                     <button
                       onClick={removeFile}
                       className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-lg font-bold"
                       aria-label="Xóa file"
+                      disabled={isViewOnly}
                     >
                       &times;
                     </button>
 
-                    <p className="text-sm text-gray-800 truncate">
-                      📄 {file.name}
+                    <p className="text-xs text-gray-800">
+                      <span className="text-2xl">📄</span>{" "}
+                      {certificate_file?.name}
                     </p>
                   </div>
                 )}
@@ -1411,6 +1566,7 @@ const CreateSingleProduct = () => {
                           onChange={handleImagesChange}
                           className="hidden"
                           accept="image/*"
+                          disabled={isViewOnly}
                         />
                       </label>
                     </div>
@@ -1434,6 +1590,7 @@ const CreateSingleProduct = () => {
                           setImagePreviewUrls([]);
                         }}
                         className="text-xs text-red-500 hover:text-red-700"
+                        disabled={isViewOnly}
                       >
                         Xóa hết
                       </button>
@@ -1451,6 +1608,7 @@ const CreateSingleProduct = () => {
                             onClick={() => removeImage(index)}
                             className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
                             title="Remove"
+                            disabled={isViewOnly}
                           >
                             ✕
                           </button>
@@ -1475,6 +1633,7 @@ const CreateSingleProduct = () => {
                     onChange={handlePrimaryImageChange}
                     className="hidden"
                     accept="image/*"
+                    disabled={isViewOnly}
                   />
                 </label>
 
@@ -1491,6 +1650,7 @@ const CreateSingleProduct = () => {
                     <button
                       type="button"
                       onClick={removePrimaryImage}
+                      disabled={isViewOnly}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
                     >
                       ✕
@@ -1501,20 +1661,22 @@ const CreateSingleProduct = () => {
             </div>
           </div>
         </div>
-        <div className="flex justify-center mt-4 space-x-2">
-          <button
-            type="submit"
-            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
-          >
-            {editSlug ? "Cập nhật" : "Tạo sản phẩm"}
-          </button>
-          <button
-            type="button"
-            className="text-sm text-red-500 font-semibold py-2 px-6 rounded-lg border border-red-500 hover:bg-red-500 hover:text-white"
-          >
-            Hủy
-          </button>
-        </div>
+        {!detailId && (
+          <div className="flex justify-center mt-4 space-x-2">
+            <button
+              type="submit"
+              className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
+            >
+              {editId ? "Cập nhật" : "Tạo sản phẩm"}
+            </button>
+            <button
+              type="button"
+              className="text-sm text-red-500 font-semibold py-2 px-6 rounded-lg border border-red-500 hover:bg-red-500 hover:text-white"
+            >
+              Hủy
+            </button>
+          </div>
+        )}
 
         {formSubmitted && Object.keys(errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -1529,6 +1691,18 @@ const CreateSingleProduct = () => {
           </div>
         )}
       </form>
+      {detailId && (
+        <div className="flex justify-center mt-4 space-x-2">
+          <button
+            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
+            onClick={() => {
+              router.push(`/san-pham/them-san-pham-don?edit=${detailId}`);
+            }}
+          >
+            Cập nhật sản phẩm
+          </button>
+        </div>
+      )}
     </div>
   );
 };
