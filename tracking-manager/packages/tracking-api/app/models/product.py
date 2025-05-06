@@ -545,7 +545,7 @@ async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes
                 "pharmacist_name": pharmacist.user_name
             }
         })
-        logger.info(f"Product approved successfully for {item.product_id} by {verified_by} with: {item.is_approved}")
+        logger.info(f"Product approved successfully for {item.product_id} by {pharmacist.email} with: {item.is_approved}")
 
         return response.SuccessResponse(message="Product approved successfully")
     except Exception as e:
