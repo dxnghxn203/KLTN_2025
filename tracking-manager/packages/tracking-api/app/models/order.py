@@ -524,7 +524,9 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
                 data={"out_of_stock": out_of_stock_ids}
             )
 
-        order_request = ItemOrderForPTReq(**item.model_dump(exclude={"product"}),
+        order_request = ItemOrderForPTReq(
+            **item.model_dump(exclude={"product"}),
+            request_id=generate_id("REQUEST"),
             product=product_items,
             created_by=user_id,
         )
@@ -543,18 +545,77 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
         logger.error(f"Failed [request_order_prescription]: {e}")
         raise e
 
-async def get_requested_order(email: str):
+async def get_approve_order(email: str):
     try:
         collection = database.db[request_collection_name]
         order_list = collection.find({"verified_by": {"$in": [None, "", email]}})
-        return (ItemOrderForPTRes.from_mongo(order) for order in order_list)
+        return (ItemOrderForPTRes(**order) for order in order_list)
+    except Exception as e:
+        logger.error(f"Failed [get_approve_order]: {e}")
+        raise e
+
+async def get_requested_order(user_id: str):
+    try:
+        collection = database.db[request_collection_name]
+        order_list = collection.find({"created_by": user_id})
+        return (ItemOrderForPTRes(**order) for order in order_list)
     except Exception as e:
         logger.error(f"Failed [get_requested_order]: {e}")
         raise e
 
 async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes):
     try:
-        pass
+        collection = database.db[request_collection_name]
+        order_request = collection.find_one({"request_id": item.request_id})
+        if not order_request:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy yêu cầu"
+            )
+        order_request = ItemOrderForPTRes(**order_request)
+
+        if order_request.status == "approved":
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Yêu cầu này đã duyệt"
+            )
+
+        if order_request.verified_by and order_request.verified_by != pharmacist.email:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không có quyền duyệt yêu cầu này"
+            )
+
+        collection.update_one(
+            {"request_id": item.request_id},
+            {
+                "$set": {
+                    "status": item.status,
+                    "note": item.note,
+                    "verified_by": pharmacist.email,
+                    "pharmacist_name": pharmacist.user_name
+                }
+            }
+        )
+
+        if item.status == "approved":
+            order_data = ItemOrderInReq(
+                product=item.product,
+                pick_to=order_request.pick_to,
+                receiver_province_code=order_request.receiver_province_code,
+                receiver_district_code=order_request.receiver_district_code,
+                receiver_commune_code=order_request.receiver_commune_code,
+                payment_type="COD",
+                delivery_instruction=item.note
+            )
+
+            return await check_order(order_data, user_id=order_request.created_by)
+
+        return response.SuccessResponse(message="Duyệt yêu cầu thành công")
+
     except Exception as e:
         logger.error(f"Failed [approve_order]: {e}")
-        raise e
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Lỗi duyệt đơn"
+        )

@@ -529,12 +529,12 @@ async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes
         if product_info.is_approved:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Product already approved"
+                message="Sản phẩm dã duyệt"
             )
         if product_info.verified_by and product_info.verified_by != pharmacist.email:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="You are not authorized to approve this product"
+                message="Không có quyền duyệt sản phẩm này"
             )
         collection.update_one({
             "product_id": item.product_id},

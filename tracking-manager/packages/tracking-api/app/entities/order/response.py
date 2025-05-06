@@ -52,7 +52,7 @@ class ItemOrderRes(BaseModel):
         return cls(**data)
 
 class ItemOrderForPTRes(BaseModel):
-    id: Optional[str] = Field(None, alias="_id")
+    request_id: Optional[Union[str, None]] = None
     status: Optional[Union[str, None]] = None
     product: List[ItemProductRes]
     pick_to: InfoAddressOrderRes
@@ -60,12 +60,6 @@ class ItemOrderForPTRes(BaseModel):
     receiver_district_code: int = 0
     receiver_commune_code: int = 0
     created_by: Optional[Union[str, None]] = None
-    payment_type: Optional[Union[str, None]] = None
     verified_by: Optional[Union[str, None]] = None
     pharmacist_name: Optional[Union[str, None]] = None
-
-    @classmethod
-    def from_mongo(cls, data):
-        if '_id' in data:
-            data['_id'] = str(data.get('_id'))
-        return cls(**data)
+    note : Optional[Union[str, None]] = None
