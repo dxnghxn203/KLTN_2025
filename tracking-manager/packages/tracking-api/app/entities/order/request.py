@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from app.entities.product.request import ItemProductReq, ItemProductInReq
 
-
 class AddressOrderReq(BaseModel):
     address: str
     ward: str

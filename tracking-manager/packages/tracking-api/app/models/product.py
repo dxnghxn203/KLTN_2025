@@ -3,7 +3,7 @@ from starlette import status
 
 from app.core import logger, response, recommendation
 from app.core.database import db
-from app.core.s3 import upload_file
+from app.core.s3 import upload_file, upload_any_file
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
     ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
@@ -245,7 +245,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
                 message=f"Sản phẩm đã tồn tại: {item.slug}"
             )
 
-        certificate_url = (upload_file(certificate_file, "certificates") or "") if certificate_file else ""
+        certificate_url = (upload_any_file(certificate_file, "certificates") or "") if certificate_file else ""
 
         image_list = []
         if images:
@@ -559,7 +559,7 @@ async def get_approved_product(email: str):
         logger.info(f"{product_list}")
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
-        logger.error(f"Failed [get_not_approved_product]: {e}")
+        logger.error(f"Failed [get_approved_product]: {e}")
         raise e
 
 async def update_product_status(item: UpdateProductStatusReq):
@@ -608,7 +608,7 @@ async def add_product_media(item: AddProductMediaReq, files):
                 )
             elif media_type == "certificate_file":
                 file = files[0] if files else None
-                url = upload_file(file, "certificates") if file else ""
+                url = upload_any_file(file, "certificates") if file else ""
                 collection.update_one(
                     {"product_id": item.product_id},
                     {"$set": {"certificate_file": url}}

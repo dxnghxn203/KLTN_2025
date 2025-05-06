@@ -15,6 +15,11 @@ class ItemProductRes(BaseModel):
     discount: float = 0
     images_primary: Optional[Union[str, None]] = None
 
+class ItemProductInRes(BaseModel):
+    product_id: Optional[Union[str, None]] = None
+    price_id: Optional[Union[str, None]] = None
+    quantity: int = 0
+
 class ItemPriceDBRes(BaseModel):
     price_id: Optional[Union[str, None]] = None
     price: float = 0

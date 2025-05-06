@@ -16,7 +16,7 @@ from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
     ItemOrderForPTInReq, ItemOrderForPTReq
-from app.entities.order.response import ItemOrderRes
+from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
@@ -528,4 +528,14 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
         )
     except Exception as e:
         logger.error(f"Failed [request_order_prescription]: {e}")
+        raise e
+
+async def get_requested_order(email: str):
+    try:
+        collection = db[request_collection_name]
+        order_list = collection.find({"verified_by": {"$in": [None, "", email]}})
+        logger.info(f"{order_list}")
+        return [ItemOrderForPTRes(**order) for order in order_list]
+    except Exception as e:
+        logger.error(f"Failed [get_requested_order]: {e}")
         raise e
