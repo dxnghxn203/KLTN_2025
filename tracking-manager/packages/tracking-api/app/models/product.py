@@ -1,7 +1,6 @@
 import asyncio
 from starlette import status
 from typing import Set
-from motor.motor_asyncio import AsyncIOMotorCollection
 from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file, upload_any_file
@@ -769,7 +768,8 @@ async def update_pharmacist_name_for_all_products():
 
     return updated_count
 
-async def get_all_mongodb_product_ids(collection: AsyncIOMotorCollection) -> Set[str]:
+async def get_all_mongodb_product_ids() -> Set[str]:
+    collection = db[collection_name]
     cursor = collection.find({}, {"product_id": 1})
     product_ids = set()
     for doc in cursor:
@@ -780,8 +780,7 @@ async def check_product_consistency():
     try:
         redis_product_ids = await redis.get_all_redis_product_ids()
 
-        collection = db[collection_name]
-        mongodb_product_ids = await get_all_mongodb_product_ids(collection)
+        mongodb_product_ids = await get_all_mongodb_product_ids()
 
         in_redis_not_mongo = redis_product_ids - mongodb_product_ids
         in_mongo_not_redis = mongodb_product_ids - redis_product_ids
