@@ -68,8 +68,8 @@ class ItemOrderForPTReq(BaseModel):
     receiver_province_code: int
     receiver_district_code: int
     receiver_commune_code: int
-    created_by: str
-    payment_type: str = ""
+    created_by: str = ""
+    payment_type: str = "COD"
     verified_by: str = ""
 
 class ItemOrderForPTInReq(BaseModel):

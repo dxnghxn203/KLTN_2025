@@ -14,7 +14,8 @@ from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
-from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq
+from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
+    ItemOrderForPTInReq, ItemOrderForPTReq
 from app.entities.order.response import ItemOrderRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
 from app.entities.user.response import ItemUserRes
@@ -35,6 +36,7 @@ from app.models.user import get_by_id
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
 collection_name = "orders"
+request_collection_name = "orders_requests"
 
 async def get_total_orders():
     try:
@@ -506,4 +508,24 @@ async def get_order_invoice(order_id: str):
         )
     except Exception as e:
         logger.error(f"Failed [get_order_invoice]: {e}")
+        raise e
+
+async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
+    try:
+        order_request = ItemOrderForPTReq(**item.model_dump(),
+            created_by=user_id,
+        )
+
+        logger.info(f"order_request: {order_request}")
+
+        collection = database.db[request_collection_name]
+        collection.insert_one(order_request.dict())
+
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            status="success",
+            message="Yêu cầu đã được tạo",
+        )
+    except Exception as e:
+        logger.error(f"Failed [request_order_prescription]: {e}")
         raise e

@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Depends
 from starlette.responses import FileResponse
 
 from app.core import logger, response
-from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq
+from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq, ItemOrderForPTInReq
 from app.helpers.constant import PAYMENT_COD
 from app.middleware import middleware
 from app.models import order, user
@@ -204,6 +204,25 @@ async def get_invoice(order_id: str):
         raise je
     except Exception as e:
         logger.error(f"Error getting invoice: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/order/request-prescription", response_model=response.BaseResponse)
+async def request_prescription(item: ItemOrderForPTInReq, token: str = Depends(middleware.verify_token)):
+    try:
+        user_info = await user.get_current(token)
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="User not found"
+            )
+        return await order.request_order_prescription(item, user_info.id)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error requesting prescription: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
