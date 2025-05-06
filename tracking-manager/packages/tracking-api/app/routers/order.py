@@ -25,7 +25,7 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                     "delivery_time": "",
                     "weight": 0,
                     "total_fee": 0,
-                    "out_of_stock_ids": out_of_stock_ids
+                    "out_of_stock": out_of_stock
                 }
             )
         return response.SuccessResponse(
