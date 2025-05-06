@@ -11,6 +11,8 @@ from .cart import router as cart_router
 from .fee import router as fee_router
 from .time import router as time_router
 from .pharmacist import router as pharmacist_router
+from .chat_box import router as chat_box_router
+
 __all__ = [
     'cart_router',
     'user_router',

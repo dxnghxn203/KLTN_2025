@@ -3,7 +3,7 @@ import json
 import os
 import io
 from datetime import datetime, timedelta
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 import httpx
 from bson import ObjectId
@@ -130,16 +130,19 @@ async def get_tracking_order_by_order_id(order_id: str):
         logger.error(f"Failed [get_tracking_order_by_order_id]: {e}")
         return []
 
-async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List[ItemProductReq], float, float, List[str]]:
+async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[ItemProductReq], float, float, List[Dict[str, str]]]:
     total_price = 0
     weight = 0
     product_items = []
-    out_of_stock_ids = []
+    out_of_stock = []
 
     for product in products:
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
         if isinstance(product_info, response.JsonException):
-            out_of_stock_ids.append(product.product_id)
+            out_of_stock.append({
+                "product_id": product.product_id,
+                "price_id": product.price_id
+            })
             continue
         data = redis.get_product_transaction(product_id=product.product_id)
         logger.info(f"Product data from Redis: {data}")
@@ -155,7 +158,10 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
         total_requested = product.quantity * product_info.prices[0].amount + sell
 
         if total_requested > inventory:
-            out_of_stock_ids.append(product.product_id)
+            out_of_stock.append({
+                "product_id": product.product_id,
+                "price_id": product.price_id
+            })
             continue
 
         price_info = product_info.prices[0]
@@ -177,7 +183,7 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
         )
         product_items.append(product_item)
 
-    return product_items, total_price, weight, out_of_stock_ids
+    return product_items, total_price, weight, out_of_stock
 
 async def check_shipping_fee(
         receiver_province_code: int,
@@ -217,13 +223,13 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         order_id = generate_id("ORDER")
         tracking_id = f"{generate_id('TRACKING')}_V{1:03}"
 
-        product_items, product_price, weight, out_of_stock_ids = await process_order_products(item.product)
+        product_items, product_price, weight, out_of_stock = await process_order_products(item.product)
 
-        if out_of_stock_ids:
+        if out_of_stock:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Một số sản phẩm đã hết hàng",
-                data={"out_of_stock": out_of_stock_ids}
+                data={"out_of_stock": out_of_stock}
             )
 
         fee_data = await check_shipping_fee(
@@ -515,13 +521,13 @@ async def get_order_invoice(order_id: str):
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
     try:
 
-        product_items, _, _, out_of_stock_ids = await process_order_products(item.product)
+        product_items, _, _, out_of_stock = await process_order_products(item.product)
 
-        if out_of_stock_ids:
+        if out_of_stock:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Một số sản phẩm đã hết hàng",
-                data={"out_of_stock": out_of_stock_ids}
+                data={"out_of_stock": out_of_stock}
             )
 
         order_request = ItemOrderForPTReq(

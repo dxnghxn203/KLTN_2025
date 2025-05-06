@@ -5,7 +5,7 @@ import ProductsViewedList from "@/components/Product/productsViewedList";
 import {useCart} from "@/hooks/useCart";
 import {ChevronLeft} from "lucide-react";
 import Link from "next/link";
-import React, {use, useEffect, useState} from "react";
+import React, {use, useEffect, useMemo, useState} from "react";
 import Loading from "../loading";
 import Checkout from "@/components/Checkout/checkout";
 import {useOrder} from "@/hooks/useOrder";
@@ -140,6 +140,26 @@ export default function Cart() {
         checkOrderStatus();
     };
 
+    const calculateCartTotals = () => {
+        let total_original_price = 0;
+        let total_price = 0;
+        let total_discount = 0;
+        productForCheckOut.forEach((product) => {
+            const {quantity = 0, price = 0, original_price = 0, unit_price} = product;
+            const calculated_unit_price = unit_price !== undefined ? unit_price : original_price;
+            if (quantity > 0 && calculated_unit_price >= 0 && price >= 0) {
+                total_original_price += calculated_unit_price * quantity; // Original price before discount
+                total_price += price * quantity;                         // Price after discount
+                total_discount += (calculated_unit_price - price) * quantity; // Discount amount
+            }
+        });
+        return {
+            total_original_price: total_original_price || 0,
+            total_price: total_price || 0,
+            total_discount: total_discount || 0,
+        };
+    };
+
     const closeQR = () => {
         setIsQR(false);
         setIsCheckout(false);
@@ -154,7 +174,7 @@ export default function Cart() {
                 <QRPayment
                     image={imageQR}
                     order_id={orderID}
-                    price={priceOrder}
+                    price={calculateCartTotals()}
                     setClose={closeQR}
                 />
             ) : (
@@ -163,7 +183,7 @@ export default function Cart() {
                         <>
                             <Checkout
                                 back={() => setIsCheckout(false)}
-                                price={priceOrder}
+                                price={calculateCartTotals()}
                                 productForCheckOut={productForCheckOut}
                                 setData={setData}
                                 handleCheckout={handleCheckout}
@@ -216,6 +236,11 @@ export default function Cart() {
                     OutOfStock(
                         {
                             products: productsOutOfStock,
+                            onContinue: () => {
+                                setIsOutOfStock(false);
+                                setIsCheckout(true);
+                                setProductForCheckOut(productsOutOfStock?.availableProducts);
+                            },
                             closeDialog: (isClose: boolean) => {
                                 setIsOutOfStock(isClose);
                             }

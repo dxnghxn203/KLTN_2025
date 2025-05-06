@@ -1,6 +1,29 @@
-import { fetchAddMediaProductStart, fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchApproveProductByPharmacistStart, fetchDeleteProductStart, fetchProductApprovedStart, fetchProductBySlugStart, fetchUpdateCertificateFileProductStart, fetchUpdateImagesPrimaryProductStart, fetchUpdateImagesProductStart, fetchUpdateProductStart, selectProductAdmin, selectProductApproved, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {
+    fetchAddMediaProductStart,
+    fetchAddProductStart,
+    fetchAllProductAdminStart,
+    fetchAllProductBestDealStart,
+    fetchAllProductGetProductFeaturedStart,
+    fetchAllProductGetRecentlyViewedStart,
+    fetchAllProductRelatedStart,
+    fetchAllProductTopSellingStart,
+    fetchApproveProductByPharmacistStart,
+    fetchDeleteProductStart,
+    fetchProductApprovedStart,
+    fetchProductBySlugStart,
+    fetchUpdateCertificateFileProductStart,
+    fetchUpdateImagesPrimaryProductStart,
+    fetchUpdateImagesProductStart,
+    fetchUpdateProductStart,
+    selectProductAdmin,
+    selectProductApproved,
+    selectProductBySlug,
+    selectProductGetRecentlyViewed,
+    selectProductRelated,
+    selectProductTopSelling
+} from "@/store";
+import {useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 
 export function useProduct() {
     const dispatch = useDispatch();
@@ -24,7 +47,7 @@ export function useProduct() {
             onFailed: onFailed
         }));
     }
-    
+
     const fetchProductFeatured = (
         mainCategory: string | null,
         subCategory: string | null,
@@ -95,101 +118,101 @@ export function useProduct() {
     }
 
     const fetchProductApproved = () => {
-        dispatch(fetchProductApprovedStart({
-            
-        }))
+        dispatch(fetchProductApprovedStart({}))
     }
 
     const fetchApproveProductByPharmacist = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchApproveProductByPharmacistStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchApproveProductByPharmacistStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      };
-    
+    };
+
     const fetchUpdateProduct = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchUpdateProductStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+// <<<<<<< HEAD
+//             fetchApproveProductByPharmacistStart({
+//                 ...params,
+//                 onSuccess,
+//                 onFailure: onFailed
+//             })
+//         );
+//     }
+// =======
+            fetchUpdateProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      }
+    }
 
     const fetchAddMediaProduct = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchAddMediaProductStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchAddMediaProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      }
-    
-      const fetchUpdateCertificateFileProduct = async (
+    }
+
+    const fetchUpdateCertificateFileProduct = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchUpdateCertificateFileProductStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchUpdateCertificateFileProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      }
+    }
 
-      const fetchUpdateImagesPrimaryProduct = async (
+    const fetchUpdateImagesPrimaryProduct = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchUpdateImagesPrimaryProductStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchUpdateImagesPrimaryProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      }
+    }
 
-      const fetchUpdateImagesProduct = async (
+    const fetchUpdateImagesProduct = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchUpdateImagesProductStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchUpdateImagesProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      }
-
-
-
-
-
-      
-
+    }
 
 
     return {

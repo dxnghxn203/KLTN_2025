@@ -14,8 +14,8 @@ router = APIRouter()
 @router.post("/order/check_shipping_fee", response_model=response.BaseResponse)
 async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
     try:
-        _, total_price, weight, out_of_stock_ids = await order.process_order_products(item.product)
-        if out_of_stock_ids:
+        _, total_price, weight, out_of_stock = await order.process_order_products(item.product)
+        if out_of_stock:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Một số sản phẩm đã hết hàng",
@@ -25,7 +25,7 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                     "delivery_time": "",
                     "weight": 0,
                     "total_fee": 0,
-                    "out_of_stock_ids": out_of_stock_ids
+                    "out_of_stock": out_of_stock
                 }
             )
         return response.SuccessResponse(
