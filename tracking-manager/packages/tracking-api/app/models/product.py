@@ -1,6 +1,7 @@
 import asyncio
 from starlette import status
-
+from typing import Set
+from motor.motor_asyncio import AsyncIOMotorCollection
 from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file, upload_any_file
@@ -571,92 +572,72 @@ async def update_product_status(item: UpdateProductStatusReq):
         logger.error(f"Error updating product status: {str(e)}")
         raise e
 
-async def add_product_media(item: AddProductMediaReq, files):
+async def update_product_images_primary(product_id: str, file):
     try:
-        media_type = item.media_type.lower()
-        if media_type not in VALID_MEDIA_TYPES:
-            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
-
-        if not files or len(files) == 0:
+        if not file:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
 
         collection = db[collection_name]
-        product = collection.find_one({"product_id": item.product_id})
+        product = collection.find_one({"product_id": product_id})
         if not product:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
 
-        if files:
-            if media_type == "images":
-                new_images = []
-                for file in files:
-                    url = upload_file(file, "images")
-                    if url:
-                        new_images.append({
-                            "images_id": generate_id("IMAGE"),
-                            "images_url": url
-                        })
-                collection.update_one(
-                    {"product_id": item.product_id},
-                    {"$push": {"images": {"$each": new_images}}}
-                )
-            elif media_type == "images_primary":
-                file = files[0] if files else None
-                url = upload_file(file, "images_primary") if file else ""
-                collection.update_one(
-                    {"product_id": item.product_id},
-                    {"$set": {"images_primary": url}}
-                )
-            elif media_type == "certificate_file":
-                file = files[0] if files else None
-                url = upload_any_file(file, "certificates") if file else ""
-                collection.update_one(
-                    {"product_id": item.product_id},
-                    {"$set": {"certificate_file": url}}
-                )
-            else:
-                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
-        return response.SuccessResponse(message="Thêm media thành công")
+        url = upload_file(file, "images_primary")
+        collection.update_one(
+            {"product_id": product_id},
+            {"$set": {"images_primary": url}}
+        )
+        return response.SuccessResponse(message="Cập nhật ảnh chính thành công")
     except Exception as e:
-        logger.error(f"Error adding product media: {str(e)}")
+        logger.error(f"Error updating product images primary: {str(e)}")
         raise e
 
-async def delete_product_media(item: DeleteProductMediaReq):
+async def update_product_certificate_file(product_id: str, file):
     try:
-        media_type = item.media_type.lower()
-        if media_type not in VALID_MEDIA_TYPES:
-            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
-
-        if not item.target_urls:
-            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh sách URL cần xóa không hợp lệ")
+        if not file:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
 
         collection = db[collection_name]
-        product = collection.find_one({"product_id": item.product_id})
+        product = collection.find_one({"product_id": product_id})
         if not product:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
 
-        if media_type == "images":
-            for url in item.target_urls:
-                collection.update_one(
-                    {"product_id": item.product_id},
-                    {"$pull": {"images": {"images_url": url}}}
-                )
-        elif media_type == "images_primary":
-            if product.get("images_primary") in item.target_urls:
-                collection.update_one(
-                    {"product_id": item.product_id},
-                    {"$set": {"images_primary": ""}}
-                )
-        elif media_type == "certificate_file":
-            if product.get("certificate_file") in item.target_urls:
-                collection.update_one(
-                    {"product_id": item.product_id},
-                    {"$set": {"certificate_file": ""}}
-                )
-        else:
-            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Loại media không hợp lệ")
-        return response.SuccessResponse(message="Xóa media thành công")
+        url = upload_any_file(file, "certificates")
+        collection.update_one(
+            {"product_id": product_id},
+            {"$set": {"certificate_file": url}}
+        )
+        return response.SuccessResponse(message="Cập nhật chứng nhận thành công")
     except Exception as e:
-        logger.error(f"Error deleting product media: {str(e)}")
+        logger.error(f"Error updating product certificate file: {str(e)}")
+        raise e
+
+async def update_product_images(product_id: str, files):
+    try:
+        if not files:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
+
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": product_id})
+        if not product:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
+
+        new_images = []
+        for file in files:
+            url = upload_file(file, "images")
+            if url:
+                new_images.append({
+                    "images_id": generate_id("IMAGE"),
+                    "images_url": url
+                })
+
+        collection.update_one(
+            {"product_id": product_id},
+            {"$set": {"images": new_images}}
+        )
+        return response.SuccessResponse(message="Cập nhật images thành công")
+    except Exception as e:
+        logger.error(f"Error updating product images: {str(e)}")
         raise e
 
 async def update_product_fields(update_data: ItemUpdateProductReq):
@@ -787,3 +768,28 @@ async def update_pharmacist_name_for_all_products():
         updated_count += 1
 
     return updated_count
+
+async def get_all_mongodb_product_ids(collection: AsyncIOMotorCollection) -> Set[str]:
+    cursor = collection.find({}, {"product_id": 1})
+    product_ids = set()
+    for doc in cursor:
+        product_ids.add(doc["product_id"])
+    return product_ids
+
+async def check_product_consistency():
+    try:
+        redis_product_ids = await redis.get_all_redis_product_ids()
+
+        collection = db[collection_name]
+        mongodb_product_ids = await get_all_mongodb_product_ids(collection)
+
+        in_redis_not_mongo = redis_product_ids - mongodb_product_ids
+        in_mongo_not_redis = mongodb_product_ids - redis_product_ids
+
+        return {
+            "in_redis_not_mongo": list(in_redis_not_mongo),
+            "in_mongo_not_redis": list(in_mongo_not_redis),
+        }
+    except Exception as e:
+        logger.error(f"Lỗi kiểm tra dữ liệu product giữa Redis và MongoDB: {e}")
+        raise e
