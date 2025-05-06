@@ -514,7 +514,18 @@ async def get_order_invoice(order_id: str):
 
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
     try:
-        order_request = ItemOrderForPTReq(**item.model_dump(),
+
+        product_items, _, _, out_of_stock_ids = await process_order_products(item.product)
+
+        if out_of_stock_ids:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm đã hết hàng",
+                data={"out_of_stock": out_of_stock_ids}
+            )
+
+        order_request = ItemOrderForPTReq(**item.model_dump(exclude={"product"}),
+            product=product_items,
             created_by=user_id,
         )
 
@@ -536,21 +547,7 @@ async def get_requested_order(email: str):
     try:
         collection = database.db[request_collection_name]
         order_list = collection.find({"verified_by": {"$in": [None, "", email]}})
-
-        result = []
-        for order in order_list:
-            updated_products = []
-            for p in order.get("product", []):
-                product_id = p.get("product_id")
-                price_id = p.get("price_id")
-                if product_id and price_id:
-                    product_data = await get_product_by_id(product_id, price_id)
-                    if product_data:
-                        updated_products.append(ItemProductRes(**product_data))
-            order["product"] = updated_products
-            result.append(ItemOrderForPTRes.from_mongo(order))
-
-        return result
+        return (ItemOrderForPTRes.from_mongo(order) for order in order_list)
     except Exception as e:
         logger.error(f"Failed [get_requested_order]: {e}")
         raise e

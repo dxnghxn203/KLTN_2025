@@ -337,7 +337,7 @@ async def admin_update_product_status(item: UpdateProductStatusReq, token: str =
 async def admin_update_images(
     product_id: str,
     files: Optional[List[UploadFile]] = File(None),
-    token: str = Depends(middleware.verify_token_admin)
+    #token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         return await update_product_images(product_id, files)
@@ -354,7 +354,7 @@ async def admin_update_images(
 async def admin_update_images_primary(
     product_id: str,
     file: UploadFile = File(...),
-    token: str = Depends(middleware.verify_token_admin)
+    #token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         return await update_product_images_primary(product_id, file)
@@ -371,7 +371,7 @@ async def admin_update_images_primary(
 async def admin_update_certificate_file(
     product_id: str,
     file: UploadFile = File(...),
-    token: str = Depends(middleware.verify_token_admin)
+    #token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         return await update_product_certificate_file(product_id, file)
@@ -387,7 +387,8 @@ async def admin_update_certificate_file(
 
 @router.put("/products/update-product", response_model=response.BaseResponse)
 async def admin_update_product(item: ItemUpdateProductReq,
-                               token: str = Depends(middleware.verify_token_admin)):
+                               #token: str = Depends(middleware.verify_token_admin)
+                               ):
     try:
         return await update_product_fields(item)
     except JsonException as je:
