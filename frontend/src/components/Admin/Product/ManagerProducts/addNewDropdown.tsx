@@ -23,7 +23,7 @@ const AddNewDropdown = () => {
         <Menu.Items className="absolute left-0 mt-2 w-52 bg-white border border-gray-200 rounded-lg shadow-lg focus:outline-none">
           <Menu.Item>
             {({ active }) => (
-              <Link href="/product/create-single-product">
+              <Link href="/san-pham/them-san-pham-don">
                 <button
                   className={`${
                     active ? "bg-gray-100" : ""
@@ -36,7 +36,7 @@ const AddNewDropdown = () => {
           </Menu.Item>
           <Menu.Item>
             {({ active }) => (
-              <Link href="/product/bulk-create-products">
+              <Link href="/san-pham/them-san-pham-hang-loat">
                 <button
                   className={`${
                     active ? "bg-gray-100" : ""

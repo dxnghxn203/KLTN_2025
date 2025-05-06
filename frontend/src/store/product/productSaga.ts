@@ -44,6 +44,23 @@ import {
     fetchApproveProductByPharmacistFailed,
     fetchApproveProductByPharmacistStart,
     fetchApproveProductByPharmacistSuccess,
+    fetchUpdateProductSuccess,
+    fetchUpdateProductFailed,
+    fetchUpdateProductStart,
+
+    fetchAddMediaProductFailed,
+    fetchAddMediaProductStart,
+    fetchAddMediaProductSuccess,
+
+    fetchUpdateCertificateFileProductFailed,    
+    fetchUpdateCertificateFileProductStart,
+    fetchUpdateCertificateFileProductSuccess,
+    fetchUpdateImagesPrimaryProductFailed,
+    fetchUpdateImagesPrimaryProductStart,
+    fetchUpdateImagesPrimaryProductSuccess,
+    fetchUpdateImagesProductFailed,
+    fetchUpdateImagesProductStart,
+    fetchUpdateImagesProductSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -182,13 +199,13 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
         // console.log("formData", formData);
 
         const product = yield call(productService.addProduct, form);
-        console.log("product", product);
+        // console.log("product", product);
         if (product.status_code === 200) {
             onsucces(product.message);
             yield put(fetchAddProductSuccess());
             return;
         }
-        console.log("test",product.message);
+        // console.log("test",product.message);
         onfailed(product.message);
         
         yield put(fetchAddProductFailed(
@@ -201,7 +218,7 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
             "Failed to add product"
         ));
         
-        console.log("final",error);
+        // console.log("final",error);
 
     }
 }
@@ -209,8 +226,15 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
 function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
-        const product = yield call(productService.getAllProductAdmin, payload);
+        const {
+            page,
+            page_size
+        } = payload;
+
+        const product = yield call(productService.getAllProductAdmin, page, page_size);
+        // console.log('Product Data:', product);
         if (product.status_code === 200) {
+            // console.log('Product Data Length:', product.data.length);
             yield put(fetchAllProductAdminSuccess(product.data));
             return;
         }
@@ -340,14 +364,14 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
         product_id,
         product_name,
         name_primary,
-        prices,
+        prices, // array of price objects
         inventory,
         slug,
         description,
-        full_description,
+        full_descriptions,
         category,
         origin,
-        ingredients,
+        ingredients, // array of ingredient objects
         uses,
         dosage,
         side_effects,
@@ -366,32 +390,20 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
         product_id,
         product_name,
         name_primary,
-        prices: {
-          prices: prices?.prices || [],
-        },
+        prices,
         inventory,
         slug,
         description,
-        full_description,
-        category: {
-          main_category_id: category?.main_category_id || '',
-          sub_category_id: category?.sub_category_id || '',
-          child_category_id: category?.child_category_id || '',
-        },
+        full_descriptions,
+        category,
         origin,
-        ingredients: {
-          ingredients: ingredients?.ingredients || [],
-        },
+        ingredients,
         uses,
         dosage,
         side_effects,
         precautions,
         storage,
-        manufacturer: {
-          manufacture_name: manufacturer?.manufacture_name || '',
-          manufacture_address: manufacturer?.manufacture_address || '',
-          manufacture_contact: manufacturer?.manufacture_contact || '',
-        },
+        manufacturer,
         dosage_form,
         brand,
         prescription_required,
@@ -401,18 +413,122 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
       const product = yield call(productService.updateProduct, body);
       if (product.status_code === 200) {
         onSuccess(product.message);
-        yield put(fetchAddProductSuccess());
+        yield put(fetchUpdateProductSuccess(product.message));
         return;
       }
   
       onFailed(product.message);
-      yield put(
-        fetchAddProductFailed(product.message || 'Failed to update product')
-      );
+      yield put(fetchUpdateProductFailed(product.message || 'Failed to update product'));
     } catch (error) {
-      yield put(fetchAddProductFailed('Failed to update product'));
+      yield put(fetchUpdateProductFailed('Failed to update product'));
     }
   }
+
+  function* handleAddMediaProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            formData,
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+
+        
+
+        const product = yield call(productService.addMediaProduct, formData);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchAddMediaProductSuccess(product.message));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchAddMediaProductFailed(product.message || 'Failed to add media product'));
+    } catch (error) {
+        yield put(fetchAddMediaProductFailed('Failed to add media product'));
+    }
+  }
+
+  function* handleUpdateCertificateFileProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            product_id,
+            file,
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+        
+        const product = yield call(productService.updateCertificateFileProduct,product_id, file);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchUpdateCertificateFileProductSuccess(product.message));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchUpdateCertificateFileProductFailed(product.message || 'Failed to update certificate file product'));
+    } catch (error) {
+        yield put(fetchUpdateCertificateFileProductFailed('Failed to update certificate file product'));
+    }
+  }
+  function* handleUpdateImagesPrimaryProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            product_id,
+            file,
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+
+        const body = {
+            file,
+        };
+
+        const product = yield call(productService.updateImagesPrimaryProduct,product_id, body);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchUpdateImagesPrimaryProductSuccess(product.message));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchUpdateImagesPrimaryProductFailed(product.message || 'Failed to update images primary product'));
+    } catch (error) {
+        yield put(fetchUpdateImagesPrimaryProductFailed('Failed to update images primary product'));
+    }
+  }
+
+  function* handleUpdateImagesProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            product_id,
+            files,
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+
+        const body = {
+            files,
+        };
+
+        const product = yield call(productService.updateImagesProduct,product_id, body);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchUpdateImagesProductSuccess(product.message));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchUpdateImagesProductFailed(product.message || 'Failed to update images product'));
+    } catch (error) {
+        yield put(fetchUpdateImagesProductFailed('Failed to update images product'));
+    }
+  }
+
+  
   
 
 
@@ -428,4 +544,10 @@ export function* productSaga() {
     yield takeLatest(fetchDeleteProductStart.type, handlerDeleteProduct);
     yield takeLatest(fetchProductApprovedStart.type, getAllProductApproved);
     yield takeLatest(fetchApproveProductByPharmacistStart.type, handleApproveProduct);
+    yield takeLatest(fetchUpdateProductStart.type, handleUpdateProduct);
+    yield takeLatest(fetchAddMediaProductStart.type, handleAddMediaProduct);
+    yield takeLatest(fetchUpdateCertificateFileProductStart.type, handleUpdateCertificateFileProduct);
+    yield takeLatest(fetchUpdateImagesPrimaryProductStart.type, handleUpdateImagesPrimaryProduct);
+    yield takeLatest(fetchUpdateImagesProductStart.type, handleUpdateImagesProduct);
+
 }

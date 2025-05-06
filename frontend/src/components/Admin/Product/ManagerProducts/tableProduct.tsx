@@ -28,7 +28,7 @@ const TableProduct = () => {
   };
 
   const toast = useToast();
-  const productsPerPage = 20;
+  const productsPerPage = 10;
 
   useEffect(() => {
     getAllProductsAdmin();
@@ -53,20 +53,15 @@ const TableProduct = () => {
   const totalProducts = allProductAdmin ? allProductAdmin.length : 0;
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  console.log("Tổng số sản phẩm:", totalProducts);
-  const currentProducts = allProductAdmin
-    ? allProductAdmin.slice(indexOfFirstProduct, indexOfLastProduct)
-    : [];
-  // console.log("Product ID đã chọn:", selectedProduct?.product_id);
+  const currentProducts = allProductAdmin?.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+
   const totalPages = Math.ceil(totalProducts / productsPerPage);
-  // console.log("Tổng số trang:", totalPages);
-  // console.log("Sản phẩm hiện tại:", currentProducts);
-  // console.log("Sản phẩm hiện tại:", currentProducts.length);
-  console.log("Sản phẩm hiện tại:", allProductAdmin);
 
   return (
     <>
-      {/* Bảng sản phẩm */}
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full table-auto border-collapse">
@@ -78,7 +73,7 @@ const TableProduct = () => {
                 <th className="py-4 px-8 text-center">Kho</th>
                 <th className="py-4 px-2 text-center">Bán</th>
                 <th className="py-4 px-2 text-center">Giá</th>
-                <th className="py-4 px-2 text-center">Danh mục</th>
+                <th className="py-4 px-2 text-center">Trạng thái</th>
                 <th className="py-4 px-2 text-center"></th>
               </tr>
             </thead>
@@ -137,13 +132,13 @@ const TableProduct = () => {
                     </td>
                     <td className="py-4 px-2 text-center font-medium">
                       <span className="font-normal">
-                        {product.inventory}{" "}
+                        {product.inventory - product.sell}{" "}
                         {product.prices.find((p: any) => p.amount === 1)?.unit}
                       </span>
                       <br />
-                      {product.inventory === 0 ? (
+                      {product.inventory - product.sell === 0 ? (
                         <span className="text-red-500">Hết hàng</span>
-                      ) : product.inventor < 60 ? (
+                      ) : product.inventory - product.sell < 60 ? (
                         <span className="text-yellow-500">Sắp hết</span>
                       ) : (
                         <span className="text-green-500">Còn hàng</span>
@@ -167,17 +162,25 @@ const TableProduct = () => {
                     </td>
 
                     <td className="py-4 px-2 text-center">
-                      <div className="flex flex-wrap justify-center gap-2">
-                        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                          {product.category.main_category_name}
+                      {product.verified_by === "" ? (
+                        <span className="text-yellow-500 font-semibold">
+                          Đang chờ duyệt
                         </span>
-                        <span className="inline-block px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-                          {product.category.sub_category_name}
+                      ) : product.is_approved === true ? (
+                        <span className="text-green-500 font-semibold">
+                          Đã duyệt bởi{" "}
+                          <span className="text-xs text-gray-500 font-normal">
+                            {product.verified_by}
+                          </span>
                         </span>
-                        <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
-                          {product.category.child_category_name}
+                      ) : (
+                        <span className="text-red-500 font-semibold">
+                          Từ chối bởi{" "}
+                          <span className="text-xs text-gray-500 font-normal">
+                            {product.verified_by}
+                          </span>
                         </span>
-                      </div>
+                      )}
                     </td>
 
                     <td className="py-4 px-2 text-center relative">
@@ -191,28 +194,23 @@ const TableProduct = () => {
 
                         {menuOpen === product.product_id && (
                           <div className="absolute right-0 bg-white border rounded-lg shadow-lg z-10 w-32 items-center">
-                            <button className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 space-x-1">
-                              <FiEye className="text-base" />
-                              <span>Chi tiết</span>
-                            </button>
                             <button
                               className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 space-x-1"
                               onClick={() => {
                                 router.push(
-                                  `/san-pham/them-san-pham-don?edit=${product.slug}`
+                                  `/san-pham/them-san-pham-don?chi-tiet=${product.product_id}`
                                 );
                               }}
                             >
-                              <MdOutlineModeEdit className="text-base" />
-
-                              <span>Sửa</span>
+                              <FiEye className="text-base" />
+                              <span>Chi tiết</span>
                             </button>
 
                             <button
                               className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500 space-x-1"
                               onClick={() => {
-                                setSelectedProduct(product); // Lưu product hiện tại
-                                setIsOpenDialog(true); // Mở dialog xác nhận xóa
+                                setSelectedProduct(product);
+                                setIsOpenDialog(true);
                               }}
                             >
                               <ImBin className="text-base text-sm" />
@@ -235,26 +233,7 @@ const TableProduct = () => {
           </table>
         </div>
       </div>
-      <DeleteProductDialog
-        onClose={() => setIsOpenDialog(false)}
-        onDelete={() => {
-          deleteProduct(
-            selectedProduct.product_id,
-            (message) => {
-              toast.showToast(message, "success");
-              getAllProductsAdmin();
-              setIsOpenDialog(false);
-              setSelectedProduct(null);
-            },
-            (message) => {
-              toast.showToast(message, "error");
-            }
-          );
-        }}
-        isOpen={isOpenDialog}
-      />
 
-      {/* Phân trang */}
       <div className="flex items-center justify-center space-x-2 py-4">
         {/* Nút previous */}
         <button
@@ -315,6 +294,27 @@ const TableProduct = () => {
         >
           <MdNavigateNext className="text-xl" />
         </button>
+      </div>
+      <div>
+        {" "}
+        <DeleteProductDialog
+          onClose={() => setIsOpenDialog(false)}
+          onDelete={() => {
+            deleteProduct(
+              selectedProduct.product_id,
+              (message) => {
+                toast.showToast(message, "success");
+                getAllProductsAdmin();
+                setIsOpenDialog(false);
+                setSelectedProduct(null);
+              },
+              (message) => {
+                toast.showToast(message, "error");
+              }
+            );
+          }}
+          isOpen={isOpenDialog}
+        />
       </div>
     </>
   );

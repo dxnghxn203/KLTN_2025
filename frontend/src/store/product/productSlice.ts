@@ -192,6 +192,55 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // add media product
+        fetchAddMediaProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchAddMediaProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAddMediaProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update images
+        fetchUpdateImagesProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateImagesProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateImagesProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update images primary
+        fetchUpdateImagesPrimaryProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateImagesPrimaryProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateImagesPrimaryProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update certificate file
+        fetchUpdateCertificateFileProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateCertificateFileProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateCertificateFileProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        
 
 
     },
@@ -245,6 +294,22 @@ export const {
     fetchUpdateProductFailed,
     fetchUpdateProductStart,
     fetchUpdateProductSuccess,
+
+    fetchAddMediaProductFailed,
+    fetchAddMediaProductStart,
+    fetchAddMediaProductSuccess,
+
+    fetchUpdateCertificateFileProductFailed,
+    fetchUpdateCertificateFileProductStart,
+    fetchUpdateCertificateFileProductSuccess,
+
+    fetchUpdateImagesPrimaryProductFailed,
+    fetchUpdateImagesPrimaryProductStart,
+    fetchUpdateImagesPrimaryProductSuccess,
+
+    fetchUpdateImagesProductFailed,
+    fetchUpdateImagesProductStart,
+    fetchUpdateImagesProductSuccess,
 
 
     

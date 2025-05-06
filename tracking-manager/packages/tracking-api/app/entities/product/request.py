@@ -162,6 +162,7 @@ class ItemProductDBReq(BaseModel):
     prescription_required: bool = False
     verified_by: str = ""
     pharmacist_name: str = ""
+    pharmacist_gender: str = ""
     is_approved: bool = False
     rejected_note: str = ""
 
@@ -172,7 +173,7 @@ class ItemProductDBInReq(BaseModel):
     inventory: Optional[int] = Field(default=0)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
-    full_description: Optional[str] = Field(default="")
+    full_descriptions: Optional[str] = Field(default="")
     category: Optional[ItemCategoryDBInReq] = Field(None)
     origin: Optional[str] = Field(default="")
     ingredients: Optional[ListIngredientDBReq] = Field(None)
@@ -219,7 +220,7 @@ class ItemUpdateProductReq(BaseModel):
     inventory: Optional[int] = Field(default=0)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
-    full_description: Optional[str] = Field(default="")
+    full_descriptions: Optional[str] = Field(default="")
     category: Optional[ItemCategoryDBInReq] = Field(None)
     origin: Optional[str] = Field(default="")
     ingredients: Optional[ListIngredientDBReq] = Field(None)

@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 
 from app.entities.product.response import ItemProductRes
 
-
 class AddressOrderRes(BaseModel):
     address: Optional[Union[str, None]] = None
     ward: Optional[Union[str, None]] = None
@@ -51,3 +50,16 @@ class ItemOrderRes(BaseModel):
         if '_id' in data:
             data['_id'] = str(data.get('_id'))
         return cls(**data)
+
+class ItemOrderForPTRes(BaseModel):
+    request_id: Optional[Union[str, None]] = None
+    status: Optional[Union[str, None]] = None
+    product: List[ItemProductRes]
+    pick_to: InfoAddressOrderRes
+    receiver_province_code: int = 0
+    receiver_district_code: int = 0
+    receiver_commune_code: int = 0
+    created_by: Optional[Union[str, None]] = None
+    verified_by: Optional[Union[str, None]] = None
+    pharmacist_name: Optional[Union[str, None]] = None
+    note : Optional[Union[str, None]] = None

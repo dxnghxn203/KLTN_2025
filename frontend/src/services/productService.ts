@@ -46,9 +46,10 @@ export const addProduct = async (data: any) : Promise<any>=> {
     }
 }
 
-export const getAllProductAdmin = async (params: any) => {
+export const getAllProductAdmin = async (page: any, pageSize: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/all-product-admin`, { params });
+        const response: any = await axiosClient.get(`/v1/products/all-product-admin?page=${page}&page_size=${pageSize}`);
+        console.log(response.data); 
         return {
             status_code: response.status_code,
             message: response.message,
@@ -207,4 +208,80 @@ export const updateProduct = async (params: any) => {
             data: null
         }
     }
+
+}
+
+export const addMediaProduct = async (params: any) => {
+    try {
+        const response: any = await axiosClient.post("/v1/products/add-media", params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+
+}
+
+export const updateCertificateFileProduct = async (product_id: any, params: any) => {
+    try {
+        console.log("params", params);
+        console.log("product_id", product_id);
+        const response: any = await axiosClient.put(`/v1/products/update-certificate-file?product_id=${product_id}`, params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+
+}
+export const updateImagesPrimaryProduct = async (product_id:any, params: any) => {
+    try {
+        const response: any = await axiosClient.put(`/v1/products/update-images-primary?product_id=${product_id}`, params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+
+}
+
+export const updateImagesProduct = async (product_id:any, params: any) => {
+    try {
+        // console.log("params", params);
+        // console.log("product_id", product_id);
+        const response: any = await axiosClient.put(`/v1/products/update-images?product_id=${product_id}`, params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+
 }
