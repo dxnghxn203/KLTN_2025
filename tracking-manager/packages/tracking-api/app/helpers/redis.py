@@ -1,6 +1,6 @@
 import json
 import uuid
-
+from typing import Set
 from app.core import redis_client, logger
 from app.entities.order.request import ItemOrderReq
 from app.entities.product.request import ItemProductRedisReq
@@ -104,6 +104,15 @@ def save_product(product: ItemProductRedisReq, redis_id: str):
 
 def delete_product(product_id: str):
     redis.delete(product_key(product_id))
+
+async def get_all_redis_product_ids() -> Set[str]:
+    keys = redis.keys("product:*")
+    product_ids = set()
+    for key in keys:
+        if isinstance(key, bytes):
+            key = key.decode()
+        product_ids.add(key.split(":")[1])
+    return product_ids
 
 # ==== ORDER MANAGEMENT ====
 
