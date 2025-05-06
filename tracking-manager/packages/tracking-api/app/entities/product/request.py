@@ -162,6 +162,7 @@ class ItemProductDBReq(BaseModel):
     prescription_required: bool = False
     verified_by: str = ""
     pharmacist_name: str = ""
+    pharmacist_gender: str = ""
     is_approved: bool = False
     rejected_note: str = ""
 

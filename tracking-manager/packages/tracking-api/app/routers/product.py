@@ -13,7 +13,7 @@ from app.middleware import middleware
 from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
-    get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, update_pharmacist_name_for_all_products, check_product_consistency, \
+    get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, update_pharmacist_gender_for_all_products, check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file
 
 router = APIRouter()
@@ -411,6 +411,22 @@ async def get_asynchronous():
         raise je
     except Exception as e:
         logger.error("Error getting asynchronous", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/dev", response_model=response.BaseResponse)
+async def dev():
+    try:
+        result = await update_pharmacist_gender_for_all_products()
+        return response.SuccessResponse(
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating pharmacist gender", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

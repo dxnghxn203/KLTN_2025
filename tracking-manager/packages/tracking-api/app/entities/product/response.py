@@ -81,6 +81,7 @@ class ItemProductDBRes(BaseModel):
     prescription_required: bool = False
     verified_by: Optional[Union[str, None]] = None
     pharmacist_name: Optional[Union[str, None]] = None
+    pharmacist_gender: Optional[Union[str, None]] = None
     is_approved: bool = False
     rejected_note: Optional[Union[str, None]] = None
 

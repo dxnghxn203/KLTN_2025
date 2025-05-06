@@ -729,7 +729,9 @@ async def update_product_fields(update_data: ItemUpdateProductReq):
             update_fields.update({
                 "is_approved": False,
                 "verified_by": "",
-                "rejected_note": ""
+                "rejected_note": "",
+                "pharmacist_name": "",
+                "pharmacist_gender": ""
             })
             collection.update_one({"product_id": update_data.product_id}, {"$set": update_fields})
 
@@ -738,7 +740,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq):
         logger.error(f"Error updating product fields: {str(e)}")
         raise e
 
-async def update_pharmacist_name_for_all_products():
+async def update_pharmacist_gender_for_all_products():
     product_collection = db[collection_name]
     pharmacist_collection = db["pharmacists"]
 
@@ -756,13 +758,11 @@ async def update_pharmacist_name_for_all_products():
         if not pharmacist:
             continue
 
-        pharmacist_name = pharmacist.get("user_name", "")
-        if not pharmacist_name:
-            continue
+        pharmacist_gender = pharmacist.get("gender", "")
 
         product_collection.update_one(
             {"_id": product["_id"]},
-            {"$set": {"pharmacist_name": pharmacist_name}}
+            {"$set": {"pharmacist_gender": pharmacist_gender}}
         )
         updated_count += 1
 
