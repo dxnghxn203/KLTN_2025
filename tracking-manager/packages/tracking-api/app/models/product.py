@@ -686,7 +686,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq):
         for field in [
             "product_name", "name_primary", "inventory", "slug", "description", "origin",
             "uses", "dosage", "side_effects", "precautions", "storage", "dosage_form", "brand",
-            "prescription_required", "registration_number", "full_description"
+            "prescription_required", "registration_number", "full_descriptions"
         ]:
             value = getattr(update_data, field, None)
             if value is not None:
