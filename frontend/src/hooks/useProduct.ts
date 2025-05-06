@@ -1,6 +1,24 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchApproveProductByPharmacistStart, fetchDeleteProductStart, fetchProductApprovedStart, fetchProductBySlugStart, selectProductAdmin, selectProductApproved, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {
+    fetchAddProductStart,
+    fetchAllProductAdminStart,
+    fetchAllProductBestDealStart,
+    fetchAllProductGetProductFeaturedStart,
+    fetchAllProductGetRecentlyViewedStart,
+    fetchAllProductRelatedStart,
+    fetchAllProductTopSellingStart,
+    fetchApproveProductByPharmacistStart,
+    fetchDeleteProductStart,
+    fetchProductApprovedStart,
+    fetchProductBySlugStart,
+    selectProductAdmin,
+    selectProductApproved,
+    selectProductBySlug,
+    selectProductGetRecentlyViewed,
+    selectProductRelated,
+    selectProductTopSelling
+} from "@/store";
+import {useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 
 export function useProduct() {
     const dispatch = useDispatch();
@@ -24,7 +42,7 @@ export function useProduct() {
             onFailed: onFailed
         }));
     }
-    
+
     const fetchProductFeatured = (
         mainCategory: string | null,
         subCategory: string | null,
@@ -48,7 +66,7 @@ export function useProduct() {
     const getAllProductsAdmin = () => {
         dispatch(fetchAllProductAdminStart({
             page: page,
-            pageSize: pageSize,
+            page_size: pageSize,
         }))
     };
 
@@ -95,41 +113,36 @@ export function useProduct() {
     }
 
     const fetchProductApproved = () => {
-        dispatch(fetchProductApprovedStart({
-            
-        }))
+        dispatch(fetchProductApprovedStart({}))
     }
 
     const fetchApproveProductByPharmacist = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchApproveProductByPharmacistStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchApproveProductByPharmacistStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      };
-    
+    };
+
     const fetchUpdateProduct = async (
         params: any,
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
-      ) => {
+    ) => {
         dispatch(
-          fetchApproveProductByPharmacistStart({
-            ...params,
-            onSuccess,
-            onFailure: onFailed
-          })
+            fetchApproveProductByPharmacistStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
         );
-      }
-
-      
-
+    }
 
 
     return {
