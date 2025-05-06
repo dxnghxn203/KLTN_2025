@@ -3,8 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
-from app.entities.product.response import ItemProductRes, ItemProductInRes
-
+from app.entities.product.response import ItemProductRes
 
 class AddressOrderRes(BaseModel):
     address: Optional[Union[str, None]] = None
@@ -54,15 +53,16 @@ class ItemOrderRes(BaseModel):
 
 class ItemOrderForPTRes(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
-    status: str = "pending"
-    product: List[ItemProductInRes]
+    status: Optional[Union[str, None]] = None
+    product: List[ItemProductRes]
     pick_to: InfoAddressOrderRes
-    receiver_province_code: int
-    receiver_district_code: int
-    receiver_commune_code: int
-    created_by: str = ""
-    payment_type: str = "COD"
-    verified_by: str = ""
+    receiver_province_code: int = 0
+    receiver_district_code: int = 0
+    receiver_commune_code: int = 0
+    created_by: Optional[Union[str, None]] = None
+    payment_type: Optional[Union[str, None]] = None
+    verified_by: Optional[Union[str, None]] = None
+    pharmacist_name: Optional[Union[str, None]] = None
 
     @classmethod
     def from_mongo(cls, data):

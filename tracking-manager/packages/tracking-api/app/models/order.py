@@ -15,9 +15,11 @@ from starlette.responses import StreamingResponse
 from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
-    ItemOrderForPTInReq, ItemOrderForPTReq
+    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq
 from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
+from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
+from app.entities.product.response import ItemProductRes
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
@@ -532,10 +534,30 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str):
 
 async def get_requested_order(email: str):
     try:
-        collection = db[request_collection_name]
+        collection = database.db[request_collection_name]
         order_list = collection.find({"verified_by": {"$in": [None, "", email]}})
-        logger.info(f"{order_list}")
-        return [ItemOrderForPTRes(**order) for order in order_list]
+
+        result = []
+        for order in order_list:
+            updated_products = []
+            for p in order.get("product", []):
+                product_id = p.get("product_id")
+                price_id = p.get("price_id")
+                if product_id and price_id:
+                    product_data = await get_product_by_id(product_id, price_id)
+                    if product_data:
+                        updated_products.append(ItemProductRes(**product_data))
+            order["product"] = updated_products
+            result.append(ItemOrderForPTRes.from_mongo(order))
+
+        return result
     except Exception as e:
         logger.error(f"Failed [get_requested_order]: {e}")
+        raise e
+
+async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes):
+    try:
+        pass
+    except Exception as e:
+        logger.error(f"Failed [approve_order]: {e}")
         raise e

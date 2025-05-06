@@ -333,7 +333,7 @@ async def admin_update_product_status(item: UpdateProductStatusReq, token: str =
             message="Internal server error"
         )
 
-@router.post("/products/update-images", response_model=response.BaseResponse)
+@router.put("/products/update-images", response_model=response.BaseResponse)
 async def admin_update_images(
     product_id: str,
     files: Optional[List[UploadFile]] = File(None),
@@ -350,7 +350,7 @@ async def admin_update_images(
             message="Internal server error"
         )
 
-@router.post("/products/update-images-primary", response_model=response.BaseResponse)
+@router.put("/products/update-images-primary", response_model=response.BaseResponse)
 async def admin_update_images_primary(
     product_id: str,
     file: UploadFile = File(...),
@@ -367,7 +367,7 @@ async def admin_update_images_primary(
             message="Internal server error"
         )
 
-@router.post("/products/update-certificate-file", response_model=response.BaseResponse)
+@router.put("/products/update-certificate-file", response_model=response.BaseResponse)
 async def admin_update_certificate_file(
     product_id: str,
     file: UploadFile = File(...),

@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.entities.product.request import ItemProductReq, ItemProductInReq
+from app.entities.product.response import ItemProductRes
 
 class AddressOrderReq(BaseModel):
     address: str
@@ -62,7 +63,7 @@ class ItemUpdateStatusReq(BaseModel):
 
 class ItemOrderForPTReq(BaseModel):
     status: str = "pending"
-    product: List[ItemProductInReq]
+    product: List[ItemProductReq]
     pick_to: InfoAddressOrderReq
     receiver_province_code: int
     receiver_district_code: int
@@ -70,6 +71,7 @@ class ItemOrderForPTReq(BaseModel):
     created_by: str = ""
     payment_type: str = "COD"
     verified_by: str = ""
+    pharmacist_name: str = ""
 
 class ItemOrderForPTInReq(BaseModel):
     product: List[ItemProductInReq]
@@ -77,3 +79,15 @@ class ItemOrderForPTInReq(BaseModel):
     receiver_province_code: int = 0
     receiver_district_code: int = 0
     receiver_commune_code: int = 0
+
+class ItemOrderApproveReq(BaseModel):
+    id: str = Field(..., alias="_id")
+    status: str = ""
+    product: List[ItemProductRes]
+    pick_to: InfoAddressOrderReq
+    receiver_province_code: int
+    receiver_district_code: int
+    receiver_commune_code: int
+    created_by: str = ""
+    payment_type: str = ""
+    verified_by: str = ""
