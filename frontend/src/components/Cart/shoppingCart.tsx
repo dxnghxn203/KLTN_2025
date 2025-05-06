@@ -65,6 +65,7 @@ const ShoppingCart = ({
                     price: price.price,
                     unit_price: price.unit_price,
                     unit: price.unit,
+                    original_price: price.original_price,
                 });
             }
         });
@@ -110,9 +111,15 @@ const ShoppingCart = ({
     }, [selectedProducts, cart]);
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedProducts(
-            e.target.checked ? cart && cart.map((p: any) => p.product.product_id) : []
-        );
+        if (e.target.checked) {
+            const allProducts = cart.map((item: any) => ({
+                product_id: item.product.product_id,
+                price_id: item.price_id,
+            }));
+            setSelectedProducts(allProducts);
+        } else {
+            setSelectedProducts([]);
+        }
     };
 
     const handleSelectProduct = (product_id: string, price_id: string) => {
