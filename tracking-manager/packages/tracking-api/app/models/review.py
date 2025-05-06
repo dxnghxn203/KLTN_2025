@@ -99,7 +99,6 @@ async def count_reviews(product_id: str) -> int:
     collection = database.db[collection_name]
     return collection.count_documents({"product_id": product_id, "rating": {"$exists": True}})
 
-
 async def average_rating(product_id: str) -> float:
     collection = database.db[collection_name]
     pipeline = [
