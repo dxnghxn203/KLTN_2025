@@ -32,7 +32,7 @@ jobs:
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           exportEnv: false
           secrets: |
-            secret/production .env | ENV_FILE_JSON
+            secret/data/production .env | ENV_FILE_JSON
 
       - name: Create .env file
         run: |
