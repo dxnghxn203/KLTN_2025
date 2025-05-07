@@ -23,8 +23,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Import Secrets from Vault
-        id: vault-secrets
+      - name: Import DB Secrets from Vault
+        id: vault-secrets-db
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ env.VAULT_ADDR }}
@@ -32,32 +32,52 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            MONGO_HOST=${{ env.VAULT_SECRET_PATH }} MONGO_HOST
-            RABBITMQ_USER=${{ env.VAULT_SECRET_PATH }} RABBITMQ_USER
-            RABBITMQ_PW=${{ env.VAULT_SECRET_PATH }} RABBITMQ_PW
-            RABBITMQ_HOST=${{ env.VAULT_SECRET_PATH }} RABBITMQ_HOST
-            RABBITMQ_PORT=${{ env.VAULT_SECRET_PATH }} RABBITMQ_PORT
-            RABBITMQ_VHOST=${{ env.VAULT_SECRET_PATH }} RABBITMQ_VHOST
-            REDIS_HOST=${{ env.VAULT_SECRET_PATH }} REDIS_HOST
-            REDIS_PORT=${{ env.VAULT_SECRET_PATH }} REDIS_PORT
-            REDIS_PASSWORD=${{ env.VAULT_SECRET_PATH }} REDIS_PASSWORD
-            SUPABASE_PASS=${{ env.VAULT_SECRET_PATH }} SUPABASE_PASS
-            SUPABASE_key=${{ env.VAULT_SECRET_PATH }} SUPABASE_key
-            SUPABSE_URL=${{ env.VAULT_SECRET_PATH }} SUPABSE_URL
-            API_MONGO_USER=${{ env.VAULT_SECRET_PATH }} API_MONGO_USER
-            API_MONGO_PWS=${{ env.VAULT_SECRET_PATH }} API_MONGO_PWS
-            API_MONGO_DB=${{ env.VAULT_SECRET_PATH }} API_MONGO_DB
-            ES_HOST=${{ env.VAULT_SECRET_PATH }} ES_HOST
-            ES_PORT=${{ env.VAULT_SECRET_PATH }} ES_PORT
-            ES_USER=${{ env.VAULT_SECRET_PATH }} ES_USER
-            ES_PW=${{ env.VAULT_SECRET_PATH }} ES_PW
-            PAYMENT_API_URL=${{ env.VAULT_SECRET_PATH }} PAYMENT_API_URL
-            GMAIL_PASS=${{ env.VAULT_SECRET_PATH }} GMAIL_PASS
-            GMAIL_USER=${{ env.VAULT_SECRET_PATH }} GMAIL_USER
-            JWT_PRIVATE_KEY=${{ env.VAULT_SECRET_PATH }} JWT_PRIVATE_KEY
-            JWT_PUBLIC_KEY=${{ env.VAULT_SECRET_PATH }} JWT_PUBLIC_KEY
-            ALGORITHM=${{ env.VAULT_SECRET_PATH }} ALGORITHM
-            API_PORT=${{ env.VAULT_SECRET_PATH }} API_PORT
+            MONGO_HOST secret/production/.env MONGO_HOST
+            RABBITMQ_USER secret/production/.env RABBITMQ_USER
+            RABBITMQ_PW secret/production/.env RABBITMQ_PW
+            RABBITMQ_HOST secret/production/.env RABBITMQ_HOST
+            RABBITMQ_PORT secret/production/.env RABBITMQ_PORT
+            RABBITMQ_VHOST secret/production/.env RABBITMQ_VHOST
+            REDIS_HOST secret/production/.env REDIS_HOST
+            REDIS_PORT secret/production/.env REDIS_PORT
+            REDIS_PASSWORD secret/production/.env REDIS_PASSWORD
+
+      - name: Import API Secrets from Vault
+        id: vault-secrets-api
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: approle
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            SUPABASE_PASS secret/production/.env SUPABASE_PASS
+            SUPABASE_key secret/production/.env SUPABASE_key
+            SUPABSE_URL secret/production/.env SUPABSE_URL
+            API_MONGO_USER secret/production/.env API_MONGO_USER
+            API_MONGO_PWS secret/production/.env API_MONGO_PWS
+            API_MONGO_DB secret/production/.env API_MONGO_DB
+            ES_HOST secret/production/.env ES_HOST
+            ES_PORT secret/production/.env ES_PORT
+            ES_USER secret/production/.env ES_USER
+
+      - name: Import Other Secrets from Vault
+        id: vault-secrets-other
+        uses: hashicorp/vault-action@v3
+        with:
+          url: ${{ env.VAULT_ADDR }}
+          method: approle
+          roleId: ${{ secrets.VAULT_ROLE_ID }}
+          secretId: ${{ secrets.VAULT_SECRET_ID }}
+          secrets: |
+            ES_PW secret/production/.env ES_PW
+            PAYMENT_API_URL secret/production/.env PAYMENT_API_URL
+            GMAIL_PASS secret/production/.env GMAIL_PASS
+            GMAIL_USER secret/production/.env GMAIL_USER
+            JWT_PRIVATE_KEY secret/production/.env JWT_PRIVATE_KEY
+            JWT_PUBLIC_KEY secret/production/.env JWT_PUBLIC_KEY
+            ALGORITHM secret/production/.env ALGORITHM
+            API_PORT secret/production/.env API_PORT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
