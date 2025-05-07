@@ -63,7 +63,6 @@ jobs:
             ${{ env.VAULT_SECRET_PATH }} JWT_PRIVATE_KEY ;
             ${{ env.VAULT_SECRET_PATH }} JWT_PUBLIC_KEY ;
             ${{ env.VAULT_SECRET_PATH }} ALGORITHM ;
-            ${{ env.VAULT_SECRET_PATH }} API_PORT ;
 
       - name: Create .env file
         run: |
@@ -97,7 +96,6 @@ jobs:
           JWT_PRIVATE_KEY=${{ env.JWT_PRIVATE_KEY }}
           JWT_PUBLIC_KEY=${{ env.JWT_PUBLIC_KEY }}
           ALGORITHM=${{ env.ALGORITHM }}
-          API_PORT=${{ env.API_PORT }}
           EOL
           
           echo "Created .env file from environment variables"
@@ -157,6 +155,5 @@ jobs:
             JWT_PRIVATE_KEY=${{ env.JWT_PRIVATE_KEY }}
             JWT_PUBLIC_KEY=${{ env.JWT_PUBLIC_KEY }}
             ALGORITHM=${{ env.ALGORITHM }}
-            API_PORT=${{ env.API_PORT }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
