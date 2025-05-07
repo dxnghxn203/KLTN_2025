@@ -1,8 +1,9 @@
-name: Build Tracking API (Test)
+name: Build and Deploy Tracking API
 
 on:
   push:
     paths:
+      - 'tracking-manager/packages/tracking-api/**'
       - '.github/workflows/build-tracking-api.yml'
   workflow_dispatch:
 
@@ -11,9 +12,10 @@ env:
   API_DIR: ./tracking-manager/packages/tracking-api
   VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
   VAULT_SECRET_PATH: production/data/.env
+  CONTAINER_NAME: tracking-api-kltn2025-container
 
 jobs:
-  build:
+  build-push-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -157,3 +159,60 @@ jobs:
             ALGORITHM=${{ env.ALGORITHM }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            echo "Logging into GHCR..."
+            echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            
+            echo "Pulling latest image: ${{ env.IMAGE_NAME }}:latest"
+            docker pull ${{ env.IMAGE_NAME }}:latest
+            
+            echo "Stopping old container (if exists): ${{ env.CONTAINER_NAME }}"
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            
+            echo "Removing old container (if exists): ${{ env.CONTAINER_NAME }}"
+            docker rm ${{ env.CONTAINER_NAME }} || true
+            
+            echo "Running new container: ${{ env.CONTAINER_NAME }}"
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              -p 8000:80 \
+              --restart always \
+              -e MONGO_HOST="${{ env.MONGO_HOST }}" \
+              -e RABBITMQ_USER="${{ env.RABBITMQ_USER }}" \
+              -e RABBITMQ_PW="${{ env.RABBITMQ_PW }}" \
+              -e RABBITMQ_HOST="${{ env.RABBITMQ_HOST }}" \
+              -e RABBITMQ_PORT="${{ env.RABBITMQ_PORT }}" \
+              -e RABBITMQ_VHOST="${{ env.RABBITMQ_VHOST }}" \
+              -e REDIS_HOST="${{ env.REDIS_HOST }}" \
+              -e REDIS_PORT="${{ env.REDIS_PORT }}" \
+              -e REDIS_PASSWORD="${{ env.REDIS_PASSWORD }}" \
+              -e SUPABASE_PASS="${{ env.SUPABASE_PASS }}" \
+              -e SUPABASE_key="${{ env.SUPABASE_key }}" \
+              -e SUPABSE_URL="${{ env.SUPABSE_URL }}" \
+              -e API_MONGO_USER="${{ env.API_MONGO_USER }}" \
+              -e API_MONGO_PWS="${{ env.API_MONGO_PWS }}" \
+              -e API_MONGO_DB="${{ env.API_MONGO_DB }}" \
+              -e ES_HOST="${{ env.ES_HOST }}" \
+              -e ES_PORT="${{ env.ES_PORT }}" \
+              -e ES_USER="${{ env.ES_USER }}" \
+              -e ES_PW="${{ env.ES_PW }}" \
+              -e PAYMENT_API_URL="${{ env.PAYMENT_API_URL }}" \
+              -e GMAIL_PASS="${{ env.GMAIL_PASS }}" \
+              -e GMAIL_USER="${{ env.GMAIL_USER }}" \
+              -e JWT_PRIVATE_KEY="${{ env.JWT_PRIVATE_KEY }}" \
+              -e JWT_PUBLIC_KEY="${{ env.JWT_PUBLIC_KEY }}" \
+              -e ALGORITHM="${{ env.ALGORITHM }}" \
+              ${{ env.IMAGE_NAME }}:latest
+            
+            echo "Pruning old Docker images..."
+            docker image prune -af
+            
+            echo "Deployment completed successfully!"
