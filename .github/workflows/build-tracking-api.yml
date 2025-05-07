@@ -22,40 +22,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Import Vault Secrets
+      - name: Import Vault Secrets as JSON
+        id: vault-secrets
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ env.VAULT_ADDR }}
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
+          exportEnv: false
           secrets: |
-            secret/data/production/.env MONGO_HOST | MONGO_HOST
-            secret/data/production/.env RABBITMQ_USER | RABBITMQ_USER
-            secret/data/production/.env RABBITMQ_PW | RABBITMQ_PW
-            secret/data/production/.env RABBITMQ_HOST | RABBITMQ_HOST
-            secret/data/production/.env RABBITMQ_PORT | RABBITMQ_PORT
-            secret/data/production/.env RABBITMQ_VHOST | RABBITMQ_VHOST
-            secret/data/production/.env REDIS_HOST | REDIS_HOST
-            secret/data/production/.env REDIS_PORT | REDIS_PORT
-            secret/data/production/.env REDIS_PASSWORD | REDIS_PASSWORD
-            secret/data/production/.env SUPABASE_PASS | SUPABASE_PASS
-            secret/data/production/.env SUPABASE_key | SUPABASE_key
-            secret/data/production/.env SUPABSE_URL | SUPABSE_URL
-            secret/data/production/.env API_MONGO_USER | API_MONGO_USER
-            secret/data/production/.env API_MONGO_PWS | API_MONGO_PWS
-            secret/data/production/.env API_MONGO_DB | API_MONGO_DB
-            secret/data/production/.env ES_HOST | ES_HOST
-            secret/data/production/.env ES_PORT | ES_PORT
-            secret/data/production/.env ES_USER | ES_USER
-            secret/data/production/.env ES_PW | ES_PW
-            secret/data/production/.env PAYMENT_API_URL | PAYMENT_API_URL
-            secret/data/production/.env GMAIL_PASS | GMAIL_PASS
-            secret/data/production/.env GMAIL_USER | GMAIL_USER
-            secret/data/production/.env JWT_PRIVATE_KEY | JWT_PRIVATE_KEY
-            secret/data/production/.env JWT_PUBLIC_KEY | JWT_PUBLIC_KEY
-            secret/data/production/.env ALGORITHM | ALGORITHM
-            secret/data/production/.env API_PORT | API_PORT
+            secret/data/product .env | ENV_FILE_JSON
+
+      - name: Create .env file
+        run: |
+          echo '${{ steps.vault-secrets.outputs.ENV_FILE_JSON }}' > ${{ env.API_DIR }}/.env
+          echo "Created .env file from Vault JSON data"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -76,32 +58,7 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          build-args: |
-            MONGO_HOST=${{ env.MONGO_HOST }}
-            RABBITMQ_USER=${{ env.RABBITMQ_USER }}
-            RABBITMQ_PW=${{ env.RABBITMQ_PW }}
-            RABBITMQ_HOST=${{ env.RABBITMQ_HOST }}
-            RABBITMQ_PORT=${{ env.RABBITMQ_PORT }}
-            RABBITMQ_VHOST=${{ env.RABBITMQ_VHOST }}
-            REDIS_HOST=${{ env.REDIS_HOST }}
-            REDIS_PORT=${{ env.REDIS_PORT }}
-            REDIS_PASSWORD=${{ env.REDIS_PASSWORD }}
-            SUPABASE_PASS=${{ env.SUPABASE_PASS }}
-            SUPABASE_key=${{ env.SUPABASE_key }}
-            SUPABSE_URL=${{ env.SUPABSE_URL }}
-            API_MONGO_USER=${{ env.API_MONGO_USER }}
-            API_MONGO_PWS=${{ env.API_MONGO_PWS }}
-            API_MONGO_DB=${{ env.API_MONGO_DB }}
-            ES_HOST=${{ env.ES_HOST }}
-            ES_PORT=${{ env.ES_PORT }}
-            ES_USER=${{ env.ES_USER }}
-            ES_PW=${{ env.ES_PW }}
-            PAYMENT_API_URL=${{ env.PAYMENT_API_URL }}
-            GMAIL_PASS=${{ env.GMAIL_PASS }}
-            GMAIL_USER=${{ env.GMAIL_USER }}
-            JWT_PRIVATE_KEY=${{ env.JWT_PRIVATE_KEY }}
-            JWT_PUBLIC_KEY=${{ env.JWT_PUBLIC_KEY }}
-            ALGORITHM=${{ env.ALGORITHM }}
-            API_PORT=${{ env.API_PORT }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          secret-files: |
+            "ENV_FILE=${{ env.API_DIR }}/.env"
