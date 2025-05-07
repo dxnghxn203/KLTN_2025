@@ -7,6 +7,7 @@ from fastapi import WebSocket
 
 from app.core import logger
 from app.core.database import db
+from app.models.pharmacist import get_pharmacist_by_user_id
 
 conversations = db['conversations']
 messages = db['messages']
@@ -167,9 +168,19 @@ async def handle_websocket_connection(
 ) -> None:
     """
     Xử lý kết nối WebSocket và các tin nhắn qua lại giữa khách hàng và dược sĩ.
+
+    Args:
+        websocket: Đối tượng WebSocket từ FastAPI
+        conversation_id: ID của cuộc hội thoại
+        client_type: Loại người dùng ('guest' hoặc 'pharmacist')
+        user_id: ID người dùng (nếu đã đăng nhập)
+        manager: Connection manager (nếu None sẽ dùng manager mặc định)
     """
     from app.core.websocket import manager as ws_manager
-    import traceback
+
+    # Ghi log thời gian kết nối
+    logger.info(
+        f"{client_type.capitalize()} connecting to conversation {conversation_id} at {datetime.utcnow().isoformat()}")
 
     if manager is None:
         manager = ws_manager
@@ -201,9 +212,51 @@ async def handle_websocket_connection(
 
         # Nếu hội thoại chưa có dược sĩ, cập nhật dược sĩ vào hội thoại
         if not conversation.get("pharmacist_id") and user_id:
+            # Cập nhật dược sĩ vào hội thoại
             await accept_conversation(conversation_id, user_id)
             # Lấy thông tin hội thoại mới nhất
             conversation = await get_conversation(conversation_id)
+
+            # Lấy thông tin dược sĩ để gửi cho khách
+            pharmacist = await get_pharmacist_by_user_id(user_id)
+            pharmacist_info = None
+
+            if pharmacist:
+                pharmacist_info = {
+                    "id": str(pharmacist["_id"]),
+                    "name": pharmacist.get("name", ""),
+                    "avatar": pharmacist.get("avatar", ""),
+                    "qualification": pharmacist.get("qualification", ""),
+                    "experience": pharmacist.get("experience", ""),
+                    "specialization": pharmacist.get("specialization", ""),
+                    "rating": pharmacist.get("rating", 0),
+                    "status": "online"
+                }
+            else:
+                # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
+                logger.warn(f"No pharmacist record found for user_id: {user_id}, using default info")
+                pharmacist_info = {
+                    "id": user_id,
+                    "name": "Dược sĩ tư vấn",  # Tên mặc định
+                    "avatar": "",
+                    "qualification": "Dược sĩ",
+                    "status": "online"
+                }
+
+            # Gửi thông tin dược sĩ cho khách hàng qua websocket khác
+            try:
+                # Gửi thông tin dược sĩ cho khách hàng
+                await manager.send_to_client(
+                    {
+                        "type": "pharmacist_joined",
+                        "pharmacist": pharmacist_info,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    conv_id,
+                    "guest"
+                )
+            except Exception as e:
+                logger.error(f"Error sending pharmacist info to guest: {str(e)}")
 
     if client_type == "guest":
         # Nếu hội thoại có ID người dùng và không khớp với user_id hiện tại
@@ -214,6 +267,34 @@ async def handle_websocket_connection(
     try:
         # Kết nối WebSocket
         await manager.connect(websocket, conv_id, client_type)
+        logger.info(f"{client_type.capitalize()} connected to conversation {conversation_id}")
+
+        # Lấy thông tin dược sĩ nếu có
+        pharmacist_info = None
+        if conversation.get("pharmacist_id"):
+            pharmacist = await get_pharmacist_by_user_id(conversation["pharmacist_id"])
+            if pharmacist:
+                pharmacist_info = {
+                    "id": str(pharmacist["_id"]),
+                    "name": pharmacist.get("name", ""),
+                    "avatar": pharmacist.get("avatar", ""),
+                    "qualification": pharmacist.get("qualification", ""),
+                    "experience": pharmacist.get("experience", ""),
+                    "specialization": pharmacist.get("specialization", ""),
+                    "rating": pharmacist.get("rating", 0),
+                    "status": pharmacist.get("status", "offline")
+                }
+            else:
+                # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
+                logger.warn(
+                    f"No pharmacist record found for ID: {conversation['pharmacist_id']}, using default info")
+                pharmacist_info = {
+                    "id": conversation["pharmacist_id"],
+                    "name": "Dược sĩ tư vấn",
+                    "avatar": "",
+                    "qualification": "Dược sĩ",
+                    "status": "online"
+                }
 
         # Thông báo kết nối thành công
         await websocket.send_json({
@@ -223,21 +304,64 @@ async def handle_websocket_connection(
                 "guest_name": conversation.get("guest_name", ""),
                 "status": conversation.get("status", "waiting"),
                 "created_at": conversation.get("created_at").isoformat() if conversation.get("created_at") else None,
-                "updated_at": conversation.get("updated_at").isoformat() if conversation.get("updated_at") else None
+                "updated_at": conversation.get("updated_at").isoformat() if conversation.get("updated_at") else None,
+                "pharmacist": pharmacist_info  # Thêm thông tin dược sĩ
             }
         })
 
         # Gửi thông báo cho đối tác
         partner_type = "pharmacist" if client_type == "guest" else "guest"
-        await manager.send_to_client(
-            {
-                "type": "partner_connected",
-                "client_type": client_type,
-                "timestamp": datetime.utcnow().isoformat()
-            },
-            conv_id,
-            partner_type
-        )
+
+        # Nếu client là dược sĩ, gửi thêm thông tin dược sĩ
+        if client_type == "pharmacist" and conversation.get("pharmacist_id") == user_id:
+            # Lấy thông tin dược sĩ
+            pharmacist = await get_pharmacist_by_user_id(user_id)
+            pharmacist_info = None
+
+            if pharmacist:
+                pharmacist_info = {
+                    "id": str(pharmacist["_id"]),
+                    "name": pharmacist.get("name", ""),
+                    "avatar": pharmacist.get("avatar", ""),
+                    "qualification": pharmacist.get("qualification", ""),
+                    "experience": pharmacist.get("experience", ""),
+                    "specialization": pharmacist.get("specialization", ""),
+                    "rating": pharmacist.get("rating", 0),
+                    "status": "online"
+                }
+            else:
+                # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
+                logger.warn(f"No pharmacist record found for user_id: {user_id}, using default info")
+                pharmacist_info = {
+                    "id": user_id,
+                    "name": "Dược sĩ tư vấn",
+                    "avatar": "",
+                    "qualification": "Dược sĩ",
+                    "status": "online"
+                }
+
+            # Gửi thông tin dược sĩ trong thông báo partner_connected
+            await manager.send_to_client(
+                {
+                    "type": "partner_connected",
+                    "client_type": client_type,
+                    "pharmacist_info": pharmacist_info,  # Thêm thông tin dược sĩ
+                    "timestamp": datetime.utcnow().isoformat()
+                },
+                conv_id,
+                partner_type
+            )
+        else:
+            # Gửi thông báo thông thường cho client khác
+            await manager.send_to_client(
+                {
+                    "type": "partner_connected",
+                    "client_type": client_type,
+                    "timestamp": datetime.utcnow().isoformat()
+                },
+                conv_id,
+                partner_type
+            )
 
         # Lấy lịch sử tin nhắn
         messages_history = await get_conversation_messages(conversation_id)
@@ -274,7 +398,6 @@ async def handle_websocket_connection(
 
         # Xử lý tin nhắn
         while True:
-            # ===== THAY ĐỔI CHÍNH BẮT ĐẦU TỪ ĐÂY =====
             # Nhận tin nhắn từ client với xử lý lỗi nâng cao
             try:
                 # Sử dụng receive_text() thay vì receive_json() để xử lý trước
@@ -295,7 +418,7 @@ async def handle_websocket_connection(
                     try:
                         data = json.loads(raw_data["text"])
                     except json.JSONDecodeError as e:
-                        logger.warn(
+                        logger.warning(
                             f"Invalid JSON from {client_type}: {raw_data['text'][:100]}... - Error: {str(e)}")
                         await websocket.send_json({
                             "type": "error",
@@ -314,12 +437,12 @@ async def handle_websocket_connection(
                     continue
                 else:
                     # Trường hợp không có dữ liệu
-                    logger.warn(f"Received WebSocket message without data")
+                    logger.warning(f"Received WebSocket message without data")
                     continue
 
                 # Kiểm tra 'type' của tin nhắn
                 if "type" not in data:
-                    logger.warn(f"Received message without type field: {data}")
+                    logger.warning(f"Received message without type field: {data}")
                     await websocket.send_json({
                         "type": "error",
                         "message": "Message type is required",
@@ -401,6 +524,59 @@ async def handle_websocket_connection(
                             partner_type
                         )
 
+                elif data["type"] == "accept_conversation" and client_type == "pharmacist":
+                    # Cập nhật dược sĩ vào hội thoại
+                    updated_conv = await accept_conversation(conversation_id, user_id)
+
+                    # Lấy thông tin dược sĩ
+                    pharmacist = await get_pharmacist_by_user_id(user_id)
+                    pharmacist_info = None
+
+                    if pharmacist:
+                        pharmacist_info = {
+                            "id": str(pharmacist["_id"]),
+                            "name": pharmacist.get("name", ""),
+                            "avatar": pharmacist.get("avatar", ""),
+                            "qualification": pharmacist.get("qualification", ""),
+                            "experience": pharmacist.get("experience", ""),
+                            "specialization": pharmacist.get("specialization", ""),
+                            "rating": pharmacist.get("rating", 0),
+                            "status": "online"
+                        }
+                    else:
+                        # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
+                        logger.warning(f"No pharmacist record found for user_id: {user_id}, using default info")
+                        pharmacist_info = {
+                            "id": user_id,
+                            "name": "Dược sĩ tư vấn",
+                            "avatar": "",
+                            "qualification": "Dược sĩ",
+                            "status": "online"
+                        }
+
+                    # Thông báo cho khách hàng
+                    await manager.send_to_client(
+                        {
+                            "type": "pharmacist_joined",
+                            "pharmacist": pharmacist_info,
+                            "timestamp": datetime.utcnow().isoformat()
+                        },
+                        conv_id,
+                        "guest"
+                    )
+
+                    # Thông báo cho dược sĩ
+                    await websocket.send_json({
+                        "type": "conversation_accepted",
+                        "conversation": {
+                            "id": str(updated_conv["_id"]) if updated_conv else str(conv_id),
+                            "status": updated_conv.get("status", "active") if updated_conv else "active",
+                            "guest_name": updated_conv.get("guest_name", "") if updated_conv else conversation.get(
+                                "guest_name", "")
+                        },
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+
                 elif data["type"] == "close_conversation":
                     # Cập nhật trạng thái hội thoại thành đóng
                     await update_conversation_status(conversation_id, "closed")
@@ -431,7 +607,7 @@ async def handle_websocket_connection(
 
                 else:
                     # Type không được hỗ trợ
-                    logger.warn(f"Unsupported message type: {data['type']}")
+                    logger.warning(f"Unsupported message type: {data['type']}")
                     await websocket.send_json({
                         "type": "error",
                         "message": f"Unsupported message type: {data['type']}",
@@ -454,7 +630,6 @@ async def handle_websocket_connection(
                     # Nếu không gửi được thông báo lỗi thì có thể kết nối đã đóng
                     logger.error("Cannot send error message - connection might be closed")
                     break
-            # ===== THAY ĐỔI CHÍNH KẾT THÚC Ở ĐÂY =====
 
     except Exception as e:
         error_msg = f"Error in websocket: {str(e)}"
@@ -472,6 +647,8 @@ async def handle_websocket_connection(
         disconnected_type = manager.disconnect(websocket, conv_id)
 
         if disconnected_type:
+            logger.info(f"{disconnected_type.capitalize()} disconnected from conversation {conversation_id}")
+
             # Thông báo cho đối tác
             partner_type = "pharmacist" if disconnected_type == "guest" else "guest"
             try:

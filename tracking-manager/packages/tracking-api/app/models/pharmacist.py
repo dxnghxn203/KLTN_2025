@@ -93,6 +93,14 @@ async def get_by_id(pharmacist_id: str):
         logger.error(f"Error getting pharmacist by id: {str(e)}")
         raise e
 
+async def get_pharmacist_by_user_id(pharmacist_id: str):
+    try:
+        collection = database.db[collection_name]
+        pharmacist_info = collection.find_one({"_id": ObjectId(pharmacist_id)})
+        return pharmacist_info
+    except Exception as e:
+        return None
+
 async def get_current(token: str) -> ItemPharmacistRes:
     try:
         payload = decode_jwt(token=token)
