@@ -212,7 +212,9 @@ async def get_invoice(order_id: str):
         )
 
 @router.post("/order/request-prescription", response_model=response.BaseResponse)
-async def request_prescription(item: ItemOrderForPTInReq, token: str = Depends(middleware.verify_token)):
+async def request_prescription(item: ItemOrderForPTInReq,
+                               images: Optional[List[UploadFile]] = File(None),
+                               token: str = Depends(middleware.verify_token)):
     try:
         user_info = await user.get_current(token)
         if not user_info:
@@ -220,7 +222,7 @@ async def request_prescription(item: ItemOrderForPTInReq, token: str = Depends(m
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="User not found"
             )
-        return await order.request_order_prescription(item, user_info.id)
+        return await order.request_order_prescription(item, user_info.id, images)
     except response.JsonException as je:
         raise je
     except Exception as e:

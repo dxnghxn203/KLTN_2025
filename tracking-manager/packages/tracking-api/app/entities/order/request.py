@@ -60,6 +60,10 @@ class ItemUpdateStatusReq(BaseModel):
     shipper_name: str = ""
     delivery_instruction: str = ""
 
+class ItemOrderImageReq(BaseModel):
+    images_id: str = ""
+    images_url: str = ""
+
 class ItemOrderForPTReq(BaseModel):
     request_id: str = ""
     status: str = "pending"
@@ -68,6 +72,7 @@ class ItemOrderForPTReq(BaseModel):
     receiver_province_code: int
     receiver_district_code: int
     receiver_commune_code: int
+    images: List[ItemOrderImageReq] = None
     created_by: str = ""
     verified_by: str = ""
     pharmacist_name: str = ""
