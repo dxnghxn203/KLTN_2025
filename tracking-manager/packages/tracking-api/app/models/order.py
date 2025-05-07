@@ -330,7 +330,7 @@ async def save_order_to_redis(
             tracking_id=tracking_id,
             status="created",
             created_by=user_id,
-            delivery_time=parse(fee_data["delivery_time"]),
+            delivery_time=fee_data["delivery_time"],
             shipping_fee=fee_data["shipping_fee"],
             product_fee=fee_data["product_fee"],
             total_fee=fee_data["total_fee"],
@@ -522,7 +522,7 @@ async def get_order_invoice(order_id: str):
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, images):
     try:
 
-        product_items, _, _, out_of_stock = await process_order_products(item.product)
+        product_items, _, _, out_of_stock = await process_order_products(item.product.product)
 
         if out_of_stock:
             return response.BaseResponse(

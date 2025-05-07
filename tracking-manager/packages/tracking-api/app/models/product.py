@@ -84,6 +84,9 @@ async def get_related_product(product_id, top_n=5):
     try:
         result = recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
         product_list = result["data"]
+        if not product_list:
+            result["data"] = []
+            return result
 
         enriched_products = []
 
@@ -106,10 +109,7 @@ async def get_related_product(product_id, top_n=5):
         return result
     except Exception as e:
         logger.error(f"Failed [get_related_product]: {e}")
-        return response.BaseResponse(
-            status="failed",
-            message="Internal server error",
-        )
+        raise e
 async def get_product_by_cart_mongo(product_ids, cart):
     try:
         collection = db[collection_name]

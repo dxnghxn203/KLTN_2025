@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List
-
-from pydantic import BaseModel, Field
+from typing import List, Optional
+import json
+from pydantic import BaseModel, Field, model_validator
 
 from app.entities.product.request import ItemProductReq, ItemProductInReq
 
@@ -16,6 +16,15 @@ class InfoAddressOrderReq(BaseModel):
     phone_number: str = ""
     email: str = ""
     address:  AddressOrderReq
+
+    @model_validator(mode="before")
+    @classmethod
+    def to_py_dict(cls, data):
+        if isinstance(data, str):
+            return json.loads(data)
+        elif isinstance(data, dict):
+            return data
+        raise ValueError("Invalid InfoAddressOrderReq format")
 
 class ItemOrderReq(BaseModel):
     order_id: str = ""
@@ -33,7 +42,7 @@ class ItemOrderReq(BaseModel):
     receiver_district_code: int = 0
     receiver_commune_code: int = 0
     created_by: str = ""
-    delivery_time: datetime
+    delivery_time: str = ""
     delivery_instruction: str = ""
     payment_type: str = ""
     weight: float = 0
@@ -78,9 +87,21 @@ class ItemOrderForPTReq(BaseModel):
     pharmacist_name: str = ""
     note: str = ""
 
-class ItemOrderForPTInReq(BaseModel):
+class ListProductInReq(BaseModel):
     product: List[ItemProductInReq]
-    pick_to: InfoAddressOrderReq
+
+    @model_validator(mode="before")
+    @classmethod
+    def to_py_dict(cls, data):
+        if isinstance(data, str):
+            return json.loads(data)
+        elif isinstance(data, dict):
+            return data
+        raise ValueError("Invalid ListProductInReq format")
+
+class ItemOrderForPTInReq(BaseModel):
+    product: Optional[ListProductInReq] = Field(None)
+    pick_to: Optional[InfoAddressOrderReq] = Field(None)
     receiver_province_code: int = 0
     receiver_district_code: int = 0
     receiver_commune_code: int = 0

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, status, Depends, UploadFile, File
+from pyfa_converter_v2 import BodyDepends
 from starlette.responses import FileResponse
 from typing import Optional, List
 
@@ -213,7 +214,7 @@ async def get_invoice(order_id: str):
         )
 
 @router.post("/order/request-prescription", response_model=response.BaseResponse)
-async def request_prescription(item: ItemOrderForPTInReq,
+async def request_prescription(item: ItemOrderForPTInReq = BodyDepends(ItemOrderForPTInReq),
                                images: Optional[List[UploadFile]] = File(None),
                                token: str = Depends(middleware.verify_token)):
     try:
