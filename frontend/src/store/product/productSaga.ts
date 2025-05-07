@@ -482,11 +482,9 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
             onFailed = () => {},
         } = payload;
 
-        const body = {
-            file,
-        };
+       
 
-        const product = yield call(productService.updateImagesPrimaryProduct,product_id, body);
+        const product = yield call(productService.updateImagesPrimaryProduct,product_id, file);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchUpdateImagesPrimaryProductSuccess(product.message));
@@ -510,11 +508,9 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
             onFailed = () => {},
         } = payload;
 
-        const body = {
-            files,
-        };
+        
 
-        const product = yield call(productService.updateImagesProduct,product_id, body);
+        const product = yield call(productService.updateImagesProduct,product_id, files);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchUpdateImagesProductSuccess(product.message));

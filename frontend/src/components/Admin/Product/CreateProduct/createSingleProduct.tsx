@@ -132,8 +132,6 @@ const CreateSingleProduct = () => {
   const [hasPrimaryImageChanged, setHasPrimaryImageChanged] = useState(false);
   const [hasImagesChanged, setHasImagesChanged] = useState(false);
 
-  // const [file, setFile] = useState<File | null>(null);
-
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
@@ -156,6 +154,7 @@ const CreateSingleProduct = () => {
   const detailId = searchParams.get("chi-tiet");
   const isViewOnly = !!detailId;
   const productId = editId || detailId;
+
   // console.log("productId", editId);
   // const detailId = query["chi-tiet"];
 
@@ -254,6 +253,7 @@ const CreateSingleProduct = () => {
       const fileArray = Array.from(e.target.files);
       const updatedImages = [...images, ...fileArray];
       setImages(updatedImages);
+      setHasImagesChanged(true);
 
       // Generate preview URLs for new files
       fileArray.forEach((file) => {
@@ -319,6 +319,7 @@ const CreateSingleProduct = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setPrimaryImage(file);
+      setHasPrimaryImageChanged(true);
 
       // Generate preview URL
       const reader = new FileReader();
@@ -713,62 +714,81 @@ const CreateSingleProduct = () => {
     if (certificate_file) {
       formData_Certificate.append("file", certificate_file);
     }
-    console.log("editId", editId);
+
+    // Chuyển URL (string) thành File
+    const urlToFile = async (
+      url: string,
+      filename: string,
+      mimeType: string
+    ): Promise<File> => {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return new File([blob], filename, { type: mimeType });
+    };
+
+    const prepareImages = async () => {
+      const formData_Images = new FormData();
+
+      for (const image of images) {
+        if (typeof image === "string") {
+          // Xử lý ảnh cũ dạng URL
+          const file = await urlToFile(image, "old_image.jpg", "image/jpeg"); // tùy MIME
+          formData_Images.append("files", file);
+        } else {
+          // Ảnh mới đã là File
+          formData_Images.append("files", image);
+        }
+      }
+
+      return formData_Images;
+    };
+
+    const formData_Images = await prepareImages();
+
+    const formData_PrimaryImage = new FormData();
+    if (primaryImage) {
+      formData_PrimaryImage.append("file", primaryImage);
+    }
+    console.log("formData_Certificate", formData_Certificate);
+    console.log("formData_Images", formData_Images);
+    console.log("formData_PrimaryImage", formData_PrimaryImage);
     if (editId) {
       try {
-        console.log("primaryImage", primaryImage, typeof primaryImage);
-        console.log("images", images, typeof images);
-        const hasPrimaryImageUpdate = !!primaryImage;
-        const hasImagesUpdate = images && images.length > 0;
-        const hasProductUpdate = Object.keys(dataToSend).length > 0;
-        console.log("hasPrimaryImageUpdate", hasPrimaryImageUpdate);
-        console.log("hasImagesUpdate", hasImagesUpdate);
-        console.log("hasProductUpdate", hasProductUpdate);
-        const callUpdateCertificate = async () => {
-          console.log("formData_Certificate", formData_Certificate);
+        if (hasCertificateChanged) {
           await fetchUpdateCertificateFileProduct(
             { product_id: editId, file: formData_Certificate },
             (msg) => toast.showToast(msg, "success"),
             (msg) => Promise.reject(new Error(msg))
           );
-        };
+        }
 
-        const callUpdatePrimaryImage = async () => {
+        if (hasPrimaryImageChanged) {
           await fetchUpdateImagesPrimaryProduct(
-            { product_id: editId, file: primaryImage },
+            { product_id: editId, file: formData_PrimaryImage },
             (msg) => toast.showToast(msg, "success"),
             (msg) => Promise.reject(new Error(msg))
           );
-        };
+        }
 
-        const callUpdateImages = async () => {
+        if (hasImagesChanged) {
           await fetchUpdateImagesProduct(
-            { product_id: editId, images },
+            { product_id: editId, files: formData_Images },
             (msg) => toast.showToast(msg, "success"),
             (msg) => Promise.reject(new Error(msg))
           );
-        };
+        }
 
-        const callUpdateProduct = async () => {
+        if (Object.keys(dataToSend).length > 0) {
           await fetchUpdateProduct(
             dataToSend,
-            (msg) => {
-              toast.showToast(msg, "success");
-              resetForm();
-            },
+            (msg) => toast.showToast(msg, "success"),
             (msg) => Promise.reject(new Error(msg))
           );
-        };
+        }
 
-        if (hasCertificateChanged) await callUpdateCertificate();
-        if (hasPrimaryImageUpdate) await callUpdatePrimaryImage();
-        if (hasImagesUpdate) await callUpdateImages();
-        if (hasProductUpdate) await callUpdateProduct();
+        // toast.showToast("Cập nhật hoàn tất!", "success");
       } catch (error: any) {
-        toast.showToast(
-          error?.message || "Có lỗi khi cập nhật sản phẩm!",
-          "error"
-        );
+        toast.showToast("Lỗi khi cập nhật: " + error.message, "error");
       }
     } else {
       await addProduct(
@@ -1506,8 +1526,13 @@ const CreateSingleProduct = () => {
                     </button>
 
                     <p className="text-xs text-gray-800">
-                      <span className="text-2xl">📄</span>{" "}
-                      {certificate_file?.name}
+                      <span className="text-2xl">📄</span>
+                      {typeof certificate_file === "string"
+                        ? (certificate_file as string)
+                            .split("/")
+                            .slice(-2)
+                            .join("/")
+                        : certificate_file?.name}{" "}
                     </p>
                   </div>
                 )}
