@@ -1,202 +1,488 @@
-from app.core.database import db
-from app.entities.chat_box.request import Conversation, Message
+import json
 
-from pydantic import BeforeValidator
-from typing import Annotated
 from bson import ObjectId
-
-conversation_collection_name ='conversations'
-message_collection_name = 'messages'
-
-conversation_collection = db[conversation_collection_name]
-message_collection = db[message_collection_name]
-
-WAITING = "waiting"
-ACTIVE = "active"
-CLOSED = "closed"
-
-PyObjectId = Annotated[
-    ObjectId,
-    BeforeValidator(lambda v: ObjectId(v) if ObjectId.is_valid(v) else v)
-]
-
-import logging
 from datetime import datetime
-from typing import List, Optional, Literal
+from typing import List, Dict, Any, Optional
+from fastapi import WebSocket
 
-from bson import ObjectId
-from pymongo import ReturnDocument # Để lấy document sau khi update
+from app.core import logger
+from app.core.database import db
 
-logger = logging.getLogger(__name__)
-
-async def get_or_create_conversation(
-    participant_id: str,
-    participant_type: Literal['guest', 'user']
-) -> Conversation:
-    participant_ref_data = {"id": participant_id, "type": participant_type}
-    current_time = datetime.utcnow()
-
-    existing_conversation = conversation_collection.find_one(
-        {"participant_1_ref": participant_ref_data, "status": {"$in": ["active", "waiting"]}}
-    )
-
-    if existing_conversation:
-        logger.info(f"Found existing conversation {existing_conversation['_id']} for {participant_type} {participant_id}")
-        updated_doc = conversation_collection.find_one_and_update(
-            {"_id": existing_conversation["_id"]},
-            {"$set": {"last_message_at": current_time}},
-            return_document=ReturnDocument.AFTER
-        )
-        if updated_doc:
-            return Conversation(**updated_doc)
-        else:
-            logger.error(f"Failed to update last_message_at for conversation {existing_conversation['_id']}")
-            return Conversation(**existing_conversation)
-
-    else:
-        logger.info(f"Creating new conversation for {participant_type} {participant_id}")
-        new_conversation_data = {
-            "participant_1_ref": participant_ref_data,
-            "pharmacist_ref": None,
-            "status": "waiting",
-            "created_at": current_time,
-            "pharmacist_joined_at": None,
-            "last_message_at": current_time, # Quan trọng cho TTL ngay từ đầu
-            "closed_at": None
-        }
-        conversation_model = Conversation(**new_conversation_data)
-        insert_data = conversation_model.model_dump(exclude={"id"}, by_alias=True) # by_alias=True nếu dùng alias _id
-
-        result = conversation_collection.insert_one(insert_data)
-        created_doc = conversation_collection.find_one({"_id": result.inserted_id})
-        if created_doc:
-            return Conversation(**created_doc)
-        else:
-            logger.error("Failed to retrieve newly created conversation.")
-            raise Exception("Failed to create and retrieve conversation")
+conversations = db['conversations']
+messages = db['messages']
 
 
-async def assign_pharmacist_to_conversation(
-    conversation_id: PyObjectId,
-    pharmacist_id: str,
-    pharmacist_name: str
-) -> Optional[Conversation]:
-    current_time = datetime.utcnow()
-    pharmacist_ref_data = {"id": pharmacist_id, "name": pharmacist_name}
+async def create_guest_conversation(guest_name: str, guest_email: Optional[str] = None,
+                                    guest_phone: Optional[str] = None) -> Dict[str, Any]:
+    """Tạo hội thoại mới cho khách không đăng nhập"""
+    conversation_data = {
+        "guest_name": guest_name,
+        "guest_email": guest_email,
+        "guest_phone": guest_phone,
+        "guest_id": None,
+        "pharmacist_id": None,
+        "status": "waiting",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
 
-    updated_doc = conversation_collection.find_one_and_update(
-        {
-            "_id": ObjectId(conversation_id) ,
-            "status": "waiting"
-        },
-        {
-            "$set": {
-                "pharmacist_ref": pharmacist_ref_data,
-                "status": "active",
-                "pharmacist_joined_at": current_time,
-                "last_message_at": current_time
-            }
-        },
-        return_document=ReturnDocument.AFTER
-    )
+    result = conversations.insert_one(conversation_data)
+    conversation_data["_id"] = result.inserted_id
+    return conversation_data
 
-    if updated_doc:
-        logger.info(f"Pharmacist {pharmacist_id} assigned to conversation {conversation_id}")
-        return Conversation(**updated_doc)
-    else:
-        logger.warning(f"Conversation {conversation_id} not found or not in 'waiting' state for pharmacist assignment.")
+
+async def create_user_conversation(user_id: str, guest_name: str, guest_email: Optional[str] = None,
+                                   guest_phone: Optional[str] = None) -> Dict[str, Any]:
+    """Tạo hội thoại mới cho người dùng đã đăng nhập"""
+    conversation_data = {
+        "guest_name": guest_name,
+        "guest_email": guest_email,
+        "guest_phone": guest_phone,
+        "guest_id": user_id,
+        "pharmacist_id": None,
+        "status": "waiting",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+
+    result = conversations.insert_one(conversation_data)
+    conversation_data["_id"] = result.inserted_id
+    return conversation_data
+
+
+async def get_waiting_conversations(limit: int = 20) -> List[Dict[str, Any]]:
+    """Lấy danh sách các hội thoại đang ở trạng thái chờ"""
+    cursor = conversations.find({"status": "waiting"}).sort("created_at", 1).limit(limit)
+    return cursor.to_list(length=limit)
+
+
+async def get_conversation(conversation_id: str) -> Optional[Dict[str, Any]]:
+    """Lấy thông tin chi tiết một hội thoại"""
+    if not ObjectId.is_valid(conversation_id):
         return None
 
-async def get_waiting_conversations(limit: int = 20) -> List[Conversation]:
-    conversations_cursor = conversation_collection.find(
-        {"status": "waiting"}
-    ).sort("created_at", 1).limit(limit)
-    conversations = conversations_cursor.to_list(length=limit)
-    return [Conversation(**conv) for conv in conversations]
+    return conversations.find_one({"_id": ObjectId(conversation_id)})
 
-async def close_conversation(conversation_id: PyObjectId) -> bool:
-    current_time = datetime.utcnow()
-    result = conversation_collection.update_one(
-        {"_id": conversation_id, "status": {"$ne": "closed"}},
-        {
-            "$set": {
-                "status": "closed",
-                "closed_at": current_time,
-                "last_message_at": current_time
-            }
-        }
+
+async def accept_conversation(conversation_id: str, pharmacist_id: str) -> Optional[Dict[str, Any]]:
+    """Dược sĩ nhận một hội thoại"""
+    if not ObjectId.is_valid(conversation_id):
+        return None
+
+    # Tìm và cập nhật hội thoại
+    result = conversations.find_one_and_update(
+        {"_id": ObjectId(conversation_id), "status": "waiting"},
+        {"$set": {
+            "pharmacist_id": pharmacist_id,
+            "status": "active",
+            "updated_at": datetime.utcnow()
+        }},
+        return_document=True
     )
-    if result.modified_count == 1:
-        logger.info(f"Conversation {conversation_id} closed.")
-        return True
-    else:
-        logger.warning(f"Conversation {conversation_id} not found or already closed.")
-        return False
 
-async def get_conversation_by_id(conversation_id: str) -> Optional[Conversation]:
-    conv_doc = conversation_collection.find_one({"_id": ObjectId(conversation_id)})
-    if conv_doc:
-        return Conversation(**conv_doc)
-    return None
+    return result
 
-async def save_message(
-    conversation_id: PyObjectId,
-    sender_id: str,
-    sender_type: Literal['guest', 'user', 'pharmacist'],
-    content_text: Optional[str] = None,
-    content_image_url: Optional[str] = None
-) -> Optional[Message]:
-    current_time = datetime.utcnow()
 
+async def update_conversation_status(conversation_id: str, status: str) -> Optional[Dict[str, Any]]:
+    """Cập nhật trạng thái của hội thoại"""
+    if not ObjectId.is_valid(conversation_id):
+        return None
+
+    result = await conversations.find_one_and_update(
+        {"_id": ObjectId(conversation_id)},
+        {"$set": {
+            "status": status,
+            "updated_at": datetime.utcnow()
+        }},
+        return_document=True
+    )
+
+    return result
+
+
+# -------------------- MESSAGES --------------------
+
+async def create_message(
+        conversation_id: str,
+        content: str,
+        sender_type: str,
+        sender_id: Optional[str] = None,
+        message_type: str = "text"
+) -> Dict[str, Any]:
+    """Tạo tin nhắn mới"""
     message_data = {
         "conversation_id": conversation_id,
-        "sender": {"id": sender_id, "type": sender_type},
-        "content": {"text": content_text, "image_url": content_image_url},
-        "timestamp": current_time
+        "content": content,
+        "sender_type": sender_type,
+        "sender_id": sender_id,
+        "message_type": message_type,
+        "is_read": False,
+        "created_at": datetime.utcnow()
     }
-    try:
-        message_model = Message(**message_data)
-        insert_data = message_model.model_dump(exclude={"id"}, by_alias=True) # by_alias nếu dùng alias _id
-    except Exception as e:
-        logger.error(f"Message validation error: {e}")
-        return None
+
+    result = messages.insert_one(message_data)
+    message_data["_id"] = result.inserted_id
+
+    # Cập nhật thời gian của cuộc hội thoại
+    conversations.update_one(
+        {"_id": ObjectId(conversation_id)},
+        {"$set": {"updated_at": datetime.utcnow()}}
+    )
+
+    return message_data
+
+
+async def get_conversation_messages(conversation_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+    """Lấy tin nhắn của một hội thoại"""
+    if not ObjectId.is_valid(conversation_id):
+        return []
+
+    cursor = messages.find({"conversation_id": conversation_id}).sort("created_at", 1).limit(limit)
+    return cursor.to_list(length=limit)
+
+
+async def mark_messages_as_read(conversation_id: str, reader_type: str) -> int:
+    """Đánh dấu tin nhắn là đã đọc"""
+    if not ObjectId.is_valid(conversation_id):
+        return 0
+
+    # Xác định loại người gửi tin nhắn (đối tác của người đọc)
+    sender_type = "guest" if reader_type == "pharmacist" else "pharmacist"
+
+    result =  messages.update_many(
+        {"conversation_id": conversation_id, "sender_type": sender_type, "is_read": False},
+        {"$set": {"is_read": True}}
+    )
+
+    return result.modified_count
+
+
+# -------------------- WEBSOCKET HANDLING --------------------
+async def handle_websocket_connection(
+        websocket: WebSocket,
+        conversation_id: str,
+        client_type: str,
+        user_id: Optional[str] = None,
+        manager=None
+) -> None:
+    """
+    Xử lý kết nối WebSocket và các tin nhắn qua lại giữa khách hàng và dược sĩ.
+    """
+    from app.core.websocket import manager as ws_manager
+    import traceback
+
+    if manager is None:
+        manager = ws_manager
+
+    # Kiểm tra loại client hợp lệ
+    if client_type not in ["guest", "pharmacist"]:
+        await websocket.close(code=1008, reason="Loại client không hợp lệ")
+        return
+
+    # Kiểm tra ID hội thoại hợp lệ
+    if not ObjectId.is_valid(conversation_id):
+        await websocket.close(code=1008, reason="ID hội thoại không hợp lệ")
+        return
+
+    conv_id = ObjectId(conversation_id)
+
+    # Kiểm tra hội thoại tồn tại
+    conversation = await get_conversation(conversation_id)
+    if not conversation:
+        await websocket.close(code=1008, reason="Hội thoại không tồn tại")
+        return
+
+    # Kiểm tra quyền tham gia hội thoại
+    if client_type == "pharmacist":
+        # Nếu hội thoại đã có dược sĩ và không phải user_id hiện tại
+        if conversation.get("pharmacist_id") and conversation.get("pharmacist_id") != user_id:
+            await websocket.close(code=1008, reason="Hội thoại này đã được dược sĩ khác tiếp nhận")
+            return
+
+        # Nếu hội thoại chưa có dược sĩ, cập nhật dược sĩ vào hội thoại
+        if not conversation.get("pharmacist_id") and user_id:
+            await accept_conversation(conversation_id, user_id)
+            # Lấy thông tin hội thoại mới nhất
+            conversation = await get_conversation(conversation_id)
+
+    if client_type == "guest":
+        # Nếu hội thoại có ID người dùng và không khớp với user_id hiện tại
+        if conversation.get("guest_id") and conversation.get("guest_id") != user_id:
+            await websocket.close(code=1008, reason="Bạn không được phép tham gia hội thoại này")
+            return
 
     try:
-        result = await message_collection.insert_one(insert_data)
-        message_id = result.inserted_id
-        logger.info(f"Message {message_id} saved for conversation {conversation_id}")
-    except Exception as e:
-        logger.error(f"Failed to save message for conversation {conversation_id}: {e}")
-        return None
+        # Kết nối WebSocket
+        await manager.connect(websocket, conv_id, client_type)
 
-    try:
-        conv_update_result = conversation_collection.update_one(
-            {"_id": conversation_id},
-            {"$set": {"last_message_at": current_time}}
+        # Thông báo kết nối thành công
+        await websocket.send_json({
+            "type": "connection_established",
+            "conversation_id": str(conv_id),
+            "conversation_info": {
+                "guest_name": conversation.get("guest_name", ""),
+                "status": conversation.get("status", "waiting"),
+                "created_at": conversation.get("created_at").isoformat() if conversation.get("created_at") else None,
+                "updated_at": conversation.get("updated_at").isoformat() if conversation.get("updated_at") else None
+            }
+        })
+
+        # Gửi thông báo cho đối tác
+        partner_type = "pharmacist" if client_type == "guest" else "guest"
+        await manager.send_to_client(
+            {
+                "type": "partner_connected",
+                "client_type": client_type,
+                "timestamp": datetime.utcnow().isoformat()
+            },
+            conv_id,
+            partner_type
         )
-        if conv_update_result.matched_count == 0:
-            logger.warning(f"Conversation {conversation_id} not found when updating last_message_at after saving message {message_id}.")
-        elif conv_update_result.modified_count == 0:
-             logger.info(f"last_message_at already up-to-date for conversation {conversation_id}.")
 
+        # Lấy lịch sử tin nhắn
+        messages_history = await get_conversation_messages(conversation_id)
+
+        # Chuyển đổi ObjectId thành str trong tin nhắn và định dạng thời gian
+        for msg in messages_history:
+            if "_id" in msg:
+                msg["_id"] = str(msg["_id"])
+            # Định dạng datetime thành ISO string để dễ xử lý ở frontend
+            if "created_at" in msg and isinstance(msg["created_at"], datetime):
+                msg["created_at"] = msg["created_at"].isoformat()
+
+        # Gửi lịch sử tin nhắn
+        await websocket.send_json({
+            "type": "message_history",
+            "messages": messages_history
+        })
+
+        # Đánh dấu tin nhắn là đã đọc
+        count = await mark_messages_as_read(conversation_id, client_type)
+
+        # Thông báo cho đối tác nếu có tin nhắn được đánh dấu đã đọc
+        if count > 0:
+            await manager.send_to_client(
+                {
+                    "type": "messages_read",
+                    "by": client_type,
+                    "count": count,
+                    "timestamp": datetime.utcnow().isoformat()
+                },
+                conv_id,
+                partner_type
+            )
+
+        # Xử lý tin nhắn
+        while True:
+            # ===== THAY ĐỔI CHÍNH BẮT ĐẦU TỪ ĐÂY =====
+            # Nhận tin nhắn từ client với xử lý lỗi nâng cao
+            try:
+                # Sử dụng receive_text() thay vì receive_json() để xử lý trước
+                raw_data = await websocket.receive()
+
+                # Kiểm tra loại tin nhắn WebSocket
+                if raw_data["type"] == "websocket.disconnect":
+                    logger.info(f"{client_type.capitalize()} client initiated disconnect")
+                    break
+
+                if raw_data["type"] != "websocket.receive":
+                    logger.debug(f"Ignoring non-receive message: {raw_data['type']}")
+                    continue
+
+                # Lấy dữ liệu tin nhắn
+                if "text" in raw_data:
+                    # Phân tích dữ liệu JSON từ text
+                    try:
+                        data = json.loads(raw_data["text"])
+                    except json.JSONDecodeError as e:
+                        logger.warn(
+                            f"Invalid JSON from {client_type}: {raw_data['text'][:100]}... - Error: {str(e)}")
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Invalid JSON format. Please send properly formatted JSON data.",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                        continue
+                elif "bytes" in raw_data:
+                    # Dữ liệu nhị phân - không hỗ trợ trong ví dụ này
+                    logger.warn(f"Binary data received but not supported")
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Binary data not supported. Please send JSON text data.",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                    continue
+                else:
+                    # Trường hợp không có dữ liệu
+                    logger.warn(f"Received WebSocket message without data")
+                    continue
+
+                # Kiểm tra 'type' của tin nhắn
+                if "type" not in data:
+                    logger.warn(f"Received message without type field: {data}")
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Message type is required",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                    continue
+
+                # Xử lý message theo type
+                if data["type"] == "message":
+                    # Kiểm tra trường bắt buộc content
+                    if "content" not in data or not data["content"].strip():
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": "Message content is required",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                        continue
+
+                    # Tạo tin nhắn mới
+                    new_message = await create_message(
+                        conversation_id=conversation_id,
+                        content=data["content"],
+                        sender_type=client_type,
+                        sender_id=user_id,
+                        message_type=data.get("message_type", "text")
+                    )
+
+                    # Chuyển đổi ObjectId sang str và định dạng thời gian
+                    if "_id" in new_message:
+                        new_message["_id"] = str(new_message["_id"])
+                    if "created_at" in new_message and isinstance(new_message["created_at"], datetime):
+                        new_message["created_at"] = new_message["created_at"].isoformat()
+
+                    # Gửi xác nhận đã nhận tin nhắn
+                    await websocket.send_json({
+                        "type": "message_sent",
+                        "message_id": new_message["_id"],
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+
+                    # Gửi tin nhắn đến đối tác
+                    await manager.send_to_client(
+                        {"type": "new_message", "message": new_message},
+                        conv_id,
+                        partner_type
+                    )
+
+                elif data["type"] == "typing":
+                    # Kiểm tra trường is_typing
+                    if "is_typing" not in data:
+                        continue
+
+                    # Gửi thông báo đang nhập đến đối tác
+                    await manager.send_to_client(
+                        {
+                            "type": "typing_status",
+                            "is_typing": data["is_typing"],
+                            "client_type": client_type,
+                            "timestamp": datetime.utcnow().isoformat()
+                        },
+                        conv_id,
+                        partner_type
+                    )
+
+                elif data["type"] == "read_receipt":
+                    # Đánh dấu tin nhắn là đã đọc
+                    count = await mark_messages_as_read(conversation_id, client_type)
+
+                    # Thông báo cho đối tác
+                    if count > 0:
+                        await manager.send_to_client(
+                            {
+                                "type": "messages_read",
+                                "by": client_type,
+                                "count": count,
+                                "timestamp": datetime.utcnow().isoformat()
+                            },
+                            conv_id,
+                            partner_type
+                        )
+
+                elif data["type"] == "close_conversation":
+                    # Cập nhật trạng thái hội thoại thành đóng
+                    await update_conversation_status(conversation_id, "closed")
+
+                    # Thông báo đóng hội thoại cho cả hai bên
+                    close_message = {
+                        "type": "conversation_closed",
+                        "closed_by": client_type,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+
+                    # Gửi thông báo cho người đóng
+                    await websocket.send_json(close_message)
+
+                    # Gửi thông báo cho đối tác
+                    await manager.send_to_client(close_message, conv_id, partner_type)
+
+                    # Đóng kết nối sau khi đóng hội thoại
+                    await websocket.close(code=1000, reason="Conversation closed")
+                    break
+
+                elif data["type"] == "ping":
+                    # Xử lý ping từ client (để giữ kết nối)
+                    await websocket.send_json({
+                        "type": "pong",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+
+                else:
+                    # Type không được hỗ trợ
+                    logger.warn(f"Unsupported message type: {data['type']}")
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": f"Unsupported message type: {data['type']}",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+
+            except Exception as e:
+                # Bắt tất cả các ngoại lệ khác khi xử lý tin nhắn
+                logger.error(f"Error processing message: {str(e)}")
+                logger.error(traceback.format_exc())
+
+                # Thông báo lỗi cho client nhưng không đóng kết nối
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "Server error processing your message",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                except:
+                    # Nếu không gửi được thông báo lỗi thì có thể kết nối đã đóng
+                    logger.error("Cannot send error message - connection might be closed")
+                    break
+            # ===== THAY ĐỔI CHÍNH KẾT THÚC Ở ĐÂY =====
 
     except Exception as e:
-        logger.error(f"Failed to update last_message_at for conversation {conversation_id}: {e}")
+        error_msg = f"Error in websocket: {str(e)}"
+        logger.error(error_msg)
+        logger.error(traceback.format_exc())
 
-    created_message_doc = await message_collection.find_one({"_id": message_id})
-    if created_message_doc:
-        return Message(**created_message_doc)
-    else:
-        logger.error(f"Failed to retrieve newly saved message {message_id}")
-        return None
+        try:
+            # Cố gắng đóng kết nối một cách lịch sự
+            await websocket.close(code=1011, reason="Server error")
+        except:
+            pass
 
+    finally:
+        # Ngắt kết nối WebSocket
+        disconnected_type = manager.disconnect(websocket, conv_id)
 
-async def get_messages_for_conversation(
-    conversation_id: PyObjectId,
-    limit: int = 100
-) -> List[Message]:
-    messages_cursor = message_collection.find(
-        {"conversation_id": conversation_id}
-    ).sort("timestamp", 1).limit(limit)
-    messages = messages_cursor.to_list(length=limit)
-    return [Message(**msg) for msg in messages]
+        if disconnected_type:
+            # Thông báo cho đối tác
+            partner_type = "pharmacist" if disconnected_type == "guest" else "guest"
+            try:
+                await manager.send_to_client(
+                    {
+                        "type": "partner_disconnected",
+                        "client_type": disconnected_type,
+                        "timestamp": datetime.utcnow().isoformat()
+                    },
+                    conv_id,
+                    partner_type
+                )
+            except Exception as e:
+                logger.error(f"Error sending disconnect notification: {str(e)}")

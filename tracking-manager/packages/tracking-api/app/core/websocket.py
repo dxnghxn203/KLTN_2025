@@ -26,8 +26,8 @@ class ConnectionManager:
             logger.warn(f"Duplicate {client_type} connection for conv {conversation_id}. Closing old one.")
             try:
                 await existing_socket.close(code=1008, reason="New connection established by same client type")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warn(f"Failed to close existing {client_type} connection for conv {conversation_id}")
 
         self.active_connections[conversation_id][client_type] = websocket
         logger.info(f"{client_type.capitalize()} connected to conversation {conversation_id}")
@@ -51,6 +51,19 @@ class ConnectionManager:
                 del self.active_connections[conversation_id]
 
         return disconnected_type
+    #
+    # async def update_status(self, conversation_id: PyObjectId, client_type: Literal['guest', 'pharmacist'],
+    #                         status: str):
+    #     if conversation_id in self.active_connections:
+    #         if self.active_connections[conversation_id].get(client_type):
+    #             self.active_connections[conversation_id][client_type]["status"] = status
+    #             # Gửi thông báo trạng thái đến đối tác
+    #             other_type = "pharmacist" if client_type == "guest" else "guest"
+    #             await self.send_to_client(
+    #                 {"type": "status_update", "client_type": client_type, "status": status},
+    #                 conversation_id,
+    #                 other_type
+    #             )
 
     async def send_to_client(self, message: Dict[str, Any], conversation_id: PyObjectId, target_client_type: Literal['guest', 'pharmacist']):
         if conversation_id in self.active_connections:
