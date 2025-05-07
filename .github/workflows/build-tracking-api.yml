@@ -10,7 +10,6 @@ env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/tracking-api-kltn2025
   API_DIR: ./tracking-manager/packages/tracking-api
   VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-  VAULT_SECRET_PATH: secret/production/.env
 
 jobs:
   build:
@@ -23,8 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Import DB Secrets from Vault
-        id: vault-secrets-db
+      - name: Import Vault Secrets
         uses: hashicorp/vault-action@v3
         with:
           url: ${{ env.VAULT_ADDR }}
@@ -32,52 +30,32 @@ jobs:
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            MONGO_HOST secret/production/.env MONGO_HOST
-            RABBITMQ_USER secret/production/.env RABBITMQ_USER
-            RABBITMQ_PW secret/production/.env RABBITMQ_PW
-            RABBITMQ_HOST secret/production/.env RABBITMQ_HOST
-            RABBITMQ_PORT secret/production/.env RABBITMQ_PORT
-            RABBITMQ_VHOST secret/production/.env RABBITMQ_VHOST
-            REDIS_HOST secret/production/.env REDIS_HOST
-            REDIS_PORT secret/production/.env REDIS_PORT
-            REDIS_PASSWORD secret/production/.env REDIS_PASSWORD
-
-      - name: Import API Secrets from Vault
-        id: vault-secrets-api
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          method: approle
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            SUPABASE_PASS secret/production/.env SUPABASE_PASS
-            SUPABASE_key secret/production/.env SUPABASE_key
-            SUPABSE_URL secret/production/.env SUPABSE_URL
-            API_MONGO_USER secret/production/.env API_MONGO_USER
-            API_MONGO_PWS secret/production/.env API_MONGO_PWS
-            API_MONGO_DB secret/production/.env API_MONGO_DB
-            ES_HOST secret/production/.env ES_HOST
-            ES_PORT secret/production/.env ES_PORT
-            ES_USER secret/production/.env ES_USER
-
-      - name: Import Other Secrets from Vault
-        id: vault-secrets-other
-        uses: hashicorp/vault-action@v3
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          method: approle
-          roleId: ${{ secrets.VAULT_ROLE_ID }}
-          secretId: ${{ secrets.VAULT_SECRET_ID }}
-          secrets: |
-            ES_PW secret/production/.env ES_PW
-            PAYMENT_API_URL secret/production/.env PAYMENT_API_URL
-            GMAIL_PASS secret/production/.env GMAIL_PASS
-            GMAIL_USER secret/production/.env GMAIL_USER
-            JWT_PRIVATE_KEY secret/production/.env JWT_PRIVATE_KEY
-            JWT_PUBLIC_KEY secret/production/.env JWT_PUBLIC_KEY
-            ALGORITHM secret/production/.env ALGORITHM
-            API_PORT secret/production/.env API_PORT
+            secret/data/production/.env MONGO_HOST | MONGO_HOST
+            secret/data/production/.env RABBITMQ_USER | RABBITMQ_USER
+            secret/data/production/.env RABBITMQ_PW | RABBITMQ_PW
+            secret/data/production/.env RABBITMQ_HOST | RABBITMQ_HOST
+            secret/data/production/.env RABBITMQ_PORT | RABBITMQ_PORT
+            secret/data/production/.env RABBITMQ_VHOST | RABBITMQ_VHOST
+            secret/data/production/.env REDIS_HOST | REDIS_HOST
+            secret/data/production/.env REDIS_PORT | REDIS_PORT
+            secret/data/production/.env REDIS_PASSWORD | REDIS_PASSWORD
+            secret/data/production/.env SUPABASE_PASS | SUPABASE_PASS
+            secret/data/production/.env SUPABASE_key | SUPABASE_key
+            secret/data/production/.env SUPABSE_URL | SUPABSE_URL
+            secret/data/production/.env API_MONGO_USER | API_MONGO_USER
+            secret/data/production/.env API_MONGO_PWS | API_MONGO_PWS
+            secret/data/production/.env API_MONGO_DB | API_MONGO_DB
+            secret/data/production/.env ES_HOST | ES_HOST
+            secret/data/production/.env ES_PORT | ES_PORT
+            secret/data/production/.env ES_USER | ES_USER
+            secret/data/production/.env ES_PW | ES_PW
+            secret/data/production/.env PAYMENT_API_URL | PAYMENT_API_URL
+            secret/data/production/.env GMAIL_PASS | GMAIL_PASS
+            secret/data/production/.env GMAIL_USER | GMAIL_USER
+            secret/data/production/.env JWT_PRIVATE_KEY | JWT_PRIVATE_KEY
+            secret/data/production/.env JWT_PUBLIC_KEY | JWT_PUBLIC_KEY
+            secret/data/production/.env ALGORITHM | ALGORITHM
+            secret/data/production/.env API_PORT | API_PORT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
