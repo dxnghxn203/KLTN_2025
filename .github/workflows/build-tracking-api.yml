@@ -1,28 +1,17 @@
-name: Build and Deploy Tracking API
+name: Build Tracking API (Test)
 
 on:
   push:
-    branches: [ main ]
     paths:
-      - 'tracking-manager/packages/tracking-api/**'
       - '.github/workflows/build-tracking-api.yml'
   workflow_dispatch:
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/tracking-api-kltn2025
   API_DIR: ./tracking-manager/packages/tracking-api
-  CONTAINER_NAME: tracking-api-kltn2025-container
-
-  # --- Vault Config ---
-  VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-  VAULT_SECRET_PATH: secret/data/production # Đường dẫn KVv2
-
-  # --- VPS Config ---
-  VPS_HOST: ${{ secrets.VPS_HOST }}
-  VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
 
 jobs:
-  build-push-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,7 +25,7 @@ jobs:
         id: vault-secrets
         uses: hashicorp/vault-action@v3
         with:
-          url: ${{ env.VAULT_ADDR }}
+          url: ${{ secrets.VAULT_ADDR }}
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
@@ -116,55 +105,3 @@ jobs:
             API_PORT=${{ env.API_PORT }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.VPS_HOST }}
-          username: ${{ env.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            echo "Logging into GHCR..."
-            echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            echo "Pulling latest image: ${{ env.IMAGE_NAME }}:latest"
-            docker pull ${{ env.IMAGE_NAME }}:latest
-            echo "Stopping old container (if exists): ${{ env.CONTAINER_NAME }}"
-            docker stop ${{ env.CONTAINER_NAME }} || true
-            echo "Removing old container (if exists): ${{ env.CONTAINER_NAME }}"
-            docker rm ${{ env.CONTAINER_NAME }} || true
-            echo "Running new container: ${{ env.CONTAINER_NAME }}"
-            docker run -d \
-              --name ${{ env.CONTAINER_NAME }} \
-              -p ${API_PORT:-3001}:${API_PORT:-3001} \
-              --restart always \
-              -e MONGO_HOST="${MONGO_HOST}" \
-              -e RABBITMQ_USER="${RABBITMQ_USER}" \
-              -e RABBITMQ_PW="${RABBITMQ_PW}" \
-              -e RABBITMQ_HOST="${RABBITMQ_HOST}" \
-              -e RABBITMQ_PORT="${RABBITMQ_PORT}" \
-              -e RABBITMQ_VHOST="${RABBITMQ_VHOST}" \
-              -e REDIS_HOST="${REDIS_HOST}" \
-              -e REDIS_PORT="${REDIS_PORT}" \
-              -e REDIS_PASSWORD="${REDIS_PASSWORD}" \
-              -e SUPABASE_PASS="${SUPABASE_PASS}" \
-              -e SUPABASE_key="${SUPABASE_key}" \
-              -e SUPABSE_URL="${SUPABSE_URL}" \
-              -e API_MONGO_USER="${API_MONGO_USER}" \
-              -e API_MONGO_PWS="${API_MONGO_PWS}" \
-              -e API_MONGO_DB="${API_MONGO_DB}" \
-              -e ES_HOST="${ES_HOST}" \
-              -e ES_PORT="${ES_PORT}" \
-              -e ES_USER="${ES_USER}" \
-              -e ES_PW="${ES_PW}" \
-              -e PAYMENT_API_URL="${PAYMENT_API_URL}" \
-              -e GMAIL_PASS="${GMAIL_PASS}" \
-              -e GMAIL_USER="${GMAIL_USER}" \
-              -e JWT_PRIVATE_KEY="${JWT_PRIVATE_KEY}" \
-              -e JWT_PUBLIC_KEY="${JWT_PUBLIC_KEY}" \
-              -e ALGORITHM="${ALGORITHM}" \
-              -e API_PORT="${API_PORT:-3001}" \
-              ${{ env.IMAGE_NAME }}:latest
-            echo "Pruning old Docker images..."
-            docker image prune -af
-            echo "Deployment completed successfully!"
