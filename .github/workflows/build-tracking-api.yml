@@ -9,6 +9,8 @@ on:
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/tracking-api-kltn2025
   API_DIR: ./tracking-manager/packages/tracking-api
+  VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+  VAULT_SECRET_PATH: secret/data/production
 
 jobs:
   build:
@@ -25,37 +27,37 @@ jobs:
         id: vault-secrets
         uses: hashicorp/vault-action@v3
         with:
-          url: ${{ secrets.VAULT_ADDR }}
+          url: ${{ env.VAULT_ADDR }}
           method: approle
           roleId: ${{ secrets.VAULT_ROLE_ID }}
           secretId: ${{ secrets.VAULT_SECRET_ID }}
           secrets: |
-            MONGO_HOST=production/.env MONGO_HOST
-            RABBITMQ_USER=production/.env RABBITMQ_USER
-            RABBITMQ_PW=production/.env RABBITMQ_PW
-            RABBITMQ_HOST=production/.env RABBITMQ_HOST
-            RABBITMQ_PORT=production/.env RABBITMQ_PORT
-            RABBITMQ_VHOST=production/.env RABBITMQ_VHOST
-            REDIS_HOST=production/.env REDIS_HOST
-            REDIS_PORT=production/.env REDIS_PORT
-            REDIS_PASSWORD=production/.env REDIS_PASSWORD
-            SUPABASE_PASS=production/.env SUPABASE_PASS
-            SUPABASE_key=production/.env SUPABASE_key
-            SUPABSE_URL=production/.env SUPABSE_URL
-            API_MONGO_USER=production/.env API_MONGO_USER
-            API_MONGO_PWS=production/.env API_MONGO_PWS
-            API_MONGO_DB=production/.env API_MONGO_DB
-            ES_HOST=production/.env ES_HOST
-            ES_PORT=production/.env ES_PORT
-            ES_USER=production/.env ES_USER
-            ES_PW=production/.env ES_PW
-            PAYMENT_API_URL=production/.env PAYMENT_API_URL
-            GMAIL_PASS=production/.env GMAIL_PASS
-            GMAIL_USER=production/.env GMAIL_USER
-            JWT_PRIVATE_KEY=production/.env JWT_PRIVATE_KEY
-            JWT_PUBLIC_KEY=production/.env JWT_PUBLIC_KEY
-            ALGORITHM=production/.env ALGORITHM
-            API_PORT=production/.env API_PORT
+            MONGO_HOST=${{ env.VAULT_SECRET_PATH }} MONGO_HOST
+            RABBITMQ_USER=${{ env.VAULT_SECRET_PATH }} RABBITMQ_USER
+            RABBITMQ_PW=${{ env.VAULT_SECRET_PATH }} RABBITMQ_PW
+            RABBITMQ_HOST=${{ env.VAULT_SECRET_PATH }} RABBITMQ_HOST
+            RABBITMQ_PORT=${{ env.VAULT_SECRET_PATH }} RABBITMQ_PORT
+            RABBITMQ_VHOST=${{ env.VAULT_SECRET_PATH }} RABBITMQ_VHOST
+            REDIS_HOST=${{ env.VAULT_SECRET_PATH }} REDIS_HOST
+            REDIS_PORT=${{ env.VAULT_SECRET_PATH }} REDIS_PORT
+            REDIS_PASSWORD=${{ env.VAULT_SECRET_PATH }} REDIS_PASSWORD
+            SUPABASE_PASS=${{ env.VAULT_SECRET_PATH }} SUPABASE_PASS
+            SUPABASE_key=${{ env.VAULT_SECRET_PATH }} SUPABASE_key
+            SUPABSE_URL=${{ env.VAULT_SECRET_PATH }} SUPABSE_URL
+            API_MONGO_USER=${{ env.VAULT_SECRET_PATH }} API_MONGO_USER
+            API_MONGO_PWS=${{ env.VAULT_SECRET_PATH }} API_MONGO_PWS
+            API_MONGO_DB=${{ env.VAULT_SECRET_PATH }} API_MONGO_DB
+            ES_HOST=${{ env.VAULT_SECRET_PATH }} ES_HOST
+            ES_PORT=${{ env.VAULT_SECRET_PATH }} ES_PORT
+            ES_USER=${{ env.VAULT_SECRET_PATH }} ES_USER
+            ES_PW=${{ env.VAULT_SECRET_PATH }} ES_PW
+            PAYMENT_API_URL=${{ env.VAULT_SECRET_PATH }} PAYMENT_API_URL
+            GMAIL_PASS=${{ env.VAULT_SECRET_PATH }} GMAIL_PASS
+            GMAIL_USER=${{ env.VAULT_SECRET_PATH }} GMAIL_USER
+            JWT_PRIVATE_KEY=${{ env.VAULT_SECRET_PATH }} JWT_PRIVATE_KEY
+            JWT_PUBLIC_KEY=${{ env.VAULT_SECRET_PATH }} JWT_PUBLIC_KEY
+            ALGORITHM=${{ env.VAULT_SECRET_PATH }} ALGORITHM
+            API_PORT=${{ env.VAULT_SECRET_PATH }} API_PORT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
