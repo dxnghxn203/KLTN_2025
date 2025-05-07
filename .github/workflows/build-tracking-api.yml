@@ -10,7 +10,7 @@ env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/tracking-api-kltn2025
   API_DIR: ./tracking-manager/packages/tracking-api
   VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-  VAULT_SECRET_PATH: secret/data/production
+  VAULT_SECRET_PATH: secret/production/.env
 
 jobs:
   build:
