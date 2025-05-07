@@ -521,7 +521,7 @@ async def get_order_invoice(order_id: str):
 
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, images):
     try:
-        if not item.product.product:
+        if not item.product or not item.product.product:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không tìm thấy sản phẩm"
