@@ -102,7 +102,6 @@ jobs:
           
           echo "Created .env file from environment variables"
 
-      # Fix GHCR authentication
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -110,7 +109,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Attempt with PAT if GITHUB_TOKEN fails
       - name: Log in to GitHub Container Registry with PAT (Fallback)
         if: failure()
         uses: docker/login-action@v3
@@ -160,63 +158,79 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Sửa phần deploy để khắc phục lỗi kết nối
-      - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          port: 22 # Chỉ định rõ port SSH
-          script_stop: true # Dừng nếu có lỗi
-          envs: IMAGE_NAME,CONTAINER_NAME,MONGO_HOST,RABBITMQ_USER,RABBITMQ_PW,RABBITMQ_HOST,RABBITMQ_PORT,RABBITMQ_VHOST,REDIS_HOST,REDIS_PORT,REDIS_PASSWORD,SUPABASE_PASS,SUPABASE_key,SUPABSE_URL,API_MONGO_USER,API_MONGO_PWS,API_MONGO_DB,ES_HOST,ES_PORT,ES_USER,ES_PW,PAYMENT_API_URL,GMAIL_PASS,GMAIL_USER,JWT_PRIVATE_KEY,JWT_PUBLIC_KEY,ALGORITHM
-          script: |
-            set -e
-            echo "Logging into GHCR..."
-            echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            
-            echo "Pulling latest image: ${{ env.IMAGE_NAME }}:latest"
-            docker pull ${{ env.IMAGE_NAME }}:latest
-            
-            echo "Stopping old container (if exists): ${{ env.CONTAINER_NAME }}"
-            docker stop ${{ env.CONTAINER_NAME }} || true
-            
-            echo "Removing old container (if exists): ${{ env.CONTAINER_NAME }}"
-            docker rm ${{ env.CONTAINER_NAME }} || true
-            
-            echo "Running new container: ${{ env.CONTAINER_NAME }}"
-            docker run -d \
-              --name ${{ env.CONTAINER_NAME }} \
-              -p 8000:80 \
-              --restart always \
-              -e MONGO_HOST="$MONGO_HOST" \
-              -e RABBITMQ_USER="$RABBITMQ_USER" \
-              -e RABBITMQ_PW="$RABBITMQ_PW" \
-              -e RABBITMQ_HOST="$RABBITMQ_HOST" \
-              -e RABBITMQ_PORT="$RABBITMQ_PORT" \
-              -e RABBITMQ_VHOST="$RABBITMQ_VHOST" \
-              -e REDIS_HOST="$REDIS_HOST" \
-              -e REDIS_PORT="$REDIS_PORT" \
-              -e REDIS_PASSWORD="$REDIS_PASSWORD" \
-              -e SUPABASE_PASS="$SUPABASE_PASS" \
-              -e SUPABASE_key="$SUPABASE_key" \
-              -e SUPABSE_URL="$SUPABSE_URL" \
-              -e API_MONGO_USER="$API_MONGO_USER" \
-              -e API_MONGO_PWS="$API_MONGO_PWS" \
-              -e API_MONGO_DB="$API_MONGO_DB" \
-              -e ES_HOST="$ES_HOST" \
-              -e ES_PORT="$ES_PORT" \
-              -e ES_USER="$ES_USER" \
-              -e ES_PW="$ES_PW" \
-              -e PAYMENT_API_URL="$PAYMENT_API_URL" \
-              -e GMAIL_PASS="$GMAIL_PASS" \
-              -e GMAIL_USER="$GMAIL_USER" \
-              -e JWT_PRIVATE_KEY="$JWT_PRIVATE_KEY" \
-              -e JWT_PUBLIC_KEY="$JWT_PUBLIC_KEY" \
-              -e ALGORITHM="$ALGORITHM" \
-              ${{ env.IMAGE_NAME }}:latest
-            
-            echo "Pruning old Docker images..."
-            docker image prune -af --force
-            
-            echo "Deployment completed successfully!"
+      # Deploy mới sử dụng SSH thuần thay vì action
+      - name: Deploy to VPS using direct SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.VPS_HOST }}
+          SSH_USER: ${{ secrets.VPS_USERNAME }}
+        run: |
+          # Tạo SSH key file
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Tạo known_hosts để tránh cảnh báo khi kết nối lần đầu
+          ssh-keyscan -t rsa $SSH_HOST >> ~/.ssh/known_hosts
+          
+          # Tạo deployment script với nội dung cụ thể
+          cat > deploy_script.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          
+          # Login to GHCR
+          echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          
+          # Pull latest image
+          docker pull ${{ env.IMAGE_NAME }}:latest
+          
+          # Stop and remove existing container
+          docker stop ${{ env.CONTAINER_NAME }} || true
+          docker rm ${{ env.CONTAINER_NAME }} || true
+          
+          # Run new container
+          docker run -d \
+            --name ${{ env.CONTAINER_NAME }} \
+            -p 8000:80 \
+            --restart always \
+            -e MONGO_HOST="${{ env.MONGO_HOST }}" \
+            -e RABBITMQ_USER="${{ env.RABBITMQ_USER }}" \
+            -e RABBITMQ_PW="${{ env.RABBITMQ_PW }}" \
+            -e RABBITMQ_HOST="${{ env.RABBITMQ_HOST }}" \
+            -e RABBITMQ_PORT="${{ env.RABBITMQ_PORT }}" \
+            -e RABBITMQ_VHOST="${{ env.RABBITMQ_VHOST }}" \
+            -e REDIS_HOST="${{ env.REDIS_HOST }}" \
+            -e REDIS_PORT="${{ env.REDIS_PORT }}" \
+            -e REDIS_PASSWORD="${{ env.REDIS_PASSWORD }}" \
+            -e SUPABASE_PASS="${{ env.SUPABASE_PASS }}" \
+            -e SUPABASE_key="${{ env.SUPABASE_key }}" \
+            -e SUPABSE_URL="${{ env.SUPABSE_URL }}" \
+            -e API_MONGO_USER="${{ env.API_MONGO_USER }}" \
+            -e API_MONGO_PWS="${{ env.API_MONGO_PWS }}" \
+            -e API_MONGO_DB="${{ env.API_MONGO_DB }}" \
+            -e ES_HOST="${{ env.ES_HOST }}" \
+            -e ES_PORT="${{ env.ES_PORT }}" \
+            -e ES_USER="${{ env.ES_USER }}" \
+            -e ES_PW="${{ env.ES_PW }}" \
+            -e PAYMENT_API_URL="${{ env.PAYMENT_API_URL }}" \
+            -e GMAIL_PASS="${{ env.GMAIL_PASS }}" \
+            -e GMAIL_USER="${{ env.GMAIL_USER }}" \
+            -e JWT_PRIVATE_KEY="${{ env.JWT_PRIVATE_KEY }}" \
+            -e JWT_PUBLIC_KEY="${{ env.JWT_PUBLIC_KEY }}" \
+            -e ALGORITHM="${{ env.ALGORITHM }}" \
+            ${{ env.IMAGE_NAME }}:latest
+          
+          # Clean up old images
+          docker image prune -af --force
+          
+          echo "Deployment completed successfully!"
+          EOF
+          
+          # Chuyển script lên VPS
+          scp -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy_script.sh $SSH_USER@$SSH_HOST:/tmp/deploy_script.sh
+          
+          # Cấp quyền và chạy script trên VPS
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "chmod +x /tmp/deploy_script.sh && /tmp/deploy_script.sh"
+          
+          # Xóa key sau khi hoàn thành
+          rm -f ~/.ssh/id_rsa
