@@ -13,9 +13,10 @@ import textlogo from "@/images/medicare2.png";
 import { IoMdSettings } from "react-icons/io";
 import { IoInformationCircleOutline, IoSettingsOutline } from "react-icons/io5";
 import { MdLockOutline } from "react-icons/md";
-import { LuBadgeCheck, LuLockKeyhole } from "react-icons/lu";
+import { LuBadgeCheck, LuFileCheck2, LuLockKeyhole } from "react-icons/lu";
 import { SlInfo } from "react-icons/sl";
 import { ImInfo } from "react-icons/im";
+import { GiMedicines } from "react-icons/gi";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -33,6 +34,12 @@ const menuHomeItems = [
     icon: <LuBadgeCheck />,
     label: "Kiểm duyệt thuốc",
     path: "/kiem-duyet-thuoc",
+  },
+  {
+    id: "CensorshipRRequest",
+    icon: <LuFileCheck2 />,
+    label: "Yêu cầu tư vấn thuốc",
+    path: "/kiem-duyet-yeu-cau-tu-van-thuoc",
   },
 ];
 const menuSettingsItems = [

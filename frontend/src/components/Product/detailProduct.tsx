@@ -5,6 +5,7 @@ import Image from "next/image";
 import returnbox from "@/images/return-box.png";
 import free from "@/images/free.png";
 import fastdelivery from "@/images/fast-delivery.png";
+import { useRouter } from "next/navigation";
 import {
   Category,
   Price,
@@ -21,6 +22,7 @@ import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
 import { getPriceFromProduct } from "@/utils/price";
+import Link from "next/link";
 
 interface DetailProductProps {
   product: {
@@ -95,6 +97,27 @@ const DetailProduct = ({ product }: any) => {
   const sortedPrices = [...(product?.prices || [])].sort(
     (a, b) => b.amount - a.amount
   );
+  const router = useRouter();
+  const handleSendPrescription = () => {
+    const selectedPrice = product?.prices?.find(
+      (p: Price) => p.unit === selectedUnit
+    );
+    const selectedProduct = {
+      price_id: selectedPrice?.price_id,
+      product_id: product?.product_id,
+      name: product?.name_primary,
+      unit: selectedUnit,
+      quantity: quantity,
+      price: selectedPrice?.price,
+      product_price: product?.prices,
+      image: product?.images_primary,
+      product: product,
+    };
+    // console.log("price", product?.prices);
+
+    localStorage.setItem("selectedMedicine", JSON.stringify(selectedProduct));
+    router.push("/don-thuoc");
+  };
 
   return (
     <div className="">
@@ -465,7 +488,11 @@ const DetailProduct = ({ product }: any) => {
                   <button className="bg-[#0053E2] hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-full w-full">
                     Tư vấn ngay
                   </button>
-                  <button className="bg-[#EAEFFA] text-[#0053E2] font-semibold py-4 px-6 rounded-full w-full">
+
+                  <button
+                    className="bg-[#EAEFFA] text-[#0053E2] font-semibold py-4 px-6 rounded-full w-full"
+                    onClick={handleSendPrescription}
+                  >
                     Gửi đơn thuốc
                   </button>
                 </div>

@@ -273,3 +273,19 @@ export const getStatistics365Days = async () => {
         }
     }
 }
+
+export const userRequestPrescription = async (data: any) => {
+    try {
+        const response: any = await axiosClient.post('/v1/order/request-prescription', data);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi yêu cầu đơn thuốc',
+        }
+    }
+}

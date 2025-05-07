@@ -40,6 +40,10 @@ import {
     fetchGetStatistics365DaysFailed,
     fetchGetStatistics365DaysStart,
 
+    fetchRequestPrescriptionStart,
+    fetchRequestPrescriptionSuccess,
+    fetchRequestPrescriptionFailed,
+
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -410,6 +414,33 @@ function* fetchGetStatistics365Days(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchUserRequestPrescription (action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+           data,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            }, 
+        } = payload;
+        const body = {
+           data
+        };
+        const rs = yield call(orderService.userRequestPrescription, body);
+        if (rs.status_code === 200) {
+            yield put(fetchRequestPrescriptionSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchRequestPrescriptionFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchRequestPrescriptionFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -421,4 +452,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetTrackingCodeStart.type, fetchGetTrackingCode);
     yield takeLatest(fetchDownloadInvoiceStart.type, fetchDownloadInvoice);
     yield takeLatest(fetchGetStatistics365DaysStart.type, fetchGetStatistics365Days);
+    yield takeLatest(fetchRequestPrescriptionStart.type, fetchUserRequestPrescription);
 }

@@ -137,6 +137,16 @@ export const orderSlice = createSlice({
             console.log('fetchGetStatistics365DaysFailed')
             state.loading = false;
         },
+        // fetch request prescription
+        fetchRequestPrescriptionStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchRequestPrescriptionSuccess(state, action: PayloadAction<any>) {
+            state.loading = false;
+        },
+        fetchRequestPrescriptionFailed(state) {
+            state.loading = false;
+        },
     },
 });
 
@@ -180,6 +190,10 @@ export const {
     fetchGetStatistics365DaysFailed,
     fetchGetStatistics365DaysStart,
     fetchGetStatistics365DaysSuccess,
+
+    fetchRequestPrescriptionFailed,
+    fetchRequestPrescriptionStart,
+    fetchRequestPrescriptionSuccess,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

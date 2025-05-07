@@ -17,6 +17,7 @@ export const PHARMACIST_ROUTES = [
     '/thong-tin-tai-khoan-duoc-si',
     '/doi-mat-khau-duoc-si',
     '/quen-mat-khau-duoc-si',
+    '/kiem-duyet-yeu-cau-tu-van-thuoc',
 ] as const;
 
 export const PARTNER_ROUTES = [

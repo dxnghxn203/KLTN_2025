@@ -141,12 +141,20 @@ const LocationCheckout = ({
           </button>
         </div>
       )}
-      <div className="bg-white flex flex-col items-start mt-4 pt-5 pr-20 pb-12 pl-5 rounded-xl border border-black/10">
-        <label className="text-xs">Ghi chú (không bắt buộc)</label>
+
+      <div className="relative w-full mt-4">
+        <label
+          htmlFor="note"
+          className="absolute text-xs text-gray-500 left-4 top-2"
+        >
+          Ghi chú (không bắt buộc)
+        </label>
         <textarea
           onChange={(e) => setNote(e.target.value)}
+          className="pt-6 w-full px-4 pt-6 pb-2 border border-gray-300 rounded-xl outline-none transition-all 
+                  focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] placeholder:font-normal placeholder:text-[14px]"
           placeholder="Ví dụ: Hãy gọi cho tôi 15 phút trước khi giao hàng"
-          className="w-full mt-3.5 text-sm bg-transparent outline-none resize-none placeholder:text-[14px] placeholder:font-normal"
+          rows={4}
         />
       </div>
 

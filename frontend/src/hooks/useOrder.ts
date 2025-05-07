@@ -1,4 +1,4 @@
-import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart } from "@/store/order";
+import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart, fetchRequestPrescriptionStart } from "@/store/order";
 import { on } from "events";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -85,6 +85,16 @@ export function useOrder() {
         }))
     }
 
+    const fetchRequestPrescription = async (data: any, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchRequestPrescriptionStart({
+            data: data,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+    
+
+
     return {
         allOrder,
         checkOrder,
@@ -104,6 +114,7 @@ export function useOrder() {
 
         allStatistics365Days,
         statistics365Days,
+        fetchRequestPrescription,
     }
 }
 
