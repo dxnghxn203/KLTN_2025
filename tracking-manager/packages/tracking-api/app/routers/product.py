@@ -15,7 +15,7 @@ from app.models.product import get_product_by_slug, add_product_db, get_all_prod
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
     get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, \
     update_pharmacist_gender_for_all_products, check_product_consistency, \
-    update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name
+    update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, import_products
 
 router = APIRouter()
 
@@ -429,6 +429,25 @@ async def search_product(query: str, page: int = 1, page_size: int = 10):
         raise je
     except Exception as e:
         logger.error("Error searching product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/import", response_model=response.BaseResponse)
+async def admin_import_products(file: Optional[UploadFile] = File(None)):
+    try:
+        if not file:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="File is required"
+            )
+        await import_products(file)
+        return response.SuccessResponse(status="success", message="Import sản phẩm thành công")
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error importing products", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

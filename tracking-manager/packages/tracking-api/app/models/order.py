@@ -597,7 +597,7 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
             )
         order_request = ItemOrderForPTRes(**order_request)
 
-        if order_request.status == "approved":
+        if order_request.status in ["approved", "rejected"]:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Yêu cầu này đã duyệt"

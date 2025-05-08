@@ -17,10 +17,6 @@ class InfoAddressOrderRes(BaseModel):
     email: Optional[Union[str, None]] = None
     address:  AddressOrderRes
 
-class ItemOrderImageRes(BaseModel):
-    images_id: Optional[Union[str, None]] = None
-    images_url: Optional[Union[str, None]] = None
-
 class ItemOrderRes(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
     order_id: Optional[Union[str, None]] = None
@@ -37,7 +33,6 @@ class ItemOrderRes(BaseModel):
     receiver_province_code: int = 0
     receiver_district_code: int = 0
     receiver_commune_code: int = 0
-    images: List[Optional[Union[ItemOrderImageRes, None]]] = None
     created_by: Optional[Union[str, None]] = None
     delivery_time: Optional[Union[datetime, None]] = None
     delivery_instruction: Optional[Union[str, None]] = None
@@ -56,6 +51,10 @@ class ItemOrderRes(BaseModel):
             data['_id'] = str(data.get('_id'))
         return cls(**data)
 
+class ItemOrderImageRes(BaseModel):
+    images_id: Optional[Union[str, None]] = None
+    images_url: Optional[Union[str, None]] = None
+
 class ItemOrderForPTRes(BaseModel):
     request_id: Optional[Union[str, None]] = None
     status: Optional[Union[str, None]] = None
@@ -68,3 +67,4 @@ class ItemOrderForPTRes(BaseModel):
     verified_by: Optional[Union[str, None]] = None
     pharmacist_name: Optional[Union[str, None]] = None
     note : Optional[Union[str, None]] = None
+    images: List[Optional[Union[ItemOrderImageRes, None]]] = None
