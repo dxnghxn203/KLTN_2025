@@ -1,4 +1,5 @@
 import asyncio
+import re
 from starlette import status
 from typing import Set
 from app.core import logger, response, recommendation
@@ -791,4 +792,39 @@ async def check_product_consistency():
         }
     except Exception as e:
         logger.error(f"Lỗi kiểm tra dữ liệu product giữa Redis và MongoDB: {e}")
+        raise e
+
+async def search_products_by_name(keyword: str, page: int, page_size: int):
+    try:
+        collection = db[collection_name]
+        pattern = re.escape(keyword)
+        query = {
+            "name_primary": {"$regex": pattern, "$options": "i"},
+            "is_approved": True,
+            "active": True
+        }
+        skip_count = (page - 1) * page_size
+        product_list = collection.find(query).skip(skip_count).limit(page_size)
+
+        enriched_products = []
+
+        for prod in product_list:
+            product_id = prod["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id),
+            )
+
+            enriched_products.append(
+                ItemProductDBRes(
+                    **prod,
+                    count_review=count_review,
+                    count_comment=count_comment,
+                    rating=avg_rating
+                )
+            )
+        return enriched_products
+    except Exception as e:
+        logger.error(f"Error searching products by name: {str(e)}")
         raise e
