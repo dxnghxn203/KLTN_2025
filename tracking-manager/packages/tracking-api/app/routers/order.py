@@ -224,6 +224,7 @@ async def request_prescription(item: ItemOrderForPTInReq = BodyDepends(ItemOrder
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="User not found"
             )
+        logger.info(f"item: {item}")
         return await order.request_order_prescription(item, user_info.id, images)
     except response.JsonException as je:
         raise je
