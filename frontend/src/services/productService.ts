@@ -285,3 +285,18 @@ export const updateImagesProduct = async (product_id:any, params: any) => {
     }
 
 }
+
+export const searchProduct = async (query: any, page: any, page_size: any) => {
+    try {
+
+        const response: any = await axiosClient.get(`/v1/products/search?query=${query}&page=${page}&page_size=${page_size}`);
+        // console.log("response", response.data);
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

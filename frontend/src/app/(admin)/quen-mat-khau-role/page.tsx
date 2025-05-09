@@ -8,7 +8,7 @@ import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { message } from "antd";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdLockOutline, MdOutlineEmail } from "react-icons/md";
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "" });
@@ -19,6 +19,13 @@ export default function LoginPage() {
   const { forgotPasswordAdmin, forgotPasswordPharmacist } = useUser();
   const searchParams = useSearchParams();
   const role = searchParams.get("role") || "admin"; // Mặc định là admin
+  const { admin } = useAuth();
+
+  useEffect(() => {
+    if (!admin) {
+      router.push("/dang-nhap-admin");
+    }
+  }, [admin, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });

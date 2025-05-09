@@ -13,6 +13,7 @@ import {
     selectPharmacistAuth,
     selectUserAuth
 } from '@/store';
+import { on } from 'events';
 
 export function useAuth() {
     const dispatch = useDispatch();
@@ -46,9 +47,20 @@ export function useAuth() {
         }));
     };
 
-    const logout = () => {
-        dispatch(logoutStart());
-    };
+    const logout = (
+        onSuccess: (message: any) => void,
+        onFailure: (message: any) => void,
+) => {
+        dispatch(logoutStart(
+            {
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+            }
+        ));
+        // onSuccess("Đăng xuất thành công!");
+        // onFailure("Đăng xuất thất bại!");
+    };  
+
     const loginAdmin = (
         credentials: any,
         onSuccess: (message: any) => void,

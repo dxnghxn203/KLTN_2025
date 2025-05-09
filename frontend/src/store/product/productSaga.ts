@@ -61,6 +61,9 @@ import {
     fetchUpdateImagesProductFailed,
     fetchUpdateImagesProductStart,
     fetchUpdateImagesProductSuccess,
+    fetchSearchProductSuccess,
+    fetchSearchProductFailed,
+    fetchSearchProductStart,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -171,32 +174,6 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
             onsucces = () => { },
             onfailed = () => { }
         } = payload;
-
-        // const formData = new FormData();
-
-        // Object.entries(form).forEach(([key, value]) => {
-        //     if (key !== 'images' && key !== 'thumbnail' && value !== undefined) {
-        //         formData.append(key, value as string);
-        //     }
-        // });
-
-        // if (form.thumbnail instanceof File) {
-        //     formData.append('thumbnail', form.thumbnail);
-        // }
-
-        // if (form.images && Array.isArray(form.images)) {
-        //     form.images.forEach((file: File, index: number) => {
-        //         if (file instanceof File) {
-        //             formData.append(`images[${index}]`, file);
-        //         }
-        //     });
-        // }
-
-        // if (form.attributes && typeof form.attributes === 'object') {
-        //     formData.append('attributes', JSON.stringify(form.attributes));
-        // }
-
-        // console.log("formData", formData);
 
         const product = yield call(productService.addProduct, form);
         // console.log("product", product);
@@ -524,6 +501,32 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     }
   }
 
+  function* searchProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            query,
+            page,
+            page_size,
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+
+        const product = yield call(productService.searchProduct, query, page, page_size);
+        if (product.status_code === 200) {
+            console.log("product", product);
+            onSuccess(product.message);
+            yield put(fetchSearchProductSuccess(product.data));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchSearchProductFailed(product.message || 'Failed to update images product'));
+    } catch (error) {
+        yield put(fetchSearchProductFailed('Failed to update images product'));
+    }
+  }
+
   
   
 
@@ -545,5 +548,6 @@ export function* productSaga() {
     yield takeLatest(fetchUpdateCertificateFileProductStart.type, handleUpdateCertificateFileProduct);
     yield takeLatest(fetchUpdateImagesPrimaryProductStart.type, handleUpdateImagesPrimaryProduct);
     yield takeLatest(fetchUpdateImagesProductStart.type, handleUpdateImagesProduct);
+    yield takeLatest(fetchSearchProductStart.type, searchProduct);
 
 }

@@ -11,6 +11,7 @@ import {
     fetchDeleteProductStart,
     fetchProductApprovedStart,
     fetchProductBySlugStart,
+    fetchSearchProductStart,
     fetchUpdateCertificateFileProductStart,
     fetchUpdateImagesPrimaryProductStart,
     fetchUpdateImagesProductStart,
@@ -20,7 +21,9 @@ import {
     selectProductBySlug,
     selectProductGetRecentlyViewed,
     selectProductRelated,
-    selectProductTopSelling
+    selectProductTopSelling,
+    selectSearchProduct,
+    fetchClearSearchResult,
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -35,6 +38,7 @@ export function useProduct() {
     const productGetFeatured = useSelector(selectProductRelated);
     const productBestDeal = useSelector(selectProductTopSelling);
     const productApproved = useSelector(selectProductApproved);
+    const searchResult = useSelector(selectSearchProduct);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(100);
@@ -214,6 +218,24 @@ export function useProduct() {
         );
     }
 
+    const fetchSearchProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchSearchProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+    const fetchClearSearch = () => {
+        dispatch(fetchClearSearchResult())
+    }
+    
+
 
     return {
         addProduct,
@@ -246,6 +268,11 @@ export function useProduct() {
         fetchUpdateCertificateFileProduct,
         fetchUpdateImagesPrimaryProduct,
         fetchUpdateImagesProduct,
+
+        fetchSearchProduct,
+        searchResult,
+        fetchClearSearch,
+
     };
 }
 

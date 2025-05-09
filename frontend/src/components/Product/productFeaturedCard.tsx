@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
+import { FaStar } from "react-icons/fa6";
 
 interface ProductFeaturedCardProps {
   products: any;
@@ -50,8 +51,10 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
               <span className="font-normal text-[#A7A8B0]">
                 {products?.category?.main_category_name}
               </span>
-              <div className="flex items-center">
-                <span className="text-lg">⭐</span>
+              <div className="flex items-center space-x-1">
+                <span className="text-[14px]">
+                  <FaStar className="text-[#FFD700]" />
+                </span>
                 <span className="font-normal text-[#A7A8B0]">
                   {products?.rating?.toFixed(1)}
                 </span>
