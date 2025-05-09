@@ -16,7 +16,7 @@ from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
 from app.core.s3 import upload_file
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
-    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq
+    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
 from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
@@ -624,7 +624,7 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
         if item.status == "approved":
             order_data = ItemOrderInReq(
                 product=item.product,
-                pick_to=order_request.pick_to,
+                pick_to=InfoAddressOrderReq(**order_request.pick_to.dict()),
                 receiver_province_code=order_request.receiver_province_code,
                 receiver_district_code=order_request.receiver_district_code,
                 receiver_commune_code=order_request.receiver_commune_code,
