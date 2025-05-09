@@ -1,6 +1,15 @@
 import asyncio
+import re
+from io import BytesIO
+
+import pandas as pd
+from fastapi import UploadFile
+from pydantic import ValidationError
 from starlette import status
 from typing import Set
+
+from starlette.responses import JSONResponse
+
 from app.core import logger, response, recommendation
 from app.core.database import db
 from app.core.s3 import upload_file, upload_any_file
@@ -84,6 +93,9 @@ async def get_related_product(product_id, top_n=5):
     try:
         result = recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
         product_list = result["data"]
+        if not product_list:
+            result["data"] = []
+            return result
 
         enriched_products = []
 
@@ -106,10 +118,7 @@ async def get_related_product(product_id, top_n=5):
         return result
     except Exception as e:
         logger.error(f"Failed [get_related_product]: {e}")
-        return response.BaseResponse(
-            status="failed",
-            message="Internal server error",
-        )
+        raise e
 async def get_product_by_cart_mongo(product_ids, cart):
     try:
         collection = db[collection_name]
@@ -791,4 +800,104 @@ async def check_product_consistency():
         }
     except Exception as e:
         logger.error(f"Lỗi kiểm tra dữ liệu product giữa Redis và MongoDB: {e}")
+        raise e
+
+async def search_products_by_name(keyword: str, page: int, page_size: int):
+    try:
+        collection = db[collection_name]
+        pattern = re.escape(keyword)
+        query = {
+            "name_primary": {"$regex": pattern, "$options": "i"},
+            "is_approved": True,
+            "active": True
+        }
+        skip_count = (page - 1) * page_size
+        product_list = collection.find(query).skip(skip_count).limit(page_size)
+
+        enriched_products = []
+
+        for prod in product_list:
+            product_id = prod["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id),
+            )
+
+            enriched_products.append(
+                ItemProductDBRes(
+                    **prod,
+                    count_review=count_review,
+                    count_comment=count_comment,
+                    rating=avg_rating
+                )
+            )
+        return enriched_products
+    except Exception as e:
+        logger.error(f"Error searching products by name: {str(e)}")
+        raise e
+
+async def import_products(file: UploadFile):
+    try:
+        if not file.filename.endswith(".xlsx"):
+            raise HTTPException(status_code=400, detail="Chỉ hỗ trợ file Excel .xlsx")
+
+        contents = file.file.read()
+        df = pd.read_excel(BytesIO(contents))
+
+        products = []
+        for _, row in df.iterrows():
+            try:
+                product = ItemProductDBInReq(
+                    product_name=row.get("product_name", ""),
+                    name_primary=row.get("name_primary", ""),
+                    prices=ListPriceDBInReq(
+                        prices=[
+                            ItemPriceDBInReq(
+                                discount=row.get("discount", 0),
+                                unit=row.get("unit", ""),
+                                weight=row.get("weight", 0),
+                                amount=row.get("amount", 0),
+                                original_price=row.get("original_price", 0)
+                            )
+                        ]
+                    ),
+                    inventory=row.get("inventory", 0),
+                    slug=row.get("slug", ""),
+                    description=row.get("description", ""),
+                    full_descriptions=row.get("full_descriptions", ""),
+                    category=ItemCategoryDBInReq(
+                        main_category_id=row.get("main_category_id", ""),
+                        sub_category_id=row.get("sub_category_id", ""),
+                        child_category_id=row.get("child_category_id", "")
+                    ),
+                    origin=row.get("origin", ""),
+                    ingredients=[
+                        ItemIngredientDBReq(
+                            ingredient_name=row.get("ingredient_name", ""),
+                            ingredient_amount=row.get("ingredient_amount", "")
+                        )
+                    ] if row.get("ingredient_name") else None,
+                    uses=row.get("uses", ""),
+                    dosage=row.get("dosage", ""),
+                    side_effects=row.get("side_effects", ""),
+                    precautions=row.get("precautions", ""),
+                    storage=row.get("storage", ""),
+                    manufacturer=ItemManufacturerDBReq(
+                        manufacture_name=row.get("manufacture_name", ""),
+                        manufacture_address=row.get("manufacture_address", ""),
+                        manufacture_contact=row.get("manufacture_contact", "")
+                    ),
+                    dosage_form=row.get("dosage_form", ""),
+                    brand=row.get("brand", ""),
+                    prescription_required=bool(row.get("prescription_required", False)),
+                    registration_number=row.get("registration_number", "")
+                )
+                products.append(product)
+            except ValidationError as e:
+                print(f"Validation error in row {row}: {e}")
+        logger.info(f"Imported {len(products)} products from Excel file")
+        logger.info(f"Products: {products}")
+    except Exception as e:
+        logger.error(f"Error importing product: {str(e)}")
         raise e
