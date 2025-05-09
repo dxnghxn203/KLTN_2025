@@ -21,12 +21,6 @@ export default function LoginPage() {
   const role = searchParams.get("role") || "admin"; // Mặc định là admin
   const { admin } = useAuth();
 
-  useEffect(() => {
-    if (!admin) {
-      router.push("/dang-nhap-admin");
-    }
-  }, [admin, router]);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
