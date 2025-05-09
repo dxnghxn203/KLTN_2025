@@ -609,6 +609,21 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
                 message="Không có quyền duyệt yêu cầu này"
             )
 
+        if not item.product:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        product_items, _, _, out_of_stock = await process_order_products(item.product)
+
+        if out_of_stock:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm đã hết hàng",
+                data={"out_of_stock": out_of_stock}
+            )
+
         collection.update_one(
             {"request_id": item.request_id},
             {
@@ -638,7 +653,4 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
 
     except Exception as e:
         logger.error(f"Failed [approve_order]: {e}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Lỗi duyệt đơn"
-        )
+        raise e
