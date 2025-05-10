@@ -1,4 +1,10 @@
-import { COOKIE_TOKEN_KEY, COOKIE_TOKEN_EXPIRED, COOKIE_SESSION_KEY, COOKIE_SESSION_EXPIRED } from '@/utils/constants';
+import {
+    COOKIE_TOKEN_KEY,
+    COOKIE_TOKEN_EXPIRED,
+    COOKIE_SESSION_KEY,
+    COOKIE_SESSION_EXPIRED,
+    COOKIE_TOKEN_KEY_ADMIN, COOKIE_TOKEN_KEY_PHARMACIST
+} from '@/utils/constants';
 
 /**
  * Helper function to check if code is running in browser environment
@@ -55,6 +61,43 @@ export const setToken = (token: string) => {
     }
 };
 
+export const setTokenAdmin = (token: string) => {
+    try {
+        if (!isBrowser) return;
+        setCookie(COOKIE_TOKEN_KEY_ADMIN, token, COOKIE_TOKEN_EXPIRED);
+    } catch (error) {
+        console.error('Error setting admin token:', error);
+    }
+}
+
+export const setTokenPharmacist = (token: string) => {
+    try {
+        if (!isBrowser) return;
+        setCookie(COOKIE_TOKEN_KEY_PHARMACIST, token, COOKIE_TOKEN_EXPIRED);
+    } catch (error) {
+        console.error('Error setting pharmacist token:', error);
+    }
+}
+
+export const getTokenAdmin = (): string | undefined => {
+    try {
+        if (!isBrowser) return undefined;
+        return getCookie(COOKIE_TOKEN_KEY_ADMIN);
+    } catch (error) {
+        console.error('Error getting admin token:', error);
+        return undefined;
+    }
+}
+export const getTokenPharmacist = (): string | undefined => {
+    try {
+        if (!isBrowser) return undefined;
+        return getCookie(COOKIE_TOKEN_KEY_PHARMACIST);
+    } catch (error) {
+        console.error('Error getting pharmacist token:', error);
+        return undefined;
+    }
+}
+
 export const getToken = (): string | undefined => {
     try {
         if (!isBrowser) return undefined;
@@ -72,7 +115,25 @@ export const removeToken = () => {
     } catch (error) {
         console.error('Error removing token:', error);
     }
-};
+}
+export const removeTokenAdmin = () => {
+    try {
+        if (!isBrowser) return;
+        deleteCookie(COOKIE_TOKEN_KEY_ADMIN);
+    } catch (error) {
+        console.error('Error removing admin token:', error);
+    }
+}
+
+export const removeTokenPharmacist = () => {
+    try {
+        if (!isBrowser) return;
+        deleteCookie(COOKIE_TOKEN_KEY_PHARMACIST);
+    } catch (error) {
+        console.error('Error removing pharmacist token:', error);
+    }
+}
+
 
 // Session Management
 export const setSession = (session: string) => {

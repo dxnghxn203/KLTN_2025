@@ -1,12 +1,22 @@
 import asyncio
+import re
+from io import BytesIO
 
+import pandas as pd
+from fastapi import UploadFile
+from pydantic import ValidationError
 from starlette import status
+from typing import Set
+
+from starlette.responses import JSONResponse
 
 from app.core import logger, response, recommendation
 from app.core.database import db
-from app.core.s3 import upload_file
+from app.core.s3 import upload_file, upload_any_file
+from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
-    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq
+    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
+    AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
@@ -16,12 +26,14 @@ from app.models.review import count_reviews, average_rating
 collection_name = "products"
 collection_category = "categories"
 
+VALID_MEDIA_TYPES = {"images", "images_primary", "certificate_file"}
+
 async def get_product_by_slug(slug: str):
     try:
         collection = db[collection_name]
         cur = collection.find_one({
             "slug": slug,
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         })
         if cur:
@@ -81,6 +93,9 @@ async def get_related_product(product_id, top_n=5):
     try:
         result = recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
         product_list = result["data"]
+        if not product_list:
+            result["data"] = []
+            return result
 
         enriched_products = []
 
@@ -103,10 +118,7 @@ async def get_related_product(product_id, top_n=5):
         return result
     except Exception as e:
         logger.error(f"Failed [get_related_product]: {e}")
-        return response.BaseResponse(
-            status="failed",
-            message="Internal server error",
-        )
+        raise e
 async def get_product_by_cart_mongo(product_ids, cart):
     try:
         collection = db[collection_name]
@@ -134,7 +146,7 @@ async def get_product_by_cart_id(product_ids, cart):
         collection = db[collection_name]
         products = list(collection.find({
             "product_id": {"$in": product_ids},
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         }, {"_id": 0}))
         detailed_cart = []
@@ -166,7 +178,7 @@ async def get_product_by_list_id(product_ids):
         collection = db[collection_name]
         product_list = collection.find({
             "product_id": {"$in": product_ids},
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         })
         enriched_products = []
@@ -234,7 +246,15 @@ async def get_product_featured(main_category_id, sub_category_id=None, child_cat
 
 async def add_product_db(item: ItemProductDBInReq, images_primary, images, certificate_file=None):
     try:
-        certificate_url = (upload_file(certificate_file, "certificates") or "") if certificate_file else ""
+        collection = db[collection_name]
+        cur = collection.find_one({"slug": item.slug})
+        if cur:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Sản phẩm đã tồn tại: {item.slug}"
+            )
+
+        certificate_url = (upload_any_file(certificate_file, "certificates") or "") if certificate_file else ""
 
         image_list = []
         if images:
@@ -261,7 +281,6 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
             ]
 
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
-        full_subscription_list = item.full_description.full_descriptions if item.full_description and item.full_description.full_descriptions else []
         images_primary_url = (upload_file(images_primary, "images_primary") or "") if images_primary else ""
 
         product_id = generate_id("PRODUCT")
@@ -312,14 +331,12 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
             product_id=product_id,
             prices=price_list,
             images=image_list,
-            full_descriptions=full_subscription_list,
             ingredients=ingredients_list,
             images_primary=images_primary_url,
             category=category_obj,
             certificate_file=certificate_url
         )
 
-        collection = db[collection_name]
         insert_result = collection.insert_one(item_data.dict())
 
         logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
@@ -421,7 +438,7 @@ async def get_product_by_id(product_id: str, price_id: str):
         product = collection.find_one({
             "product_id": product_id,
             "prices.price_id": price_id,
-            "verified_by": {"$nin": [None, ""]},
+            "is_approved": True,
             "active": True
         },{"_id": 0})
 
@@ -508,7 +525,7 @@ async def get_product_best_deals(top_n: int):
             message="Internal server error"
         )
 
-async def approve_product(item: ApproveProductReq, verified_by: str):
+async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes):
     try:
         collection = db[collection_name]
         product = collection.find_one({"product_id": item.product_id})
@@ -518,15 +535,369 @@ async def approve_product(item: ApproveProductReq, verified_by: str):
                 message="Product not found"
             )
         product_info = ItemProductDBRes(**product)
-        if product_info.verified_by:
+        if product_info.is_approved:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Product already approved"
+                message="Sản phẩm dã duyệt"
             )
-        collection.update_one({"product_id": item.product_id}, {"$set": {"active": True, "verified_by": verified_by}})
-        logger.info(f"Product approved successfully for product_id: {item.product_id}")
+        if product_info.verified_by and product_info.verified_by != pharmacist.email:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không có quyền duyệt sản phẩm này"
+            )
+        collection.update_one({
+            "product_id": item.product_id},
+            {"$set": {
+                "is_approved": item.is_approved,
+                "verified_by": pharmacist.email,
+                "rejected_note": item.rejected_note,
+                "pharmacist_name": pharmacist.user_name
+            }
+        })
+        logger.info(f"Product approved successfully for {item.product_id} by {pharmacist.email} with: {item.is_approved}")
 
         return response.SuccessResponse(message="Product approved successfully")
     except Exception as e:
         logger.error(f"Error approving product: {str(e)}")
+        raise e
+
+async def get_approved_product(email: str):
+    try:
+        collection = db[collection_name]
+        product_list = collection.find({"verified_by": {"$in": [None, "", email]}})
+        logger.info(f"{product_list}")
+        return [ItemProductDBRes(**product) for product in product_list]
+    except Exception as e:
+        logger.error(f"Failed [get_approved_product]: {e}")
+        raise e
+
+async def update_product_status(item: UpdateProductStatusReq):
+    try:
+        collection = db[collection_name]
+        collection.update_one({"product_id": item.product_id},{"$set": {"active": item.status}})
+        return response.SuccessResponse(message="Product status updated successfully")
+    except Exception as e:
+        logger.error(f"Error updating product status: {str(e)}")
+        raise e
+
+async def update_product_images_primary(product_id: str, file):
+    try:
+        if not file:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
+
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": product_id})
+        if not product:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
+
+        url = upload_file(file, "images_primary")
+        collection.update_one(
+            {"product_id": product_id},
+            {"$set": {"images_primary": url}}
+        )
+        return response.SuccessResponse(message="Cập nhật ảnh chính thành công")
+    except Exception as e:
+        logger.error(f"Error updating product images primary: {str(e)}")
+        raise e
+
+async def update_product_certificate_file(product_id: str, file):
+    try:
+        if not file:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
+
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": product_id})
+        if not product:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
+
+        url = upload_any_file(file, "certificates")
+        collection.update_one(
+            {"product_id": product_id},
+            {"$set": {"certificate_file": url}}
+        )
+        return response.SuccessResponse(message="Cập nhật chứng nhận thành công")
+    except Exception as e:
+        logger.error(f"Error updating product certificate file: {str(e)}")
+        raise e
+
+async def update_product_images(product_id: str, files):
+    try:
+        if not files:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
+
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": product_id})
+        if not product:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
+
+        new_images = []
+        for file in files:
+            url = upload_file(file, "images")
+            if url:
+                new_images.append({
+                    "images_id": generate_id("IMAGE"),
+                    "images_url": url
+                })
+
+        collection.update_one(
+            {"product_id": product_id},
+            {"$set": {"images": new_images}}
+        )
+        return response.SuccessResponse(message="Cập nhật images thành công")
+    except Exception as e:
+        logger.error(f"Error updating product images: {str(e)}")
+        raise e
+
+async def update_product_fields(update_data: ItemUpdateProductReq):
+    try:
+        collection = db[collection_name]
+        product = collection.find_one({"product_id": update_data.product_id})
+        if not product:
+
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        collection = db[collection_name]
+        cur = collection.find_one({
+            "slug": update_data.slug,
+            "product_id": {"$ne": update_data.product_id}
+        })
+        if cur:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message=f"Sản phẩm đã tồn tại với slug: {update_data.slug}"
+            )
+
+        update_fields = {}
+
+        for field in [
+            "product_name", "name_primary", "inventory", "slug", "description", "origin",
+            "uses", "dosage", "side_effects", "precautions", "storage", "dosage_form", "brand",
+            "prescription_required", "registration_number", "full_descriptions"
+        ]:
+            value = getattr(update_data, field, None)
+            if value is not None:
+                update_fields[field] = value
+
+        if update_data.prices and update_data.prices.prices:
+            update_fields["prices"] = [
+                ItemPriceDBReq(
+                    price_id=generate_id("PRICE"),
+                    price=price.original_price * (100 - price.discount) / 100,
+                    discount=price.discount,
+                    unit=price.unit,
+                    weight=price.weight,
+                    amount=price.amount,
+                    original_price=price.original_price,
+                ).dict()
+                for price in update_data.prices.prices
+            ]
+
+        if update_data.ingredients and update_data.ingredients.ingredients:
+            update_fields["ingredients"] = [i.dict() for i in update_data.ingredients.ingredients]
+
+        if update_data.manufacturer:
+            update_fields["manufacturer"] = update_data.manufacturer.dict()
+
+        if update_data.category:
+            category_collection = db[collection_category]
+            main_category = category_collection.find_one({"main_category_id": update_data.category.main_category_id})
+            if not main_category:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh mục chính không hợp lệ")
+
+            sub_category = next(
+                (sub for sub in main_category.get("sub_category", []) if sub["sub_category_id"] == update_data.category.sub_category_id),
+                None
+            )
+            if not sub_category:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh mục phụ không hợp lệ")
+
+            child_category = next(
+                (child for child in sub_category.get("child_category", []) if child["child_category_id"] == update_data.category.child_category_id),
+                None
+            )
+            if not child_category:
+                raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Danh mục con không hợp lệ")
+
+            category_obj = ItemCategoryDBReq(
+                main_category_id=update_data.category.main_category_id,
+                main_category_name=main_category.get("main_category_name", ""),
+                main_category_slug=main_category.get("main_category_slug", ""),
+                sub_category_id=update_data.category.sub_category_id,
+                sub_category_name=sub_category.get("sub_category_name", ""),
+                sub_category_slug=sub_category.get("sub_category_slug", ""),
+                child_category_id=update_data.category.child_category_id,
+                child_category_name=child_category.get("child_category_name", ""),
+                child_category_slug=child_category.get("child_category_slug", "")
+            )
+            update_fields["category"] = category_obj.dict()
+
+        if update_fields:
+            update_fields.update({
+                "is_approved": False,
+                "verified_by": "",
+                "rejected_note": "",
+                "pharmacist_name": "",
+                "pharmacist_gender": ""
+            })
+            collection.update_one({"product_id": update_data.product_id}, {"$set": update_fields})
+
+        return response.SuccessResponse(message="Cập nhật sản phẩm thành công")
+    except Exception as e:
+        logger.error(f"Error updating product fields: {str(e)}")
+        raise e
+
+async def update_pharmacist_gender_for_all_products():
+    product_collection = db[collection_name]
+    pharmacist_collection = db["pharmacists"]
+
+    cursor = product_collection.find({
+        "verified_by": {"$ne": ""}
+    })
+
+    updated_count = 0
+    for product in cursor:
+        email = product.get("verified_by")
+        if not email:
+            continue
+
+        pharmacist = pharmacist_collection.find_one({"email": email})
+        if not pharmacist:
+            continue
+
+        pharmacist_gender = pharmacist.get("gender", "")
+
+        product_collection.update_one(
+            {"_id": product["_id"]},
+            {"$set": {"pharmacist_gender": pharmacist_gender}}
+        )
+        updated_count += 1
+
+    return updated_count
+
+async def get_all_mongodb_product_ids() -> Set[str]:
+    collection = db[collection_name]
+    cursor = collection.find({}, {"product_id": 1})
+    product_ids = set()
+    for doc in cursor:
+        product_ids.add(doc["product_id"])
+    return product_ids
+
+async def check_product_consistency():
+    try:
+        redis_product_ids = await redis.get_all_redis_product_ids()
+
+        mongodb_product_ids = await get_all_mongodb_product_ids()
+
+        in_redis_not_mongo = redis_product_ids - mongodb_product_ids
+        in_mongo_not_redis = mongodb_product_ids - redis_product_ids
+
+        return {
+            "in_redis_not_mongo": list(in_redis_not_mongo),
+            "in_mongo_not_redis": list(in_mongo_not_redis),
+        }
+    except Exception as e:
+        logger.error(f"Lỗi kiểm tra dữ liệu product giữa Redis và MongoDB: {e}")
+        raise e
+
+async def search_products_by_name(keyword: str, page: int, page_size: int):
+    try:
+        collection = db[collection_name]
+        pattern = re.escape(keyword)
+        query = {
+            "name_primary": {"$regex": pattern, "$options": "i"},
+            "is_approved": True,
+            "active": True
+        }
+        skip_count = (page - 1) * page_size
+        product_list = collection.find(query).skip(skip_count).limit(page_size)
+
+        enriched_products = []
+
+        for prod in product_list:
+            product_id = prod["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id),
+            )
+
+            enriched_products.append(
+                ItemProductDBRes(
+                    **prod,
+                    count_review=count_review,
+                    count_comment=count_comment,
+                    rating=avg_rating
+                )
+            )
+        return enriched_products
+    except Exception as e:
+        logger.error(f"Error searching products by name: {str(e)}")
+        raise e
+
+async def import_products(file: UploadFile):
+    try:
+        if not file.filename.endswith(".xlsx"):
+            raise HTTPException(status_code=400, detail="Chỉ hỗ trợ file Excel .xlsx")
+
+        contents = file.file.read()
+        df = pd.read_excel(BytesIO(contents))
+
+        products = []
+        for _, row in df.iterrows():
+            try:
+                product = ItemProductDBInReq(
+                    product_name=row.get("product_name", ""),
+                    name_primary=row.get("name_primary", ""),
+                    prices=ListPriceDBInReq(
+                        prices=[
+                            ItemPriceDBInReq(
+                                discount=row.get("discount", 0),
+                                unit=row.get("unit", ""),
+                                weight=row.get("weight", 0),
+                                amount=row.get("amount", 0),
+                                original_price=row.get("original_price", 0)
+                            )
+                        ]
+                    ),
+                    inventory=row.get("inventory", 0),
+                    slug=row.get("slug", ""),
+                    description=row.get("description", ""),
+                    full_descriptions=row.get("full_descriptions", ""),
+                    category=ItemCategoryDBInReq(
+                        main_category_id=row.get("main_category_id", ""),
+                        sub_category_id=row.get("sub_category_id", ""),
+                        child_category_id=row.get("child_category_id", "")
+                    ),
+                    origin=row.get("origin", ""),
+                    ingredients=[
+                        ItemIngredientDBReq(
+                            ingredient_name=row.get("ingredient_name", ""),
+                            ingredient_amount=row.get("ingredient_amount", "")
+                        )
+                    ] if row.get("ingredient_name") else None,
+                    uses=row.get("uses", ""),
+                    dosage=row.get("dosage", ""),
+                    side_effects=row.get("side_effects", ""),
+                    precautions=row.get("precautions", ""),
+                    storage=row.get("storage", ""),
+                    manufacturer=ItemManufacturerDBReq(
+                        manufacture_name=row.get("manufacture_name", ""),
+                        manufacture_address=row.get("manufacture_address", ""),
+                        manufacture_contact=row.get("manufacture_contact", "")
+                    ),
+                    dosage_form=row.get("dosage_form", ""),
+                    brand=row.get("brand", ""),
+                    prescription_required=bool(row.get("prescription_required", False)),
+                    registration_number=row.get("registration_number", "")
+                )
+                products.append(product)
+            except ValidationError as e:
+                print(f"Validation error in row {row}: {e}")
+        logger.info(f"Imported {len(products)} products from Excel file")
+        logger.info(f"Products: {products}")
+    except Exception as e:
+        logger.error(f"Error importing product: {str(e)}")
         raise e

@@ -14,7 +14,9 @@ const ShoppingCart = ({
   setProductForCheckOut,
   setPriceOrder,
 }: any) => {
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<
+    { product_id: string; price_id: string }[]
+  >([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
@@ -45,7 +47,11 @@ const ShoppingCart = ({
 
   const getProductForCheckOut = () => {
     const selectedProductsData = cart.filter((item: any) =>
-      selectedProducts.includes(item.product.product_id)
+      selectedProducts.some(
+        (selected) =>
+          selected.product_id === item.product.product_id &&
+          selected.price_id === item.price_id
+      )
     );
 
     let products: any[] = [];
@@ -54,16 +60,18 @@ const ShoppingCart = ({
       if (price) {
         products.push({
           product_id: item.product.product_id,
-          products_name: item.product.product_name,
+          product_name: item.product.product_name,
           image: item.product.images_primary,
           price_id: item.price_id,
           quantity: item.quantity,
-          price: price,
+          price: price.price,
           unit_price: price.unit_price,
           unit: price.unit,
+          original_price: price.original_price,
         });
       }
     });
+
     return products;
   };
 
@@ -71,22 +79,24 @@ const ShoppingCart = ({
     let total_original_price = 0;
     let total_price = 0;
     let total_discount = 0;
-    cart.forEach((item: any) => {
-      if (
-        selectedProducts &&
-        selectedProducts.includes(item.product.product_id)
-      ) {
-        const price = getPrice(item.product, item.price_id);
-        if (price) {
-          total_original_price += price?.original_price * item.quantity;
-          total_price += price?.price * item.quantity;
-          if (
-            price.discount < price?.price &&
-            price.price <= price?.original_price
-          ) {
-            total_discount +=
-              (price?.original_price - price.price) * item.quantity;
-          }
+    selectedProducts.forEach((selected) => {
+      const cartItem = cart.find(
+        (item: any) =>
+          item.product.product_id === selected.product_id &&
+          item.price_id === selected.price_id
+      );
+
+      if (cartItem) {
+        const priceDetail = cartItem.product.prices.find(
+          (price: any) => price.price_id === cartItem.price_id
+        );
+
+        if (priceDetail) {
+          const quantity = cartItem.quantity;
+          total_price += priceDetail.price * quantity;
+          total_original_price += priceDetail.original_price * quantity;
+          total_discount +=
+            (priceDetail.original_price - priceDetail.price) * quantity;
         }
       }
     });
@@ -105,15 +115,32 @@ const ShoppingCart = ({
   }, [selectedProducts, cart]);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedProducts(
-      e.target.checked ? cart && cart.map((p: any) => p.product.product_id) : []
-    );
+    if (e.target.checked) {
+      const allProducts = cart.map((item: any) => ({
+        product_id: item.product.product_id,
+        price_id: item.price_id,
+      }));
+      setSelectedProducts(allProducts);
+    } else {
+      setSelectedProducts([]);
+    }
   };
 
-  const handleSelectProduct = (id: string) => {
-    setSelectedProducts((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
+  const handleSelectProduct = (product_id: string, price_id: string) => {
+    setSelectedProducts((prevSelected) => {
+      const exists = prevSelected.some(
+        (item) => item.product_id === product_id && item.price_id === price_id
+      );
+
+      if (exists) {
+        return prevSelected.filter(
+          (item) =>
+            !(item.product_id === product_id && item.price_id === price_id)
+        );
+      } else {
+        return [...prevSelected, { product_id, price_id }];
+      }
+    });
   };
 
   const handleDeleteClick = (product_id: string, price_id: string) => {
@@ -290,26 +317,31 @@ const ShoppingCart = ({
             {cart &&
               cart?.map((product: any, index: any) => (
                 <div
-                  key={product.product.product_id}
+                  key={`product-${product.product.product_id}-${product.price_id}`}
                   className={`flex items-center justify-between py-4 mx-5 text-sm ${
                     index !== cart?.length - 1 ? "border-b border-gray-300" : ""
                   }`}
                 >
                   <div className="w-[55%] flex items-center px-4 py-2">
                     <label
-                      htmlFor={`product-${product.product.product_id}`}
+                      htmlFor={`product-${product.product.product_id}-${product.price_id}`}
                       className="flex items-center justify-center w-5 h-5 cursor-pointer"
                     >
                       <input
                         type="checkbox"
-                        id={`product-${product.product.product_id}`}
+                        id={`product-${product.product.product_id}-${product.price_id}`}
                         className="peer hidden"
-                        checked={selectedProducts.includes(
-                          product.product.product_id
+                        checked={selectedProducts.some(
+                          (item) =>
+                            item.product_id === product.product.product_id &&
+                            item.price_id === product.price_id
                         )}
-                        onChange={() =>
-                          handleSelectProduct(product.product.product_id)
-                        }
+                        onChange={() => {
+                          handleSelectProduct(
+                            product.product.product_id,
+                            product.price_id
+                          );
+                        }}
                       />
                       <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]">
                         ✓

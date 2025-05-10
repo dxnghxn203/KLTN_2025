@@ -1,15 +1,27 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { useSession } from 'next-auth/react';
-import { useEffect, useMemo, useState } from 'react';
-import { googleLoginStart, googleLoginSuccess, loginAdminStart, loginStart, logoutStart, selectAdminAuth, selectAuth, selectUserAuth } from '@/store';
-import { getToken } from '@/utils/cookie';
+import {useSelector, useDispatch} from 'react-redux';
+import {useSession} from 'next-auth/react';
+import {useEffect, useMemo, useState} from 'react';
+import {
+    googleLoginStart,
+    googleLoginSuccess,
+    loginAdminStart,
+    loginPharmacistStart,
+    loginStart,
+    logoutStart,
+    selectAdminAuth,
+    selectAuth,
+    selectPharmacistAuth,
+    selectUserAuth
+} from '@/store';
+import { on } from 'events';
 
 export function useAuth() {
     const dispatch = useDispatch();
-    const { data: session } = useSession();
-    const { loading, error, isAuthenticated } = useSelector(selectAuth);
+    const {data: session} = useSession();
+    const {loading, error, isAuthenticated} = useSelector(selectAuth);
     const user = useSelector(selectUserAuth);
     const admin = useSelector(selectAdminAuth);
+    const pharmacist = useSelector(selectPharmacistAuth);
 
     useEffect(() => {
         if (session?.user && !isAuthenticated) {
@@ -29,27 +41,51 @@ export function useAuth() {
         dispatch(loginStart({
             ...credentials,
             onSuccess:
-                onSucess,
+            onSucess,
             onFailed:
-                onFailed,
+            onFailed,
         }));
     };
 
-    const logout = () => {
-        dispatch(logoutStart());
-    };
+    const logout = (
+        onSuccess: (message: any) => void,
+        onFailure: (message: any) => void,
+) => {
+        dispatch(logoutStart(
+            {
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+            }
+        ));
+        // onSuccess("Đăng xuất thành công!");
+        // onFailure("Đăng xuất thất bại!");
+    };  
+
     const loginAdmin = (
         credentials: any,
         onSuccess: (message: any) => void,
         onFailure: (message: any) => void,
-  ) => {
+    ) => {
         dispatch(loginAdminStart({
             ...credentials,
-        onSuccess : onSuccess,
-        onFailure: onFailure,
+            onSuccess: onSuccess,
+            onFailure: onFailure,
         }));
-        
+
     };
+
+    const loginPharmacist = (
+        credentials: any,
+        onSuccess: (message: any) => void,
+        onFailure: (message: any) => void,
+    ) => {
+        dispatch(loginPharmacistStart({
+            ...credentials,
+            onSuccess: onSuccess,
+            onFailure: onFailure,
+        }));
+    }
+
     
 
 
@@ -63,5 +99,7 @@ export function useAuth() {
         logout,
         loginAdmin,
         admin: admin || null,
+        loginPharmacist,
+        pharmacist: pharmacist || null,
     };
 }

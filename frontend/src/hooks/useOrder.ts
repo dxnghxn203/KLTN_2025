@@ -1,4 +1,4 @@
-import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart } from "@/store/order";
+import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart, fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart, fetchApproveRequestOrderStart } from "@/store/order";
 import { on } from "events";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,8 @@ export function useOrder() {
     const allOrderAdmin = useSelector(selectAllOrderAdmin);
     const ordersUser = useSelector(selectOrdersByUser);
     const statistics365Days = useSelector((state: any) => state.order.statistics365Days);
+    const allRequestOrder = useSelector((state: any) => state.order.allRequestOrder);
+    const allRequestOrderApprove = useSelector((state: any) => state.order.allRequestOrderApprove);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
@@ -85,6 +87,49 @@ export function useOrder() {
         }))
     }
 
+    const fetchRequestPrescription = async (
+        data: any, 
+        onSuccess: (message: any) => void, 
+        onFailed: (message: any) => void
+    ) => {
+        console.log(data, "hook");
+        dispatch(fetchRequestPrescriptionStart({
+            formData: data,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
+
+    const fetchGetRequestOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetRequestOrderStart({
+            
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+    const fetchGetApproveRequestOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetApproveRequestOrderStart({
+                
+                onSuccess: onSuccess,
+                onFailed: onFailed
+            }));
+        }
+
+    const fetchApproveRequestOrder = async (data: any, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchApproveRequestOrderStart({
+            ...data,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
+
+
+
+    
+
+
     return {
         allOrder,
         checkOrder,
@@ -104,6 +149,13 @@ export function useOrder() {
 
         allStatistics365Days,
         statistics365Days,
+        fetchRequestPrescription,
+        fetchGetRequestOrder,
+        allRequestOrder,
+
+        fetchGetApproveRequestOrder,
+        allRequestOrderApprove,
+        fetchApproveRequestOrder,
     }
 }
 

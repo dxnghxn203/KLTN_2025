@@ -65,6 +65,7 @@ const ChangePasswordComponent = () => {
         toast.showToast(message, "success");
         setFormData({ old_password: "", new_password: "" });
         setConfirmPassword("");
+        setErrors({});
       },
       (message: any) => {
         if (typeof message === "object" && message?.message) {
@@ -82,7 +83,7 @@ const ChangePasswordComponent = () => {
         Đổi mật khẩu
       </h2>
       <form onSubmit={handleSubmit}>
-        <div className="space-y-4 mt-4 px-52">
+        <div className="space-y-4 mt-4 px-64">
           <div className="space-y-2">
             <label htmlFor="old_password" className="text-sm font-medium">
               Mật khẩu cũ
@@ -93,7 +94,7 @@ const ChangePasswordComponent = () => {
                 type="password"
                 value={formData.old_password}
                 onChange={handleChange}
-                className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
+                className="w-full h-[50px] rounded-xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
               />
             </div>
             {errors.old_password && (
@@ -110,7 +111,7 @@ const ChangePasswordComponent = () => {
                 type="password"
                 value={formData.new_password}
                 onChange={handleChange}
-                className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
+                className="w-full h-[50px] rounded-xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
               />
             </div>
             {errors.new_password && (
@@ -127,7 +128,7 @@ const ChangePasswordComponent = () => {
                 type="password"
                 value={confirmPassword}
                 onChange={handleConfirmChange}
-                className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
+                className="w-full h-[50px] rounded-xl px-4 border border-black/10 focus:border-[#0053E2] focus:ring-1 focus:ring-[#0053E2] outline-none transition-all"
               />
             </div>
             {errors.confirmPassword && (

@@ -1,13 +1,40 @@
+"use client";
 import { useState, useEffect, use, useRef } from "react";
 import Link from "next/link";
 import { useProduct } from "@/hooks/useProduct";
 import { useCategory } from "@/hooks/useCategory";
 import { useToast } from "@/providers/toastProvider";
+import { TbFileTypePdf } from "react-icons/tb";
+import { BiSolidImageAdd } from "react-icons/bi";
+import "react-quill/dist/quill.snow.css"; // Import styles
+import ReactQuill from "react-quill"; // Import ReactQuill
+import "@/styles/globals.css";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { send } from "process";
+
+const toolbarOptions = [
+  [{ header: [1, 2, 3, 4, false] }],
+  [{ font: [] }],
+  [{ size: [] }],
+  ["bold", "italic", "underline", "strike", "blockquote"],
+  [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+  ["link", "image", "video"],
+  ["clean"], // remove formatting button
+];
 
 const CreateSingleProduct = () => {
   const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
-
-  const { addProduct } = useProduct();
+  const router = useRouter();
+  const {
+    addProduct,
+    fetchUpdateProduct,
+    getAllProductsAdmin,
+    allProductAdmin,
+    fetchUpdateCertificateFileProduct,
+    fetchUpdateImagesPrimaryProduct,
+    fetchUpdateImagesProduct,
+  } = useProduct();
 
   interface PriceItem {
     original_price: number;
@@ -21,11 +48,6 @@ const CreateSingleProduct = () => {
     ingredient_name: string;
     ingredient_amount: string;
   }
-  interface FullDescription {
-    title: string;
-    content: string;
-  }
-
   interface Manufacturer {
     manufacture_name: string;
     manufacture_address: string;
@@ -57,9 +79,6 @@ const CreateSingleProduct = () => {
   const [ingredients, setIngredients] = useState<IngredientItem[]>([
     { ingredient_name: "", ingredient_amount: "" },
   ]);
-  const [full_descriptions, setFullDescription] = useState<FullDescription[]>([
-    { title: "", content: "" },
-  ]);
 
   const [manufacturer, setManufacturer] = useState<Manufacturer>({
     manufacture_name: "",
@@ -88,9 +107,12 @@ const CreateSingleProduct = () => {
   const [uses, setUses] = useState<string>("");
   const [dosageForm, setDosageForm] = useState<string>("");
   const [dosage, setDosage] = useState<string>("");
+  const [full_descriptions, setFullDescription] = useState<string>("");
   const [side_effects, setSideEffects] = useState<string>("");
   const [precautions, setPrecautions] = useState<string>("");
   const [storage, setStorage] = useState<string>("");
+  const [prescriptionRequired, setPrescriptionRequired] =
+    useState<boolean>(false);
 
   const [slug, setSlug] = useState<string>("");
   const toast = useToast();
@@ -102,9 +124,39 @@ const CreateSingleProduct = () => {
   const [primaryImagePreview, setPrimaryImagePreview] = useState<string>("");
   const primaryImageInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [certificate_file, setCertificateFile] = useState<File | null>(null);
+  const [certificatePreview, setCertificatePreview] = useState<string>("");
+  const certificateInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [hasCertificateChanged, setHasCertificateChanged] = useState(false);
+  const [hasPrimaryImageChanged, setHasPrimaryImageChanged] = useState(false);
+  const [hasImagesChanged, setHasImagesChanged] = useState(false);
+
+  const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
+  const [selectedChildCategory, setSelectedChildCategory] =
+    useState<string>("");
+
+  const [availableSubCategories, setAvailableSubCategories] = useState<any[]>(
+    []
+  );
+  const [availableChildCategories, setAvailableChildCategories] = useState<
+    any[]
+  >([]);
+
   // Add state for validation
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const parsedCategoryRef = useRef<any>(null);
+  const detailId = searchParams.get("chi-tiet");
+  const isViewOnly = !!detailId;
+  const productId = editId || detailId;
+
+  // console.log("productId", editId);
+  // const detailId = query["chi-tiet"];
 
   // Function to generate a slug from product name with Vietnamese character support
   const generateSlug = (title: string): string => {
@@ -177,16 +229,8 @@ const CreateSingleProduct = () => {
     ]);
   };
 
-  const addFullDescriptionItem = () => {
-    setFullDescription([...full_descriptions, { title: "", content: "" }]);
-  };
-
   const removeIngredientItem = (index: number) => {
     setIngredients(ingredients.filter((_, i) => i !== index));
-  };
-
-  const removeFullDescriptionItem = (index: number) => {
-    setFullDescription(full_descriptions.filter((_, i) => i !== index));
   };
 
   const updateIngredientItem = (
@@ -202,19 +246,6 @@ const CreateSingleProduct = () => {
     setIngredients(updatedIngredients);
   };
 
-  const updateFullDescriptionItem = (
-    index: number,
-    field: keyof FullDescription,
-    value: string
-  ) => {
-    const updatedFullDescription = [...full_descriptions];
-    updatedFullDescription[index] = {
-      ...updatedFullDescription[index],
-      [field]: value,
-    };
-    setFullDescription(updatedFullDescription);
-  };
-
   // Enhanced image handlers
   const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -222,6 +253,7 @@ const CreateSingleProduct = () => {
       const fileArray = Array.from(e.target.files);
       const updatedImages = [...images, ...fileArray];
       setImages(updatedImages);
+      setHasImagesChanged(true);
 
       // Generate preview URLs for new files
       fileArray.forEach((file) => {
@@ -287,6 +319,7 @@ const CreateSingleProduct = () => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setPrimaryImage(file);
+      setHasPrimaryImageChanged(true);
 
       // Generate preview URL
       const reader = new FileReader();
@@ -353,14 +386,6 @@ const CreateSingleProduct = () => {
     if (ingredientErrors.length > 0) {
       newErrors.ingredients = ingredientErrors.join("; ");
     }
-    // Validate full descriptions
-    const fullDescriptionErrors: string[] = [];
-    full_descriptions.forEach((full_descriptions, index) => {
-      if (!full_descriptions.title)
-        fullDescriptionErrors.push(
-          `Mô tả ${index + 1}: Vui lòng điền tiêu đề mô tả`
-        );
-    });
 
     // Validate manufacturer
     if (!manufacturer.manufacture_name)
@@ -373,16 +398,9 @@ const CreateSingleProduct = () => {
       )?.value
     )
       newErrors.description = "Vui lòng điền mô tả ngắn";
-    if (
-      !document.querySelector<HTMLTextAreaElement>('textarea[name="uses"]')
-        ?.value
-    )
+    if (!uses || uses.trim() === "" || uses === "<p><br></p>") {
       newErrors.uses = "Vui lòng điền thông tin công dụng";
-    // if (
-    //   !document.querySelector<HTMLInputElement>('input[name="dosage_form"]')
-    //     ?.value
-    // )
-    //   newErrors.dosage_form = "Vui lòng điền thông tin dạng bào chế";
+    }
 
     if (
       !document.querySelector<HTMLInputElement>('input[name="inventory"]')
@@ -417,7 +435,6 @@ const CreateSingleProduct = () => {
       },
     ]);
     setIngredients([{ ingredient_name: "", ingredient_amount: "" }]);
-    setFullDescription([{ title: "", content: "" }]);
     setManufacturer({
       manufacture_name: "",
       manufacture_address: "",
@@ -447,6 +464,8 @@ const CreateSingleProduct = () => {
     setPrimaryImage(null);
     setImagePreviewUrls([]);
     setPrimaryImagePreview("");
+    setCertificateFile(null);
+    setCertificatePreview("");
 
     setNamePrimary("");
     setOrigin("");
@@ -459,83 +478,35 @@ const CreateSingleProduct = () => {
     setSideEffects("");
     setPrecautions("");
     setStorage("");
+    setFullDescription("");
+    setPrescriptionRequired;
 
     // Reset validation state
     setErrors({});
     setFormSubmitted(false);
   };
+  useEffect(() => {
+    if (selectedSubCategory && availableSubCategories.length > 0) {
+      const subCat = availableSubCategories.find(
+        (cat: any) => cat.sub_category_id === selectedSubCategory
+      );
+      if (subCat) {
+        setAvailableChildCategories(subCat.child_category || []);
+        setSelectedChildCategory("");
 
-  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-    const isValid = validateForm();
-    if (!isValid) {
-      const firstErrorElement = document.querySelector('[data-error="true"]');
-      if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
+        // Update category state with sub-category info
+        setCategory({
+          ...category,
+          sub_category_id: subCat.sub_category_id,
+          sub_category_name: subCat.sub_category_name,
+          sub_category_slug: subCat.sub_category_slug,
+          child_category_id: "",
+          child_category_name: "",
+          child_category_slug: "",
         });
       }
-      return;
     }
-
-    const formData = new FormData(e.currentTarget);
-
-    formData.delete("images");
-    formData.delete("images_primary");
-
-    images.forEach((image) => {
-      formData.append("images", image);
-    });
-
-    if (primaryImage) {
-      formData.append("images_primary", primaryImage);
-    }
-
-    formData.set("ingredients", JSON.stringify({ ingredients }));
-    formData.set("full_description", JSON.stringify({ full_descriptions }));
-    formData.set("prices", JSON.stringify({ prices }));
-    formData.set("manufacturer", JSON.stringify(manufacturer));
-    formData.set("category", JSON.stringify(category));
-
-    // const formDataObj: Record<string, any> = {};
-    // formData.forEach((value, key) => {
-    //   formDataObj[key] = value;
-    // });
-
-    await addProduct(
-      formData,
-      (message: any) => {
-        toast.showToast(message, "success");
-        resetForm(); // Reset the form after successful submission
-      },
-      (message: any) => {
-        toast.showToast(message, "error");
-      }
-    );
-    console.log("formData", formData);
-  };
-
-  const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
-  const [selectedMainCategory, setSelectedMainCategory] = useState<string>("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedChildCategory, setSelectedChildCategory] =
-    useState<string>("");
-
-  const [availableSubCategories, setAvailableSubCategories] = useState<any[]>(
-    []
-  );
-  const [availableChildCategories, setAvailableChildCategories] = useState<
-    any[]
-  >([]);
-
-  // Fetch categories on component mount
-  useEffect(() => {
-    fetchGetAllCategoryForAdmin();
-  }, []);
-
-  // Update sub-categories when main category changes
+  }, [selectedSubCategory, availableSubCategories]);
   useEffect(() => {
     if (selectedMainCategory && categoryAdmin) {
       const mainCat = categoryAdmin.find(
@@ -564,30 +535,6 @@ const CreateSingleProduct = () => {
     }
   }, [selectedMainCategory, categoryAdmin]);
 
-  // Update child-categories when sub-category changes
-  useEffect(() => {
-    if (selectedSubCategory && availableSubCategories.length > 0) {
-      const subCat = availableSubCategories.find(
-        (cat: any) => cat.sub_category_id === selectedSubCategory
-      );
-      if (subCat) {
-        setAvailableChildCategories(subCat.child_category || []);
-        setSelectedChildCategory("");
-
-        // Update category state with sub-category info
-        setCategory({
-          ...category,
-          sub_category_id: subCat.sub_category_id,
-          sub_category_name: subCat.sub_category_name,
-          sub_category_slug: subCat.sub_category_slug,
-          child_category_id: "",
-          child_category_name: "",
-          child_category_slug: "",
-        });
-      }
-    }
-  }, [selectedSubCategory, availableSubCategories]);
-
   // Update category state when child category changes
   useEffect(() => {
     if (selectedChildCategory && availableChildCategories.length > 0) {
@@ -606,26 +553,308 @@ const CreateSingleProduct = () => {
     }
   }, [selectedChildCategory, availableChildCategories]);
 
-  // Helper components for displaying errors
+  useEffect(() => {
+    if (!productId) return;
+    getAllProductsAdmin();
+  }, [productId]);
+
+  useEffect(() => {
+    if (
+      !productId ||
+      !allProductAdmin ||
+      allProductAdmin.length === 0 ||
+      !categoryAdmin
+    )
+      return;
+
+    const product = allProductAdmin.find(
+      (item: any) => item.product_id === productId
+    );
+    if (!product) {
+      toast.showToast("Không tìm thấy sản phẩm", "error");
+      return;
+    }
+
+    // Set state cơ bản
+
+    setProductName(product.product_name);
+    setSlug(product.slug);
+    setNamePrimary(product.name_primary);
+    setOrigin(product.origin);
+    setDescription(product.description);
+    setInventory(product.inventory);
+    setBrand(product.brand);
+    setUses(product.uses);
+    setDosageForm(product.dosage_form);
+    setDosage(product.dosage);
+    setSideEffects(product.side_effects);
+    setPrecautions(product.precautions);
+    setStorage(product.storage);
+    setFullDescription(product.full_descriptions);
+    setPrescriptionRequired(product.prescription_required);
+    setPrices(
+      product.prices.map((p: any) => ({
+        original_price: p.original_price,
+        discount: p.discount,
+        unit: p.unit,
+        amount: p.amount,
+        weight: p.weight,
+      }))
+    );
+    setIngredients(
+      product.ingredients.map((i: any) => ({
+        ingredient_name: i.ingredient_name,
+        ingredient_amount: i.ingredient_amount,
+      }))
+    );
+    setManufacturer({
+      manufacture_name: product.manufacturer.manufacture_name,
+      manufacture_address: product.manufacturer.manufacture_address,
+      manufacture_contact: product.manufacturer.manufacture_contact,
+    });
+    setImages(product.images.map((img: any) => img.images_url)); // Set images
+    setPrimaryImage(product.images_primary); // Set primary image
+
+    if (product.images && product.images.length > 0) {
+      const imageUrls = product.images.map((img: any) => img.images_url);
+      setImagePreviewUrls(imageUrls); // Cập nhật URL ảnh
+    }
+    setPrimaryImagePreview(product.images_primary);
+    setSelectedMainCategory(product.category.main_category_id);
+    setSelectedSubCategory(product.category.sub_category_id);
+    setSelectedChildCategory(product.category.child_category_id);
+    setCertificateFile(product.certificate_file);
+  }, [allProductAdmin, editId, categoryAdmin]);
+
+  const submitProduct = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    const isValid = validateForm();
+    if (!isValid) {
+      const firstErrorElement = document.querySelector('[data-error="true"]');
+      if (firstErrorElement) {
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    formData.delete("images");
+    formData.delete("images_primary");
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+    if (primaryImage) {
+      formData.append("images_primary", primaryImage);
+    }
+    if (certificate_file) {
+      formData.append("certificate_file", certificate_file);
+    }
+    formData.set("ingredients", JSON.stringify({ ingredients }));
+    formData.set("prices", JSON.stringify({ prices }));
+    formData.set("manufacturer", JSON.stringify(manufacturer));
+    formData.set("category", JSON.stringify(category));
+    formData.set("uses", uses);
+    formData.set("dosage_form", dosageForm);
+    formData.set("dosage", dosage);
+    formData.set("side_effects", side_effects);
+    formData.set("precautions", precautions);
+    formData.set("storage", storage);
+    formData.set("full_descriptions", full_descriptions);
+    formData.set("prescription_required", JSON.stringify(prescriptionRequired));
+
+    const dataToSend = {
+      product_id: editId,
+      product_name: productName,
+      slug,
+      name_primary: namePrimary,
+      origin,
+      description,
+      inventory,
+      brand,
+      uses,
+      dosage_form: dosageForm,
+      dosage,
+      side_effects,
+      precautions,
+      storage,
+      full_descriptions,
+      prescription_required: prescriptionRequired,
+      prices: {
+        prices: prices.map((p) => ({
+          original_price: p.original_price,
+          discount: p.discount,
+          unit: p.unit,
+          amount: p.amount,
+          weight: p.weight,
+        })),
+      },
+
+      ingredients: {
+        ingredients: ingredients.map((i) => ({
+          ingredient_name: i.ingredient_name,
+          ingredient_amount: i.ingredient_amount,
+        })),
+      },
+
+      manufacturer,
+      category: {
+        main_category_id: selectedMainCategory,
+        sub_category_id: selectedSubCategory,
+        child_category_id: selectedChildCategory,
+      },
+      images: imagePreviewUrls,
+      images_primary: primaryImagePreview,
+    };
+
+    const formData_Certificate = new FormData(e.currentTarget);
+    if (certificate_file) {
+      formData_Certificate.append("file", certificate_file);
+    }
+
+    // Chuyển URL (string) thành File
+    const urlToFile = async (
+      url: string,
+      filename: string,
+      mimeType: string
+    ): Promise<File> => {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return new File([blob], filename, { type: mimeType });
+    };
+
+    const prepareImages = async () => {
+      const formData_Images = new FormData();
+
+      for (const image of images) {
+        if (typeof image === "string") {
+          // Xử lý ảnh cũ dạng URL
+          const file = await urlToFile(image, "old_image.jpg", "image/jpeg"); // tùy MIME
+          formData_Images.append("files", file);
+        } else {
+          // Ảnh mới đã là File
+          formData_Images.append("files", image);
+        }
+      }
+
+      return formData_Images;
+    };
+
+    const formData_Images = await prepareImages();
+
+    const formData_PrimaryImage = new FormData();
+    if (primaryImage) {
+      formData_PrimaryImage.append("file", primaryImage);
+    }
+    console.log("formData_Certificate", formData_Certificate);
+    console.log("formData_Images", formData_Images);
+    console.log("formData_PrimaryImage", formData_PrimaryImage);
+    if (editId) {
+      try {
+        if (hasCertificateChanged) {
+          await fetchUpdateCertificateFileProduct(
+            { product_id: editId, file: formData_Certificate },
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        }
+
+        if (hasPrimaryImageChanged) {
+          await fetchUpdateImagesPrimaryProduct(
+            { product_id: editId, file: formData_PrimaryImage },
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        }
+
+        if (hasImagesChanged) {
+          await fetchUpdateImagesProduct(
+            { product_id: editId, files: formData_Images },
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        }
+
+        if (Object.keys(dataToSend).length > 0) {
+          await fetchUpdateProduct(
+            dataToSend,
+            (msg) => toast.showToast(msg, "success"),
+            (msg) => Promise.reject(new Error(msg))
+          );
+        }
+
+        // toast.showToast("Cập nhật hoàn tất!", "success");
+      } catch (error: any) {
+        toast.showToast("Lỗi khi cập nhật: " + error.message, "error");
+      }
+    } else {
+      await addProduct(
+        formData,
+        (message: any) => {
+          toast.showToast(message, "success");
+          // resetForm();
+        },
+        (message: any) => {
+          toast.showToast(message, "error");
+        }
+      );
+    }
+    formData.forEach((value, key) => {
+      console.log(`${key}:`, value);
+    });
+  };
+
+  useEffect(() => {
+    fetchGetAllCategoryForAdmin();
+  }, []);
+
   const ErrorMessage = ({ message }: { message: string }) => (
     <p className="text-red-500 text-xs mt-1">{message}</p>
   );
 
-  // Function to determine if a field has an error
   const hasError = (fieldName: string): boolean => {
     return formSubmitted && !!errors[fieldName];
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && selectedFile.type === "application/pdf") {
+      setCertificateFile(selectedFile);
+      setHasCertificateChanged(true);
+    } else {
+      alert("Vui lòng chọn tệp PDF");
+    }
+  };
+
+  const removeFile = () => {
+    setCertificateFile(null);
+  };
+
   return (
     <div className="">
-      <h2 className="text-2xl font-extrabold text-black">Thêm sản phẩm</h2>
+      <h2 className="text-2xl font-extrabold text-black">
+        <h1>
+          {editId
+            ? "Chỉnh sửa sản phẩm"
+            : detailId
+            ? "Xem chi tiết sản phẩm"
+            : "Thêm sản phẩm"}
+        </h1>
+      </h2>
       <div className="my-4 text-sm">
         <Link href="/dashboard" className="hover:underline text-blue-600">
           Dashboard
         </Link>
         <span> / </span>
         <Link href="/create-single-product" className="text-gray-800">
-          Thêm sản phẩm đơn
+          {editId
+            ? "Chỉnh sửa sản phẩm"
+            : detailId
+            ? "Xem chi tiết sản phẩm"
+            : "Thêm sản phẩm"}
         </Link>
       </div>
       <form onSubmit={submitProduct}>
@@ -649,6 +878,7 @@ const CreateSingleProduct = () => {
                       className={`border rounded-lg p-2 w-full ${
                         hasError("product_name") ? "border-red-500" : ""
                       }`}
+                      disabled={isViewOnly}
                     />
                     {hasError("product_name") && (
                       <ErrorMessage message={errors.product_name} />
@@ -666,6 +896,7 @@ const CreateSingleProduct = () => {
                       }`}
                       value={namePrimary}
                       onChange={(e) => setNamePrimary(e.target.value)}
+                      disabled={isViewOnly}
                     />
                     {hasError("name_primary") && (
                       <ErrorMessage message={errors.name_primary} />
@@ -683,6 +914,7 @@ const CreateSingleProduct = () => {
                       className={`border rounded-lg p-2 w-full ${
                         hasError("slug") ? "border-red-500" : ""
                       }`}
+                      disabled={isViewOnly}
                     />
                     {hasError("slug") && <ErrorMessage message={errors.slug} />}
                     <p className="text-xs text-gray-500 mt-1">
@@ -701,11 +933,26 @@ const CreateSingleProduct = () => {
                       }`}
                       onChange={(e) => setOrigin(e.target.value)}
                       value={origin}
+                      disabled={isViewOnly}
                     />
                     {hasError("origin") && (
                       <ErrorMessage message={errors.origin} />
                     )}
                   </div>
+                </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <input
+                    type="checkbox"
+                    id="prescription_required"
+                    name="prescription_required"
+                    checked={prescriptionRequired}
+                    onChange={(e) => setPrescriptionRequired(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 accent-blue-600"
+                    disabled={isViewOnly}
+                  />
+                  <label htmlFor="prescription_required" className="text-sm">
+                    Thuốc kê toa
+                  </label>
                 </div>
                 <div className="mt-3" data-error={hasError("description")}>
                   <label className="block text-sm font-medium mb-1">
@@ -719,6 +966,7 @@ const CreateSingleProduct = () => {
                     }`}
                     onChange={(e) => setDescription(e.target.value)}
                     value={description}
+                    disabled={isViewOnly}
                   ></textarea>
                   {hasError("description") && (
                     <ErrorMessage message={errors.description} />
@@ -726,71 +974,15 @@ const CreateSingleProduct = () => {
                 </div>
                 <div className="mt-3">
                   <h3 className="block text-sm font-medium mb-1">
-                    Mô tả đầy đủ <span className="text-red-500">*</span>
+                    Mô tả đầy đủ
                   </h3>
-
-                  {full_descriptions.map((fullDescription, index) => (
-                    <div key={index} className="mb-3 p-3 border rounded-lg">
-                      <div className="flex justify-between mb-2">
-                        <h4 className="font-medium">Mô tả {index + 1}</h4>
-                        {full_descriptions.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeFullDescriptionItem(index)}
-                            className="text-red-500 text-sm"
-                          >
-                            Xóa
-                          </button>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Tên tiêu đề mô tả
-                          </label>
-                          <input
-                            type="text"
-                            value={fullDescription.title}
-                            onChange={(e) =>
-                              updateFullDescriptionItem(
-                                index,
-                                "title",
-                                e.target.value
-                              )
-                            }
-                            className="border rounded-lg p-2 w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">
-                            Nội dung
-                          </label>
-                          <textarea
-                            value={fullDescription.content}
-                            onChange={(e) =>
-                              updateFullDescriptionItem(
-                                index,
-                                "content",
-                                e.target.value
-                              )
-                            }
-                            rows={5}
-                            className="border rounded-lg p-2 w-full"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {hasError("full_descriptions") && (
-                    <ErrorMessage message={errors.full_descriptions} />
-                  )}
-                  <button
-                    type="button"
-                    onClick={addFullDescriptionItem}
-                    className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
-                  >
-                    + Thêm mô tả
-                  </button>
+                  <ReactQuill
+                    name="full_descriptions"
+                    onChange={(value: any) => setFullDescription(value)}
+                    value={full_descriptions}
+                    modules={{ toolbar: toolbarOptions }}
+                    readOnly={isViewOnly}
+                  />
                 </div>
               </div>
 
@@ -811,6 +1003,7 @@ const CreateSingleProduct = () => {
                       }`}
                       value={selectedMainCategory}
                       onChange={(e) => setSelectedMainCategory(e.target.value)}
+                      disabled={isViewOnly}
                     >
                       <option value="">Chọn danh mục chính</option>
                       {categoryAdmin &&
@@ -837,6 +1030,7 @@ const CreateSingleProduct = () => {
                         className="border rounded-lg p-2 w-full"
                         value={selectedSubCategory}
                         onChange={(e) => setSelectedSubCategory(e.target.value)}
+                        disabled={isViewOnly}
                       >
                         <option value="">Chọn danh mục cấp 1</option>
                         {availableSubCategories.map((subCat: any) => (
@@ -862,6 +1056,7 @@ const CreateSingleProduct = () => {
                         onChange={(e) =>
                           setSelectedChildCategory(e.target.value)
                         }
+                        disabled={isViewOnly}
                       >
                         <option value="">Chọn danh mục cấp 2</option>
                         {availableChildCategories.map((childCat: any) => (
@@ -946,121 +1141,81 @@ const CreateSingleProduct = () => {
 
             {/* Prices Section */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">
-                Giá và đơn vị <span className="text-red-500">*</span>
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Chi tiết sản phẩm</h3>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Dạng bào chế
+                </label>
+                <input
+                  type="text"
+                  name="dosage_form"
+                  className="border rounded-lg p-2 w-full"
+                  onChange={(e) => setDosageForm(e.target.value)}
+                  value={dosageForm}
+                  disabled={isViewOnly}
+                />
+              </div>
+              <div data-error={hasError("uses")} className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Công dụng <span className="text-red-500">*</span>
+                </label>
+                <ReactQuill
+                  name="uses"
+                  onChange={(value: any) => setUses(value)}
+                  value={uses}
+                  modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
+                />
+                {hasError("uses") && <ErrorMessage message={errors.uses} />}
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Liều lượng
+                </label>
+                <ReactQuill
+                  name="dosage"
+                  onChange={(value: any) => setDosage(value)}
+                  value={dosage}
+                  modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
+                />
+              </div>
 
-              {prices.map((price, index) => (
-                <div key={index} className="mb-4 p-3 border rounded-lg">
-                  <div className="flex justify-between mb-2">
-                    <h4 className="font-medium">Tùy chọn giá {index + 1}</h4>
-                    {prices.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removePriceItem(index)}
-                        className="text-red-500 text-sm"
-                      >
-                        Xóa
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 mb-2">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Giá gốc <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={price.original_price}
-                        onChange={(e) =>
-                          updatePriceItem(
-                            index,
-                            "original_price",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Giảm giá
-                      </label>
-                      <input
-                        type="number"
-                        value={price.discount}
-                        onChange={(e) =>
-                          updatePriceItem(
-                            index,
-                            "discount",
-                            Number(e.target.value)
-                          )
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Số lượng tương ứng
-                      </label>
-                      <input
-                        type="text"
-                        value={price.amount}
-                        onChange={(e) =>
-                          updatePriceItem(index, "amount", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                    </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Tác dụng phụ
+                </label>
+                <ReactQuill
+                  name="side_effects"
+                  onChange={(value: any) => setSideEffects(value)}
+                  value={side_effects}
+                  modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">Lưu ý</label>
+                <ReactQuill
+                  name="precautions"
+                  onChange={(value: any) => setPrecautions(value)}
+                  value={precautions}
+                  modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
+                />
+              </div>
+              <div className="mb-2">
+                <label className="block text-sm font-medium mb-1">
+                  Hướng dẫn bảo quản
+                </label>
+                <ReactQuill
+                  name="storage"
+                  onChange={(value: any) => setStorage(value)}
+                  value={storage}
+                  modules={{ toolbar: toolbarOptions }}
+                  readOnly={isViewOnly}
+                />
+              </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Đơn vị <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={price.unit}
-                        onChange={(e) =>
-                          updatePriceItem(index, "unit", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      >
-                        <option value="">Chọn 1 đơn vị</option>
-                        {unitOptions.map((unit, idx) => (
-                          <option key={idx} value={unit}>
-                            {unit}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Trọng lượng
-                      </label>
-                      <input
-                        type="text"
-                        value={price.weight}
-                        onChange={(e) =>
-                          updatePriceItem(index, "weight", e.target.value)
-                        }
-                        className="border rounded-lg p-2 w-full"
-                      />
-                      <label className="block text-sm font-medium mb-1">
-                        (kg)
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {hasError("prices") && <ErrorMessage message={errors.prices} />}
-              <button
-                type="button"
-                onClick={addPriceItem}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
-              >
-                + Thêm tùy chọn giá mới
-              </button>
               <label className="block text-sm font-medium mb-1 mt-3">
                 Số lượng sản phẩm
               </label>
@@ -1070,14 +1225,13 @@ const CreateSingleProduct = () => {
                 className="border rounded-lg p-2 w-full"
                 onChange={(e) => setInventory(Number(e.target.value))}
                 value={inventory}
+                disabled={isViewOnly}
               />
             </div>
 
             {/* Ingredients Section */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">
-                Thành phần <span className="text-red-500">*</span>
-              </h3>
+              <h3 className="text-lg font-semibold mb-3">Thành phần</h3>
 
               {ingredients.map((ingredient, index) => (
                 <div key={index} className="mb-3 p-3 border rounded-lg">
@@ -1109,6 +1263,7 @@ const CreateSingleProduct = () => {
                           )
                         }
                         className="border rounded-lg p-2 w-full"
+                        disabled={isViewOnly}
                       />
                     </div>
                     <div>
@@ -1126,6 +1281,7 @@ const CreateSingleProduct = () => {
                           )
                         }
                         className="border rounded-lg p-2 w-full"
+                        disabled={isViewOnly}
                       />
                     </div>
                   </div>
@@ -1159,6 +1315,7 @@ const CreateSingleProduct = () => {
                         manufacture_name: e.target.value,
                       })
                     }
+                    disabled={isViewOnly}
                     className={`border rounded-lg p-2 w-full ${
                       hasError("manufacture_name") ? "border-red-500" : ""
                     }`}
@@ -1180,6 +1337,7 @@ const CreateSingleProduct = () => {
                         manufacture_contact: e.target.value,
                       })
                     }
+                    disabled={isViewOnly}
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
@@ -1196,6 +1354,7 @@ const CreateSingleProduct = () => {
                         manufacture_address: e.target.value,
                       })
                     }
+                    disabled={isViewOnly}
                     className="border rounded-lg p-2 w-full"
                   />
                 </div>
@@ -1209,6 +1368,7 @@ const CreateSingleProduct = () => {
                     className="border rounded-lg p-2 w-full"
                     onChange={(e) => setBrand(e.target.value)}
                     value={brand}
+                    disabled={isViewOnly}
                   />
                 </div>
               </div>
@@ -1218,239 +1378,332 @@ const CreateSingleProduct = () => {
           <div className="w-1/3 flex flex-col space-y-5">
             {/* Additional Product Details */}
             <div className="bg-white shadow-sm rounded-2xl p-5">
-              <h3 className="text-lg font-semibold mb-3">Chi tiết sản phẩm</h3>
+              <h3 className="text-lg font-semibold mb-3">Giá và đơn vị</h3>
               <div className="space-y-4">
-                <div data-error={hasError("uses")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Công dụng <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="uses"
-                    rows={3}
-                    className={`border rounded-lg p-2 w-full ${
-                      hasError("uses") ? "border-red-500" : ""
-                    }`}
-                    onChange={(e) => setUses(e.target.value)}
-                    value={uses}
-                  ></textarea>
-                  {hasError("uses") && <ErrorMessage message={errors.uses} />}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Liều lượng
-                  </label>
-                  <textarea
-                    name="dosage"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setDosage(e.target.value)}
-                    value={dosage}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Dạng bào chế
-                  </label>
-                  <input
-                    type="text"
-                    name="dosage_form"
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setDosageForm(e.target.value)}
-                    value={dosageForm}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Tác dụng phụ
-                  </label>
-                  <textarea
-                    name="side_effects"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setSideEffects(e.target.value)}
-                    value={side_effects}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Lưu ý
-                  </label>
-                  <textarea
-                    name="precautions"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setPrecautions(e.target.value)}
-                    value={precautions}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Hướng dẫn bảo quản
-                  </label>
-                  <textarea
-                    name="storage"
-                    rows={3}
-                    className="border rounded-lg p-2 w-full"
-                    onChange={(e) => setStorage(e.target.value)}
-                    value={storage}
-                  ></textarea>
-                </div>
-                {/* Enhanced Product Images Section */}
-                <div data-error={hasError("images")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Hình ảnh sản phẩm <span className="text-red-500">*</span>{" "}
-                    <span className="text-blue-500">
-                      (Cho phép nhiều hình ảnh)
-                    </span>
-                  </label>
-
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
-                      isDragging
-                        ? "border-blue-500 bg-blue-50"
-                        : hasError("images")
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  >
-                    <div className="text-center py-4">
-                      <svg
-                        className="mx-auto h-12 w-12 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 48 48"
-                      >
-                        <path
-                          d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                        />
-                      </svg>
-
-                      <div className="flex flex-col items-center text-sm text-gray-600">
-                        <p className="font-medium">
-                          Kéo và thả hình ảnh vào đây hoặc
-                        </p>
-                        <label className="mt-2 cursor-pointer text-blue-600 hover:text-blue-800">
-                          <span>Bấm để chọn tệp</span>
-                          <input
-                            type="file"
-                            name="images"
-                            multiple
-                            onChange={handleImagesChange}
-                            className="hidden"
-                            accept="image/*"
-                          />
-                        </label>
-                      </div>
-
-                      <p className="mt-1 text-xs text-gray-500">
-                        PNG, JPG, GIF tối đa 10MB mỗi tệp
-                      </p>
-                    </div>
-                  </div>
-                  {hasError("images") && (
-                    <ErrorMessage message={errors.images} />
-                  )}
-                  {imagePreviewUrls.length > 0 && (
-                    <div className="mt-3">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="text-sm font-medium">
-                          {images.length} ảnh{images.length !== 1 ? "s" : ""}{" "}
-                          được chọn
-                        </p>
+                {prices.map((price, index) => (
+                  <div key={index} className="p-3 border rounded-lg">
+                    <div className="flex justify-between mb-2">
+                      <h4 className="font-medium">Tùy chọn giá {index + 1}</h4>
+                      {prices.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => {
-                            setImages([]);
-                            setImagePreviewUrls([]);
-                          }}
-                          className="text-xs text-red-500 hover:text-red-700"
+                          onClick={() => removePriceItem(index)}
+                          className="text-red-500 text-sm"
                         >
-                          Xóa hết
+                          Xóa
                         </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 mb-2">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Giá gốc <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={price.original_price}
+                          onChange={(e) =>
+                            updatePriceItem(
+                              index,
+                              "original_price",
+                              Number(e.target.value)
+                            )
+                          }
+                          disabled={isViewOnly}
+                          className="border rounded-lg p-2 w-full"
+                        />
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                        {imagePreviewUrls.map((url, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={url}
-                              alt={`Preview ${index}`}
-                              className="h-20 w-20 object-cover rounded border"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                              title="Remove"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Giảm giá
+                        </label>
+                        <input
+                          type="number"
+                          value={price.discount}
+                          onChange={(e) =>
+                            updatePriceItem(
+                              index,
+                              "discount",
+                              Number(e.target.value)
+                            )
+                          }
+                          disabled={isViewOnly}
+                          className="border rounded-lg p-2 w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Số lượng tương ứng
+                        </label>
+                        <input
+                          type="text"
+                          value={price.amount}
+                          onChange={(e) =>
+                            updatePriceItem(index, "amount", e.target.value)
+                          }
+                          className="border rounded-lg p-2 w-full"
+                          disabled={isViewOnly}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Đơn vị <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={price.unit}
+                          onChange={(e) =>
+                            updatePriceItem(index, "unit", e.target.value)
+                          }
+                          className="border rounded-lg p-2 w-full"
+                          disabled={isViewOnly}
+                        >
+                          <option value="">Chọn 1 đơn vị</option>
+                          {unitOptions.map((unit, idx) => (
+                            <option key={idx} value={unit}>
+                              {unit}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Trọng lượng (kg)
+                        </label>
+                        <input
+                          type="text"
+                          value={price.weight}
+                          onChange={(e) =>
+                            updatePriceItem(index, "weight", e.target.value)
+                          }
+                          className="border rounded-lg p-2 w-full"
+                          disabled={isViewOnly}
+                        />
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
 
-                {/* Primary Image */}
-                <div data-error={hasError("images_primary")}>
-                  <label className="block text-sm font-medium mb-1">
-                    Ảnh chính<span className="text-red-500">*</span>
-                  </label>
+                {hasError("prices") && <ErrorMessage message={errors.prices} />}
+                <button
+                  type="button"
+                  onClick={addPriceItem}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  + Thêm tùy chọn giá mới
+                </button>
+              </div>
+            </div>
+            <div className="bg-white shadow-sm rounded-2xl p-5">
+              <h3 className="text-lg font-semibold mb-3">Hình ảnh</h3>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  File giấy công bố sản phẩm
+                </label>
+
+                <label className="text-sm flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition duration-200 w-fit">
+                  <TbFileTypePdf className="mr-1" />
+                  Chọn file PDF
+                  <input
+                    type="file"
+                    name="certificate_file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    ref={certificateInputRef}
+                    disabled={isViewOnly}
+                  />
+                </label>
+                {certificate_file && (
+                  <div className="relative py-3 rounded-md max-w-xs">
+                    {/* Nút x ở góc phải */}
+                    <button
+                      onClick={removeFile}
+                      className="absolute top-1 right-1 text-red-500 hover:text-red-700 text-lg font-bold"
+                      aria-label="Xóa file"
+                      disabled={isViewOnly}
+                    >
+                      &times;
+                    </button>
+
+                    <p className="text-xs text-gray-800">
+                      <span className="text-2xl">📄</span>
+                      {typeof certificate_file === "string"
+                        ? (certificate_file as string)
+                            .split("/")
+                            .slice(-2)
+                            .join("/")
+                        : certificate_file?.name}{" "}
+                    </p>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Chỉ chấp nhận tệp PDF
+                </p>
+              </div>
+
+              {/* Enhanced Product Images Section */}
+              <div data-error={hasError("images")}>
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Hình ảnh sản phẩm <span className="text-red-500">*</span>{" "}
+                  <span className="text-blue-500">
+                    (Cho phép nhiều hình ảnh)
+                  </span>
+                </label>
+
+                <div
+                  className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
+                    isDragging
+                      ? "border-blue-500 bg-blue-50"
+                      : hasError("images")
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                >
+                  <div className="text-center py-4">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 48 48"
+                    >
+                      <path
+                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                      />
+                    </svg>
+
+                    <div className="flex flex-col items-center text-sm text-gray-600">
+                      <p className="font-medium">
+                        Kéo và thả hình ảnh vào đây hoặc
+                      </p>
+                      <label className="mt-2 cursor-pointer text-blue-600 hover:text-blue-800">
+                        <span>Bấm để chọn tệp</span>
+                        <input
+                          type="file"
+                          name="images"
+                          multiple
+                          onChange={handleImagesChange}
+                          className="hidden"
+                          accept="image/*"
+                          disabled={isViewOnly}
+                        />
+                      </label>
+                    </div>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      PNG, JPG, GIF tối đa 10MB mỗi tệp
+                    </p>
+                  </div>
+                </div>
+                {hasError("images") && <ErrorMessage message={errors.images} />}
+                {imagePreviewUrls.length > 0 && (
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-medium">
+                        {images.length} ảnh được chọn
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImages([]);
+                          setImagePreviewUrls([]);
+                        }}
+                        className="text-xs text-red-500 hover:text-red-700"
+                        disabled={isViewOnly}
+                      >
+                        Xóa hết
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {imagePreviewUrls.map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`Preview ${index}`}
+                            className="h-20 w-20 object-cover rounded border p-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                            title="Remove"
+                            disabled={isViewOnly}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Primary Image */}
+              <div data-error={hasError("images_primary")}>
+                <label className="block text-sm font-medium mb-1 mt-4">
+                  Ảnh chính<span className="text-red-500">*</span>
+                </label>
+                <label className="flex text-sm items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition duration-200 w-fit">
+                  <BiSolidImageAdd className="mr-1" />
+                  Chọn ảnh chính
                   <input
                     type="file"
                     name="images_primary"
                     ref={primaryImageInputRef}
                     onChange={handlePrimaryImageChange}
-                    className={`border rounded-lg p-2 w-full ${
-                      hasError("images_primary") ? "border-red-500" : ""
-                    }`}
+                    className="hidden"
                     accept="image/*"
+                    disabled={isViewOnly}
                   />
-                  {hasError("images_primary") && (
-                    <ErrorMessage message={errors.images_primary} />
-                  )}
-                  {primaryImagePreview && (
-                    <div className="mt-2 relative inline-block">
-                      <img
-                        src={primaryImagePreview}
-                        alt="Primary image preview"
-                        className="h-24 w-24 object-cover rounded border"
-                      />
-                      <button
-                        type="button"
-                        onClick={removePrimaryImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
+                </label>
+
+                {hasError("images_primary") && (
+                  <ErrorMessage message={errors.images_primary} />
+                )}
+                {primaryImagePreview && (
+                  <div className="mt-2 relative inline-block">
+                    <img
+                      src={primaryImagePreview}
+                      alt="Primary image preview"
+                      className="h-24 w-24 object-cover rounded border p-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={removePrimaryImage}
+                      disabled={isViewOnly}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
-        <div className="flex justify-center mt-4 space-x-2">
-          <button
-            type="submit"
-            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
-          >
-            Thêm
-          </button>
-          <button
-            type="button"
-            className="text-sm text-red-500 font-semibold py-2 px-6 rounded-lg border border-red-500 hover:bg-red-500 hover:text-white"
-          >
-            Hủy
-          </button>
-        </div>
+        {!detailId && (
+          <div className="flex justify-center mt-4 space-x-2">
+            <button
+              type="submit"
+              className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
+            >
+              {editId ? "Cập nhật" : "Tạo sản phẩm"}
+            </button>
+            <button
+              type="button"
+              className="text-sm text-red-500 font-semibold py-2 px-6 rounded-lg border border-red-500 hover:bg-red-500 hover:text-white"
+            >
+              Hủy
+            </button>
+          </div>
+        )}
 
         {formSubmitted && Object.keys(errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -1465,6 +1718,18 @@ const CreateSingleProduct = () => {
           </div>
         )}
       </form>
+      {detailId && (
+        <div className="flex justify-center mt-4 space-x-2">
+          <button
+            className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
+            onClick={() => {
+              router.push(`/san-pham/them-san-pham-don?edit=${detailId}`);
+            }}
+          >
+            Cập nhật sản phẩm
+          </button>
+        </div>
+      )}
     </div>
   );
 };

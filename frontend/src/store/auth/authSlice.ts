@@ -1,11 +1,12 @@
-import { Admin, AuthState, User } from "@/types/auth";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {Admin, AuthState, User} from "@/types/auth";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 const initialState: AuthState = {
     user: null,
     admin: null,
-    token: null,
+    pharmacist: null,
     isAdmin: false,
+    isPharmacist: false,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -40,9 +41,11 @@ export const authSlice = createSlice({
             state.loading = false;
             state.isAuthenticated = true;
             state.user = action.payload.user;
-            state.token = action.payload.token;
             state.error = null;
-            state.isAdmin = false; // Reset isAdmin to false on normal login
+            state.admin = null;
+            state.pharmacist = null;
+            state.isAdmin = false;
+            state.isPharmacist = false;
 
         },
         loginFailure: (state, action: PayloadAction<string>) => {
@@ -51,44 +54,58 @@ export const authSlice = createSlice({
         },
 
         // Logout actions
-        logoutStart: (state) => {
-            console.log("logoutStart");
-            state.loading = true;
-        },
-        logoutSuccess: (state, ) => {
-            console.log("logoutSuccess");
-            state.loading = false;
-            state.isAuthenticated = false;
-            if (state.isAdmin){
-                state.admin = null; // Reset admin on logout
-            }
-            else {
-                state.user = null; // Reset user on logout
-            }
-            state.token = null;
-            state.isAdmin = false; // Reset isAdmin on logout
-        },
-        logoutFailure: (state, action: PayloadAction<string>) => {
-            console.log("logoutFailure", action.payload);
-            state.loading = false;
-            state.error = action.payload;
-        },
-        //login Admin
-        loginAdminStart: (state) => {
-            console.log("loginAdminStart"); 
+        logoutStart: (state, action) => {
             state.loading = true;
             state.error = null;
         },
-        loginAdminSuccess: (state, action: PayloadAction<{ admin: Admin; token: string}>) => {
-            console.log("loginAdminSuccess", action.payload);
+        logoutSuccess: (state) => {
+            state.loading = false;
+            state.isAuthenticated = false;
+            if (state.isAdmin) {
+                state.admin = null;
+            } else if (state.isPharmacist) {
+                state.pharmacist = null;
+            }
+            else {
+                state.user = null;
+            }
+        },
+        logoutFailure: (state, action: PayloadAction<string>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        //login Admin
+        loginAdminStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        loginAdminSuccess: (state, action: PayloadAction<{ admin: Admin; token: string }>) => {
             state.loading = false;
             state.admin = action.payload.admin;
-            state.token = action.payload.token;
             state.isAdmin = true;
-            // state.error = null;
+            state.user = null;
+            state.pharmacist = null;
+            state.isPharmacist = false;
         },
         loginAdminFailure: (state, action: PayloadAction<string>) => {
-            console.log("loginAdminFailure", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // login pharmacist
+        loginPharmacistStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        loginPharmacistSuccess: (state, action: PayloadAction<{ pharmacist: any; token: string }>) => {
+            state.loading = false;
+            state.pharmacist = action.payload.pharmacist;
+            state.isPharmacist = true;
+            state.user = null;
+            state.admin = null;
+            state.isAdmin = false;
+        },
+        loginPharmacistFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
             state.error = action.payload;
         },
@@ -109,6 +126,10 @@ export const {
     loginAdminStart,
     loginAdminSuccess,
     loginAdminFailure,
+
+    loginPharmacistStart,
+    loginPharmacistSuccess,
+    loginPharmacistFailure,
 } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -4,15 +4,18 @@ from fastapi import APIRouter, status, UploadFile, File, Depends
 from pyfa_converter_v2 import BodyDepends
 
 from app.core import logger, response
-from app.core.response import JsonException
+from app.core.response import JsonException, SuccessResponse
 from app.core.s3 import upload_any_file
-from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq, ApproveProductReq
+from app.entities.product.request import ItemProductDBInReq, UpdateCategoryReq, ApproveProductReq, \
+    UpdateProductStatusReq, AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq
 from app.helpers.redis import get_session, get_recently_viewed, save_recently_viewed, save_session
 from app.middleware import middleware
-from app.models import order, pharmacist, user
+from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
-    get_product_best_deals, approve_product
+    get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, \
+    update_pharmacist_gender_for_all_products, check_product_consistency, \
+    update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, import_products
 
 router = APIRouter()
 
@@ -127,6 +130,7 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
 @router.get("/products/all-product-admin", response_model=response.BaseResponse)
 async def get_all_product_admin(page: int = 1, page_size: int = 10):
     try:
+        logger.info(f"page: {page}, page_size: {page_size}")
         result = await get_all_product(page, page_size)
         return response.BaseResponse(
             message="Tìm thấy sản phẩm",
@@ -287,11 +291,179 @@ async def pharmacist_approve_product(item: ApproveProductReq, token: str = Depen
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Dược sĩ không tồn tại."
             )
-        return await approve_product(item, pharmacist_info.email)
+        return await approve_product(item, pharmacist_info)
     except JsonException as je:
         raise je
     except Exception as e:
         logger.error("Error approving product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/get-approve-product", response_model=response.BaseResponse)
+async def pharmacist_get_product(token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Dược sĩ không tồn tại."
+            )
+        return SuccessResponse(
+            data=await get_approved_product(pharmacist_info.email)
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting approve product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/products/update-status", response_model=response.BaseResponse)
+async def admin_update_product_status(item: UpdateProductStatusReq, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        return await update_product_status(item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating product status", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/products/update-images", response_model=response.BaseResponse)
+async def admin_update_images(
+    product_id: str,
+    files: Optional[List[UploadFile]] = File(None),
+    #token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        return await update_product_images(product_id, files)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating images", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/products/update-images-primary", response_model=response.BaseResponse)
+async def admin_update_images_primary(
+    product_id: str,
+    file: UploadFile = File(...),
+    #token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        return await update_product_images_primary(product_id, file)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating images_primary", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/products/update-certificate-file", response_model=response.BaseResponse)
+async def admin_update_certificate_file(
+    product_id: str,
+    file: UploadFile = File(...),
+    #token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        return await update_product_certificate_file(product_id, file)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating certificate_file", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+
+@router.put("/products/update-product", response_model=response.BaseResponse)
+async def admin_update_product(item: ItemUpdateProductReq,
+                               #token: str = Depends(middleware.verify_token_admin)
+                               ):
+    try:
+        return await update_product_fields(item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/asynchronous", response_model=response.BaseResponse)
+async def get_asynchronous():
+    try:
+        result = await check_product_consistency()
+        return response.SuccessResponse(
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting asynchronous", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/search", response_model=response.BaseResponse)
+async def search_product(query: str, page: int = 1, page_size: int = 10):
+    try:
+        result = await search_products_by_name(query, page, page_size)
+        return response.SuccessResponse(
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error searching product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/import", response_model=response.BaseResponse)
+async def admin_import_products(file: Optional[UploadFile] = File(None)):
+    try:
+        if not file:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="File is required"
+            )
+        await import_products(file)
+        return response.SuccessResponse(status="success", message="Import sản phẩm thành công")
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error importing products", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/dev", response_model=response.BaseResponse)
+async def dev():
+    try:
+        result = await update_pharmacist_gender_for_all_products()
+        return response.SuccessResponse(
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error updating pharmacist gender", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

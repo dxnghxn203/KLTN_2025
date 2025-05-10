@@ -5,6 +5,8 @@ interface OrderState {
     ordersAdmin: any[];
     ordersByUser: any[];
     statistics365Days: any[];
+    allRequestOrder: any[];
+    allRequestOrderApprove: any[];
     loading: boolean;
     error: string | null;
 }
@@ -14,6 +16,8 @@ const initialState: OrderState = {
     ordersAdmin: [],
     ordersByUser: [],
     statistics365Days: [],
+    allRequestOrder: [],
+    allRequestOrderApprove: [],
     loading: false,
     error: null,
 };
@@ -137,6 +141,65 @@ export const orderSlice = createSlice({
             console.log('fetchGetStatistics365DaysFailed')
             state.loading = false;
         },
+        // fetch request prescription
+        fetchRequestPrescriptionStart(state, action: PayloadAction<any>) {
+            
+            state.loading = true;
+        },
+        fetchRequestPrescriptionSuccess(state, action: PayloadAction<any>) {
+            state.loading = false;
+        },
+        fetchRequestPrescriptionFailed(state) {
+            state.loading = false;
+        },
+         // fetch get request-order
+        fetchGetRequestOrderStart(state, action: PayloadAction<any>) {
+            // console.log('fetchGetRequestOrderStart')
+            state.loading = true;
+        },
+        fetchGetRequestOrderSuccess(state, action: PayloadAction<any>) {
+            // console.log('fetchGetRequestOrderSuccess')
+            state.allRequestOrder = action.payload
+            state.loading = false;
+        },
+        fetchGetRequestOrderFailed(state) {
+            // console.log('fetchGetRequestOrderFailed')
+            state.loading = false;
+        },
+        // fetch get approve request-order
+        fetchGetApproveRequestOrderStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetApproveRequestOrderStart')
+            state.loading = true;
+        },
+        fetchGetApproveRequestOrderSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetApproveRequestOrderSuccess')
+            state.allRequestOrderApprove = action.payload;
+            state.loading = false;
+            state.error = null;
+           
+        },
+        fetchGetApproveRequestOrderFailed(state) {
+            console.log('fetchGetApproveRequestOrderFailed')
+            state.loading = false;
+            state.error = null;
+        },
+        // fetch approve request-order
+        fetchApproveRequestOrderStart(state, action: PayloadAction<any>) {
+            console.log('fetchApproveRequestOrderStart')
+            state.loading = true;
+        },
+        fetchApproveRequestOrderSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchApproveRequestOrderSuccess')
+            state.loading = false;
+            state.error = null;
+        },
+        fetchApproveRequestOrderFailed(state) {
+            console.log('fetchApproveRequestOrderFailed')
+            state.loading = false;
+            state.error = null;
+        },
+
+
     },
 });
 
@@ -180,6 +243,23 @@ export const {
     fetchGetStatistics365DaysFailed,
     fetchGetStatistics365DaysStart,
     fetchGetStatistics365DaysSuccess,
+
+    fetchRequestPrescriptionFailed,
+    fetchRequestPrescriptionStart,
+    fetchRequestPrescriptionSuccess,
+
+    fetchGetRequestOrderFailed,
+    fetchGetRequestOrderStart,
+    fetchGetRequestOrderSuccess,
+
+    fetchGetApproveRequestOrderFailed,
+    fetchGetApproveRequestOrderStart,
+    fetchGetApproveRequestOrderSuccess,
+    
+    fetchApproveRequestOrderFailed,
+    fetchApproveRequestOrderStart,  
+    fetchApproveRequestOrderSuccess
+
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

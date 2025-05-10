@@ -3,23 +3,29 @@ import json
 import os
 import io
 from datetime import datetime, timedelta
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 import httpx
 from bson import ObjectId
 from bson.errors import InvalidId
+from dateutil.parser import parse
 from starlette import status
 from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
-from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq
-from app.entities.order.response import ItemOrderRes
+from app.core.s3 import upload_file
+from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
+    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
+from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
+from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
+from app.entities.product.response import ItemProductRes
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
-    FEE_INDEX, get_update_status_queue
+    FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
+    SENDER_COMMUNE_CODE
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
@@ -33,6 +39,7 @@ from app.models.user import get_by_id
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
 collection_name = "orders"
+request_collection_name = "orders_requests"
 
 async def get_total_orders():
     try:
@@ -124,16 +131,19 @@ async def get_tracking_order_by_order_id(order_id: str):
         logger.error(f"Failed [get_tracking_order_by_order_id]: {e}")
         return []
 
-async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List[ItemProductReq], float, float, List[str]]:
+async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[ItemProductReq], float, float, List[Dict[str, str]]]:
     total_price = 0
     weight = 0
     product_items = []
-    out_of_stock_ids = []
+    out_of_stock = []
 
     for product in products:
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
         if isinstance(product_info, response.JsonException):
-            out_of_stock_ids.append(product.product_id)
+            out_of_stock.append({
+                "product_id": product.product_id,
+                "price_id": product.price_id
+            })
             continue
         data = redis.get_product_transaction(product_id=product.product_id)
         logger.info(f"Product data from Redis: {data}")
@@ -149,7 +159,10 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
         total_requested = product.quantity * product_info.prices[0].amount + sell
 
         if total_requested > inventory:
-            out_of_stock_ids.append(product.product_id)
+            out_of_stock.append({
+                "product_id": product.product_id,
+                "price_id": product.price_id
+            })
             continue
 
         price_info = product_info.prices[0]
@@ -171,17 +184,16 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[List
         )
         product_items.append(product_item)
 
-    return product_items, total_price, weight, out_of_stock_ids
+    return product_items, total_price, weight, out_of_stock
 
 async def check_shipping_fee(
-        sender_province_code: int,
         receiver_province_code: int,
         product_price: float,
         weight: float
     ):
     try:
         route_code = await determine_route(
-                sender_code=sender_province_code,
+                sender_code=SENDER_PROVINCE_CODE,
                 receiver_code=receiver_province_code
             )
 
@@ -212,17 +224,16 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         order_id = generate_id("ORDER")
         tracking_id = f"{generate_id('TRACKING')}_V{1:03}"
 
-        product_items, product_price, weight, out_of_stock_ids = await process_order_products(item.product)
+        product_items, product_price, weight, out_of_stock = await process_order_products(item.product)
 
-        if out_of_stock_ids:
+        if out_of_stock:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Một số sản phẩm đã hết hàng",
-                data={"out_of_stock": out_of_stock_ids}
+                data={"out_of_stock": out_of_stock}
             )
 
         fee_data = await check_shipping_fee(
-            sender_province_code=item.sender_province_code,
             receiver_province_code=item.receiver_province_code,
             product_price=product_price,
             weight=weight
@@ -323,7 +334,11 @@ async def save_order_to_redis(
             shipping_fee=fee_data["shipping_fee"],
             product_fee=fee_data["product_fee"],
             total_fee=fee_data["total_fee"],
-            weight=fee_data["weight"]
+            weight=fee_data["weight"],
+            pick_from=WAREHOUSE_ADDRESS,
+            sender_province_code=SENDER_PROVINCE_CODE,
+            sender_district_code=SENDER_DISTRICT_CODE,
+            sender_commune_code=SENDER_COMMUNE_CODE,
         )
         logger.info("item", json=item_data)
 
@@ -502,4 +517,140 @@ async def get_order_invoice(order_id: str):
         )
     except Exception as e:
         logger.error(f"Failed [get_order_invoice]: {e}")
+        raise e
+
+async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, images):
+    try:
+        if not item.product or not item.product.product:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        product_items, _, _, out_of_stock = await process_order_products(item.product.product)
+
+        if out_of_stock:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm đã hết hàng",
+                data={"out_of_stock": out_of_stock}
+            )
+
+        image_list = []
+        if images:
+            image_list = [
+                ItemOrderImageReq(
+                    images_id=generate_id("IMAGES_ORDERS"),
+                    images_url=file_url,
+                ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images_orders"))
+            ]
+        logger.info(f"{image_list}")
+
+        order_request = ItemOrderForPTReq(
+            **item.model_dump(exclude={"product"}),
+            request_id=generate_id("REQUEST"),
+            product=product_items,
+            created_by=user_id,
+            images=image_list
+        )
+
+        logger.info(f"order_request: {order_request}")
+
+        collection = database.db[request_collection_name]
+        collection.insert_one(order_request.dict())
+
+        return response.BaseResponse(
+            status_code=status.HTTP_200_OK,
+            status="success",
+            message="Yêu cầu đã được tạo",
+        )
+    except Exception as e:
+        logger.error(f"Failed [request_order_prescription]: {e}")
+        raise e
+
+async def get_approve_order(email: str):
+    try:
+        collection = database.db[request_collection_name]
+        order_list = collection.find({"verified_by": {"$in": [None, "", email]}})
+        return (ItemOrderForPTRes(**order) for order in order_list)
+    except Exception as e:
+        logger.error(f"Failed [get_approve_order]: {e}")
+        raise e
+
+async def get_requested_order(user_id: str):
+    try:
+        collection = database.db[request_collection_name]
+        order_list = collection.find({"created_by": user_id})
+        return (ItemOrderForPTRes(**order) for order in order_list)
+    except Exception as e:
+        logger.error(f"Failed [get_requested_order]: {e}")
+        raise e
+
+async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes):
+    try:
+        collection = database.db[request_collection_name]
+        order_request = collection.find_one({"request_id": item.request_id})
+        if not order_request:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy yêu cầu"
+            )
+        order_request = ItemOrderForPTRes(**order_request)
+
+        if order_request.status in ["approved", "rejected"]:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Yêu cầu này đã duyệt"
+            )
+
+        if order_request.verified_by and order_request.verified_by != pharmacist.email:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không có quyền duyệt yêu cầu này"
+            )
+
+        if not item.product:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        product_items, _, _, out_of_stock = await process_order_products(item.product)
+
+        if out_of_stock:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm đã hết hàng",
+                data={"out_of_stock": out_of_stock}
+            )
+
+        collection.update_one(
+            {"request_id": item.request_id},
+            {
+                "$set": {
+                    "status": item.status,
+                    "note": item.note,
+                    "verified_by": pharmacist.email,
+                    "pharmacist_name": pharmacist.user_name
+                }
+            }
+        )
+
+        if item.status == "approved":
+            order_data = ItemOrderInReq(
+                product=item.product,
+                pick_to=InfoAddressOrderReq(**order_request.pick_to.dict()),
+                receiver_province_code=order_request.receiver_province_code,
+                receiver_district_code=order_request.receiver_district_code,
+                receiver_commune_code=order_request.receiver_commune_code,
+                payment_type="COD",
+                delivery_instruction=item.note
+            )
+
+            return await check_order(order_data, user_id=order_request.created_by)
+
+        return response.SuccessResponse(message="Duyệt yêu cầu thành công")
+
+    except Exception as e:
+        logger.error(f"Failed [approve_order]: {e}")
         raise e

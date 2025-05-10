@@ -60,7 +60,16 @@ export default function Header() {
   }, []);
 
   const handleLogout = () => {
-    logout();
+    console.log("Logout clicked");
+    logout(
+      () => {
+        toast.showToast("Đăng xuất thành công", "success");
+      },
+      (error: string) => {
+        console.error("Logout error:", error);
+        toast.showToast("Đăng xuất thất bại", "error");
+      }
+    );
     setShowDropdown(false);
   };
 

@@ -1,20 +1,29 @@
-
 export const ADMIN_ROUTES = [
-  '/dashboard',
-  '/quan-ly-nguoi-dung',
-  '/quan-ly-don-hang',
-  '/san-pham',
-  '/quan-ly-danh-muc',
-  '/dang-nhap-admin',
-  '/thong-tin-tai-khoan',
-  '/doi-mat-khau-admin',
-  '/quen-mat-khau-admin',
-  
+    '/dashboard',
+    '/quan-ly-nguoi-dung',
+    '/quan-ly-don-hang',
+    '/san-pham',
+    '/quan-ly-danh-muc',
+    '/dang-nhap-admin',
+    '/thong-tin-tai-khoan',
+    '/doi-mat-khau-admin',
+    '/quen-mat-khau',
+
+
+] as const;
+export const PHARMACIST_ROUTES = [
+    '/dashboard-duoc-si',
+    '/kiem-duyet-thuoc',
+    '/thong-tin-tai-khoan-duoc-si',
+    '/doi-mat-khau-duoc-si',
+    '/quen-mat-khau-duoc-si',
+    '/kiem-duyet-yeu-cau-tu-van-thuoc',
+    '/duyet-yeu-cau',
 ] as const;
 
 export const PARTNER_ROUTES = [
-  '/status-order',
-  '/partner/partner-order',
+    '/status-order',
+    '/partner/partner-order',
 ]
 
 export const COOKIE_TOKEN_KEY ='_x_sec_at_data'
@@ -23,7 +32,7 @@ export const COOKIE_TOKEN_KEY_PHARMACIST ='_x_sec_at_data_phar'
 
 export const COOKIE_TOKEN_EXPIRED = 60 * 60 * 24 * 7;
 export const COOKIE_SESSION_KEY = '_x_sec_at_session'
-export const COOKIE_SESSION_EXPIRED = 60*30;
+export const COOKIE_SESSION_EXPIRED = 60 * 30;
 
 export const PAYMENT_COD = 'COD';
 export const PAYMENT_TP_BANK_QR = 'TPBANK_QR'

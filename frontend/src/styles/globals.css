@@ -48,3 +48,23 @@
 .menu-item-with-dropdown:hover .mega-menu-full-dropdown {
   display: block;
 }
+/* Global CSS - ví dụ: globals.css hoặc index.css */
+
+.ql-container {
+  border: none !important;
+}
+
+.ql-toolbar {
+  border: 1px solid #e5e7eb !important; /* border-gray-300 */
+  border-top-left-radius: 0.5rem; /* rounded-t-lg */
+  border-top-right-radius: 0.5rem;
+}
+
+.ql-editor {
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #eaeaea; /* border-gray-300 */
+  border-top: none; /* Tránh trùng border với toolbar */
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}

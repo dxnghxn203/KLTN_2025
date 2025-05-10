@@ -123,6 +123,30 @@ export const userSlice = createSlice({
         fetchUpdateStatusUserFailure: (state) => {
             state.loading = false;
         },
+        // change password pharmacist
+        fetchChangePasswordPharmacistStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchChangePasswordPharmacistSuccess: (state) => {
+            state.token = true;
+            state.loading = false;
+        },
+        fetchChangePasswordPharmacistFailure: (state) => {
+            state.loading = false;
+        },
+        // forgot password pharmacist
+        fetchForgotPasswordPharmacistStart: (state, action) => {
+            console.log("fetchForgotPasswordPharmacistStart")
+            state.loading = true;
+        },
+        fetchForgotPasswordPharmacistSuccess: (state) => {
+            console.log("fetchForgotPasswordPharmacistSuccess")
+            state.loading = false;
+        },
+        fetchForgotPasswordPharmacistFailure: (state) => {
+            console.log("fetchForgotPasswordPharmacistFailure")
+            state.loading = false;
+        },
 
     },
 });
@@ -163,6 +187,14 @@ export const {
     fetchUpdateStatusUserFailure,
     fetchUpdateStatusUserStart,
     fetchUpdateStatusUserSuccess,
+
+    fetchChangePasswordPharmacistFailure,
+    fetchChangePasswordPharmacistStart,
+    fetchChangePasswordPharmacistSuccess,
+
+    fetchForgotPasswordPharmacistFailure,
+    fetchForgotPasswordPharmacistStart,
+    fetchForgotPasswordPharmacistSuccess,
 
 } = userSlice.actions;
 

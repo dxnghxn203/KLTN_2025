@@ -1,18 +1,23 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, UploadFile, File
+from pyfa_converter_v2 import BodyDepends
 from starlette.responses import FileResponse
+from typing import Optional, List
 
 from app.core import logger, response
-from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq
+from app.entities.order.request import ItemOrderInReq, OrderRequest, ItemUpdateStatusReq, ItemOrderForPTInReq, \
+    ItemOrderApproveReq
+from app.helpers.constant import PAYMENT_COD
 from app.middleware import middleware
-from app.models import order, user
+from app.models import order, user, pharmacist
+from app.models.order import request_collection_name
 
 router = APIRouter()
 
 @router.post("/order/check_shipping_fee", response_model=response.BaseResponse)
 async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
     try:
-        _, total_price, weight, out_of_stock_ids = await order.process_order_products(item.product)
-        if out_of_stock_ids:
+        _, total_price, weight, out_of_stock = await order.process_order_products(item.product)
+        if out_of_stock:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Một số sản phẩm đã hết hàng",
@@ -22,12 +27,11 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                     "delivery_time": "",
                     "weight": 0,
                     "total_fee": 0,
-                    "out_of_stock_ids": out_of_stock_ids
+                    "out_of_stock": out_of_stock
                 }
             )
         return response.SuccessResponse(
             data=await order.check_shipping_fee(
-                item.sender_province_code,
                 item.receiver_province_code,
                 total_price,
                 weight
@@ -46,9 +50,19 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
 async def check_order(item: ItemOrderInReq, session: str= None, token: str = Depends(middleware.verify_token_optional)):
     try:
         user_id = session
+        is_session_user = True
+
         if token:
             user_info = await user.get_current(token)
             user_id = user_info.id
+            is_session_user = False
+
+        if is_session_user and item.payment_type == PAYMENT_COD:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Vui lòng đăng nhập để sử dụng phương thức thanh toán COD"
+            )
+
         return await order.check_order(item, user_id)
     except response.JsonException as je:
         raise je
@@ -194,6 +208,91 @@ async def get_invoice(order_id: str):
         raise je
     except Exception as e:
         logger.error(f"Error getting invoice: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/order/request-prescription", response_model=response.BaseResponse)
+async def request_prescription(item: ItemOrderForPTInReq = BodyDepends(ItemOrderForPTInReq),
+                               images: Optional[List[UploadFile]] = File(None),
+                               token: str = Depends(middleware.verify_token)):
+    try:
+        user_info = await user.get_current(token)
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="User not found"
+            )
+        logger.info(f"item: {item}")
+        return await order.request_order_prescription(item, user_info.id, images)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error requesting prescription: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/order/approve-prescription", response_model=response.BaseResponse)
+async def get_approve_prescription(token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Dược sĩ không tồn tại"
+            )
+        result = await order.get_approve_order(pharmacist_info.email)
+        return response.SuccessResponse(
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting approve prescription: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/order/request-order", response_model=response.BaseResponse)
+async def get_request_order(token: str = Depends(middleware.verify_token)):
+    try:
+        user_info = await user.get_current(token)
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="User not found"
+            )
+        result = await order.get_requested_order(user_info.id)
+        return response.SuccessResponse(
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting request order: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/order/approve", response_model=response.BaseResponse)
+async def approve_order(item: ItemOrderApproveReq, token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Pharmacist not found"
+            )
+        return await order.approve_order(item, pharmacist_info)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error accepting request prescription: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

@@ -8,7 +8,9 @@ interface ProductState {
     productsGetRecentlyViewed: any[];
     productProductFeatured: any[];
     productsBestDeal: any[];
+    productApproved: any[];
     product: any;
+    searchResult: any[];
     loading: boolean;
     error: string | null;
 }
@@ -21,7 +23,9 @@ const initialState: ProductState = {
     productProductFeatured: [],
     productsRelated: [],
     productsBestDeal: [],
+    productApproved: [],
     product: null,
+    searchResult: [],
     loading: false,
     error: null,
 };
@@ -148,6 +152,124 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // fetch product approved
+        fetchProductApprovedStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchProductApprovedSuccess(state, action: PayloadAction<any[]>) {
+            state.productApproved = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchProductApprovedFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        // approve product by pharmacist
+        fetchApproveProductByPharmacistStart(state, action: PayloadAction<any>) {
+            console.log("fetchApproveProductByPharmacistStart", action.payload);
+            state.loading = true;
+        },
+        fetchApproveProductByPharmacistSuccess(state, action: PayloadAction<any[]>) {
+          
+            console.log("fetchApproveProductByPharmacistSuccess", action.payload);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchApproveProductByPharmacistFailed(state, action: PayloadAction<string>) {
+            console.log("fetchApproveProductByPharmacistFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update product
+        fetchUpdateProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // add media product
+        fetchAddMediaProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchAddMediaProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAddMediaProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update images
+        fetchUpdateImagesProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateImagesProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateImagesProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update images primary
+        fetchUpdateImagesPrimaryProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateImagesPrimaryProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateImagesPrimaryProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch update certificate file
+        fetchUpdateCertificateFileProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchUpdateCertificateFileProductSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchUpdateCertificateFileProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch search product 
+        fetchSearchProductStart(state, action: PayloadAction<any>) {
+            console.log("fetchSearchProductStart", action.payload);
+            state.loading = true;
+        },
+        fetchSearchProductSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchSearchProductSuccess", action.payload);
+            state.searchResult = action.payload;
+            console.log("payload", action.payload);
+            // console.log("state.searchResult", state.searchResult);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchSearchProductFailed(state, action: PayloadAction<string>) {
+            console.log("fetchSearchProductFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        //fetch clear search result
+        fetchClearSearchResult(state) {
+            state.searchResult = [];
+        },
+
+        
+        
+
+
     },
 });
 
@@ -187,6 +309,39 @@ export const {
     fetchDeleteProductFailed,
     fetchDeleteProductStart,
     fetchDeleteProductSuccess,
+
+    fetchProductApprovedFailed,
+    fetchProductApprovedStart,
+    fetchProductApprovedSuccess,
+
+    fetchApproveProductByPharmacistFailed,
+    fetchApproveProductByPharmacistStart,
+    fetchApproveProductByPharmacistSuccess,
+
+    fetchUpdateProductFailed,
+    fetchUpdateProductStart,
+    fetchUpdateProductSuccess,
+
+    fetchAddMediaProductFailed,
+    fetchAddMediaProductStart,
+    fetchAddMediaProductSuccess,
+
+    fetchUpdateCertificateFileProductFailed,
+    fetchUpdateCertificateFileProductStart,
+    fetchUpdateCertificateFileProductSuccess,
+
+    fetchUpdateImagesPrimaryProductFailed,
+    fetchUpdateImagesPrimaryProductStart,
+    fetchUpdateImagesPrimaryProductSuccess,
+
+    fetchUpdateImagesProductFailed,
+    fetchUpdateImagesProductStart,
+    fetchUpdateImagesProductSuccess,
+
+    fetchSearchProductFailed,
+    fetchSearchProductStart,
+    fetchSearchProductSuccess,
+    fetchClearSearchResult,
 
 
     

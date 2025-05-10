@@ -66,8 +66,10 @@ def upload_file(file, folder: str):
         return file_url
     except NoCredentialsError:
         logger.error("S3 Credentials not available.")
+        return None
     except Exception as e:
         logger.error(f"S3 Failed to upload file: {str(e)}")
+        return None
 
 def upload_any_file(file, folder: str):
     try:

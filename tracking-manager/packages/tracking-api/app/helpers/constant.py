@@ -2,6 +2,8 @@ import random
 import string
 from datetime import datetime
 
+from app.entities.order.request import InfoAddressOrderReq, AddressOrderReq
+
 
 def get_create_order_queue():
     return "CREATE_ORDER"
@@ -38,3 +40,19 @@ special_cities = {
 	1:  True, #TP. Hà Nội
 	48: True, #TP. Đà Nẵng
 }
+
+WAREHOUSE_ADDRESS = InfoAddressOrderReq(
+    name="Kho trung tâm",
+    phone_number="0937837564",
+    email="tuannguyen23823@gmail.com",
+    address=AddressOrderReq(
+        address="Đường 1",
+        ward="Phường 26",
+        district="Quận Bình Thạnh",
+        province="Thành phố Hồ Chí Minh"
+    )
+)
+
+SENDER_PROVINCE_CODE = 79
+SENDER_DISTRICT_CODE = 765
+SENDER_COMMUNE_CODE = 26914

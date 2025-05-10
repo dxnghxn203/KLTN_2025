@@ -36,8 +36,16 @@ import {
     fetchUpdateStatusUserSuccess,
     fetchUpdateStatusUserFailure,
     fetchUpdateStatusUserStart,
+
+    fetchChangePasswordPharmacistFailure,
+    fetchChangePasswordPharmacistStart,
+    fetchChangePasswordPharmacistSuccess,
+    fetchForgotPasswordPharmacistStart,
+    fetchForgotPasswordPharmacistFailure,
+    fetchForgotPasswordPharmacistSuccess
+
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser } from "@/services/userService";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -246,6 +254,58 @@ function* updateStatusUserWorkerSaga(action: any): Generator<any, void, any> {
         yield put(fetchUpdateStatusUserFailure());
     }
 }
+
+function* changePasswordPharmacistWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+        old_password,
+        new_password,
+    } = payload;    
+    const body = {
+        old_password,
+        new_password
+    };
+    try {
+        const response = yield call(changePasswordPharmacist, body);
+        if (response.status_code === 200) {
+            yield put(fetchChangePasswordPharmacistSuccess());
+            onSuccess(response.message);
+        } else {
+            yield put(fetchChangePasswordPharmacistFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        onFailure(error?.response?.data?.message);
+        yield put(fetchChangePasswordPharmacistFailure());
+    }
+}
+
+function* forgotPasswordPharmacistWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+        email
+    } = payload;
+    const body = {
+        email
+    };
+    try {
+        const response = yield call(forgotPasswordPharmacist, body);
+        if (response.status_code === 200) {
+            yield put(fetchForgotPasswordPharmacistSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchForgotPasswordPharmacistFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        onFailure(error?.response?.data?.message);
+        yield put(fetchForgotPasswordPharmacistFailure());
+    }
+}
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
@@ -256,5 +316,7 @@ export function* userSaga() {
     yield takeLatest(fetchChangePasswordAdminStart.type, userChangePasswordAdminWorkerSaga);
     yield takeLatest(fetchForgotPasswordAdminStart.type, userForgotPasswordAdminWorkerSaga);
     yield takeLatest(fetchUpdateStatusUserStart.type, updateStatusUserWorkerSaga);
+    yield takeLatest(fetchChangePasswordPharmacistStart.type, changePasswordPharmacistWorkerSaga);
+    yield takeLatest(fetchForgotPasswordPharmacistStart.type, forgotPasswordPharmacistWorkerSaga);
 }
 

@@ -17,7 +17,7 @@ export default function AdminLayout({
   if (
     pathname === "/dang-nhap-admin" ||
     pathname === "/dang-ky-admin" ||
-    pathname === "/quen-mat-khau-admin"
+    pathname === "/quen-mat-khau-role"
   ) {
     return <>{children}</>;
   }

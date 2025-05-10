@@ -1,10 +1,9 @@
-import datetime
+from datetime import datetime
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
 from app.entities.product.response import ItemProductRes
-
 
 class AddressOrderRes(BaseModel):
     address: Optional[Union[str, None]] = None
@@ -35,6 +34,7 @@ class ItemOrderRes(BaseModel):
     receiver_district_code: int = 0
     receiver_commune_code: int = 0
     created_by: Optional[Union[str, None]] = None
+    delivery_time: Optional[Union[datetime, None]] = None
     delivery_instruction: Optional[Union[str, None]] = None
     payment_type: Optional[Union[str, None]] = None
     payment_status: Optional[Union[str, None]] = None
@@ -42,11 +42,29 @@ class ItemOrderRes(BaseModel):
     total_fee: float = 0
     shipping_fee: float = 0
     product_fee: float = 0
-    created_date: Optional[Union[datetime.datetime, None]] = None
-    updated_date: Optional[Union[datetime.datetime, None]] = None
+    created_date: Optional[Union[datetime, None]] = None
+    updated_date: Optional[Union[datetime, None]] = None
 
     @classmethod
     def from_mongo(cls, data):
         if '_id' in data:
             data['_id'] = str(data.get('_id'))
         return cls(**data)
+
+class ItemOrderImageRes(BaseModel):
+    images_id: Optional[Union[str, None]] = None
+    images_url: Optional[Union[str, None]] = None
+
+class ItemOrderForPTRes(BaseModel):
+    request_id: Optional[Union[str, None]] = None
+    status: Optional[Union[str, None]] = None
+    product: List[ItemProductRes]
+    pick_to: InfoAddressOrderRes
+    receiver_province_code: int = 0
+    receiver_district_code: int = 0
+    receiver_commune_code: int = 0
+    created_by: Optional[Union[str, None]] = None
+    verified_by: Optional[Union[str, None]] = None
+    pharmacist_name: Optional[Union[str, None]] = None
+    note : Optional[Union[str, None]] = None
+    images: List[Optional[Union[ItemOrderImageRes, None]]] = None

@@ -1,4 +1,4 @@
-import { call, put, takeLatest } from 'redux-saga/effects';
+import {call, put, takeLatest} from 'redux-saga/effects';
 import * as authService from '@/services/authService';
 import {
     googleLoginStart,
@@ -13,12 +13,15 @@ import {
     loginAdminStart,
     loginAdminSuccess,
     loginAdminFailure,
+    loginPharmacistStart,
+    loginPharmacistSuccess,
+    loginPharmacistFailure,
 } from './authSlice';
-import { getSession, signIn, signOut } from 'next-auth/react';
-import { PayloadAction } from '@reduxjs/toolkit';
-import { removeToken, setToken, getToken } from '@/utils/cookie';
-import { getDeviceId } from '@/utils/deviceId';
-import { setClientToken } from '@/utils/configs/axiosClient';
+import {getSession, signIn, signOut} from 'next-auth/react';
+import {PayloadAction} from '@reduxjs/toolkit';
+import {removeToken, setToken, getToken, setTokenAdmin, setTokenPharmacist} from '@/utils/cookie';
+import {getDeviceId} from '@/utils/deviceId';
+import {setClientToken} from '@/utils/configs/axiosClient';
 
 // Google Login
 function* handleGoogleLogin(): Generator<any, void, any> {
@@ -28,7 +31,7 @@ function* handleGoogleLogin(): Generator<any, void, any> {
             prompt: "select_account"
         });
 
-        if (signInGG?.error ) {
+        if (signInGG?.error) {
             yield put(googleLoginFailure('Đăng nhập bằng Google thất bại'));
         } else {
             const session = yield call(getSession)
@@ -42,10 +45,12 @@ function* handleGoogleLogin(): Generator<any, void, any> {
 // Login with credentials
 function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 
-    const { payload } = action;
+    const {payload} = action;
     const {
-        onSuccess = () => { },
-        onFailed = () => { },
+        onSuccess = () => {
+        },
+        onFailed = () => {
+        },
         ...credentials
     } = payload;
 
@@ -60,8 +65,6 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
         const response = yield call(authService.login, form);
         if (response.status_code === 200) {
             onSuccess();
-            console.log('Login success:', response);
-            setClientToken(response?.token);
             setToken(response?.token);
             yield put(
                 loginSuccess({
@@ -82,24 +85,30 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 }
 
 // Logout
-function* handleLogout(): Generator<any, void, any> {
+function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        onSuccess = () => {
+        },
+        onFailed = () => {
+        },
+    } = payload;
+    
     try {
-        const response = yield call(signOut, { redirect: false });
+        const response = yield call(signOut, {redirect: false});
         const token = getToken();
         if (token) {
             yield call(authService.logout, token);
-            
         }
         removeToken();
-        yield put(logoutSuccess());
-
-        // if (typeof window !== 'undefined') {
-        //     window.location.href = '/dang-nhap';
-        // }
+        onSuccess();
+        yield put(logoutSuccess(
+            
+        ));
     } catch (error: any) {
         console.log('Logout error:', error);
+        onFailed(error?.message);
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
-        // Still remove token and redirect even if server request fails
         localStorage.removeItem('token');
         if (typeof window !== 'undefined') {
             window.location.href = '/';
@@ -109,10 +118,12 @@ function* handleLogout(): Generator<any, void, any> {
 
 // loginAdmin
 function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any> {
-    const { payload } = action;
+    const {payload} = action;
     const {
-        onSuccess = () => { },
-        onFailure  = () => { },
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
         ...credentials
     } = payload;
     const device_id = getDeviceId();
@@ -124,25 +135,58 @@ function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any
         const response = yield call(authService.loginAdmin, form);
         if (response.success) {
             onSuccess(response?.message);
-            setClientToken(response?.token);
-             setToken(response?.token);
+            setTokenAdmin(response?.token);
             yield put(
                 loginAdminSuccess({
                     admin: response?.admin || null,
                     token: response?.token || null,
-                    
+
                 })
             );
-             console.log('Login admin succddddess:', response.admin);
         } else {
-            console.log('Login failed:', response.message);
-            onFailure (response.message);
+            onFailure(response.message);
             yield put(loginAdminFailure(response.message));
         }
-    }
-    catch (error: any) {
-        onFailure (error?.message || 'Đăng nhập thất bại');
+    } catch (error: any) {
+        onFailure(error?.message || 'Đăng nhập thất bại');
         yield put(loginAdminFailure(error.message || 'Đăng nhập thất bại'));
+    }
+}
+
+// loginPharmacist
+function* handleLoginPharmacist(action: PayloadAction<any>): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
+        ...credentials
+    } = payload;
+    const device_id = getDeviceId();
+    const form = new FormData();
+    form.append('email', credentials.email);
+    form.append('password', credentials.password);
+    form.append('device_id', device_id);
+    try {
+        const response = yield call(authService.loginPharmacist, form);
+        if (response.success) {
+            onSuccess(response?.message);
+            setTokenPharmacist(response?.token);
+            yield put(
+                loginPharmacistSuccess({
+                    pharmacist: response?.pharmacist || null,
+                    token: response?.token || null,
+
+                })
+            );
+        } else {
+            onFailure(response.message);
+            yield put(loginPharmacistFailure(response.message));
+        }
+    } catch (error: any) {
+        onFailure(error?.message || 'Đăng nhập thất bại');
+        yield put(loginPharmacistFailure(error.message || 'Đăng nhập thất bại'));
     }
 }
 
@@ -152,4 +196,5 @@ export function* authSaga() {
     yield takeLatest(loginStart.type, handleLogin);
     yield takeLatest(logoutStart.type, handleLogout);
     yield takeLatest(loginAdminStart.type, handleLoginAdmin);
+    yield takeLatest(loginPharmacistStart.type, handleLoginPharmacist);
 }

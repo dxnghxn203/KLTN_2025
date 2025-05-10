@@ -19,6 +19,7 @@ interface AuthResponse {
     token?: string;
     message?: string;
     admin?: any;
+    pharmacist?: any;
 }
 
 export interface User {
@@ -28,6 +29,7 @@ export interface User {
     image?: string;
     role?: string;
 }
+
 export interface Admin {
     id: string;
     email: string;
@@ -39,8 +41,9 @@ export interface Admin {
 export interface AuthState {
     user: any | null;
     admin: any | null;
+    pharmacist: any | null;
     isAdmin: boolean;
-    token: string | null;
+    isPharmacist: boolean;
     isAuthenticated: boolean;
     loading: boolean;
     error: string | null;

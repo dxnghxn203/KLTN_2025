@@ -1,6 +1,32 @@
-import { fetchAddProductStart, fetchAllProductAdminStart, fetchAllProductBestDealStart, fetchAllProductGetProductFeaturedStart, fetchAllProductGetRecentlyViewedStart, fetchAllProductRelatedStart, fetchAllProductTopSellingStart, fetchDeleteProductStart, fetchProductBySlugStart, selectProductAdmin, selectProductBySlug, selectProductGetRecentlyViewed, selectProductRelated, selectProductTopSelling } from "@/store";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {
+    fetchAddMediaProductStart,
+    fetchAddProductStart,
+    fetchAllProductAdminStart,
+    fetchAllProductBestDealStart,
+    fetchAllProductGetProductFeaturedStart,
+    fetchAllProductGetRecentlyViewedStart,
+    fetchAllProductRelatedStart,
+    fetchAllProductTopSellingStart,
+    fetchApproveProductByPharmacistStart,
+    fetchDeleteProductStart,
+    fetchProductApprovedStart,
+    fetchProductBySlugStart,
+    fetchSearchProductStart,
+    fetchUpdateCertificateFileProductStart,
+    fetchUpdateImagesPrimaryProductStart,
+    fetchUpdateImagesProductStart,
+    fetchUpdateProductStart,
+    selectProductAdmin,
+    selectProductApproved,
+    selectProductBySlug,
+    selectProductGetRecentlyViewed,
+    selectProductRelated,
+    selectProductTopSelling,
+    selectSearchProduct,
+    fetchClearSearchResult,
+} from "@/store";
+import {useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 
 export function useProduct() {
     const dispatch = useDispatch();
@@ -11,19 +37,21 @@ export function useProduct() {
     const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
     const productGetFeatured = useSelector(selectProductRelated);
     const productBestDeal = useSelector(selectProductTopSelling);
+    const productApproved = useSelector(selectProductApproved);
+    const searchResult = useSelector(selectSearchProduct);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
     const [top_n, setTopN] = useState(10);
 
-    const fetchProductBySlug = async (slug: string, onSuccess: () => void, onFailed: () => void) => {
+    const fetchProductBySlug = async (slug: string, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchProductBySlugStart({
             slug: slug,
             onSucces: onSuccess,
             onFailed: onFailed
         }));
     }
-    
+
     const fetchProductFeatured = (
         mainCategory: string | null,
         subCategory: string | null,
@@ -47,7 +75,7 @@ export function useProduct() {
     const getAllProductsAdmin = () => {
         dispatch(fetchAllProductAdminStart({
             page: page,
-            pageSize: pageSize,
+            page_size: pageSize,
         }))
     };
 
@@ -93,6 +121,120 @@ export function useProduct() {
         }))
     }
 
+    const fetchProductApproved = () => {
+        dispatch(fetchProductApprovedStart({}))
+    }
+
+    const fetchApproveProductByPharmacist = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchApproveProductByPharmacistStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    };
+
+    const fetchUpdateProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+// <<<<<<< HEAD
+//             fetchApproveProductByPharmacistStart({
+//                 ...params,
+//                 onSuccess,
+//                 onFailure: onFailed
+//             })
+//         );
+//     }
+// =======
+            fetchUpdateProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+
+    const fetchAddMediaProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchAddMediaProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+
+    const fetchUpdateCertificateFileProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchUpdateCertificateFileProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+
+    const fetchUpdateImagesPrimaryProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchUpdateImagesPrimaryProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+
+    const fetchUpdateImagesProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchUpdateImagesProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+
+    const fetchSearchProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchSearchProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+    const fetchClearSearch = () => {
+        dispatch(fetchClearSearchResult())
+    }
+    
 
 
     return {
@@ -116,6 +258,21 @@ export function useProduct() {
         productBestDeal,
         fetchProductBestDeal,
         deleteProduct,
+        fetchProductApproved,
+        productApproved,
+        fetchApproveProductByPharmacist,
+
+        fetchUpdateProduct,
+        fetchAddMediaProduct,
+
+        fetchUpdateCertificateFileProduct,
+        fetchUpdateImagesPrimaryProduct,
+        fetchUpdateImagesProduct,
+
+        fetchSearchProduct,
+        searchResult,
+        fetchClearSearch,
+
     };
 }
 

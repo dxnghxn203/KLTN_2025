@@ -1,5 +1,6 @@
 import json
 
+from fastapi import UploadFile
 from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
 
@@ -117,31 +118,6 @@ class ListIngredientDBReq(BaseModel):
             return data
         raise ValueError("Invalid ListIngredientDBReq format")
 
-class ItemFullDescriptionDBReq(BaseModel):
-    title: str = ""
-    content: str = ""
-
-    @model_validator(mode="before")
-    @classmethod
-    def to_py_dict(cls, data):
-        if isinstance(data, str):
-            return json.loads(data)
-        elif isinstance(data, dict):
-            return data
-        raise ValueError("Invalid ItemFullDescriptionDBReq format")
-
-class ListFullDescriptionDBReq(BaseModel):
-    full_descriptions: List[ItemFullDescriptionDBReq]
-
-    @model_validator(mode="before")
-    @classmethod
-    def to_py_dict(cls, data):
-        if isinstance(data, str):
-            return json.loads(data)
-        elif isinstance(data, dict):
-            return data
-        raise ValueError("Invalid ListIngredientDBReq format")
-
 class ItemManufacturerDBReq(BaseModel):
     manufacture_name: str = ""
     manufacture_address: str = ""
@@ -166,7 +142,7 @@ class ItemProductDBReq(BaseModel):
     delivery: int = 0
     slug: str = ""
     description: str = ""
-    full_descriptions: List[ItemFullDescriptionDBReq] = None
+    full_descriptions: str = ""
     images_primary: str = ""
     images: List[ItemImageDBReq] = None
     category: ItemCategoryDBReq
@@ -182,9 +158,13 @@ class ItemProductDBReq(BaseModel):
     brand: str = ""
     registration_number: str = ""
     certificate_file: str = ""
-    active: bool = False
+    active: bool = True
     prescription_required: bool = False
     verified_by: str = ""
+    pharmacist_name: str = ""
+    pharmacist_gender: str = ""
+    is_approved: bool = False
+    rejected_note: str = ""
 
 class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")
@@ -193,7 +173,7 @@ class ItemProductDBInReq(BaseModel):
     inventory: Optional[int] = Field(default=0)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
-    full_description: Optional[ListFullDescriptionDBReq] = Field(None)
+    full_descriptions: Optional[str] = Field(default="")
     category: Optional[ItemCategoryDBInReq] = Field(None)
     origin: Optional[str] = Field(default="")
     ingredients: Optional[ListIngredientDBReq] = Field(None)
@@ -206,6 +186,7 @@ class ItemProductDBInReq(BaseModel):
     dosage_form: Optional[str] = Field(default="")
     brand: Optional[str] = Field(default="")
     prescription_required: bool = False
+    registration_number: Optional[str] = Field(default="")
 
 class UpdateCategoryReq(BaseModel):
     product_id: str = ""
@@ -215,3 +196,41 @@ class UpdateCategoryReq(BaseModel):
 
 class ApproveProductReq(BaseModel):
     product_id: str = ""
+    rejected_note: str = ""
+    is_approved: bool = False
+
+class UpdateProductStatusReq(BaseModel):
+    product_id: str = ""
+    status: bool = False
+
+class AddProductMediaReq(BaseModel):
+    product_id: str = ""
+    media_type: str = ""
+
+class DeleteProductMediaReq(BaseModel):
+    product_id: Optional[str] = Field(default="")
+    media_type: Optional[str] = Field(default="")
+    target_urls: Optional[List[str]] = Field(default=None)
+
+class ItemUpdateProductReq(BaseModel):
+    product_id: Optional[str] = Field(default="")
+    product_name: Optional[str] = Field(default="")
+    name_primary: Optional[str] = Field(default="")
+    prices: Optional[ListPriceDBInReq] = Field(None)
+    inventory: Optional[int] = Field(default=0)
+    slug: Optional[str] = Field(default="")
+    description: Optional[str] = Field(default="")
+    full_descriptions: Optional[str] = Field(default="")
+    category: Optional[ItemCategoryDBInReq] = Field(None)
+    origin: Optional[str] = Field(default="")
+    ingredients: Optional[ListIngredientDBReq] = Field(None)
+    uses: Optional[str] = Field(default="")
+    dosage: Optional[str] = Field(default="")
+    side_effects: Optional[str] = Field(default="")
+    precautions: Optional[str] = Field(default="")
+    storage: Optional[str] = Field(default="")
+    manufacturer: Optional[ItemManufacturerDBReq] = Field(None)
+    dosage_form: Optional[str] = Field(default="")
+    brand: Optional[str] = Field(default="")
+    prescription_required: bool = False
+    registration_number: Optional[str] = Field(default="")

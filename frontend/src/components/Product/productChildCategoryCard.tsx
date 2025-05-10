@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { generateRandomId } from "@/utils/string";
 import { ProductData } from "@/types/product";
+import { FaStar } from "react-icons/fa6";
 
 interface ProductChildCategoryCardProps {
   childCategory: string;
@@ -53,8 +54,10 @@ const ProductChildCategoryCard: React.FC<ProductChildCategoryCardProps> = ({
               <span className="font-normal text-[#A7A8B0]">
                 {mainCategoryName}
               </span>
-              <div className="flex items-center">
-                <span className="text-lg">⭐</span>
+              <div className="flex items-center space-x-1">
+                <span>
+                  <FaStar className="text-[#FFD700]" />
+                </span>
                 <span className="font-normal text-[#A7A8B0]">
                   {products?.rating?.toFixed(1)}
                 </span>
