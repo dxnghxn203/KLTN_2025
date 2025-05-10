@@ -187,7 +187,8 @@ export const getOrderByUserId = async () => {
 export const callWebhook = async (data: any) => {
     try {
         const verify_token = process.env.NEXT_PUBLIC_WEBHOOK_TOKEN;
-        const response: any = await axiosClient.post(`https://kltn-2025.onrender.com/api/v1/webhook/shipment/status?verify_token=${verify_token}`, data);
+        const host_hook = process.env.NEXT_PUBLIC_HOST_HOOK;
+        const response: any = await axiosClient.post(`${host_hook}/api/v1/webhook/shipment/status?verify_token=${verify_token}`, data);
         return response;
     } catch (error) {
         return {
