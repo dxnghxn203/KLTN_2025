@@ -36,6 +36,7 @@ export default function Header() {
   );
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const toast = useToast();
+  console.log("user", user);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

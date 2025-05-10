@@ -87,6 +87,7 @@ const LocationCheckout = ({
                 </div>
                 <button
                   className="flex items-center justify-center text-[#0053E2] px-3 py-1 rounded-full text-[14px] transition"
+                  type="button"
                   onClick={(e) => {
                     setOpenModalLocation(true);
                   }}
@@ -116,6 +117,7 @@ const LocationCheckout = ({
                 onClick={(e) => {
                   setOpenModalLocation(true);
                 }}
+                type="button"
               >
                 Chọn địa chỉ
                 <IoChevronForward className="ml-1 text-[#0053E2] text-lg" />
@@ -135,6 +137,7 @@ const LocationCheckout = ({
             onClick={(e) => {
               setOpenModalLocation(true);
             }}
+            type="button"
           >
             Thêm địa chỉ
             <IoChevronForward className="mr-1 text-[#0053E2] text-lg" />

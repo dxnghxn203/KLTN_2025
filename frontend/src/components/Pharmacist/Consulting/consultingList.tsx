@@ -152,7 +152,7 @@ const ConsultingList = () => {
                       </td>
 
                       <td className="py-4 pl-4 text-center relative">
-                        {["approve", "rejected"].includes(request.status) ? (
+                        {["approved", "rejected"].includes(request.status) ? (
                           <button
                             className="py-2 font-medium flex items-center gap-1 text-sm text-gray-500"
                             onClick={() => {

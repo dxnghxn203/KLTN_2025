@@ -48,13 +48,13 @@ const ProductSubCategoryCard: React.FC<ProductSubCategoryCardProps> = ({
           {/* Thông tin sản phẩm */}
           <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
             {/* Category + Rating */}
-            <div className="flex justify-between text-[10px] mb-2 items-center">
+            <div className="flex justify-between mb-2 items-center">
               <span className="font-normal text-[#A7A8B0] ">
                 {mainCategoryName}
               </span>
               <div className="flex items-center space-x-1">
                 <span>
-                  <FaStar className="text-[#FFD700]" />
+                  <FaStar className="text-[#FFD700] text-base" />
                 </span>
                 <span className="font-normal text-[#A7A8B0]">
                   {products?.rating?.toFixed(1)}
@@ -67,33 +67,51 @@ const ProductSubCategoryCard: React.FC<ProductSubCategoryCardProps> = ({
               {products?.name_primary}
             </div>
 
-            {/* Giá sản phẩm */}
-            <div className="mt-2">
-              <div
-                className={`text-sm text-zinc-400 line-through ${
-                  products?.prices[0]?.original_price &&
-                  products?.prices[0]?.original_price !==
-                    products?.prices[0]?.price
-                    ? "opacity-100"
-                    : "opacity-0"
-                }`}
-              >
-                {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}đ
+            {!products?.prescription_required && (
+              <div className="mt-2">
+                <div
+                  className={`text-sm text-zinc-400 line-through ${
+                    products?.prices[0]?.original_price &&
+                    products?.prices[0]?.original_price !==
+                      products?.prices[0]?.price
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                >
+                  {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}
+                  đ
+                </div>
+                <div className="text-lg font-bold text-[#0053E2]">
+                  {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
+                  {products?.prices[0]?.unit}
+                </div>
               </div>
-              <div className="text-lg font-bold text-[#0053E2]">
-                {products?.prices[0]?.price.toLocaleString("vi-VN")}đ/
-                {products?.prices[0]?.unit}
-              </div>
-            </div>
+            )}
 
             {/* Nút chọn sản phẩm */}
             <div className="mt-2 flex justify-center">
-              <button
-                className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
-                onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
-              >
-                + Chọn sản phẩm
-              </button>
+              {products?.prescription_required ? (
+                <div className="flex flex-col justify-start w-full">
+                  <p className="text-[#A7A8B0] text-sm font-medium">
+                    Cần tư vấn từ dược sĩ
+                  </p>
+                  <button
+                    className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
+                    onClick={() =>
+                      (window.location.href = `/chi-tiet-san-pham/${slug}`)
+                    }
+                  >
+                    Xem chi tiết
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
+                  onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
+                >
+                  + Chọn sản phẩm
+                </button>
+              )}
             </div>
           </div>
         </div>

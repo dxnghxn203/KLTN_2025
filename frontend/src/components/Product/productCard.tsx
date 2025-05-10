@@ -38,13 +38,13 @@ const ProductCard = ({ product }: { product: any }) => {
             </Link>
 
             <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
-              <div className="flex justify-between items-center text-xs mb-5">
-                <span className="font-normal text-[#A7A8B0]">
+              <div className="flex justify-between items-center mb-5">
+                <span className="font-normal text-[#A7A8B0] ">
                   {product?.category?.main_category_name}
                 </span>
                 <div className="flex items-center space-x-1">
                   <span>
-                    <FaStar className="text-[#FFD700]" />
+                    <FaStar className="text-[#FFD700] text-base" />
                   </span>
                   <span className="font-normal text-[#A7A8B0]">
                     {product?.rating?.toFixed(1)}

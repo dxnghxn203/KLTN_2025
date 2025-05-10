@@ -310,6 +310,7 @@ export default function RequestDetailPage() {
               </div>
               <button
                 className="text-sm text-blue-700 bg-[#EAEFFA] w-full py-3.5 rounded-full flex items-center justify-center space-x-2 font-semibold"
+                type="button"
                 onClick={() => setIsOpen(true)}
               >
                 + Thêm sản phẩm/thuốc

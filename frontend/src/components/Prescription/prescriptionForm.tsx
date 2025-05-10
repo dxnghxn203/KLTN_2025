@@ -11,6 +11,7 @@ import LocationCheckout from "../Checkout/locationCheckout";
 import SearchProductDialog from "../Dialog/searchProductDialog";
 import { useOrder } from "@/hooks/useOrder";
 import React from "react";
+import Link from "next/link";
 
 const PrescriptionForm = () => {
   const { fetchRequestPrescription } = useOrder();
@@ -567,10 +568,18 @@ const PrescriptionForm = () => {
               </div>
             </div>
             <div className="bg-[#F5F7F9] p-4 rounded-xl w-full text-sm items-center flex justify-center space-x-2">
-              <button className="text-blue-700 font-medium flex">
-                <FaFilePrescription className="text-xl mr-2" />
-                Xem lại đơn thuốc của tôi
-              </button>
+              <Link
+                href="/ca-nhan/don-thuoc-cua-toi"
+                className="flex items-center justify-center w-full"
+              >
+                <button
+                  className="text-blue-700 font-medium flex"
+                  type="button"
+                >
+                  <FaFilePrescription className="text-xl mr-2" />
+                  Xem lại đơn thuốc của tôi
+                </button>
+              </Link>
             </div>
           </div>
         </form>

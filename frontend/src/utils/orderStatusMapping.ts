@@ -58,7 +58,7 @@ export const ORDER_STATUS_COLORS = {
     // Tailwind CSS color classes
     "created": {
         bg: "bg-blue-100",
-        text: "text-blue-800",
+        text: "text-blue-700",
         border: "border-blue-300"
     },
     "waiting_to_pick": {
@@ -98,7 +98,7 @@ export const ORDER_STATUS_COLORS = {
     },
     "canceled": {
         bg: "bg-rose-100",
-        text: "text-rose-800",
+        text: "text-rose-700",
         border: "border-rose-300"
     },
 };

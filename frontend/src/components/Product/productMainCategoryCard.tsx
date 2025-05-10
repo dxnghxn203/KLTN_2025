@@ -47,13 +47,13 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
           {/* Thông tin sản phẩm */}
           <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
             {/* Category + Rating */}
-            <div className="flex justify-between text-[10px] mb-2 items-center">
-              <span className="font-normal text-[#A7A8B0] ">
+            <div className="flex justify-between mb-2 items-center">
+              <span className="font-normal text-[#A7A8B0] text-xs ">
                 {products?.category?.main_category_name}
               </span>
               <div className="flex items-center space-x-1">
                 <span>
-                  <FaStar className="text-[#FFD700]" />
+                  <FaStar className="text-[#FFD700] text-base" />
                 </span>
                 <span className="font-normal text-[#A7A8B0]">
                   {products?.rating?.toFixed(1)}
@@ -91,11 +91,11 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
             <div className="mt-2 flex justify-center w-full">
               {products?.prescription_required ? (
                 <div className="flex flex-col justify-start w-full">
-                  <p className="text-[#A7A8B0] text-sm font-semibold">
+                  <p className="text-[#A7A8B0] text-sm font-medium">
                     Cần tư vấn từ dược sĩ
                   </p>
                   <button
-                    className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-semibold"
+                    className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
                     onClick={() =>
                       (window.location.href = `/chi-tiet-san-pham/${slug}`)
                     }

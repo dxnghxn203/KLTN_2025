@@ -270,7 +270,7 @@ const DetailProduct = ({ product }: any) => {
               <span>•</span>
               <span>{Number(product?.rating).toFixed(1)}</span>
               <span>
-                <FaStar className="text-[#FFD700]" />
+                <FaStar className="text-[#FFD700] text-lg" />
               </span>
               <span>•</span>
               <a className="text-[#0053E2] hover:underline">

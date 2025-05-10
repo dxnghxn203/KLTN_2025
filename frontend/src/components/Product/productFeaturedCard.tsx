@@ -47,12 +47,12 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
           {/* Thông tin sản phẩm */}
           <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
             {/* Category + Rating */}
-            <div className="flex justify-between text-[10px] mb-2 items-center">
-              <span className="font-normal text-[#A7A8B0]">
+            <div className="flex justify-between mb-2 items-center">
+              <span className="font-normal text-[#A7A8B0] text-xs">
                 {products?.category?.main_category_name}
               </span>
               <div className="flex items-center space-x-1">
-                <span className="text-[14px]">
+                <span className="text-base">
                   <FaStar className="text-[#FFD700]" />
                 </span>
                 <span className="font-normal text-[#A7A8B0]">
@@ -88,7 +88,7 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
             {/* Nút chọn sản phẩm */}
             <div className="mt-2 flex justify-center">
               <button
-                className="w-full py-2.5 text-sm text-white bg-blue-700 rounded-3xl"
+                className="w-full py-3.5 text-sm text-white bg-blue-700 rounded-3xl"
                 onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
               >
                 + Chọn sản phẩm
