@@ -203,15 +203,6 @@ class UpdateProductStatusReq(BaseModel):
     product_id: str = ""
     status: bool = False
 
-class AddProductMediaReq(BaseModel):
-    product_id: str = ""
-    media_type: str = ""
-
-class DeleteProductMediaReq(BaseModel):
-    product_id: Optional[str] = Field(default="")
-    media_type: Optional[str] = Field(default="")
-    target_urls: Optional[List[str]] = Field(default=None)
-
 class ItemUpdateProductReq(BaseModel):
     product_id: Optional[str] = Field(default="")
     product_name: Optional[str] = Field(default="")
@@ -234,3 +225,8 @@ class ItemUpdateProductReq(BaseModel):
     brand: Optional[str] = Field(default="")
     prescription_required: bool = False
     registration_number: Optional[str] = Field(default="")
+
+class ItemProductImportReq(BaseModel):
+    import_id: Optional[str] = Field(default="")
+    file_url: Optional[str] = Field(default="")
+    error_message: Optional[List[str]] = Field(default=None)

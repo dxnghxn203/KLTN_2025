@@ -24,8 +24,8 @@ from app.core.s3 import upload_file, upload_any_file
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
     ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
-    AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq, ItemIngredientDBReq, ItemManufacturerDBReq
-from app.entities.product.response import ItemProductDBRes
+    ItemUpdateProductReq, ItemIngredientDBReq, ItemManufacturerDBReq, ItemProductImportReq
+from app.entities.product.response import ItemProductDBRes, ItemProductImportRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
 from app.models.category import get_all_categories, get_all_categories_admin
@@ -850,7 +850,14 @@ async def search_products_by_name(keyword: str, page: int, page_size: int):
 async def get_product_brands():
     try:
         collection = db[collection_name]
-        product_list = collection.distinct("brand", {"brand": {"$ne": None}})
+        product_list = await collection.distinct(
+            "brand",
+            {
+                "brand": {"$ne": None},
+                "is_approved": True,
+                "active": True
+            }
+        )
         return product_list
     except Exception as e:
         logger.error(f"Error searching products by name: {str(e)}")
@@ -992,7 +999,7 @@ async def import_products(file: UploadFile):
         workbook = load_workbook(BytesIO(contents))
         sheet = workbook.active
         df = pd.read_excel(BytesIO(contents))
-        products = []
+
         error_messages = []
         image_columns = {
             0: "images_1", 1: "images_2", 2: "images_3",
@@ -1004,13 +1011,18 @@ async def import_products(file: UploadFile):
 
         certificate_map = await extract_certificates_from_excel(BytesIO(contents), df)
 
-        logger.info(f"Certificate map: {certificate_map}")
+        collection = db[collection_name]
 
         for idx, row in df.iterrows():
             try:
                 logger.info(f"Processing row: {idx}")
                 excel_row_idx = idx + 1
                 row_errors = []
+
+                cur = collection.find_one({"slug": row.get("slug", "")})
+                if cur:
+                    error_messages.append(f"Dòng {excel_row_idx}: Sản phẩm slug {row.get('slug', '')}đã tồn tại")
+                    continue
 
                 # Extract certificate file
                 certificate_url = certificate_map.get(idx, "")
@@ -1077,8 +1089,14 @@ async def import_products(file: UploadFile):
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi thông tin nhà sản xuất - {e}")
                     manufacturer = None
 
+                if row_errors:
+                    error_messages.extend(row_errors)
+                    continue
+
                 try:
+                    product_id = generate_id("PRODUCT")
                     product = ItemProductDBReq(
+                        product_id=product_id,
                         product_name=row.get("product_name", ""),
                         name_primary=row.get("name_primary", ""),
                         prices=prices,
@@ -1099,27 +1117,44 @@ async def import_products(file: UploadFile):
                         brand=row.get("brand", ""),
                         prescription_required=bool(row.get("prescription_required", False)),
                         registration_number=row.get("registration_number", ""),
-                        #images=image_list
+                        images=image_list,
+                        images_primary=image_primary,
+                        certificate_file=certificate_url
                     )
-                    products.append(product)
+                    insert_result = collection.insert_one(product.dict())
+
+                    logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
+
+                    redis_product = ItemProductRedisReq(inventory=product.inventory)
+                    redis.save_product(redis_product, product_id)
+                    logger.info(f"Đã lưu sản phẩm vào Redis với key: {product_id}")
                 except ValidationError as e:
                     error_messages.append(f"Dòng {excel_row_idx}: Lỗi dữ liệu không hợp lệ - {e}")
-
-                if row_errors:
-                    error_messages.extend(row_errors)
 
             except Exception as e:
                 error_messages.append(f"Dòng {idx + 1}: Lỗi không xác định - {e}")
 
-        if error_messages:
-            logger.error("Các lỗi khi import file:")
-            for msg in error_messages:
-                logger.error(msg)
+        file.file.seek(0)
+        excel_url = upload_any_file(file, folder="import_products")
+        logger.info(f"Uploaded original Excel file to S3: {excel_url}")
 
-        logger.info(f"products: {products}")
-        logger.info(f"Imported {len(products)} sản phẩm thành công từ file Excel")
-        return products
+        import_item = ItemProductImportReq(
+            import_id=generate_id("IMPORT"),
+            file_url=excel_url,
+            error_message=error_messages
+        )
+        db[collection_import].insert_one(import_item.dict())
+        logger.info(f"Import log written to '{collection_import}'")
 
     except Exception as e:
         logger.error(f"Error importing product: {str(e)}")
+        raise e
+
+async def get_imported_products():
+    try:
+        collection = db[collection_import]
+        imports_list = list(collection.find({}, {"_id": 0}))
+        return [ItemProductImportRes(**imports) for imports in imports_list]
+    except Exception as e:
+        logger.error(f"Error getting imported products: {str(e)}")
         raise e
