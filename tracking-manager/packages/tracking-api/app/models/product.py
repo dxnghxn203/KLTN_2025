@@ -1,12 +1,20 @@
 import asyncio
 import re
+import unicodedata
+import json
 from io import BytesIO
 
+from openpyxl.reader.excel import load_workbook
+from openpyxl.utils import get_column_letter
+from types import SimpleNamespace
+import zipfile
+import os
+import olefile
 import pandas as pd
 from fastapi import UploadFile
 from pydantic import ValidationError
 from starlette import status
-from typing import Set
+from typing import Set, Dict, Tuple
 
 from starlette.responses import JSONResponse
 
@@ -16,15 +24,17 @@ from app.core.s3 import upload_file, upload_any_file
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
     ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
-    AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq
+    AddProductMediaReq, DeleteProductMediaReq, ItemUpdateProductReq, ItemIngredientDBReq, ItemManufacturerDBReq
 from app.entities.product.response import ItemProductDBRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
+from app.models.category import get_all_categories, get_all_categories_admin
 from app.models.comment import count_comments
 from app.models.review import count_reviews, average_rating
 
 collection_name = "products"
 collection_category = "categories"
+collection_import = "products_imports"
 
 VALID_MEDIA_TYPES = {"images", "images_primary", "certificate_file"}
 
@@ -837,67 +847,279 @@ async def search_products_by_name(keyword: str, page: int, page_size: int):
         logger.error(f"Error searching products by name: {str(e)}")
         raise e
 
+async def get_product_brands():
+    try:
+        collection = db[collection_name]
+        product_list = collection.distinct("brand", {"brand": {"$ne": None}})
+        return product_list
+    except Exception as e:
+        logger.error(f"Error searching products by name: {str(e)}")
+        raise e
+
+def normalize_text(text):
+    if not text:
+        return ""
+    text = unicodedata.normalize("NFD", text)
+    text = text.encode("ascii", "ignore").decode("utf-8")
+    text = re.sub(r"[\s\-_]+", "", text).lower()
+    return text
+
+def normalize_manufacturer_contact(contact_value):
+    contact_str = str(contact_value).strip()
+    if contact_str.isdigit() and not contact_str.startswith("0"):
+        contact_str = "0" + contact_str
+    return contact_str
+
+async def extract_category_object(row: dict, all_categories: list) -> Tuple[ItemCategoryDBReq, str]:
+    try:
+        errors = []
+        normalized_main = normalize_text(row.get("main_category_name", ""))
+        normalized_sub = normalize_text(row.get("sub_category_name", ""))
+        normalized_child = normalize_text(row.get("child_category_name", ""))
+
+        matched_main = next((cat for cat in all_categories if normalize_text(cat.get("main_category_name", "")) == normalized_main), None)
+        if not matched_main and all_categories:
+            matched_main = all_categories[0]
+            errors.append(
+                f"Danh mục chính không hợp lệ: {row.get('main_category_name')}, dùng mặc định '{matched_main.get('main_category_name')}'")
+        elif not matched_main:
+            return None, "Không tìm thấy danh mục chính nào"
+
+        matched_sub = next((sub for sub in matched_main.get("sub_category", []) if normalize_text(sub.get("sub_category_name", "")) == normalized_sub), None)
+        if not matched_sub and sub_categories:
+            matched_sub = sub_categories[0]
+            errors.append(
+                f"Danh mục phụ không hợp lệ: {row.get('sub_category_name')}, dùng mặc định '{matched_sub.get('sub_category_name')}'")
+        elif not matched_sub:
+            return None, f"Danh mục phụ không xác định và không có danh sách danh mục phụ cho '{matched_main.get('main_category_name')}'"
+
+        matched_child = next((child for child in matched_sub.get("child_category", []) if normalize_text(child.get("child_category_name", "")) == normalized_child), None)
+        if not matched_child and child_categories:
+            matched_child = child_categories[0]
+            errors.append(
+                f"Danh mục con không hợp lệ: {row.get('child_category_name')}, dùng mặc định '{matched_child.get('child_category_name')}'")
+        elif not matched_child:
+            return None, f"Danh mục con không xác định và không có danh sách danh mục con cho '{matched_sub.get('sub_category_name')}'"
+
+        return ItemCategoryDBReq(
+            main_category_id=matched_main["main_category_id"],
+            main_category_name=matched_main["main_category_name"],
+            main_category_slug=matched_main["main_category_slug"],
+            sub_category_id=matched_sub["sub_category_id"],
+            sub_category_name=matched_sub["sub_category_name"],
+            sub_category_slug=matched_sub["sub_category_slug"],
+            child_category_id=matched_child["child_category_id"],
+            child_category_name=matched_child["child_category_name"],
+            child_category_slug=matched_child["child_category_slug"]
+        ), "; ".join(errors) if errors else None
+    except Exception as e:
+        logger.error(f"Error extracting category object: {str(e)}")
+        return None, str(e)
+
+async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=False):
+    image_list = []
+    img_row = 0
+    for image in sheet._images:
+        try:
+            anchor = image.anchor._from
+            img_row = anchor.row + 1
+            img_col = anchor.col + 1
+            img_col_letter = get_column_letter(img_col)
+            header_value = sheet[f"{img_col_letter}1"].value
+
+            if img_row == row_idx + 2 and header_value in image_columns.values():
+                image.ref.seek(0)  # đảm bảo về đầu stream
+                wrapped_file = SimpleNamespace(file=image.ref)
+                file_url = upload_file(wrapped_file, "images" if not is_primary else "images_primary")
+                if file_url:
+                    if is_primary and header_value == "images_primary":
+                        return file_url
+                    image_list.append(ItemImageDBReq(
+                        images_id=generate_id("IMAGE"),
+                        images_url=file_url
+                    ))
+        except Exception as e:
+            logger.error(f"Lỗi xử lý ảnh tại row {img_row}: {e}")
+
+    return image_list if not is_primary else None
+
+def extract_pdf_bytes_from_ole_bin(bin_stream: BytesIO) -> bytes:
+    try:
+        if olefile.isOleFile(bin_stream):
+            bin_stream.seek(0)
+            ole = olefile.OleFileIO(bin_stream)
+            for stream_name in ole.listdir():
+                data = ole.openstream(stream_name).read()
+                if b"%PDF" in data:
+                    start = data.find(b"%PDF")
+                    pdf_data = data[start:]
+                    ole.close()
+                    return pdf_data
+            ole.close()
+        return None
+    except Exception as e:
+        print(f"OLE parse error: {e}")
+        return None
+
+async def extract_certificates_from_excel(file_stream: BytesIO, df: pd.DataFrame):
+    zipf = zipfile.ZipFile(file_stream, "r")
+
+    result_map = {}  # row_idx -> PDF URL
+
+    for file_info in zipf.infolist():
+        if file_info.filename.startswith("xl/embeddings/") and file_info.filename.endswith(".bin"):
+            bin_data = zipf.read(file_info.filename)
+            bin_stream = BytesIO(bin_data)
+
+            # extract PDF bytes from .bin
+            pdf_bytes = extract_pdf_bytes_from_ole_bin(bin_stream)
+            if pdf_bytes:
+                wrapped_file = SimpleNamespace(file=BytesIO(pdf_bytes))
+                wrapped_file.content_type = "application/pdf"
+                url = upload_any_file(wrapped_file, "certificates")
+
+                # mapping theo thứ tự nhúng (ví dụ mapping theo row cùng index)
+                row_idx = len(result_map)
+                result_map[row_idx] = url
+    return result_map
+
 async def import_products(file: UploadFile):
     try:
         if not file.filename.endswith(".xlsx"):
             raise HTTPException(status_code=400, detail="Chỉ hỗ trợ file Excel .xlsx")
 
-        contents = file.file.read()
+        contents = await file.read()
+        workbook = load_workbook(BytesIO(contents))
+        sheet = workbook.active
         df = pd.read_excel(BytesIO(contents))
-
         products = []
-        for _, row in df.iterrows():
+        error_messages = []
+        image_columns = {
+            0: "images_1", 1: "images_2", 2: "images_3",
+            3: "images_4", 4: "images_5", 5: "images_6",
+            6: "images_7", 7: "images_8"
+        }
+
+        categories = await get_all_categories_admin()
+
+        certificate_map = await extract_certificates_from_excel(BytesIO(contents), df)
+
+        logger.info(f"Certificate map: {certificate_map}")
+
+        for idx, row in df.iterrows():
             try:
-                product = ItemProductDBInReq(
-                    product_name=row.get("product_name", ""),
-                    name_primary=row.get("name_primary", ""),
-                    prices=ListPriceDBInReq(
-                        prices=[
-                            ItemPriceDBInReq(
-                                discount=row.get("discount", 0),
-                                unit=row.get("unit", ""),
-                                weight=row.get("weight", 0),
-                                amount=row.get("amount", 0),
-                                original_price=row.get("original_price", 0)
-                            )
-                        ]
-                    ),
-                    inventory=row.get("inventory", 0),
-                    slug=row.get("slug", ""),
-                    description=row.get("description", ""),
-                    full_descriptions=row.get("full_descriptions", ""),
-                    category=ItemCategoryDBInReq(
-                        main_category_id=row.get("main_category_id", ""),
-                        sub_category_id=row.get("sub_category_id", ""),
-                        child_category_id=row.get("child_category_id", "")
-                    ),
-                    origin=row.get("origin", ""),
-                    ingredients=[
-                        ItemIngredientDBReq(
-                            ingredient_name=row.get("ingredient_name", ""),
-                            ingredient_amount=row.get("ingredient_amount", "")
+                logger.info(f"Processing row: {idx}")
+                excel_row_idx = idx + 1
+                row_errors = []
+
+                # Extract certificate file
+                certificate_url = certificate_map.get(idx, "")
+                logger.info(f"Certificate url: {certificate_url}")
+
+                # Extract images
+                try:
+                    image_list = await extract_images_direct(sheet, df, idx, image_columns)
+                    image_primary = await extract_images_direct(sheet, df, idx, {0: "images_primary"},
+                                                         is_primary=True)
+                except Exception as e:
+                    row_errors.append(f"Dòng {excel_row_idx}: Lỗi hình ảnh - {e}")
+                    image_list = []
+                    image_primary = None
+
+                # Extract prices
+                try:
+                    prices_raw = row.get("prices", "[]")
+                    prices_list = json.loads(prices_raw)
+                    prices = [
+                        ItemPriceDBReq(
+                            price_id=generate_id("PRICE"),
+                            discount=price.get("discount", 0),
+                            unit=price.get("unit", ""),
+                            weight=price.get("weight", 0),
+                            amount=price.get("amount", 0),
+                            original_price=price.get("original_price", 0),
+                            price=price.get("original_price", 0) * (100 - price.get("discount", 0)) / 100,
                         )
-                    ] if row.get("ingredient_name") else None,
-                    uses=row.get("uses", ""),
-                    dosage=row.get("dosage", ""),
-                    side_effects=row.get("side_effects", ""),
-                    precautions=row.get("precautions", ""),
-                    storage=row.get("storage", ""),
-                    manufacturer=ItemManufacturerDBReq(
+                        for price in prices_list
+                    ]
+                except Exception as e:
+                    row_errors.append(f"Dòng {excel_row_idx}: Lỗi đọc prices - {e}")
+                    prices = []
+
+                # Extract category
+                category_obj, cat_error = await extract_category_object(row, categories)
+                if cat_error:
+                    row_errors.append(f"Dòng {excel_row_idx} - {cat_error}")
+
+                # Extract ingredients
+                try:
+                    ingredients_raw = row.get("ingredients", "[]")
+                    ingredients_list = json.loads(ingredients_raw)
+                    ingredients = [
+                        ItemIngredientDBReq(
+                            ingredient_name=ing.get("ingredient_name", ""),
+                            ingredient_amount=ing.get("ingredient_amount", ""),
+                        ) for ing in ingredients_list
+                    ]
+                except Exception as e:
+                    row_errors.append(f"Dòng {excel_row_idx}: Lỗi đọc ingredients - {e}")
+                    ingredients = []
+
+                # Manufacturer
+                try:
+                    contact_str = normalize_manufacturer_contact(row.get("manufacture_contact", ""))
+                    manufacturer = ItemManufacturerDBReq(
                         manufacture_name=row.get("manufacture_name", ""),
                         manufacture_address=row.get("manufacture_address", ""),
-                        manufacture_contact=row.get("manufacture_contact", "")
-                    ),
-                    dosage_form=row.get("dosage_form", ""),
-                    brand=row.get("brand", ""),
-                    prescription_required=bool(row.get("prescription_required", False)),
-                    registration_number=row.get("registration_number", "")
-                )
-                products.append(product)
-            except ValidationError as e:
-                print(f"Validation error in row {row}: {e}")
-        logger.info(f"Imported {len(products)} products from Excel file")
-        logger.info(f"Products: {products}")
+                        manufacture_contact=contact_str
+                    )
+                except Exception as e:
+                    row_errors.append(f"Dòng {excel_row_idx}: Lỗi thông tin nhà sản xuất - {e}")
+                    manufacturer = None
+
+                try:
+                    product = ItemProductDBReq(
+                        product_name=row.get("product_name", ""),
+                        name_primary=row.get("name_primary", ""),
+                        prices=prices,
+                        inventory=row.get("inventory", 0),
+                        slug=row.get("slug", ""),
+                        description=row.get("description", ""),
+                        full_descriptions=row.get("full_descriptions", ""),
+                        category=category_obj,
+                        origin=row.get("origin", ""),
+                        ingredients=ingredients,
+                        uses=row.get("uses", ""),
+                        dosage=row.get("dosage", ""),
+                        side_effects=row.get("side_effects", ""),
+                        precautions=row.get("precautions", ""),
+                        storage=row.get("storage", ""),
+                        manufacturer=manufacturer,
+                        dosage_form=row.get("dosage_form", ""),
+                        brand=row.get("brand", ""),
+                        prescription_required=bool(row.get("prescription_required", False)),
+                        registration_number=row.get("registration_number", ""),
+                        #images=image_list
+                    )
+                    products.append(product)
+                except ValidationError as e:
+                    error_messages.append(f"Dòng {excel_row_idx}: Lỗi dữ liệu không hợp lệ - {e}")
+
+                if row_errors:
+                    error_messages.extend(row_errors)
+
+            except Exception as e:
+                error_messages.append(f"Dòng {idx + 1}: Lỗi không xác định - {e}")
+
+        if error_messages:
+            logger.error("Các lỗi khi import file:")
+            for msg in error_messages:
+                logger.error(msg)
+
+        logger.info(f"products: {products}")
+        logger.info(f"Imported {len(products)} sản phẩm thành công từ file Excel")
+        return products
+
     except Exception as e:
         logger.error(f"Error importing product: {str(e)}")
         raise e

@@ -297,3 +297,17 @@ async def approve_order(item: ItemOrderApproveReq, token: str = Depends(middlewa
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.delete("/dev/reset-system", response_model=response.BaseResponse)
+async def reset_system_api(token: str = Depends(middleware.verify_token_admin)):
+    try:
+        result = await order.reset_dev_system()
+        return response.SuccessResponse(
+            message="Đã reset hệ thống thành công",
+            data=result
+        )
+    except Exception as e:
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message=f"Lỗi reset hệ thống: {str(e)}"
+        )
