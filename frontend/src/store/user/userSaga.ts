@@ -42,10 +42,26 @@ import {
     fetchChangePasswordPharmacistSuccess,
     fetchForgotPasswordPharmacistStart,
     fetchForgotPasswordPharmacistFailure,
-    fetchForgotPasswordPharmacistSuccess
+    fetchForgotPasswordPharmacistSuccess,
+
+    fetchGetAllPharmacistStart,
+    fetchGetAllPharmacistSuccess,
+    fetchGetAllPharmacistFailure,
+
+    fetchGetAllAdminFailure,
+    fetchGetAllAdminStart,
+    fetchGetAllAdminSuccess,
+
+    fetchUpdateStatusAdminFailure,
+    fetchUpdateStatusAdminStart,
+    fetchUpdateStatusAdminSuccess,
+
+    fetchUpdateStatusPharmacistFailure,
+    fetchUpdateStatusPharmacistStart,
+    fetchUpdateStatusPharmacistSuccess,
 
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist } from "@/services/userService";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist, getAllPharmacist, getAllAdmin, updateStatusAdmin, updateStatusPharmacist } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -306,6 +322,76 @@ function* forgotPasswordPharmacistWorkerSaga(action: any): Generator<any, void, 
         yield put(fetchForgotPasswordPharmacistFailure());
     }
 }
+
+function* userGetAllPharmacistWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    try {
+        const response = yield call(getAllPharmacist, payload);
+        if (response.status_code === 200) {
+            yield put(fetchGetAllPharmacistSuccess(response.data));
+        } else {
+            yield put(fetchGetAllPharmacistFailure());
+        }
+    } catch (error: any) {
+        yield put(fetchGetAllPharmacistFailure());
+    }
+}
+
+function* userGetAllAdminWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    try {
+        console.log("payload", payload)
+        const response = yield call(getAllAdmin, payload);
+        if (response.status_code === 200) {
+            yield put(fetchGetAllAdminSuccess(response.data));
+        } else {
+            yield put(fetchGetAllAdminFailure());
+        }
+    } catch (error: any) {
+        yield put(fetchGetAllAdminFailure());
+    }
+}
+
+// function* updateStatusAdminWorkerSaga(action: any): Generator<any, void, any> {
+//     const { payload } = action;
+//     const {
+//         onSuccess =()=> {},
+//         onFailure =()=> {},
+//     } = payload;
+//     try {
+//         const response = yield call(updateStatusAdmin, payload);
+//         if (response.status_code === 200) {
+//             yield put(fetchUpdateStatusAdminSuccess(response.data));
+//             onSuccess(response.message);
+//         } else {
+//             yield put(fetchUpdateStatusAdminFailure());
+//             onFailure(response.message);
+//         }
+//     } catch (error: any) {
+//         yield put(fetchUpdateStatusAdminFailure());
+//     }
+// }
+function* updateStatusPharmacistWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    try {
+        const response = yield call(updateStatusPharmacist, payload);
+        if (response.status_code === 200) {
+            yield put(fetchUpdateStatusPharmacistSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchUpdateStatusPharmacistFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchUpdateStatusPharmacistFailure());
+    }
+}
+
+
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
@@ -318,5 +404,9 @@ export function* userSaga() {
     yield takeLatest(fetchUpdateStatusUserStart.type, updateStatusUserWorkerSaga);
     yield takeLatest(fetchChangePasswordPharmacistStart.type, changePasswordPharmacistWorkerSaga);
     yield takeLatest(fetchForgotPasswordPharmacistStart.type, forgotPasswordPharmacistWorkerSaga);
+    yield takeLatest(fetchGetAllPharmacistStart.type, userGetAllPharmacistWorkerSaga);
+    yield takeLatest(fetchGetAllAdminStart.type, userGetAllAdminWorkerSaga);
+    // yield takeLatest(fetchUpdateStatusAdminStart.type, updateStatusAdminWorkerSaga);
+    yield takeLatest(fetchUpdateStatusPharmacistStart.type, updateStatusPharmacistWorkerSaga);
 }
 

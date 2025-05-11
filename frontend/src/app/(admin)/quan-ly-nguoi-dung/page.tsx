@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import UserManagement from "@/components/Admin/User/userManagement";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
   const router = useRouter();

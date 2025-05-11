@@ -106,6 +106,7 @@ const CreateSingleProduct = () => {
   const [brand, setBrand] = useState<string>("");
   const [uses, setUses] = useState<string>("");
   const [dosageForm, setDosageForm] = useState<string>("");
+  const [registration_number, setRegistrationNumber] = useState<string>("");
   const [dosage, setDosage] = useState<string>("");
   const [full_descriptions, setFullDescription] = useState<string>("");
   const [side_effects, setSideEffects] = useState<string>("");
@@ -586,6 +587,7 @@ const CreateSingleProduct = () => {
     setBrand(product.brand);
     setUses(product.uses);
     setDosageForm(product.dosage_form);
+    setRegistrationNumber(product.registration_number);
     setDosage(product.dosage);
     setSideEffects(product.side_effects);
     setPrecautions(product.precautions);
@@ -659,6 +661,7 @@ const CreateSingleProduct = () => {
     formData.set("category", JSON.stringify(category));
     formData.set("uses", uses);
     formData.set("dosage_form", dosageForm);
+    formData.set("registration_number", registration_number);
     formData.set("dosage", dosage);
     formData.set("side_effects", side_effects);
     formData.set("precautions", precautions);
@@ -677,6 +680,7 @@ const CreateSingleProduct = () => {
       brand,
       uses,
       dosage_form: dosageForm,
+      registration_number,
       dosage,
       side_effects,
       precautions,
@@ -795,7 +799,7 @@ const CreateSingleProduct = () => {
         formData,
         (message: any) => {
           toast.showToast(message, "success");
-          // resetForm();
+          resetForm();
         },
         (message: any) => {
           toast.showToast(message, "error");
@@ -940,19 +944,39 @@ const CreateSingleProduct = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 mt-3">
-                  <input
-                    type="checkbox"
-                    id="prescription_required"
-                    name="prescription_required"
-                    checked={prescriptionRequired}
-                    onChange={(e) => setPrescriptionRequired(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 accent-blue-600"
-                    disabled={isViewOnly}
-                  />
-                  <label htmlFor="prescription_required" className="text-sm">
-                    Thuốc kê toa
-                  </label>
+                <div className="flex grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="prescription_required"
+                      name="prescription_required"
+                      checked={prescriptionRequired}
+                      onChange={(e) =>
+                        setPrescriptionRequired(e.target.checked)
+                      }
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 accent-blue-600"
+                      disabled={isViewOnly}
+                    />
+                    <label htmlFor="prescription_required" className="text-sm">
+                      Thuốc kê toa
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Số đăng ký <span className="text-red-500"></span>
+                    </label>
+                    <input
+                      type="text"
+                      name="registration_number"
+                      className="border rounded-lg p-2 w-full"
+                      onChange={(e) => setRegistrationNumber(e.target.value)}
+                      value={registration_number}
+                      disabled={isViewOnly}
+                    />
+                    {hasError("origin") && (
+                      <ErrorMessage message={errors.origin} />
+                    )}
+                  </div>
                 </div>
                 <div className="mt-3" data-error={hasError("description")}>
                   <label className="block text-sm font-medium mb-1">

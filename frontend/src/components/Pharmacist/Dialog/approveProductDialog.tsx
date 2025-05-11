@@ -83,8 +83,8 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-fit mx-4 overflow-hidden shadow-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 h-screen overflow-y-auto">
+      <div className="bg-white rounded-lg w-[80%] mx-4 overflow-hidden shadow-xl">
         {/* Header */}
         <div className="relative flex items-center justify-center px-6 py-4 bg-gray-50 border-b">
           <h3 className="text-xl font-semibold text-gray-900">
@@ -99,7 +99,7 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
             <X size={20} />
           </button>
         </div>
-        <div className="max-h-[500px] overflow-y-auto">
+        <div className="max-h-[450px] overflow-y-auto">
           <div className="flex gap-10 p-8 bg-white rounded-xl ">
             {/* Left Section: Product Info */}
             <div className="w-2/3 text-sm text-gray-700 space-y-2">

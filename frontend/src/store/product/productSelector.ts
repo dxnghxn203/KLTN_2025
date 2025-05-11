@@ -12,3 +12,5 @@ export const selectProductProductFeatured = (state: any) => state.product.produc
 export const selectProductBestDeal = (state: any) => state.product.productsBestDeal;
 export const selectProductApproved = (state: any) => state.product.productApproved;
 export const selectSearchProduct = (state: any) => state.product.searchResult;
+// all brands
+export const selectAllBrands = (state: any) => state.product.allBrand;

@@ -64,6 +64,14 @@ import {
     fetchSearchProductSuccess,
     fetchSearchProductFailed,
     fetchSearchProductStart,
+
+    fetchAllBrandFailed,
+    fetchAllBrandStart,
+    fetchAllBrandSuccess,
+
+    fetchImportFileAddProductFailed,
+    fetchImportFileAddProductStart,
+    fetchImportFileAddProductSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -527,6 +535,52 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     }
   }
 
+  function* handleGetAllBrand(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+        console.log("payload", payload);
+
+        const product = yield call(productService.getAllBrands);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchAllBrandSuccess(product.data));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchAllBrandFailed(product.message || 'Failed to update images product'));
+    } catch (error) {
+        yield put(fetchAllBrandFailed('Failed to update images product'));
+    }
+  }
+
+  function* handleImportFileAddProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            file,
+            onSuccess = () => {},
+            onFailed = () => {},
+        } = payload;
+
+        const product = yield call(productService.importFileAddProduct, file);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchImportFileAddProductSuccess(product.message));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchImportFileAddProductFailed(product.message || 'Failed to update images product'));
+    } catch (error) {
+        yield put(fetchImportFileAddProductFailed('Failed to update images product'));
+    }
+  }
+
   
   
 
@@ -549,5 +603,7 @@ export function* productSaga() {
     yield takeLatest(fetchUpdateImagesPrimaryProductStart.type, handleUpdateImagesPrimaryProduct);
     yield takeLatest(fetchUpdateImagesProductStart.type, handleUpdateImagesProduct);
     yield takeLatest(fetchSearchProductStart.type, searchProduct);
+    yield takeLatest(fetchAllBrandStart.type, handleGetAllBrand);
+    yield takeLatest(fetchImportFileAddProductStart.type, handleImportFileAddProduct);
 
 }

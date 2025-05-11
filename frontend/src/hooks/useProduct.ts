@@ -24,6 +24,9 @@ import {
     selectProductTopSelling,
     selectSearchProduct,
     fetchClearSearchResult,
+    fetchAllBrandStart,
+    selectAllBrands,
+    fetchImportFileAddProductStart,
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -39,6 +42,7 @@ export function useProduct() {
     const productBestDeal = useSelector(selectProductTopSelling);
     const productApproved = useSelector(selectProductApproved);
     const searchResult = useSelector(selectSearchProduct);
+    const allBrands = useSelector(selectAllBrands);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(100);
@@ -234,6 +238,29 @@ export function useProduct() {
     const fetchClearSearch = () => {
         dispatch(fetchClearSearchResult())
     }
+    const fetchAllBrands = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchAllBrandStart({
+
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }))
+    }
+
+    const fetchImportAddFileProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchImportFileAddProductStart({
+                ...params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }   
+
+    
     
 
 
@@ -272,6 +299,11 @@ export function useProduct() {
         fetchSearchProduct,
         searchResult,
         fetchClearSearch,
+
+        fetchAllBrands,
+        allBrands,
+
+        fetchImportAddFileProduct,
 
     };
 }

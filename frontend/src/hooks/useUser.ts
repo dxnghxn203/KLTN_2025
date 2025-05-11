@@ -1,5 +1,5 @@
-import { fetchChangePasswordAdminStart, fetchChangePasswordPharmacistStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordPharmacistStart, fetchForgotPasswordStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchUpdateStatusUserStart, fetchVerifyOtpStart } from "@/store";
-import { insertUserSelector, selectAllUserAdmin } from "@/store/user/userSelector";
+import { fetchChangePasswordAdminStart, fetchChangePasswordPharmacistStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordPharmacistStart, fetchForgotPasswordStart, fetchGetAllAdminStart, fetchGetAllPharmacistStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchUpdateStatusPharmacistStart, fetchUpdateStatusUserStart, fetchVerifyOtpStart } from "@/store";
+import { insertUserSelector, selectAllAdmin, selectAllPharmacist, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
 import { useSession } from "next-auth/react";
@@ -26,9 +26,11 @@ export function useUser() {
   const { data: session } = useSession();
   const { user, setUser, isLoading } = useAuthContext();
   const allUserAdmin = useSelector(selectAllUserAdmin);
+  const allPharmacist = useSelector(selectAllPharmacist);
+  const allAdmin = useSelector(selectAllAdmin);
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(100);
 
   const saveUser = (userData: UserData) => {
     localStorage.setItem("user", JSON.stringify(userData));
@@ -51,7 +53,7 @@ export function useUser() {
   const getAllUser=() => {
     dispatch(fetchGetAllUserAdminStart({
       page: page,
-      pageSize: pageSize
+      page_size: pageSize
     }));
   };
 
@@ -181,6 +183,31 @@ export function useUser() {
         onFailure: onFailure,
     }));
 }
+
+const fetchAllPharmacist = () => {
+    dispatch(fetchGetAllPharmacistStart({
+        page: page,
+        page_size: pageSize
+    }));
+}
+
+const fetchAllAdmin = () => {
+    dispatch(fetchGetAllAdminStart({
+        page: page,
+        page_size: pageSize
+    }));
+}
+const fetchUpdateStatusPharmacist = (
+    params: { pharmacist_id : string; status_pharmacist : boolean },
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+) => {
+    dispatch(fetchUpdateStatusPharmacistStart({
+        ...params,
+        onSuccess,
+        onFailure
+    }));
+}
   
 
   return {
@@ -210,6 +237,14 @@ export function useUser() {
     updateStatusUser,
     changePasswordPharmacist,
     forgotPasswordPharmacist,
+
+    allPharmacist,
+    fetchAllPharmacist,
+
+    allAdmin,
+    fetchAllAdmin,
+
+    fetchUpdateStatusPharmacist,
   };
 }
 

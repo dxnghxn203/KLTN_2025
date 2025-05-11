@@ -73,7 +73,7 @@ export const ORDER_STATUS_COLORS = {
     },
     "delivering": {
         bg: "bg-yellow-100",
-        text: "text-yellow-800",
+        text: "text-yellow-700",
         border: "border-yellow-300"
     },
     "delivery_success": {

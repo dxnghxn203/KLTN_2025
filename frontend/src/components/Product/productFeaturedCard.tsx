@@ -15,7 +15,7 @@ const ProductFeaturedCard: React.FC<ProductFeaturedCardProps> = ({
 }) => {
   const slug = products?.slug;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  console.log("hvjnsdv", products?.rating);
+  // console.log("hvjnsdv", products?.rating);
 
   return (
     <>

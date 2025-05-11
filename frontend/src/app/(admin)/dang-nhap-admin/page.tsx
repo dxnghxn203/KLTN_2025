@@ -5,6 +5,7 @@ import imgLoginAdmin from "@/images/loginAdmin.png";
 import { useToast } from "@/providers/toastProvider";
 import { validateEmail, validateEmptyFields } from "@/utils/validation";
 import { message } from "antd";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -12,6 +13,7 @@ import { MdLockOutline, MdOutlineEmail } from "react-icons/md";
 export default function LoginPage() {
   const { loginAdmin, admin, loginPharmacist, pharmacist } = useAuth();
   const [role, setRole] = useState<"admin" | "pharmacist">("admin");
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -81,6 +83,9 @@ export default function LoginPage() {
       );
     }
   };
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
     <div className="flex h-screen items-center justify-center bg-[#C3E3F3]">
@@ -130,13 +135,20 @@ export default function LoginPage() {
               <div className="relative mt-2">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Nhập mật khẩu"
                   className="text-sm w-full px-4 py-3 pl-7 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
                   value={formData.password}
                   onChange={handleChange}
                 />
-
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
                 <span className="absolute left-2 inset-y-0 flex items-center text-gray-400">
                   <MdLockOutline />
                 </span>

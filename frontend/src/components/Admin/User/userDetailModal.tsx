@@ -119,12 +119,16 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         user.role_id === "admin"
                           ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
+                          : user.role_id === "user"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
                       {user.role_id === "admin"
                         ? "Quản trị viên"
-                        : "Người dùng"}
+                        : user.role_id === "user"
+                        ? "Người dùng"
+                        : "Dược sĩ"}
                     </span>
                   </p>
                 </div>
