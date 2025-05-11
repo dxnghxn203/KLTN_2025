@@ -992,8 +992,19 @@ async def extract_certificates_from_excel(file_stream: BytesIO, df: pd.DataFrame
 
 async def import_products(file: UploadFile):
     try:
+        if redis.is_import_locked():
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Hệ thống đang nộp dữ liệu, vui lông truy cập sau"
+            )
+
+        redis.set_import_lock()
+
         if not file.filename.endswith(".xlsx"):
-            raise HTTPException(status_code=400, detail="Chỉ hỗ trợ file Excel .xlsx")
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Chỉ hỗ trợ file Excel .xlsx"
+            )
 
         contents = await file.read()
         workbook = load_workbook(BytesIO(contents))
@@ -1149,6 +1160,8 @@ async def import_products(file: UploadFile):
     except Exception as e:
         logger.error(f"Error importing product: {str(e)}")
         raise e
+    finally:
+        redis.clear_import_lock()
 
 async def get_imported_products():
     try:

@@ -192,3 +192,17 @@ def save_cart(identifier: str, redis_id, quantity: int):
 
 def delete_cart(identifier: str):
     redis.delete(cart_key(identifier))
+
+# ==== IMPORT MANAGEMENT ====
+
+def import_lock_key() -> str:
+    return "import:lock"
+
+def is_import_locked() -> bool:
+    return redis.exists(import_lock_key())
+
+def set_import_lock():
+    redis.set(import_lock_key(), "processing")
+
+def clear_import_lock():
+    redis.delete(import_lock_key())
