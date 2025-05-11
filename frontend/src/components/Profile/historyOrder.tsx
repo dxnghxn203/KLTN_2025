@@ -179,11 +179,11 @@ const HistoryOrder: React.FC = () => {
       <div className="mt-2">
         <button
           onClick={showOrderList}
-          className="mb-4 flex items-center text-blue-600 hover:text-blue-800"
+          className="mb-4 flex items-center text-blue-600 hover:text-blue-800 text-sm"
         >
           <ArrowLeft size={18} className="mr-1" /> Quay lại danh sách
         </button>
-        <h3 className="text-lg leading-6 font-semibold text-gray-900 mb-4">
+        <h3 className="leading-6 font-semibold text-gray-900 mb-4">
           Chi tiết đơn hàng: {order.order_id}
         </h3>
         <div className="space-y-4 text-gray-700 text-sm">
