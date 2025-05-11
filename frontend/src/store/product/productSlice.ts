@@ -12,6 +12,7 @@ interface ProductState {
     product: any;
     allBrand: any[];
     searchResult: any[];
+    fileImport: any[];
     loading: boolean;
     error: string | null;
 }
@@ -28,6 +29,7 @@ const initialState: ProductState = {
     product: null,
     allBrand: [],
     searchResult: [],
+    fileImport: [],
     loading: false,
     error: null,
 };
@@ -286,7 +288,7 @@ export const productSlice = createSlice({
         },
         // fetch import file add product
         fetchImportFileAddProductStart(state, action: PayloadAction<any>) {
-            
+
             console.log("fetchImportFileAddProductStart", action.payload);
             state.loading = true;
         },
@@ -300,6 +302,23 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // fetch get all import file
+        fetchGetAllImportFileAddProductStart(state, action: PayloadAction<any>) {
+            console.log("fetchGetAllImportFileAddProductStart", action.payload);
+            state.loading = true;
+        },
+        fetchGetAllImportFileAddProductSuccess(state, action: PayloadAction<any[]>) {
+            state.fileImport = action.payload;
+            console.log("fetchGetAllImportFileAddProductSuccess", action.payload);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchGetAllImportFileAddProductFailed(state, action: PayloadAction<string>) {
+            console.log("fetchGetAllImportFileAddProductFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+
 
         
         
@@ -385,6 +404,10 @@ export const {
     fetchImportFileAddProductFailed,
     fetchImportFileAddProductStart,
     fetchImportFileAddProductSuccess,
+
+    fetchGetAllImportFileAddProductFailed,
+    fetchGetAllImportFileAddProductStart,
+    fetchGetAllImportFileAddProductSuccess,
 
 
     
