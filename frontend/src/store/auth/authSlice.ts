@@ -42,7 +42,10 @@ export const authSlice = createSlice({
             state.isAuthenticated = true;
             state.user = action.payload.user;
             state.error = null;
-            state.isAdmin = false; // Reset isAdmin to false on normal login
+            state.admin = null;
+            state.pharmacist = null;
+            state.isAdmin = false;
+            state.isPharmacist = false;
 
         },
         loginFailure: (state, action: PayloadAction<string>) => {
@@ -51,20 +54,21 @@ export const authSlice = createSlice({
         },
 
         // Logout actions
-        logoutStart: (state) => {
+        logoutStart: (state, action) => {
             state.loading = true;
+            state.error = null;
         },
-        logoutSuccess: (state,) => {
+        logoutSuccess: (state) => {
             state.loading = false;
             state.isAuthenticated = false;
             if (state.isAdmin) {
                 state.admin = null;
-            } else {
+            } else if (state.isPharmacist) {
+                state.pharmacist = null;
+            }
+            else {
                 state.user = null;
             }
-            state.pharmacist = null;
-            state.isAdmin = false;
-            state.isPharmacist = false;
         },
         logoutFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
@@ -80,6 +84,9 @@ export const authSlice = createSlice({
             state.loading = false;
             state.admin = action.payload.admin;
             state.isAdmin = true;
+            state.user = null;
+            state.pharmacist = null;
+            state.isPharmacist = false;
         },
         loginAdminFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
@@ -94,6 +101,9 @@ export const authSlice = createSlice({
             state.loading = false;
             state.pharmacist = action.payload.pharmacist;
             state.isPharmacist = true;
+            state.user = null;
+            state.admin = null;
+            state.isAdmin = false;
         },
         loginPharmacistFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;

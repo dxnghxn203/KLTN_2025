@@ -9,10 +9,30 @@ import HistoryOrder from "@/components/Profile/historyOrder";
 import PersonalInfomation from "./personalInfo";
 import { HiOutlineUserCircle } from "react-icons/hi";
 import { MdLockOutline } from "react-icons/md";
+import { useToast } from "@/providers/toastProvider";
+import { FaRegFileAlt } from "react-icons/fa";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const toast = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await logout(
+        () => {
+          toast.showToast("Đăng xuất thành công", "success");
+        },
+        (error) => {
+          toast.showToast(error, "error");
+        }
+      );
+
+      toast.showToast("Đăng xuất thành công", "success");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   return (
     <div className="flex w-1/4 p-5">
@@ -61,6 +81,19 @@ const Sidebar = () => {
                 Lịch sử đơn hàng
               </button>
             </Link>
+            <Link href="/ca-nhan/don-thuoc-cua-toi">
+              <button
+                className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
+                ${
+                  pathname === "/ca-nhan/don-thuoc-cua-toi"
+                    ? "bg-[#F0F5FF] text-[#0053E2]"
+                    : "text-gray-800 hover:bg-[#EBEBEB]"
+                }`}
+              >
+                <FaRegFileAlt className="mr-2 text-xl" />
+                Đơn thuốc của tôi
+              </button>
+            </Link>
             <Link href="/ca-nhan/doi-mat-khau">
               <button
                 className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
@@ -77,7 +110,7 @@ const Sidebar = () => {
 
             <button
               className="font-medium px-4 py-4 w-full text-left flex items-center rounded-lg cursor-pointer text-gray-800 hover:bg-[#EBEBEB]"
-              onClick={logout}
+              onClick={handleLogout}
             >
               <FiLogOut className="mr-2 text-xl" />
               Đăng xuất

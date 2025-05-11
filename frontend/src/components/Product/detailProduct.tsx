@@ -23,6 +23,8 @@ import { useToast } from "@/providers/toastProvider";
 import { ToastType } from "@/components/Toast/toast";
 import { getPriceFromProduct } from "@/utils/price";
 import Link from "next/link";
+import { BsPatchCheckFill } from "react-icons/bs";
+import { FaStar } from "react-icons/fa6";
 
 interface DetailProductProps {
   product: {
@@ -267,7 +269,9 @@ const DetailProduct = ({ product }: any) => {
               <span>{product?.product_id}</span>
               <span>•</span>
               <span>{Number(product?.rating).toFixed(1)}</span>
-              <span>⭐</span>
+              <span>
+                <FaStar className="text-[#FFD700] text-lg" />
+              </span>
               <span>•</span>
               <a className="text-[#0053E2] hover:underline">
                 {product?.count_review} đánh giá
@@ -329,20 +333,32 @@ const DetailProduct = ({ product }: any) => {
                 <tbody>
                   <tr>
                     <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">Danh mục</td>
-                    <td className="pl-0 py-3 w-2/3 text-[#0053E2] font-semibold">
+                    <td className="pl-0 py-3 w-2/3 text-blue-600 font-medium">
                       {product?.category?.child_category_name}
                     </td>
                   </tr>
-                  {product?.category?.registration_number?.trim() ? (
+                  {product?.registration_number ? (
                     <tr>
                       <td className="pr-4 py-3 w-1/3 text-[#4A4F63]">
                         Số đăng ký
                       </td>
-                      <td className="pl-0 py-3 w-2/3 text-[#0053E2] font-semibold">
-                        {product.category.registration_number}
+                      <td className="pl-0 py-3 w-2/3 font-medium">
+                        {product?.registration_number}
                       </td>
                     </tr>
                   ) : null}
+
+                  <td colSpan={2} className="whitespace-nowrap">
+                    <a
+                      className="flex items-center gap-2 text-blue-600 cursor-pointer"
+                      href={product?.certificate_file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span>Xem giấy công bố sản phẩm</span>
+                      <BsPatchCheckFill className="text-blue-600" />
+                    </a>
+                  </td>
 
                   {product?.dosage_form && (
                     <tr>

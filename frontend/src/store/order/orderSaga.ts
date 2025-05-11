@@ -44,6 +44,18 @@ import {
     fetchRequestPrescriptionSuccess,
     fetchRequestPrescriptionFailed,
 
+    fetchGetRequestOrderFailed,
+    fetchGetRequestOrderStart,
+    fetchGetRequestOrderSuccess,
+
+    fetchGetApproveRequestOrderFailed,
+    fetchGetApproveRequestOrderStart,
+    fetchGetApproveRequestOrderSuccess,
+
+    fetchApproveRequestOrderFailed,
+    fetchApproveRequestOrderStart,
+    fetchApproveRequestOrderSuccess,
+
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -418,16 +430,15 @@ function* fetchUserRequestPrescription (action: any): Generator<any, void, any> 
     try {
         const {payload} = action;
         const {
-           data,
+            formData,
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
             }, 
-        } = payload;
-        const body = {
-           data
-        };
-        const rs = yield call(orderService.userRequestPrescription, body);
+        } = payload;  
+        console.log("formData", formData)
+        const rs = yield call(orderService.userRequestPrescription, formData);
+        
         if (rs.status_code === 200) {
             yield put(fetchRequestPrescriptionSuccess(rs.data));
             onSuccess(rs.data);
@@ -441,6 +452,82 @@ function* fetchUserRequestPrescription (action: any): Generator<any, void, any> 
     }
 }
 
+function* fetchGetRequestOrder (action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            }, 
+        } = payload;  
+        const rs = yield call(orderService.getRequestOrder);
+        if (rs.status_code === 200) {
+            yield put(fetchGetRequestOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetRequestOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetRequestOrderFailed());
+    }
+}
+
+function* fetchGetApproveRequestOrder (action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            }, 
+        } = payload;  
+        const rs = yield call(orderService.getApproveRequestOrder);
+        if (rs.status_code === 200) {
+            yield put(fetchGetApproveRequestOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetApproveRequestOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetApproveRequestOrderFailed());
+    }
+}
+
+function* fetchApproveRequestOrder (action: any): Generator<any, void, any> {
+    try {
+        // console.log("action", action);
+        const {payload} = action;
+        const {
+            body,
+            bodyReject,
+
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            }, 
+        } = payload;  
+        const rs = yield call(orderService.approveRequestOrder, body || bodyReject);
+        console.log("sagaa", body || bodyReject)
+        if (rs.status_code === 200) {
+            yield put(fetchApproveRequestOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchApproveRequestOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchApproveRequestOrderFailed());
+    }
+}
+
+
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -453,4 +540,7 @@ export function* orderSaga() {
     yield takeLatest(fetchDownloadInvoiceStart.type, fetchDownloadInvoice);
     yield takeLatest(fetchGetStatistics365DaysStart.type, fetchGetStatistics365Days);
     yield takeLatest(fetchRequestPrescriptionStart.type, fetchUserRequestPrescription);
+    yield takeLatest(fetchGetRequestOrderStart.type, fetchGetRequestOrder);
+    yield takeLatest(fetchGetApproveRequestOrderStart.type, fetchGetApproveRequestOrder);
+    yield takeLatest(fetchApproveRequestOrderStart.type, fetchApproveRequestOrder);
 }

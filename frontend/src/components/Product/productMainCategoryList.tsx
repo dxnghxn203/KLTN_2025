@@ -104,7 +104,7 @@ export default function ProductMainCategoryList({
           {products && products.length > 0 ? (
             filteredProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-5 gap-4 max-md:grid-cols-1">
+                <div className="grid grid-cols-5 gap-3 max-md:grid-cols-1">
                   {filteredProducts.map((productData: any, index: any) => (
                     <ProductMainCategoryCard
                       key={index}

@@ -5,11 +5,30 @@ import { FiHome, FiLogOut, FiUser } from "react-icons/fi";
 import { IoHome } from "react-icons/io5";
 import { FaCircleUser } from "react-icons/fa6";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/providers/toastProvider";
 
-const AlreadyLoggedIn = ( ) => {
+const AlreadyLoggedIn = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [countdown, setCountdown] = useState(30);
+  const toast = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await logout(
+        () => {
+          toast.showToast("Đăng xuất thành công", "success");
+        },
+        (error) => {
+          toast.showToast(error, "error");
+        }
+      );
+
+      toast.showToast("Đăng xuất thành công", "success");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   useEffect(() => {
     if (countdown > 0) {
@@ -37,11 +56,11 @@ const AlreadyLoggedIn = ( ) => {
           )}
         </div>
 
-        <h2 className="text-xl font-semibold mb-1">{user?.name || user?.user_name}</h2>
+        <h2 className="text-xl font-semibold mb-1">
+          {user?.name || user?.user_name}
+        </h2>
 
-        <p className="text-gray-500 text-sm mb-4">
-          {user?.email || "null"}
-        </p>
+        <p className="text-gray-500 text-sm mb-4">{user?.email || "null"}</p>
 
         <div className="bg-green-50 text-green-700 px-4 py-3 rounded-lg mb-6 space-y-4">
           <p>Bạn đã đăng nhập thành công!</p>
@@ -70,7 +89,7 @@ const AlreadyLoggedIn = ( ) => {
         </Link>
 
         <button
-          onClick={() => logout()}
+          onClick={handleLogout}
           className="flex items-center justify-center gap-2 w-full h-[55px] rounded-3xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
         >
           <FiLogOut className="text-lg" />

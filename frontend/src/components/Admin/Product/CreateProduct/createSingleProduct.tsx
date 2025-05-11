@@ -802,7 +802,9 @@ const CreateSingleProduct = () => {
         }
       );
     }
-    // console.log("formData", formData);
+    formData.forEach((value, key) => {
+      console.log(`${key}:`, value);
+    });
   };
 
   useEffect(() => {

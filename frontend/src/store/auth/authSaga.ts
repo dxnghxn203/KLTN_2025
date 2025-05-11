@@ -85,7 +85,15 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 }
 
 // Logout
-function* handleLogout(): Generator<any, void, any> {
+function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        onSuccess = () => {
+        },
+        onFailed = () => {
+        },
+    } = payload;
+    
     try {
         const response = yield call(signOut, {redirect: false});
         const token = getToken();
@@ -93,9 +101,13 @@ function* handleLogout(): Generator<any, void, any> {
             yield call(authService.logout, token);
         }
         removeToken();
-        yield put(logoutSuccess());
+        onSuccess();
+        yield put(logoutSuccess(
+            
+        ));
     } catch (error: any) {
         console.log('Logout error:', error);
+        onFailed(error?.message);
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
         localStorage.removeItem('token');
         if (typeof window !== 'undefined') {

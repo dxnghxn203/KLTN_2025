@@ -1,7 +1,18 @@
 "use client";
 import CategoryList from "@/components/Admin/Category/categoryList";
+import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 const Category = () => {
+  const router = useRouter();
+  const { admin } = useAuth();
+
+  useEffect(() => {
+    if (!admin) {
+      router.push("/dang-nhap-admin");
+    }
+  }, [admin, router]);
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-extrabold text-black">Danh mục</h2>

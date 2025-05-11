@@ -10,6 +10,7 @@ interface ProductState {
     productsBestDeal: any[];
     productApproved: any[];
     product: any;
+    searchResult: any[];
     loading: boolean;
     error: string | null;
 }
@@ -24,6 +25,7 @@ const initialState: ProductState = {
     productsBestDeal: [],
     productApproved: [],
     product: null,
+    searchResult: [],
     loading: false,
     error: null,
 };
@@ -240,6 +242,31 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // fetch search product 
+        fetchSearchProductStart(state, action: PayloadAction<any>) {
+            console.log("fetchSearchProductStart", action.payload);
+            state.loading = true;
+        },
+        fetchSearchProductSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchSearchProductSuccess", action.payload);
+            state.searchResult = action.payload;
+            console.log("payload", action.payload);
+            // console.log("state.searchResult", state.searchResult);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchSearchProductFailed(state, action: PayloadAction<string>) {
+            console.log("fetchSearchProductFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        //fetch clear search result
+        fetchClearSearchResult(state) {
+            state.searchResult = [];
+        },
+
+        
         
 
 
@@ -310,6 +337,11 @@ export const {
     fetchUpdateImagesProductFailed,
     fetchUpdateImagesProductStart,
     fetchUpdateImagesProductSuccess,
+
+    fetchSearchProductFailed,
+    fetchSearchProductStart,
+    fetchSearchProductSuccess,
+    fetchClearSearchResult,
 
 
     
