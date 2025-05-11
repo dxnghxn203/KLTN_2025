@@ -12,7 +12,11 @@ import { FaFileExcel } from "react-icons/fa6";
 import { RiFileExcel2Fill } from "react-icons/ri";
 
 const BulkCreateProduct = () => {
-  const { fetchImportAddFileProduct, allFileImport } = useProduct();
+  const {
+    fetchImportAddFileProduct,
+    allFileImport,
+    fetchGetImportFileAddProduct,
+  } = useProduct();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -60,7 +64,10 @@ const BulkCreateProduct = () => {
       () => {
         toast.showToast("Import file thành công", "success");
         handleCloseDialog();
-        allFileImport();
+        fetchGetImportFileAddProduct(
+          () => {},
+          () => {}
+        );
       },
       (message: any) => {
         toast.showToast(message, "error");
@@ -69,7 +76,7 @@ const BulkCreateProduct = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="">
       <h2 className="text-2xl font-extrabold text-black mb-4">
         Thêm danh sách sản phẩm
       </h2>
@@ -114,7 +121,7 @@ const BulkCreateProduct = () => {
       {/* Modal Dialog Upload */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md relative">
+          <div className="bg-white p-4 rounded-xl shadow-lg w-full max-w-md relative">
             <button
               className="absolute top-4 right-4 text-gray-500 hover:text-black transition"
               onClick={handleCloseDialog}
@@ -142,9 +149,9 @@ const BulkCreateProduct = () => {
 
             {/* Hiển thị file đã chọn */}
             {selectedFile && (
-              <div className="text-sm text-gray-700 mb-4 flex space-x-1 items-center">
-                <RiFileExcel2Fill /> <strong className="mr-2">Đã chọn:</strong>{" "}
-                {selectedFile.name}
+              <div className="text-sm text-gray-700 mb-4 flex items-center">
+                <RiFileExcel2Fill className="mr-1" />{" "}
+                <div className="mr-1">Đã chọn:</div> {selectedFile.name}
               </div>
             )}
 

@@ -158,10 +158,10 @@ const ManagerImport = ({ allFileImport }: ManagerImportProps) => {
                   : ""
               }`}
             >
-              <td className="px-4">{indexa + 1}</td>
-              <td className="px-4">{file.import_id}</td>
-              <td className="px-2 ">{file.file_url}</td>
-              <td className="px-2">
+              <td className="px-4 py-4">{indexa + 1}</td>
+              <td className="px-4 py-4">{file.import_id}</td>
+              <td className="px-2 py-4">{file.file_url}</td>
+              <td className="px-2 py-4">
                 <td className="px-4">
                   {Array.isArray(file.error_message) ? (
                     file.error_message.map((msg: string, i: number) =>
