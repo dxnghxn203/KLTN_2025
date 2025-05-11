@@ -10,6 +10,8 @@ interface ProductState {
     productsBestDeal: any[];
     productApproved: any[];
     product: any;
+    allBrand: any[];
+    searchResult: any[];
     loading: boolean;
     error: string | null;
 }
@@ -24,6 +26,8 @@ const initialState: ProductState = {
     productsBestDeal: [],
     productApproved: [],
     product: null,
+    allBrand: [],
+    searchResult: [],
     loading: false,
     error: null,
 };
@@ -240,6 +244,64 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // fetch search product 
+        fetchSearchProductStart(state, action: PayloadAction<any>) {
+            console.log("fetchSearchProductStart", action.payload);
+            state.loading = true;
+        },
+        fetchSearchProductSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchSearchProductSuccess", action.payload);
+            state.searchResult = action.payload;
+            console.log("payload", action.payload);
+            // console.log("state.searchResult", state.searchResult);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchSearchProductFailed(state, action: PayloadAction<string>) {
+            console.log("fetchSearchProductFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        //fetch clear search result
+        fetchClearSearchResult(state) {
+            state.searchResult = [];
+        },
+
+        // fetch all brand
+        fetchAllBrandStart(state, action: PayloadAction<any>) {
+            console.log("fetchAllBrandStart", action.payload);
+            state.loading = true;
+        },
+        fetchAllBrandSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchAllBrandSuccess", action.payload);
+            state.allBrand = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchAllBrandFailed(state, action: PayloadAction<string>) {
+            console.log("fetchAllBrandFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch import file add product
+        fetchImportFileAddProductStart(state, action: PayloadAction<any>) {
+            
+            console.log("fetchImportFileAddProductStart", action.payload);
+            state.loading = true;
+        },
+        fetchImportFileAddProductSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchImportFileAddProductSuccess", action.payload);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchImportFileAddProductFailed(state, action: PayloadAction<string>) {
+            console.log("fetchImportFileAddProductFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        
         
 
 
@@ -310,6 +372,19 @@ export const {
     fetchUpdateImagesProductFailed,
     fetchUpdateImagesProductStart,
     fetchUpdateImagesProductSuccess,
+
+    fetchSearchProductFailed,
+    fetchSearchProductStart,
+    fetchSearchProductSuccess,
+    fetchClearSearchResult,
+
+    fetchAllBrandFailed,
+    fetchAllBrandStart,
+    fetchAllBrandSuccess,
+
+    fetchImportFileAddProductFailed,
+    fetchImportFileAddProductStart,
+    fetchImportFileAddProductSuccess,
 
 
     

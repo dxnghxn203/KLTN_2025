@@ -20,9 +20,7 @@ default_image_url = "https://kltn2025.s3.ap-southeast-2.amazonaws.com/default/17
 async def get_all_categories_admin():
     try:
         collection = db[collection_name]
-        logger.info(f"collection1:")
         categories = collection.find({}, {"_id": 0})
-        logger.info(f"categories2: {categories}")
         return list(categories)
     except Exception as e:
         logger.error(f"Error getting all categories: {str(e)}")

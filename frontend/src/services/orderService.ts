@@ -187,7 +187,8 @@ export const getOrderByUserId = async () => {
 export const callWebhook = async (data: any) => {
     try {
         const verify_token = process.env.NEXT_PUBLIC_WEBHOOK_TOKEN;
-        const response: any = await axiosClient.post(`https://kltn-2025.onrender.com/api/v1/webhook/shipment/status?verify_token=${verify_token}`, data);
+        const host_hook = process.env.NEXT_PUBLIC_HOST_HOOK;
+        const response: any = await axiosClient.post(`${host_hook}/api/v1/webhook/shipment/status?verify_token=${verify_token}`, data);
         return response;
     } catch (error) {
         return {
@@ -275,8 +276,38 @@ export const getStatistics365Days = async () => {
 }
 
 export const userRequestPrescription = async (data: any) => {
+
     try {
+        console.log(data, "service")
+        data.forEach((value: any, key: any) => {
+            console.log(`${key}:`, value);
+          });
         const response: any = await axiosClient.post('/v1/order/request-prescription', data);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+        
+    } catch (error :any) {
+        // console.log(error)
+        // if (error.response) {
+        //     // console.error("Backend error response:", error.response.data);
+        //   } else {
+        //     console.error("Other error:", error.message);
+        //   }
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+        
+}
+
+export const getRequestOrder = async () => {
+    try {
+        const response: any = await axiosClient.get('/v1/order/request-order');
         return {
             status_code: response?.status_code,
             message: response?.message,
@@ -285,7 +316,41 @@ export const userRequestPrescription = async (data: any) => {
     } catch (error) {
         return {
             status_code: false,
-            message: 'Lỗi yêu cầu đơn thuốc',
+            message: 'Lỗi lấy danh sách đơn hàng yêu cầu',
         }
     }
 }
+
+export const getApproveRequestOrder = async () => {
+    try {
+        const response: any = await axiosClient.get("/v1/order/approve-prescription");
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi lấy danh sách đơn hàng yêu cầu',
+        }
+    }
+}
+
+export const approveRequestOrder = async (data: any) => {
+    try {
+        const response: any = await axiosClient.post("/v1/order/approve", data);
+       console.log("service", data)
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi duyệt đơn hàng yêu cầu',
+        }
+    }
+}
+

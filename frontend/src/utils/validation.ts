@@ -50,6 +50,7 @@ export const validatePassword = (value: string): string | null => {
       new_password: "Mật khẩu mới",
       name: "Tên người dùng",
       rejected_note: "Ghi chú từ chối",
+      note: "Lý do từ chối",
       
     };
     

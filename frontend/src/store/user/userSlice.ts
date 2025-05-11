@@ -1,10 +1,13 @@
 /* Core */
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { act } from "react";
 
 interface UserSliceState {
     responseInsertUser: any;
     loading: boolean;
     allUserAdmin: any[];
+    allPharmacist: any[];
+    allAdmin: any[];
     token: any;
 }
 
@@ -12,6 +15,8 @@ const initialState: UserSliceState = {
     responseInsertUser: null,
     loading: false,
     allUserAdmin: [],
+    allPharmacist: [],
+    allAdmin: [],
     token: null,
 };
 
@@ -147,6 +152,54 @@ export const userSlice = createSlice({
             console.log("fetchForgotPasswordPharmacistFailure")
             state.loading = false;
         },
+        //fetch all pharmacist
+        fetchGetAllPharmacistStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchGetAllPharmacistSuccess: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.allPharmacist = action.payload;
+        },
+        fetchGetAllPharmacistFailure: (state) => {
+            state.loading = false;
+        },
+        //fetch all admin
+        fetchGetAllAdminStart: (state, action) => {
+            console.log("fetchGetAllAdminStart")
+            state.loading = true;
+        },
+        fetchGetAllAdminSuccess: (state, action: PayloadAction<any>) => {
+            console.log("fetchGetAllAdminSuccess", action.payload)
+            state.loading = false;
+            state.allAdmin = action.payload;
+        },
+        fetchGetAllAdminFailure: (state) => {
+            console.log("fetchGetAllAdminFailure")
+            state.loading = false;
+        },
+        // update status pharmacist
+        fetchUpdateStatusPharmacistStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchUpdateStatusPharmacistSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchUpdateStatusPharmacistFailure: (state) => {
+            state.loading = false;
+        },
+        // update status admin
+        fetchUpdateStatusAdminStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchUpdateStatusAdminSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchUpdateStatusAdminFailure: (state) => {
+            state.loading = false;
+        },
+
+
+        
 
     },
 });
@@ -195,6 +248,22 @@ export const {
     fetchForgotPasswordPharmacistFailure,
     fetchForgotPasswordPharmacistStart,
     fetchForgotPasswordPharmacistSuccess,
+
+    fetchGetAllPharmacistStart,
+    fetchGetAllPharmacistSuccess,
+    fetchGetAllPharmacistFailure,
+
+    fetchGetAllAdminStart,
+    fetchGetAllAdminSuccess,
+    fetchGetAllAdminFailure,
+
+    fetchUpdateStatusPharmacistFailure,
+    fetchUpdateStatusPharmacistStart,
+    fetchUpdateStatusPharmacistSuccess,
+
+    fetchUpdateStatusAdminFailure,
+    fetchUpdateStatusAdminStart,
+    fetchUpdateStatusAdminSuccess,
 
 } = userSlice.actions;
 

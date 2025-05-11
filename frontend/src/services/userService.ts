@@ -42,25 +42,7 @@ export const sendOtp = async (params: any): Promise<any> => {
     }
 }
 
-export const getAllUserAdmin = async (params: any): Promise<any> => {
-    try {
-        const url = "/v1/users/all-user-admin";
-        const result: any = await axiosClient.get(url, { params });
-        return {
-            status_code: result.status_code,
-            message: result.message,
-            data: result.data
-        }
 
-    } catch (error) {
-        return {
-            status_code: 500,
-            message: "Lỗi không xác định",
-            data: null
-        }
-
-    }
-}
 
 export const forgotPasswordUser = async (params: any): Promise<any> => {
     try {
@@ -208,5 +190,112 @@ export const forgotPasswordPharmacist = async (params: any): Promise<any> => {
 
     }
 }
+
+export const getAllPharmacist = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/pharmacist/all-pharmacist-admin";
+        const result: any = await axiosClient.get(url, { params });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error) {
+        return {
+            status_code: 500,
+            message: "Lỗi không xác định",
+            data: null
+        }
+
+    }
+}
+export const getAllAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/all-admin";
+        const result: any = await axiosClient.get(url, { params });
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error) {
+        return {
+            status_code: 500,
+            message: "Lỗi không xác định",
+            data: null
+        }
+
+    }
+}
+export const getAllUserAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/users/all-user-admin";
+        const result: any = await axiosClient.get(url, { params });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data
+        }
+
+    } catch (error) {
+        return {
+            status_code: 500,
+            message: "Lỗi không xác định",
+            data: null
+        }
+
+    }
+}
+
+export const updateStatusAdmin = async (params: { user_id: string; status_user: boolean }): Promise<any> => {
+    try {
+        const url = "/v1/admin/status";
+        const result: any = await axiosClient.put(url, null, {
+            params: {
+                user_id: params.user_id,
+                status_user: params.status_user,
+            },
+        });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message || "Server error",
+            data: null,
+        };
+    }
+}
+
+export const updateStatusPharmacist = async (params: { pharmacist_id: string; status_pharmacist : boolean }): Promise<any> => {
+    try {
+        const url = "/v1/pharmacist/status";
+        const result: any = await axiosClient.put(url, null, {
+            params: {
+                pharmacist_id: params.pharmacist_id,
+                status_pharmacist : params.status_pharmacist,
+            },
+        });
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error.response?.data?.message || "Server error",
+            data: null,
+        };
+    }
+}
+
+
 
 

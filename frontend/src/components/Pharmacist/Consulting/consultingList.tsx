@@ -16,31 +16,36 @@ import {
 import ApproveProductDialog from "../Dialog/approveProductDialog";
 import { FiEye } from "react-icons/fi";
 import { LuBadgeCheck, LuEye } from "react-icons/lu";
+import { useOrder } from "@/hooks/useOrder";
+import ApproveRequestDialog from "../Dialog/approveRequestDialog";
+import { useRouter } from "next/navigation";
 
 const ConsultingList = () => {
-  const { productApproved, fetchProductApproved } = useProduct();
+  const { fetchGetApproveRequestOrder, allRequestOrderApprove } = useOrder();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const productApprovedPerPage = 6; // Số đơn hàng hiển thị trên mỗi trang
+  const orderRequestPerPage = 10; // Số đơn hàng hiển thị trên mỗi trang
 
   // Tính toán dữ liệu hiển thị theo trang
-  const totalProducts = productApproved ? productApproved.length : 0;
-  const indexOfLastProductApproved = currentPage * productApprovedPerPage;
-  const indexOfFirstProductApproved =
-    indexOfLastProductApproved - productApprovedPerPage;
-  const currentProductApproved = productApproved
-    ? productApproved.slice(
-        indexOfFirstProductApproved,
-        indexOfLastProductApproved
+  const totalProducts = allRequestOrderApprove
+    ? allRequestOrderApprove.length
+    : 0;
+  const indexOfLastOrderRequest = currentPage * orderRequestPerPage;
+  const indexOfFirstOrderRequest =
+    indexOfLastOrderRequest - orderRequestPerPage;
+  const currentOrderRequest = allRequestOrderApprove
+    ? allRequestOrderApprove.slice(
+        indexOfFirstOrderRequest,
+        indexOfLastOrderRequest
       )
     : [];
-  const totalPages = Math.ceil(totalProducts / productApprovedPerPage);
-  const [selectedProductApproved, setSelectedProductApproved] =
-    useState<any>(null);
+  const totalPages = Math.ceil(totalProducts / orderRequestPerPage);
+  const [selectedOrderRequest, setSelectedOrderRequest] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const router = useRouter();
 
   const onPageChange = (page: number) => {
     setCurrentPage(page);
@@ -58,14 +63,18 @@ const ConsultingList = () => {
   }, []);
 
   useEffect(() => {
-    fetchProductApproved();
-  }, [productApproved]);
+    fetchGetApproveRequestOrder(
+      () => {},
+      () => {}
+    );
+  }, [allRequestOrderApprove]);
+  console.log(allRequestOrderApprove);
 
   return (
     <div>
       <div className="space-y-6">
         <h2 className="text-2xl font-extrabold text-black">
-          Danh sách kiểm duyệt thuốc
+          Danh sách yêu cầu tư vấn thuốc
         </h2>
         <div className="my-4 text-sm">
           <Link href="/dashboard" className="hover:underline text-blue-600">
@@ -73,7 +82,7 @@ const ConsultingList = () => {
           </Link>
           <span> / </span>
           <Link href="/order" className="text-gray-800">
-            Danh sách kiểm duyệt thuốc
+            Danh sách yêu cầu tư vấn thuốc
           </Link>
         </div>
 
@@ -95,106 +104,61 @@ const ConsultingList = () => {
             <table className="w-full table-auto border-collapse">
               <thead className="text-left text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
                 <tr className="uppercase text-sm">
-                  <th className="py-3 px-2 text-center w-[130px]">Hình ảnh</th>
-                  <th className="py-3 px-2 ">Tên sản phẩm</th>
-                  <th className="py-3 px-2 text-center">
-                    Mã sản phẩm/ danh mục
-                  </th>
-                  <th className="py-3 px-4 text-center">Thuốc kê toa</th>
-                  <th className="py-3 px-6 text-center">Trạng thái</th>
-                  <th className="py-3 px-2 text-center"></th>
+                  <th className="py-3 pl-4">Mã yêu cầu</th>
+                  <th className="py-3  ">Tên khách hàng</th>
+                  <th className="py-3 ">SĐT</th>
+                  <th className="py-3 ">Email</th>
+                  <th className="py-3">Trạng thái</th>
+                  <th className="py-3 pr-4"></th>
                 </tr>
               </thead>
 
               <tbody>
-                {currentProductApproved && currentProductApproved.length > 0 ? (
-                  currentProductApproved.map((product: any, index: number) => (
+                {currentOrderRequest && currentOrderRequest.length > 0 ? (
+                  currentOrderRequest.map((request: any, index: number) => (
                     <tr
-                      key={product.product_id}
+                      key={request.request_id}
                       className={`text-sm hover:bg-gray-50 transition ${
-                        index !== currentProductApproved.length - 1
+                        index !== currentOrderRequest.length - 1
                           ? "border-b border-gray-200"
                           : ""
                       }`}
                     >
-                      <td className="py-4 px-4 text-center">
-                        {product.images_primary ? (
-                          <div className="relative h-16 w-16 mx-auto">
-                            <Image
-                              src={product.images_primary}
-                              alt={product.product_name}
-                              fill
-                              className="object-cover rounded"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-12 w-12 bg-gray-200 flex items-center justify-center rounded mx-auto">
-                            <IoImage className="text-gray-400 text-xl" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-4 px-2 text-left leading-5">
-                        <div className="line-clamp-2 font-medium">
-                          {product.product_name}
-                        </div>
-                        <div className="line-clamp-2 text-xs text-gray-500 mt-1">
-                          {product.name_primary}
-                        </div>
-                      </td>
-                      <td className="py-4 px-2 text-center text-xs flex flex-col gap-2 items-center justify-center">
-                        <span className="font-semibold">
-                          {product.product_id}
-                        </span>
-                        <span
-                          className="
-                              px-2 py-1 bg-blue-100 text-blue-700 rounded-full w-fit"
-                        >
-                          {product.category?.main_category_id}
-                        </span>
-                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full w-fit">
-                          {product.category?.sub_category_id}
-                        </span>
-                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full w-fit">
-                          {product.category?.child_category_id}
-                        </span>
-                      </td>
-                      <td className="py-4 px-2 text-center">
-                        <span
-                          className={`${
-                            product?.prescription_required
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          } px-2 py-1 rounded-full`}
-                        >
-                          {product?.prescription_required ? "Có" : "Không"}
-                        </span>
-                      </td>
+                      <td className="py-4 pl-4">{request.request_id}</td>
+                      <td className="py-4 ">{request.pick_to.name}</td>
+                      <td className="py-4 ">{request.pick_to.phone_number}</td>
+                      <td className="py-4">{request.pick_to.email}</td>
 
-                      <td className="py-4 px-2 text-center w-fit">
+                      <td className="py-4 text-center">
                         <span
                           className={`px-2 py-1 rounded-full ${
-                            product.verified_by === ""
-                              ? "bg-yellow-100 text-yellow-700"
-                              : product.is_approved === true
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
+                            request.status === "rejected"
+                              ? "bg-red-100 text-red-600"
+                              : request.status === "pending"
+                              ? "bg-yellow-100 text-yellow-600"
+                              : request.status === "approved"
+                              ? "bg-green-100 text-green-600"
+                              : "bg-blue-100 text-blue-600"
                           }`}
                         >
-                          {product.verified_by === ""
-                            ? "Đang chờ"
-                            : product.is_approved === true
+                          {request.status === "rejected"
+                            ? "Đã từ chối"
+                            : request.status === "pending"
+                            ? "Chờ duyệt"
+                            : request.status === "approved"
                             ? "Đã duyệt"
-                            : "Từ chối"}
+                            : "Chưa liên lạc được"}
                         </span>
                       </td>
 
-                      <td className="py-4 px-2 text-center relative w-[120px]">
-                        {product.verified_by !== "" ? (
+                      <td className="py-4 pl-4 text-center relative">
+                        {["approved", "rejected"].includes(request.status) ? (
                           <button
-                            className="px-3 py-2 font-medium flex items-center gap-1 text-sm text-gray-500"
+                            className="py-2 font-medium flex items-center gap-1 text-sm text-gray-500"
                             onClick={() => {
-                              setDialogOpen(true);
-                              setSelectedProductApproved(product);
+                              router.push(
+                                `/kiem-duyet-yeu-cau-tu-van-thuoc?chi-tiet=${request.request_id}`
+                              );
                             }}
                           >
                             <FiEye className="text-gray-500 text-lg" />
@@ -202,10 +166,11 @@ const ConsultingList = () => {
                           </button>
                         ) : (
                           <button
-                            className="underline px-3 py-2 text-blue-600 font-medium rounded-lg  flex items-center gap-2 text-sm"
+                            className="underline py-2 text-blue-600 font-medium rounded-lg  flex items-center gap-2 text-sm"
                             onClick={() => {
-                              setDialogOpen(true);
-                              setSelectedProductApproved(product);
+                              router.push(
+                                `/kiem-duyet-yeu-cau-tu-van-thuoc?edit=${request.request_id}`
+                              );
                             }}
                           >
                             <LuBadgeCheck className="text-blue-600 text-lg" />
@@ -291,11 +256,11 @@ const ConsultingList = () => {
         </div>
         {/* Drawer (Chi tiết đơn hàng) */}
       </div>
-      {isDialogOpen && selectedProductApproved && (
-        <ApproveProductDialog
+      {isDialogOpen && selectedOrderRequest && (
+        <ApproveRequestDialog
           isOpen={isDialogOpen}
           onClose={() => setDialogOpen(false)}
-          productSelected={selectedProductApproved}
+          requestSelected={selectedOrderRequest}
         />
       )}
     </div>

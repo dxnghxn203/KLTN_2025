@@ -26,13 +26,21 @@ const Header = ({
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(
+        () => {
+          toast.showToast("Đăng xuất thành công", "success");
+        },
+        (error) => {
+          toast.showToast(error, "error");
+        }
+      );
 
       toast.showToast("Đăng xuất thành công", "success");
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
+  console.log(pharmacist);
 
   return (
     <header className="w-full bg-[#FAFBFB] p-3 flex items-center justify-between border-b border-gray-200">

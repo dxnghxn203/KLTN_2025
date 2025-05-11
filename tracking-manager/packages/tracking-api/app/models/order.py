@@ -16,7 +16,7 @@ from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
 from app.core.s3 import upload_file
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
-    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq
+    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
 from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
@@ -28,7 +28,7 @@ from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_CO
     SENDER_COMMUNE_CODE
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
-from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
+from app.helpers.redis import get_product_transaction, save_product, remove_cart_item, product_key
 from app.models.cart import remove_product_from_cart
 from app.models.fee import calculate_shipping_fee
 from app.models.location import determine_route
@@ -597,7 +597,7 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
             )
         order_request = ItemOrderForPTRes(**order_request)
 
-        if order_request.status == "approved":
+        if order_request.status in ["approved", "rejected"]:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Yêu cầu này đã duyệt"
@@ -607,6 +607,21 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có quyền duyệt yêu cầu này"
+            )
+
+        if not item.product:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+
+        product_items, _, _, out_of_stock = await process_order_products(item.product)
+
+        if out_of_stock:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm đã hết hàng",
+                data={"out_of_stock": out_of_stock}
             )
 
         collection.update_one(
@@ -624,7 +639,7 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
         if item.status == "approved":
             order_data = ItemOrderInReq(
                 product=item.product,
-                pick_to=order_request.pick_to,
+                pick_to=InfoAddressOrderReq(**order_request.pick_to.dict()),
                 receiver_province_code=order_request.receiver_province_code,
                 receiver_district_code=order_request.receiver_district_code,
                 receiver_commune_code=order_request.receiver_commune_code,
@@ -638,7 +653,39 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
 
     except Exception as e:
         logger.error(f"Failed [approve_order]: {e}")
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Lỗi duyệt đơn"
+        raise e
+
+async def reset_dev_system():
+    # Xóa toàn bộ đơn hàng
+    order_result = database.db[collection_name].delete_many({})
+    logger.info(f"Deleted {order_result.deleted_count} orders")
+
+    # Reset sell & delivery trong MongoDB
+    product_result = database.db["products"].update_many(
+        {},
+        {"$set": {"sell": 0, "delivery": 0}}
+    )
+    logger.info(f"Updated {product_result.modified_count} products in MongoDB")
+    # Reset Redis
+
+    product_cursor = database.db["products"].find({}, {"product_id": 1, "inventory": 1})
+    redis_reset_count = 0
+
+    for product in product_cursor:
+        product_id = str(product.get("product_id", ""))
+        redis_key = product_key(product_id)
+        item = ItemProductRedisReq(
+            inventory=product.get("inventory", 0),
+            sell=0,
+            delivery=0
         )
+        save_product(item, product_id)
+        redis_reset_count += 1
+
+    logger.info(f"Reset sell/delivery for {redis_reset_count} products in Redis")
+
+    return {
+        "orders_deleted": order_result.deleted_count,
+        "products_updated": product_result.modified_count,
+        "redis_reset": redis_reset_count
+    }

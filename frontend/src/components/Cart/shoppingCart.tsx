@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { ImBin } from "react-icons/im";
 import Image from "next/image";
 import DeleteProductDialog from "@/components/Dialog/deleteProductDialog";
@@ -23,12 +23,31 @@ const ShoppingCart = ({
     null
   );
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
-
+  const [inputQuantities, setInputQuantities] = useState<{
+    [key: string]: number;
+  }>({});
   const { addProductTocart, getProductFromCart, removeProductFromCart } =
     useCart();
   const toast = useToast();
-
   const [loadingGetCart, setLoadingGetCart] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleDebouncedQuantityChange = (
+    productId: string,
+    priceId: string,
+    newQuantity: number,
+    oldQuantity: number
+  ) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      if (newQuantity !== oldQuantity) {
+        handleQuantityChange(productId, priceId, newQuantity - oldQuantity);
+      }
+    }, 500);
+  };
 
   const getCart = () => {
     setLoadingGetCart(true);
@@ -71,7 +90,6 @@ const ShoppingCart = ({
         });
       }
     });
-
     return products;
   };
 
@@ -172,6 +190,9 @@ const ShoppingCart = ({
         toast.showToast("Cập nhật thất bại", "error");
       }
     );
+    console.log("id", id);
+    console.log("price_id", price_id);
+    console.log("change", change);
   };
 
   const handleUnitChange = (
@@ -208,6 +229,17 @@ const ShoppingCart = ({
     setIsCheckout(true);
     setProductForCheckOut(getProductForCheckOut());
   };
+  // Tính số tiền tương ứng với số lượng sản phẩm
+  const calculateTotalPrice = (price: number, quantity: number) => {
+    return price * quantity;
+  };
+  // tổng tiền giá gốc
+  const calculateTotalOriginalPrice = (
+    original_price: number,
+    quantity: number
+  ) => {
+    return original_price * quantity;
+  };
 
   const renderPrice = (product: any, price_id: any) => {
     const price = getPrice(product.product, price_id);
@@ -215,11 +247,18 @@ const ShoppingCart = ({
       <>
         <div className="w-[15%] text-center flex flex-col items-center">
           <span className="text-lg font-semibold text-[#0053E2]">
-            {price.price.toLocaleString("vi-VN")}đ
+            {calculateTotalPrice(price?.price, product.quantity).toLocaleString(
+              "vi-VN"
+            )}
+            đ
           </span>
           {price.original_price !== price.price && price.original_price > 0 && (
             <span className="text-sm text-gray-500 line-through font-semibold">
-              {price?.original_price.toLocaleString("vi-VN")} đ
+              {calculateTotalOriginalPrice(
+                price?.original_price,
+                product.quantity
+              ).toLocaleString("vi-VN")}
+              đ
             </span>
           )}
         </div>
@@ -237,7 +276,31 @@ const ShoppingCart = ({
           >
             -
           </button>
-          {product.quantity}
+
+          <input
+            value={
+              inputQuantities[`${product.product.product_id}`] ??
+              product.quantity
+            }
+            onChange={(e) => {
+              const value = parseInt(e.target.value);
+              const newQuantity = isNaN(value) || value <= 0 ? 1 : value;
+
+              setInputQuantities((prev) => ({
+                ...prev,
+                [`${product.product.product_id}`]: newQuantity,
+              }));
+
+              handleDebouncedQuantityChange(
+                product.product.product_id,
+                product.price_id,
+                newQuantity,
+                product.quantity
+              );
+            }}
+            className="w-14 text-center border rounded px-2 py-1"
+          />
+
           <button
             onClick={() => {
               handleQuantityChange(
@@ -303,10 +366,12 @@ const ShoppingCart = ({
                 Chọn tất cả ({selectedProducts.length}/{cart?.length})
               </label>
             </div>
-            <div className="w-[15%] text-center">Giá thành</div>
-            <div className="w-[15%] text-center">Số lượng</div>
-            <div className="w-[15%] text-center">Đơn vị</div>
-            <div className="w-[15%] text-center"></div>
+            <div className="flex justify-between w-[55%]">
+              <div className="text-center">Giá thành</div>
+              <div className="text-center">Số lượng</div>
+              <div className="text-center">Đơn vị</div>
+              <div className="text-center"></div>
+            </div>
           </div>
 
           <div
@@ -322,55 +387,57 @@ const ShoppingCart = ({
                     index !== cart?.length - 1 ? "border-b border-gray-300" : ""
                   }`}
                 >
-                  <div className="w-[55%] flex items-center px-4 py-2">
-                    <label
-                      htmlFor={`product-${product.product.product_id}-${product.price_id}`}
-                      className="flex items-center justify-center w-5 h-5 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`product-${product.product.product_id}-${product.price_id}`}
-                        className="peer hidden"
-                        checked={selectedProducts.some(
-                          (item) =>
-                            item.product_id === product.product.product_id &&
-                            item.price_id === product.price_id
-                        )}
-                        onChange={() => {
-                          handleSelectProduct(
+                  <div className="flex items-center space-x-8">
+                    <div className="flex items-center px-4 py-2">
+                      <label
+                        htmlFor={`product-${product.product.product_id}-${product.price_id}`}
+                        className="flex items-center justify-center w-5 h-5 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`product-${product.product.product_id}-${product.price_id}`}
+                          className="peer hidden"
+                          checked={selectedProducts.some(
+                            (item) =>
+                              item.product_id === product.product.product_id &&
+                              item.price_id === product.price_id
+                          )}
+                          onChange={() => {
+                            handleSelectProduct(
+                              product.product.product_id,
+                              product.price_id
+                            );
+                          }}
+                        />
+                        <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]">
+                          ✓
+                        </span>
+                      </label>
+                      <Image
+                        src={product?.product?.images_primary}
+                        alt={product.product?.product_name || "Product Image"}
+                        width={55}
+                        height={55}
+                        className="ml-4 p-1 rounded-lg border border-stone-300"
+                      />
+                      <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis">
+                        {product?.product?.name_primary}
+                      </span>
+                    </div>
+                    {renderPrice(product, product.price_id)}
+
+                    <div className="text-center text-black/50 hover:text-black transition-colors">
+                      <button
+                        onClick={() =>
+                          handleDeleteClick(
                             product.product.product_id,
                             product.price_id
-                          );
-                        }}
-                      />
-                      <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]">
-                        ✓
-                      </span>
-                    </label>
-                    <Image
-                      src={product?.product?.images_primary}
-                      alt={product.product?.product_name || "Product Image"}
-                      width={55}
-                      height={55}
-                      className="ml-4 p-1 rounded-lg border border-stone-300"
-                    />
-                    <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis">
-                      {product?.product?.product_name}
-                    </span>
-                  </div>
-                  {renderPrice(product, product.price_id)}
-
-                  <div className="w-[15%] text-center text-black/50 hover:text-black transition-colors">
-                    <button
-                      onClick={() =>
-                        handleDeleteClick(
-                          product.product.product_id,
-                          product.price_id
-                        )
-                      }
-                    >
-                      <ImBin size={18} />
-                    </button>
+                          )
+                        }
+                      >
+                        <ImBin size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -18,6 +18,7 @@ export const PHARMACIST_ROUTES = [
     '/doi-mat-khau-duoc-si',
     '/quen-mat-khau-duoc-si',
     '/kiem-duyet-yeu-cau-tu-van-thuoc',
+    '/duyet-yeu-cau',
 ] as const;
 
 export const PARTNER_ROUTES = [
@@ -25,9 +26,10 @@ export const PARTNER_ROUTES = [
     '/partner/partner-order',
 ]
 
-export const COOKIE_TOKEN_KEY = '_x_sec_at_data'
-export const COOKIE_TOKEN_KEY_ADMIN = '_x_sec_at_data_admin'
-export const COOKIE_TOKEN_KEY_PHARMACIST = '_x_sec_at_data_pharmacist'
+export const COOKIE_TOKEN_KEY ='_x_sec_at_data'
+export const COOKIE_TOKEN_KEY_ADMIN ='_x_sec_at_data_ad'
+export const COOKIE_TOKEN_KEY_PHARMACIST ='_x_sec_at_data_phar'
+
 export const COOKIE_TOKEN_EXPIRED = 60 * 60 * 24 * 7;
 export const COOKIE_SESSION_KEY = '_x_sec_at_session'
 export const COOKIE_SESSION_EXPIRED = 60 * 30;

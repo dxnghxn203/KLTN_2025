@@ -40,7 +40,7 @@ const ProductCatalog: React.FC = () => {
       description: "Gạc, Bông gòn, Cồn...",
       imageSrc: categories2,
       bgColor: "bg-cyan-100",
-      path: "/thiet-bi-y-te",
+      path: "/trang-thiet-bi-y-te",
     },
     {
       title: "Dược mỹ phẩm",

@@ -36,6 +36,7 @@ export default function Header() {
   );
   const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
   const toast = useToast();
+  console.log("user", user);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -60,7 +61,16 @@ export default function Header() {
   }, []);
 
   const handleLogout = () => {
-    logout();
+    console.log("Logout clicked");
+    logout(
+      () => {
+        toast.showToast("Đăng xuất thành công", "success");
+      },
+      (error: string) => {
+        console.error("Logout error:", error);
+        toast.showToast("Đăng xuất thất bại", "error");
+      }
+    );
     setShowDropdown(false);
   };
 

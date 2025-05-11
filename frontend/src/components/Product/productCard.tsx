@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
+import { FaStar } from "react-icons/fa6";
 
 const ProductCard = ({ product }: { product: any }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -37,12 +38,14 @@ const ProductCard = ({ product }: { product: any }) => {
             </Link>
 
             <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
-              <div className="flex justify-between items-center text-xs mb-5">
-                <span className="font-normal text-[#A7A8B0]">
+              <div className="flex justify-between items-center mb-5">
+                <span className="font-normal text-[#A7A8B0] ">
                   {product?.category?.main_category_name}
                 </span>
-                <div className="flex items-center">
-                  <span className="text-lg">⭐</span>
+                <div className="flex items-center space-x-1">
+                  <span>
+                    <FaStar className="text-[#FFD700] text-base" />
+                  </span>
                   <span className="font-normal text-[#A7A8B0]">
                     {product?.rating?.toFixed(1)}
                   </span>

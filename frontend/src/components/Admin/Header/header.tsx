@@ -10,6 +10,7 @@ import { CiSearch } from "react-icons/ci";
 import { useAuth } from "@/hooks/useAuth";
 import { IoMdLogOut } from "react-icons/io";
 import { useEffect, useRef } from "react";
+import { useToast } from "@/providers/toastProvider";
 
 const Header = ({
   sidebarOpen,
@@ -22,9 +23,20 @@ const Header = ({
   const [search, setSearch] = useState("");
   const { admin, logout } = useAuth();
 
+  const toast = useToast();
+
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout(
+        () => {
+          toast.showToast("Đăng xuất thành công", "success");
+        },
+        (error) => {
+          toast.showToast(error, "error");
+        }
+      );
+
+      toast.showToast("Đăng xuất thành công", "success");
     } catch (error) {
       console.error("Logout error:", error);
     }

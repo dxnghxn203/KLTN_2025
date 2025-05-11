@@ -18,25 +18,61 @@ import { all } from "axios";
 const { RangePicker } = DatePicker;
 const statuses = [
   {
-    label: "Unpaid",
+    label: "Tất cả",
     count: 4,
     bgColor: "bg-gray-300",
     textColor: "text-gray-500",
   },
   {
-    label: "Paid",
+    label: "Đã tạo",
+    count: 4,
+    bgColor: "bg-gray-300",
+    textColor: "text-gray-500",
+  },
+  {
+    label: "Chờ lấy hàng",
     count: 1,
     bgColor: "bg-gray-300",
     textColor: "text-gray-500",
   },
   {
-    label: "Processing",
+    label: "Đang lấy hàng",
     count: 2,
     bgColor: "bg-gray-300",
     textColor: "text-gray-500",
   },
   {
-    label: "Refunded",
+    label: "Đang giao hàng",
+    count: 1,
+    bgColor: "bg-gray-300",
+    textColor: "text-gray-500",
+  },
+  {
+    label: "Giao hàng thành công",
+    count: 1,
+    bgColor: "bg-gray-300",
+    textColor: "text-gray-500",
+  },
+  {
+    label: "Giao hàng thất bại",
+    count: 1,
+    bgColor: "bg-gray-300",
+    textColor: "text-gray-500",
+  },
+  {
+    label: "Chờ trả hàng",
+    count: 1,
+    bgColor: "bg-gray-300",
+    textColor: "text-gray-500",
+  },
+  {
+    label: "Đã trả hàng",
+    count: 1,
+    bgColor: "bg-gray-300",
+    textColor: "text-gray-500",
+  },
+  {
+    label: "Đã hủy",
     count: 1,
     bgColor: "bg-gray-300",
     textColor: "text-gray-500",
@@ -89,7 +125,7 @@ const Order = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-800">
+          <Link href="/order" className="text-gray-850">
             Quản lý đơn hàng
           </Link>
         </div>
@@ -180,22 +216,17 @@ const Order = () => {
           </div>
 
           <div className="flex items-center space-x-3">
-            <button className="flex items-center gap-2 px-4 py-3 bg-[#1E4DB7] text-white rounded-lg text-sm font-medium transition">
-              <FaSyncAlt className="text-white" />
-              Đồng bộ hóa
-            </button>
-
-            <button className="flex items-center gap-2 px-4 py-3 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+            <button className="flex items-center gap-2 px-3 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition">
               <FiDownload className="text-[#1E4DB7]" />
-              Tải về CSV
+              Tải file CSV
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-gray-100 px-1 py-1 rounded-2xl w-fit">
+        <div className="flex items-center gap-2 bg-gray-100 px-1 py-1 rounded-2xl overflow-x-auto max-w-[800px] text-sm flex-nowrap">
           {statuses.map((status) => (
             <button
               key={status.label}
-              className={`flex items-center gap-1 px-2 py-2 rounded-2xl text-sm font-medium transition ${
+              className={`flex items-center gap-1 px-2 py-2 rounded-2xl text-sm font-medium whitespace-nowrap transition ${
                 selectedTab === status.label
                   ? "bg-[#1E4DB7] text-white"
                   : "bg-gray-200 text-gray-500 hover:bg-gray-300"
@@ -204,7 +235,7 @@ const Order = () => {
             >
               {status.label}
               <span
-                className={`rounded-full w-4 h-4 text-xs font-semibold ${
+                className={`rounded-full w-4 h-4 text-xs font-semibold flex items-center justify-center ${
                   selectedTab === status.label
                     ? "bg-white text-[#1E4DB7]"
                     : status.bgColor + " " + status.textColor
@@ -215,6 +246,7 @@ const Order = () => {
             </button>
           ))}
         </div>
+
         <TableOrdersAdmin />
       </div>
       {isDrawerOpen && (

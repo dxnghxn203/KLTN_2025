@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useProduct } from "@/hooks/useProduct";
+import { useEffect, useState } from "react";
 
 const priceRanges = [
   { label: "Dưới 100.000 đ", value: "under-100", min: 0, max: 100000 },
@@ -17,16 +18,6 @@ const priceRanges = [
   { label: "Trên 500.000 đ", value: "above-500", min: 500000, max: Infinity },
 ];
 
-const brands = [
-  "Stella Pharm",
-  "Imexpharm",
-  "Domesco",
-  "Usp",
-  "Tipharco",
-  "Agimexpharm",
-  "Dhg",
-  "Royal Care",
-];
 interface FilterProps {
   onPriceFilterChange: (range: { min: number; max: number }) => void;
   onBrandFilterChange: (brands: string[]) => void;
@@ -42,7 +33,15 @@ export default function Filter({
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const { fetchAllBrands, allBrands } = useProduct();
 
+  useEffect(() => {
+    fetchAllBrands(
+      () => {},
+      () => {}
+    );
+  }, []);
+  // console.log("allBrands", allBrands);
   const handlePriceChange = (value: string, min: number, max: number) => {
     setSelectedRange(value);
     onPriceFilterChange({ min, max });
@@ -75,7 +74,7 @@ export default function Filter({
     onPriceFilterChange({ min: 0, max: Infinity });
     onBrandFilterChange([]);
   };
-  const filteredBrands = brands.filter((brand) =>
+  const filteredBrands = allBrands.filter((brand: any) =>
     brand.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -153,24 +152,26 @@ export default function Filter({
             onChange={(e) => setSearchTerm(e.target.value)} // Cập nhật state khi nhập
           />
           <div className="space-y-2">
-            {(showAll ? filteredBrands : filteredBrands).map((brand, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() => handleBrandChange(brand)}
-                  className="w-4 h-4"
-                />
-                <label htmlFor={brand} className="text-sm">
-                  {brand}
-                </label>
-              </div>
-            ))}
+            {(showAll ? filteredBrands : filteredBrands.slice(0, 10)).map(
+              (brand: any, index: any) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand)}
+                    onChange={() => handleBrandChange(brand)}
+                    className="w-4 h-4"
+                  />
+                  <label htmlFor={brand} className="text-sm">
+                    {brand}
+                  </label>
+                </div>
+              )
+            )}
           </div>
-          {filteredBrands.length > 5 && (
+          {filteredBrands.length > 10 && (
             <button
               type="button"
-              className="text-blue-600 mt-2 hover:underline"
+              className="text-blue-600 mt-2 hover:underline text-sm"
               onClick={() => setShowAll(!showAll)}
             >
               {showAll ? "Thu gọn" : "Xem thêm"}

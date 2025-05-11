@@ -285,3 +285,47 @@ export const updateImagesProduct = async (product_id:any, params: any) => {
     }
 
 }
+
+export const searchProduct = async (query: any, page: any, page_size: any) => {
+    try {
+
+        const response: any = await axiosClient.get(`/v1/products/search?query=${query}&page=${page}&page_size=${page_size}`);
+        // console.log("response", response.data);
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
+export const getAllBrands = async () => {
+    try {
+        
+        const response: any = await axiosClient.get(`/v1/products/get_all_brands`);
+        return response;
+    } catch (error) {
+        console.error("Error fetching child category:", error);
+        throw error;
+    }
+}
+
+export const importFileAddProduct  = async (params: any) => {
+    try {
+        const response: any = await axiosClient.post(`/v1/products/import`, params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
