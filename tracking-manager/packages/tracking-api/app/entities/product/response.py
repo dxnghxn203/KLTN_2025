@@ -89,3 +89,8 @@ class ItemProductDBRes(BaseModel):
     def from_mongo(cls, data):
         data['_id'] = str(data.get('_id'))
         return cls(**data)
+
+class ItemProductImportRes(BaseModel):
+    import_id: Optional[Union[str, None]] = None
+    file_url: Optional[Union[str, None]] = None
+    error_message: List[Optional[Union[str, None]]] = None

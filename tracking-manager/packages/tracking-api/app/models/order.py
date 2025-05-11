@@ -28,7 +28,7 @@ from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_CO
     SENDER_COMMUNE_CODE
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
-from app.helpers.redis import get_product_transaction, save_product, remove_cart_item
+from app.helpers.redis import get_product_transaction, save_product, remove_cart_item, product_key
 from app.models.cart import remove_product_from_cart
 from app.models.fee import calculate_shipping_fee
 from app.models.location import determine_route
@@ -654,3 +654,38 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
     except Exception as e:
         logger.error(f"Failed [approve_order]: {e}")
         raise e
+
+async def reset_dev_system():
+    # Xóa toàn bộ đơn hàng
+    order_result = database.db[collection_name].delete_many({})
+    logger.info(f"Deleted {order_result.deleted_count} orders")
+
+    # Reset sell & delivery trong MongoDB
+    product_result = database.db["products"].update_many(
+        {},
+        {"$set": {"sell": 0, "delivery": 0}}
+    )
+    logger.info(f"Updated {product_result.modified_count} products in MongoDB")
+    # Reset Redis
+
+    product_cursor = database.db["products"].find({}, {"product_id": 1, "inventory": 1})
+    redis_reset_count = 0
+
+    for product in product_cursor:
+        product_id = str(product.get("product_id", ""))
+        redis_key = product_key(product_id)
+        item = ItemProductRedisReq(
+            inventory=product.get("inventory", 0),
+            sell=0,
+            delivery=0
+        )
+        save_product(item, product_id)
+        redis_reset_count += 1
+
+    logger.info(f"Reset sell/delivery for {redis_reset_count} products in Redis")
+
+    return {
+        "orders_deleted": order_result.deleted_count,
+        "products_updated": product_result.modified_count,
+        "redis_reset": redis_reset_count
+    }
