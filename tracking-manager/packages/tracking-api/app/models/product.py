@@ -1027,6 +1027,7 @@ async def import_products(file: UploadFile):
         workbook = load_workbook(BytesIO(contents))
         sheet = workbook.active
         df = pd.read_excel(BytesIO(contents))
+        df = df.fillna("")  # thay NaN bằng chuỗi rỗng
 
         error_messages = []
         image_columns = {
@@ -1201,4 +1202,19 @@ async def get_imported_products():
         return [ItemProductImportRes(**imports) for imports in imports_list]
     except Exception as e:
         logger.error(f"Error getting imported products: {str(e)}")
+        raise e
+
+async def delete_imported_products(import_id: str):
+    try:
+        collection = db[collection_import]
+        import_item = collection.find_one({"import_id": import_id})
+        if not import_item:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy Import")
+        else:
+            delete_result = collection.delete_one({"import_id": import_id})
+            if delete_result.deleted_count == 0:
+                logger.info(f"Import not deleted for import_id: {import_id}")
+            return response.SuccessResponse(message="Xóa Import thành công")
+    except Exception as e:
+        logger.error(f"Error deleting imported product: {str(e)}")
         raise e
