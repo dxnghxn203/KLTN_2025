@@ -853,7 +853,7 @@ async def search_products_by_name(keyword: str, page: int, page_size: int):
 async def get_product_brands():
     try:
         collection = db[collection_name]
-        product_list = await collection.distinct(
+        product_list = collection.distinct(
             "brand",
             {
                 "brand": {"$ne": None},
