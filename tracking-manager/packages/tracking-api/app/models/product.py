@@ -3,6 +3,9 @@ import re
 import unicodedata
 import json
 from io import BytesIO
+from types import SimpleNamespace
+import platform
+import socket
 
 from openpyxl.reader.excel import load_workbook
 from openpyxl.utils import get_column_letter
@@ -924,6 +927,8 @@ async def extract_category_object(row: dict, all_categories: list) -> Tuple[Item
         return None, str(e)
 
 async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=False):
+    logger.info(
+        f"[Image Extract] Đang chạy trên hệ điều hành: {platform.platform()} | Hostname: {socket.gethostname()}")
     image_results = {}  # key: column name, value: (url or None, error or None)
     img_row = 0
     for image in sheet._images:
@@ -934,12 +939,26 @@ async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=Fa
             img_col_letter = get_column_letter(img_col)
             header_value = sheet[f"{img_col_letter}1"].value
 
+            logger.info(f"[Image Extract] Đang xử lý ảnh tại hàng {img_row}, cột {img_col} ({header_value})")
+
             if img_row == row_idx + 2 and header_value in image_columns.values():
-                image.ref.seek(0)
+                logger.info(f"[Image Match] Ảnh phù hợp tại dòng {img_row}, cột {header_value}")
+
+                try:
+                    logger.info(f"[Image File] Type of image.ref: {type(image.ref)}")
+                    image.ref.seek(0)
+                except Exception as seek_err:
+                    error_msg = f"Lỗi seek ảnh tại cột {header_value}: {seek_err}"
+                    logger.error(f"[Image Error] {error_msg}")
+                    image_results[header_value] = (None, error_msg)
+                    continue
+
                 wrapped_file = SimpleNamespace(file=image.ref)
 
                 try:
                     file_url = upload_file(wrapped_file, "images" if not is_primary else "images_primary")
+                    logger.info(f"[Image Upload] Upload kết quả tại {header_value}: {file_url}")
+
                     if file_url:
                         if is_primary and header_value == "images_primary":
                             return file_url
@@ -949,8 +968,10 @@ async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=Fa
                         ), None)
                     else:
                         image_results[header_value] = (None, f"Lỗi không upload được ảnh ở cột {header_value}")
-                except Exception as e:
-                    image_results[header_value] = (None, f"Lỗi upload ảnh ở cột {header_value}: {e}")
+                except Exception as upload_err:
+                    error_msg = f"Lỗi upload ảnh tại cột {header_value}: {upload_err}"
+                    logger.error(f"[Image Upload Error] {error_msg}")
+                    image_results[header_value] = (None, error_msg)
         except Exception as e:
             logger.error(f"Lỗi xử lý ảnh tại row {img_row}: {e}")
 
