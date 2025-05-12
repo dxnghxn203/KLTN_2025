@@ -16,7 +16,7 @@ from app.models.product import get_product_by_slug, add_product_db, get_all_prod
     get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, \
     update_pharmacist_gender_for_all_products, check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
-    import_products, get_product_brands, get_imported_products
+    import_products, get_product_brands, get_imported_products, delete_imported_products
 
 router = APIRouter()
 
@@ -484,6 +484,20 @@ async def admin_get_imported_products():
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.delete("/products/import", response_model=response.BaseResponse)
+async def admin_delete_imported_products(import_id: str):
+    try:
+        return await delete_imported_products(import_id)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error deleting imported products", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.post("/products/dev", response_model=response.BaseResponse)
 async def dev():
     try:

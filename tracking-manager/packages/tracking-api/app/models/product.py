@@ -924,7 +924,7 @@ async def extract_category_object(row: dict, all_categories: list) -> Tuple[Item
         return None, str(e)
 
 async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=False):
-    image_list = []
+    image_results = {}  # key: column name, value: (url or None, error or None)
     img_row = 0
     for image in sheet._images:
         try:
@@ -935,20 +935,37 @@ async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=Fa
             header_value = sheet[f"{img_col_letter}1"].value
 
             if img_row == row_idx + 2 and header_value in image_columns.values():
-                image.ref.seek(0)  # đảm bảo về đầu stream
+                image.ref.seek(0)
                 wrapped_file = SimpleNamespace(file=image.ref)
-                file_url = upload_file(wrapped_file, "images" if not is_primary else "images_primary")
-                if file_url:
-                    if is_primary and header_value == "images_primary":
-                        return file_url
-                    image_list.append(ItemImageDBReq(
-                        images_id=generate_id("IMAGE"),
-                        images_url=file_url
-                    ))
+
+                try:
+                    file_url = upload_file(wrapped_file, "images" if not is_primary else "images_primary")
+                    if file_url:
+                        if is_primary and header_value == "images_primary":
+                            return file_url
+                        image_results[header_value] = (ItemImageDBReq(
+                            images_id=generate_id("IMAGE"),
+                            images_url=file_url
+                        ), None)
+                    else:
+                        image_results[header_value] = (None, f"Lỗi không upload được ảnh ở cột {header_value}")
+                except Exception as e:
+                    image_results[header_value] = (None, f"Lỗi upload ảnh ở cột {header_value}: {e}")
         except Exception as e:
             logger.error(f"Lỗi xử lý ảnh tại row {img_row}: {e}")
 
-    return image_list if not is_primary else None
+    # Gán lỗi cho các cột không có ảnh
+    for col_name in image_columns.values():
+        if col_name not in image_results:
+            image_results[col_name] = (None, f"Không tìm thấy ảnh ở cột {col_name}")
+
+    if is_primary:
+        url, error = image_results.get("images_primary", (None, None))
+        if error:
+            raise Exception(error)
+        return url
+
+    return image_results  # Dict[str, Tuple[Optional[ItemImageDBReq], Optional[str]]]
 
 def extract_pdf_bytes_from_ole_bin(bin_stream: BytesIO) -> bytes:
     try:
@@ -1010,6 +1027,7 @@ async def import_products(file: UploadFile):
         workbook = load_workbook(BytesIO(contents))
         sheet = workbook.active
         df = pd.read_excel(BytesIO(contents))
+        df = df.fillna("")  # thay NaN bằng chuỗi rỗng
 
         error_messages = []
         image_columns = {
@@ -1041,12 +1059,26 @@ async def import_products(file: UploadFile):
 
                 # Extract images
                 try:
-                    image_list = await extract_images_direct(sheet, df, idx, image_columns)
-                    image_primary = await extract_images_direct(sheet, df, idx, {0: "images_primary"},
-                                                         is_primary=True)
+                    image_result_map = await extract_images_direct(sheet, df, idx, image_columns)
+                    image_list = []
+                    for col, (img, err) in image_result_map.items():
+                        if err:
+                            row_errors.append(f"Dòng {excel_row_idx}: {err}")
+                        elif img:
+                            image_list.append(img)
+                    if not image_list:
+                        row_errors.append(f"Dòng {excel_row_idx}: Không có ảnh nào hợp lệ")
                 except Exception as e:
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi hình ảnh - {e}")
                     image_list = []
+
+                # Extract primary image
+                try:
+                    image_primary = await extract_images_direct(sheet, df, idx, {0: "images_primary"}, is_primary=True)
+                    if not image_primary:
+                        row_errors.append(f"Dòng {excel_row_idx}: Lỗi hình ảnh chính không xác định")
+                except Exception as e:
+                    row_errors.append(f"Dòng {excel_row_idx}: Lỗi ảnh chính - {e}")
                     image_primary = None
 
                 # Extract prices
@@ -1170,4 +1202,19 @@ async def get_imported_products():
         return [ItemProductImportRes(**imports) for imports in imports_list]
     except Exception as e:
         logger.error(f"Error getting imported products: {str(e)}")
+        raise e
+
+async def delete_imported_products(import_id: str):
+    try:
+        collection = db[collection_import]
+        import_item = collection.find_one({"import_id": import_id})
+        if not import_item:
+            raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy Import")
+        else:
+            delete_result = collection.delete_one({"import_id": import_id})
+            if delete_result.deleted_count == 0:
+                logger.info(f"Import not deleted for import_id: {import_id}")
+            return response.SuccessResponse(message="Xóa Import thành công")
+    except Exception as e:
+        logger.error(f"Error deleting imported product: {str(e)}")
         raise e

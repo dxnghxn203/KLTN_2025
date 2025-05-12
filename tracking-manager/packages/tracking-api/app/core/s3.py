@@ -54,7 +54,7 @@ def create_bucket_if_not_exists(bucket_name):
 
 def upload_file(file, folder: str):
     try:
-        create_bucket_if_not_exists(AWS_BUCKET)
+        #create_bucket_if_not_exists(AWS_BUCKET)
         # Construct the key with folder and file name
         name = str(int(time.time()))
         s3_key = f"{folder}/{name}"
@@ -73,7 +73,7 @@ def upload_file(file, folder: str):
 
 def upload_any_file(file, folder: str):
     try:
-        create_bucket_if_not_exists(AWS_BUCKET)
+        #create_bucket_if_not_exists(AWS_BUCKET)
         name = str(int(time.time()))
         s3_key = f"{folder}/{name}"
         content_type = file.content_type or 'application/octet-stream'
@@ -90,6 +90,7 @@ def upload_any_file(file, folder: str):
         return file_url
     except NoCredentialsError:
         logger.error("S3 Credentials not available.")
+        return ""
     except Exception as e:
         logger.error(f"S3 Failed to upload file: {str(e)}")
         return None
