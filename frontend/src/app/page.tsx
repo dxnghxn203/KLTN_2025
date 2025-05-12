@@ -8,25 +8,28 @@ import HealthCorner from "../components/Home/healthCorner";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
-      <main className="flex flex-col space-y-8 px-5">
-        <ProductCatalog />
-        <div className="self-start text-2xl font-extrabold text-black">
-          Sản phẩm bán chạy
-        </div>
-        <ProductList />
-        <div className="self-start text-2xl font-extrabold text-black">
-          Thương hiệu nổi bật
-        </div>
-        <BrandList />
-        <div className="self-start text-2xl font-extrabold text-black">
-          Deals tốt nhất hôm nay dành <br />
-          cho bạn!
-        </div>
-        <ProductDealsList />
-      </main>
-      <IntroMedicare />
-      <HealthCorner />
-    </div>
+    <>
+      <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
+        <main className="flex flex-col space-y-8 px-5">
+          <ProductCatalog />
+          <div className="self-start text-2xl font-extrabold text-black">
+            Sản phẩm bán chạy
+          </div>
+          <ProductList />
+          <div className="self-start text-2xl font-extrabold text-black">
+            Thương hiệu nổi bật
+          </div>
+          <BrandList />
+          <div className="self-start text-2xl font-extrabold text-black">
+            Deals tốt nhất hôm nay dành <br />
+            cho bạn!
+          </div>
+          <ProductDealsList />
+        </main>
+        <IntroMedicare />
+        <HealthCorner />
+      </div>
+      {/* Popup Chatbot */}
+    </>
   );
 }
