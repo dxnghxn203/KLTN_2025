@@ -1,9 +1,11 @@
 import json
+import traceback
 
 from bson import ObjectId
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 from fastapi import WebSocket
+from pydantic import EmailStr
 
 from app.core import logger
 from app.core.database import db
@@ -32,7 +34,7 @@ async def create_guest_conversation(guest_name: str, guest_email: Optional[str] 
     return conversation_data
 
 
-async def create_user_conversation(user_id: str, guest_name: str, guest_email: Optional[str] = None,
+async def create_user_conversation(user_id: str, guest_name: str, guest_email: Optional[EmailStr] = None,
                                    guest_phone: Optional[str] = None) -> Dict[str, Any]:
     """Tạo hội thoại mới cho người dùng đã đăng nhập"""
     conversation_data = {
@@ -186,7 +188,7 @@ async def handle_websocket_connection(
         manager = ws_manager
 
     # Kiểm tra loại client hợp lệ
-    if client_type not in ["guest", "pharmacist"]:
+    if client_type not in ["guest", "pharmacist", "user"]:
         await websocket.close(code=1008, reason="Loại client không hợp lệ")
         return
 
@@ -418,7 +420,7 @@ async def handle_websocket_connection(
                     try:
                         data = json.loads(raw_data["text"])
                     except json.JSONDecodeError as e:
-                        logger.warning(
+                        logger.warn(
                             f"Invalid JSON from {client_type}: {raw_data['text'][:100]}... - Error: {str(e)}")
                         await websocket.send_json({
                             "type": "error",
@@ -437,12 +439,12 @@ async def handle_websocket_connection(
                     continue
                 else:
                     # Trường hợp không có dữ liệu
-                    logger.warning(f"Received WebSocket message without data")
+                    logger.warn(f"Received WebSocket message without data")
                     continue
 
                 # Kiểm tra 'type' của tin nhắn
                 if "type" not in data:
-                    logger.warning(f"Received message without type field: {data}")
+                    logger.warn(f"Received message without type field: {data}")
                     await websocket.send_json({
                         "type": "error",
                         "message": "Message type is required",
@@ -545,7 +547,7 @@ async def handle_websocket_connection(
                         }
                     else:
                         # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
-                        logger.warning(f"No pharmacist record found for user_id: {user_id}, using default info")
+                        logger.warn(f"No pharmacist record found for user_id: {user_id}, using default info")
                         pharmacist_info = {
                             "id": user_id,
                             "name": "Dược sĩ tư vấn",
@@ -607,7 +609,7 @@ async def handle_websocket_connection(
 
                 else:
                     # Type không được hỗ trợ
-                    logger.warning(f"Unsupported message type: {data['type']}")
+                    logger.warn(f"Unsupported message type: {data['type']}")
                     await websocket.send_json({
                         "type": "error",
                         "message": f"Unsupported message type: {data['type']}",
