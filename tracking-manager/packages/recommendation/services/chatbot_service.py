@@ -21,14 +21,7 @@ llm_instance = ChatOpenAI(
 # Giả sử mongo_db_main_app được import và khởi tạo đúng cách từ core.mongo
 try:
     from core.mongo import db as mongo_db_main_app
-
     conversation_log_collection_service = mongo_db_main_app['conversation_logs']
-
-    # if mongo_db_main_app:
-    #     conversation_log_collection_service = mongo_db_main_app['conversation_logs']
-    # else:
-    #     conversation_log_collection_service = None
-    #     print("WARNING (service init): mongo_db_main_app is None, logging to MongoDB will be disabled.")
 except ImportError:
     mongo_db_main_app = None
     conversation_log_collection_service = None
@@ -37,13 +30,12 @@ except ImportError:
 
 
 async def detect_intent_and_entities(query: str, llm_instance_for_nlu) -> tuple[str | None, dict]:
-    # ... (logic NLU của bạn, như cũ)
     query_lower = query.lower().strip()
     if any(kw in query_lower for kw in ["thêm vào giỏ", "cho vào giỏ", "add to cart"]):
         return "ADD_TO_CART", {}
     if any(kw in query_lower for kw in ["xem giỏ hàng", "giỏ hàng của tôi"]):
         return "VIEW_CART", {}
-    if any(kw in query_lower for kw in ["chào", "hello", "xin chào"]):
+    if any(kw in query_lower for kw in ["chào", "hello", "xin chào", "hi", "chào shop nha"]):
         return "GREETING", {}
     return "PRODUCT_QUERY_OR_GENERAL", {}
 
@@ -80,7 +72,7 @@ async def handle_user_query(
     original_query_for_processing = user_query.strip()
     next_query_to_process = original_query_for_processing
 
-    MAX_DISPATCH_LOOPS = 2;
+    MAX_DISPATCH_LOOPS = 2
     dispatch_loops = 0
     while dispatch_loops < MAX_DISPATCH_LOOPS:
         dispatch_loops += 1
@@ -113,6 +105,16 @@ async def handle_user_query(
                 else:
                     bot_response_content = await intent_handlers.handle_add_to_cart_intent(
                         current_context, current_query_for_this_loop, anrede, llm_instance,
+                        is_registered_user, access_token_for_cart_api
+                    )
+            elif identified_intent == "VIEW_CART":
+                if not is_registered_user:
+                    bot_response_content = f"Chức năng xem giỏ hàng chỉ dành cho người dùng đã đăng nhập. Vui lòng đăng nhập để sử dụng tính năng này, {anrede} nhé."
+                elif not access_token_for_cart_api:
+                    bot_response_content = f"Xin lỗi {anrede}, có lỗi với thông tin xác thực của bạn, không thể xem giỏ hàng lúc này."
+                else:
+                    bot_response_content = await intent_handlers.handle_view_cart_intent(
+                        current_context, anrede, llm_instance,
                         is_registered_user, access_token_for_cart_api
                     )
             elif identified_intent == "GREETING":

@@ -6,18 +6,16 @@ import requests
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage
 
-# Giả sử các import này hoạt động đúng với cấu trúc dự án của bạn
+from core import logger
 from core.redis import redis_client
-import redis  # For Redis exceptions
+import redis
 
-# from core.mongo import db as mongo_db_main_app # Nếu log_conversation_turn dùng trực tiếp
-# from models import product as product_model # Nếu các hàm format cần truy cập model
 
-load_dotenv()  # Đảm bảo .env được load nếu các biến môi trường dùng ở đây
+load_dotenv()
 
-# --- START: Path Definitions & JSON Loading ---
 CURRENT_DIR_HELPERS = os.path.dirname(os.path.abspath(__file__))
 STATICS_DIR_HELPERS = os.path.join(os.path.dirname(CURRENT_DIR_HELPERS), "statics")
+TRACKING_API_URL= os.getenv("TRACKING_API_URL")
 
 print(f"DEBUG (helpers): Calculated STATICS_DIR: {STATICS_DIR_HELPERS}")
 
@@ -33,7 +31,7 @@ def load_prompt_templates():
         return {}
 
 
-templates_helpers = load_prompt_templates()  # Đổi tên để tránh xung đột nếu import *
+templates_helpers = load_prompt_templates()
 
 
 def load_phrases_from_json(filename: str) -> list[str]:
@@ -51,44 +49,18 @@ def load_phrases_from_json(filename: str) -> list[str]:
 
 
 GENERAL_QUESTION_PHRASES_HELPERS = load_phrases_from_json("general_question_phrases.json")
-# --- END: Path Definitions & JSON Loading ---
 
 SESSION_CONTEXT_TTL_SECONDS = 1800
-
-
-# --- START: Redis Context Management ---
-# def get_session_context(session_id: str) -> dict:
-#     default_context = {
-#         "current_cart": [], "recently_mentioned_products": [], "last_explicit_product": None,
-#         "disambiguation_options": None, "user_id": None, "user_name": None,
-#         "access_token": None, "pending_action": None
-#     }
-#     if not redis_client:
-#         print("WARNING (helpers): Redis client not available.")
-#         return default_context
-#     context_key = f"chatbot_session_context:{session_id}"
-#     try:
-#         context_json_string = redis_client.get(context_key)
-#         if context_json_string:
-#             context_data = json.loads(context_json_string)
-#             for key, value in default_context.items():  # Đảm bảo tất cả các key mặc định tồn tại
-#                 context_data.setdefault(key, value)
-#             return context_data
-#     except redis.exceptions.RedisError as re_err:
-#         print(f"ERROR (helpers): Redis error getting context for {context_key}: {re_err}")
-#     except json.JSONDecodeError as je:
-#         print(f"ERROR (helpers): JSON decode error for {context_key}: {je}.")
-#     return default_context
 
 
 def get_session_context(session_id: str) -> dict:
     default_context = {
         "user_id": None,
-        "user_name": "bạn",  # Mặc định cho xưng hô
+        "user_name": "bạn",
         "user_email": None,
-        "access_token": None,  # Token để gọi API giỏ hàng
-        "is_registered_user": False,  # Cờ xác định user
-        "current_cart": [],  # Cho guest users
+        "access_token": None,
+        "is_registered_user": False,
+        "current_cart": [],
         "recently_mentioned_products": [],
         "last_explicit_product": None,
         "disambiguation_options": None,
@@ -97,14 +69,13 @@ def get_session_context(session_id: str) -> dict:
     }
     if not redis_client:
         print("WARNING (helpers): Redis client not available.")
-        return default_context.copy()  # Trả về bản sao của default
+        return default_context.copy()
 
     context_key = f"chatbot_session_context:{session_id}"
     try:
         context_json_string = redis_client.get(context_key)
         if context_json_string:
             context_data = json.loads(context_json_string)
-            # Đảm bảo tất cả các key mặc định tồn tại để tránh KeyError sau này
             for key, value in default_context.items():
                 context_data.setdefault(key, value)
             return context_data
@@ -116,11 +87,6 @@ def get_session_context(session_id: str) -> dict:
         print(f"ERROR (helpers): Unexpected error getting context for {context_key}: {e}")
 
     return default_context.copy()
-# --- END: Redis Context Management ---
-
-# --- START: MongoDB Logging (Cần import mongo_db_main_app từ core.mongo) ---
-# from core.mongo import db as mongo_db_main_app
-# conversation_log_collection_helpers = mongo_db_main_app['conversation_logs']
 
 def log_conversation_turn(mongo_collection, session_id: str, user_id: str | None, user_query: str, bot_response: str,
                           is_registered_user: bool, user_name_for_log: str | None,
@@ -141,12 +107,9 @@ def log_conversation_turn(mongo_collection, session_id: str, user_id: str | None
         print(f"ERROR (helpers): Failed to log to MongoDB: {e}")
 
 
-# --- END: MongoDB Logging ---
 
-# --- START: Formatting Helpers ---
 def format_product_for_prompt(product_data_raw: dict | None) -> dict:
     if not product_data_raw or not isinstance(product_data_raw, dict):
-        # Trả về cấu trúc mặc định với các key raw để tránh lỗi sau này
         return {
             "product_name": "N/A", "description": "Không có thông tin.", "uses": "Không có thông tin.",
             "ingredients": "Không có thông tin.", "dosage": "Không có thông tin.",
@@ -155,10 +118,8 @@ def format_product_for_prompt(product_data_raw: dict | None) -> dict:
             "raw_product_id_api": "N/A", "raw_prices_api": []
         }
 
-    # Giả sử product_data_raw là dict sản phẩm từ MongoDB của bạn
     prices_list = product_data_raw.get("prices", [])  # prices là list các dict giá
     prices_formatted_parts = []
-    # Chứa các dict giá đã được xử lý nhẹ, bao gồm price_id_api
     processed_prices_for_api = []
 
     if prices_list and isinstance(prices_list, list):
@@ -167,8 +128,6 @@ def format_product_for_prompt(product_data_raw: dict | None) -> dict:
             try:
                 unit = price_item_raw.get("unit", "Đơn vị")
                 price_val = price_item_raw.get("price")
-                # QUAN TRỌNG: API của bạn cần price_id. Bạn cần có field này trong dữ liệu giá.
-                # Ví dụ: price_item_raw có key là "api_cart_price_id" hoặc tương tự
                 price_id_for_api_cart = price_item_raw.get("price_id_api")  # Hoặc tên field đúng của bạn
                 if not price_id_for_api_cart:  # Tạo ID giả nếu không có, nhưng không khuyến khích cho production
                     price_id_for_api_cart = f"price_{str(product_data_raw.get('_id'))}_{i + 1}"
@@ -183,7 +142,6 @@ def format_product_for_prompt(product_data_raw: dict | None) -> dict:
                     "unit": unit,
                     "price": price_val,
                     "price_id_api": price_id_for_api_cart  # Quan trọng cho việc gọi API giỏ hàng
-                    # Thêm các thông tin khác của giá nếu cần
                 })
             except (TypeError, ValueError) as e:
                 print(f"DEBUG (helpers): Error formatting price_item {price_item_raw}: {e}")
@@ -209,7 +167,6 @@ def format_product_for_prompt(product_data_raw: dict | None) -> dict:
 
 
 def product_data_formatted_to_str(product_data_formatted: dict) -> str:
-    # ... (Như đã định nghĩa ở phản hồi trước, không thay đổi nhiều)
     if not product_data_formatted or product_data_formatted.get("product_name") == "N/A":
         return "Không có thông tin chi tiết về sản phẩm này."
     parts = [
@@ -226,7 +183,6 @@ def product_data_formatted_to_str(product_data_formatted: dict) -> str:
 
 
 def format_multiple_products_for_prompt(products_list_raw: list, for_disambiguation=False):
-    # ... (Như đã định nghĩa, nhận list các product_raw_data)
     if not products_list_raw: return "Không tìm thấy sản phẩm nào."
     info_str = ""
     for i, p_data_raw in enumerate(products_list_raw):
@@ -234,19 +190,15 @@ def format_multiple_products_for_prompt(products_list_raw: list, for_disambiguat
         p_name = str(p_data_raw.get("name_primary", "Sản phẩm không rõ tên"))
         if for_disambiguation:
             info_str += f"{i + 1}. {p_name}\n"
-        else:  # ... (logic khác nếu cần)
-            info_str += f"{i + 1}. {p_name}\n"  # Giữ đơn giản cho disamb
+        else:
+            info_str += f"{i + 1}. {p_name}\n"
     return info_str.strip()
 
 
 def extract_product_search_term(query: str) -> str:
-    # ... (Như đã định nghĩa, sử dụng GENERAL_QUESTION_PHRASES_HELPERS)
-    # Đảm bảo tham chiếu đúng đến GENERAL_QUESTION_PHRASES_HELPERS
     print(f"\nDEBUG extract_term (helpers): --- Query: '{query}' ---")
     processed_query = query.lower().strip()
-    # ... (toàn bộ logic của hàm này)
     final_term = processed_query  # Placeholder, dán logic đầy đủ của bạn vào đây
-    # Ví dụ:
     for phrase in GENERAL_QUESTION_PHRASES_HELPERS:
         if final_term.startswith(phrase + " "):
             final_term = final_term[len(phrase) + 1:].strip()
@@ -260,29 +212,39 @@ def extract_product_search_term(query: str) -> str:
     return final_term
 
 
-# --- END: Formatting Helpers ---
-
-
-# --- START: User and Cart API Interaction ---
 def get_user_by_token(auth_token_header: str | None) -> dict | None:
-    # --- TODO: THAY THẾ BẰNG LOGIC XÁC THỰC TOKEN THỰC TẾ CỦA BẠN ---
     if not auth_token_header or not auth_token_header.startswith("Bearer "):
         return None
     token = auth_token_header.split(" ")[1]
-    if token == "VALID_TOKEN_FOR_DXNGHXN203_TEST":  # Token test
+    if token == "VALID_TOKEN_FOR_DXNGHXN203_TEST":
         return {
             "id": "user_dxnghxn203_mongodb_id",
             "name": "dxnghxn203",
             "email": "dxnghxn203@example.com",
-            "access_token_for_cart_api": token  # Hoặc một token khác nếu cần
+            "access_token_for_cart_api": token
         }
     print(f"DEBUG (helpers): get_user_by_token: Token '{token[:10]}...' (placeholder check failed).")
     return None
 
+def view_cart(user_access_token: str):
+    view_cart_api = f"{TRACKING_API_URL}/v1/cart/"
+    headers = {"accept": "application/json", "Authorization": f"Bearer {user_access_token}"}
+    try:
+        response = requests.get(view_cart_api, headers=headers)
+        logger.info(response.content)
+        if 200 <= response.status_code < 300:
+            print(f"INFO (helpers): View cart via API. Status: {response.status_code}, Resp: {response.text[:100]}")
+            return  json.loads(response.content.decode('utf-8'))
+        else:
+            print(f"ERROR (helpers): View API failed. Status: {response.status_code}, Body: {response.text}")
+            return None
+    except requests.RequestException as e:
+        print(f"ERROR (helpers): Request to Cart API failed: {e}")
+        return None
+
 
 def add_to_cart_api(product_id_api: str, price_id_api: str, quantity: int, user_access_token: str) -> bool:
-    # ... (Như đã định nghĩa ở phản hồi trước, đảm bảo URL và params đúng)
-    cart_api_url = f"https://kltn-2025-tracking-api-ek34.onrender.com/v1/cart/"
+    cart_api_url = f"${TRACKING_API_URL}/v1/cart/"
     params = {"product_id": product_id_api, "price_id": price_id_api, "quantity": str(quantity)}
     headers = {"accept": "application/json", "Authorization": f"Bearer {user_access_token}"}
     try:
@@ -300,13 +262,8 @@ def add_to_cart_api(product_id_api: str, price_id_api: str, quantity: int, user_
         return False
 
 
-# --- END: User and Cart API Interaction ---
-
-# --- START: LLM Interaction (Cần truyền llm_instance vào) ---
 async def get_llm_chat_response(llm_instance, system_prompt_content: str, user_prompt_content: str) -> str:
-    # ... (Như đã định nghĩa ở phản hồi trước)
     try:
-        # print(f"DEBUG llm_service (helpers): Sending request to LLM. Model: {llm_instance.model_name}")
         messages = [SystemMessage(content=system_prompt_content), HumanMessage(content=user_prompt_content)]
         llm_response_object = await llm_instance.ainvoke(messages)
         return llm_response_object.content.strip()
@@ -314,14 +271,7 @@ async def get_llm_chat_response(llm_instance, system_prompt_content: str, user_p
         print(f"ERROR llm_service (helpers): Error calling LLM: {e}")
         return "Xin lỗi, tôi đang gặp chút sự cố, vui lòng thử lại sau."
 
-
-
-# --- END: LLM Interaction ---
-
-# --- START: Constants (Có thể để riêng 1 file constants.py) ---
 BASE_SYSTEM_PERSONA_HELPERS = "Bạn là một dược sĩ AI tại Việt Nam, rất am hiểu về các sản phẩm thuốc và thực phẩm chức năng. Hãy luôn xưng hô với người dùng là '{anrede}' một cách thân thiện, nhẹ nhàng và dễ hiểu."
-# ... (Tất cả các hằng số prompt khác, thêm _HELPERS vào tên để tránh xung đột nếu import *)
 PRODUCT_NOT_FOUND_MESSAGE_HELPERS = "Chào {anrede}! Rất tiếc là mình không tìm thấy thông tin về sản phẩm bạn tìm kiếm..."
-# --- END: Constants ---
 
 

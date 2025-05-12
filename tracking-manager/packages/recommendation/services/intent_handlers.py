@@ -1,12 +1,7 @@
-# services/intent_handlers.py
+from core import logger
 from . import chatbot_helpers as helpers
-from models import product as product_model  # Giả sử product_model có hàm get_product_by_name_fuzzy
+from models import product as product_model
 import re
-
-
-# --- Constants (Import từ helpers hoặc định nghĩa lại/dùng trực tiếp từ helpers) ---
-# Ví dụ: PRODUCT_NOT_FOUND_MESSAGE = helpers.PRODUCT_NOT_FOUND_MESSAGE_HELPERS
-# Hoặc định nghĩa lại các hằng số prompt ở đây nếu muốn tách biệt hoàn toàn
 
 async def handle_pending_action(current_context: dict, original_query: str, anrede: str, llm_instance,
                                 is_registered_user: bool, access_token: str | None) -> str | None:
@@ -22,12 +17,12 @@ async def handle_pending_action(current_context: dict, original_query: str, anre
         quantity_to_add = action_data.get("quantity", 1)
 
         if isinstance(product_stub, dict) and product_stub.get("raw_prices_api"):
-            raw_prices = product_stub.get("raw_prices_api", [])  # Đây là list các dict giá đã xử lý
+            raw_prices = product_stub.get("raw_prices_api", [])
             try:
-                choice_idx = int(original_query.strip()) - 1  # Người dùng nhập số thứ tự
+                choice_idx = int(original_query.strip()) - 1
                 if 0 <= choice_idx < len(raw_prices) and isinstance(raw_prices[choice_idx], dict):
                     selected_price_info = raw_prices[choice_idx]
-                    price_id_api_cart = selected_price_info.get("price_id_api")  # Lấy từ dict giá đã xử lý
+                    price_id_api_cart = selected_price_info.get("price_id_api")
                     product_id_api_cart = product_stub.get("raw_product_id_api")
                     display_name = product_stub.get("product_name", "Sản phẩm")
                     display_unit = selected_price_info.get("unit", "")
@@ -43,14 +38,14 @@ async def handle_pending_action(current_context: dict, original_query: str, anre
                             else f"Rất tiếc {anrede}, đã có lỗi khi thêm {display_name} vào giỏ hàng. Vui lòng thử lại sau."
                     elif not is_registered_user:
                         bot_response = f"Chức năng giỏ hàng cho khách hiện đang được phát triển. {anrede} có thể đăng nhập để sử dụng."
-                    else:  # Lỗi token dù is_registered_user là true
+                    else:
                         bot_response = f"Xin lỗi {anrede}, có lỗi xác thực, không thể thêm vào giỏ hàng lúc này."
                     current_context["pending_action"] = None
                 else:
                     bot_response = f"Lựa chọn giá không hợp lệ. Vui lòng chọn số từ 1 đến {len(raw_prices)}."
             except ValueError:
                 bot_response = "Vui lòng chọn số thứ tự của loại giá bạn muốn."
-        else:  # Lỗi logic, pending_action không đúng
+        else:
             bot_response = "Có lỗi xảy ra khi xử lý lựa chọn giá của bạn."
             current_context["pending_action"] = None
     return bot_response
@@ -58,13 +53,6 @@ async def handle_pending_action(current_context: dict, original_query: str, anre
 
 async def handle_disambiguation(current_context: dict, original_query: str, anrede: str, llm_instance) -> tuple[
     str | None, str | None]:
-    """Trả về (bot_response, next_query_to_process_if_any)"""
-    # TODO: Triển khai logic xử lý disambiguation đầy đủ
-    # Tham khảo logic từ Giai đoạn 1 của handle_user_query cũ
-    # Nếu giải quyết, cập nhật current_context["last_explicit_product"]
-    # Nếu hủy, xóa current_context["disambiguation_options"]
-    # Nếu người dùng hỏi câu mới, trả về (None, new_query)
-    # Ví dụ đơn giản:
     query_lower = original_query.lower().strip()
     if query_lower == "1" and current_context.get("disambiguation_options") and len(
             current_context["disambiguation_options"]) > 0:
@@ -80,13 +68,11 @@ async def handle_disambiguation(current_context: dict, original_query: str, anre
         current_context["pending_action"] = None
         return (f"Đã hủy lựa chọn. {anrede} cần gì khác không?", None)
 
-    # Mặc định là chưa xử lý được, có thể yêu cầu LLM làm rõ hơn
-    # Hoặc nếu query có vẻ là câu hỏi mới
     temp_extracted_term = helpers.extract_product_search_term(original_query)
-    if temp_extracted_term != query_lower or not temp_extracted_term:  # Có vẻ là câu hỏi mới
+    if temp_extracted_term != query_lower or not temp_extracted_term:
         current_context["disambiguation_options"] = None
         current_context["pending_action"] = None
-        return (None, original_query)  # Trả về query mới để dispatcher xử lý lại
+        return (None, original_query)
 
     return (f"Lựa chọn không hợp lệ. Vui lòng chọn số hoặc nói 'không' để hủy.", None)
 
@@ -100,8 +86,7 @@ async def handle_add_to_cart_intent(current_context: dict, original_query: str, 
             "product_name") == "N/A":
         return f"{anrede} muốn thêm sản phẩm nào vào giỏ ạ? Vui lòng cho mình biết tên sản phẩm nhé."
 
-    # TODO: Trích xuất số lượng từ original_query (ví dụ: "thêm 2 hộp")
-    quantity_to_add = 1  # Mặc định
+    quantity_to_add = 1
     match_quantity = re.search(r"(\d+)\s*(hộp|vỉ|chai|tuýp|viên|gói|liều|sản phẩm|cái)", original_query.lower())
     if match_quantity:
         try:
@@ -148,7 +133,7 @@ async def handle_add_to_cart_intent(current_context: dict, original_query: str, 
         }
         prices_display = last_prod_formatted.get("prices_formatted", "Sản phẩm này có nhiều lựa chọn giá.")
         bot_response = f"{anrede} ơi, sản phẩm '{product_name}' có các lựa chọn giá:\n{prices_display}\n{anrede} vui lòng chọn loại muốn thêm vào giỏ (nhập số thứ tự)."
-    else:  # Không có thông tin giá trong raw_prices_api_list
+    else:
         bot_response = f"Xin lỗi {anrede}, sản phẩm '{product_name}' hiện không có thông tin giá để thêm vào giỏ."
     return bot_response
 
@@ -236,4 +221,36 @@ async def handle_general_fallback(current_context: dict, anrede: str, llm_instan
                                                        f"Câu hỏi của người dùng là: '{original_query}'")
     return bot_response
 
-# TODO: Thêm các intent handlers khác như handle_view_cart, handle_greeting, etc.
+async def handle_view_cart_intent(current_context: dict, anrede: str, llm_instance, is_registered_user: bool, access_token: str | None) -> str:
+    if not is_registered_user:
+        return f"Chức năng xem giỏ hàng hiện chỉ dành cho người dùng đã đăng ký. {anrede} vui lòng đăng nhập để sử dụng nhé."
+
+    if not access_token:
+        return f"Xin lỗi {anrede}, hiện mình không xác thực được tài khoản. Vui lòng thử đăng nhập lại giúp mình nhé."
+
+    cart_items = helpers.view_cart(access_token)['data']['products']
+    logger.info(cart_items)
+    if not cart_items or not isinstance(cart_items, list) or len(cart_items) == 0:
+        return f"Giỏ hàng của {anrede} hiện đang trống ạ."
+
+    total_price = 0
+    item_lines = []
+    for i, item in enumerate(cart_items, 1):
+        prod_name = item.get('product')['product_name']
+        quantity = item.get("quantity", 1)
+        matched_price = next(
+            (p for p in item.get('product')['prices'] if p["price_id"] == item.get('price_id')),
+            None
+        )
+        logger.info(matched_price)
+        unit = matched_price['unit']
+        unit_price = matched_price['price']
+        line_price = quantity * unit_price
+        total_price += line_price
+
+        item_lines.append(
+            f"{i}. {prod_name} - {quantity} {unit} x {unit_price:,}đ = {line_price:,}đ"
+        )
+
+    cart_str = "\n".join(item_lines)
+    return f"{anrede} ơi, đây là giỏ hàng của bạn:\n{cart_str}\n\nTổng cộng: {total_price:,}đ"

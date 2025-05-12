@@ -1,4 +1,3 @@
-# main.py
 from fastapi import APIRouter, Header, HTTPException, Depends, status  # Đổi FastAPI thành APIRouter
 from pydantic import BaseModel
 from typing import Annotated, Optional
@@ -9,13 +8,6 @@ from middleware import middleware
 from models import user
 from services.chatbot import save_session_context
 
-
-# Import UserInfo model và hàm get_current
-# class UserInfoFromToken(BaseModel): ... (đã định nghĩa ở trên hoặc import)
-# async def get_current_user_placeholder(token: str) -> Optional[UserInfoFromToken]: ... (đã định nghĩa)
-# async def verify_token_placeholder_str(authorization: Annotated[Optional[str], Header()] = None) -> str: ... (đã định nghĩa)
-
-# --- Giả sử các định nghĩa này đã có sẵn hoặc được import ---
 class UserInfoFromToken(BaseModel):
     id: str
     name: Optional[str] = "Quý khách"
@@ -26,7 +18,6 @@ from services.chatbot_service import handle_user_query as process_chat_query
 from services.chatbot_helpers import get_session_context
 from datetime import datetime
 
-# Đổi app = FastAPI() thành router = APIRouter()
 router = APIRouter()
 
 
@@ -46,7 +37,6 @@ class ChatMessageResponse(BaseModel):
     session_id: str
 
 
-# Đường dẫn của API giờ sẽ là /v1/chatbot/session/init (do prefix của router)
 @router.post("/session/init", response_model=InitSessionResponse)
 async def init_chatbot_session(
         token: str = Depends(middleware.verify_token)
@@ -83,7 +73,6 @@ async def init_chatbot_session(
     )
 
 
-# Đường dẫn của API giờ sẽ là /v1/chatbot/message
 @router.post("/message", response_model=ChatMessageResponse)
 async def chat_message_endpoint(request_body: ChatMessageRequest):
     if not request_body.query:
@@ -96,19 +85,3 @@ async def chat_message_endpoint(request_body: ChatMessageRequest):
         user_query=request_body.query
     )
     return ChatMessageResponse(answer=response_data["answer"], session_id=response_data["session_id"])
-
-# Để chạy ứng dụng này, bạn sẽ cần một file FastAPI chính (ví dụ: app_main.py)
-# để import và include router này.
-
-# Ví dụ: trong một file app_main.py hoặc tương tự:
-# from fastapi import FastAPI
-# from .routers import chatbot_router # Giả sử main.py hiện tại được đổi tên thành chatbot_router.py và nằm trong thư mục routers
-#
-# app = FastAPI()
-# app.include_router(chatbot_router.router) # Include router vào ứng dụng chính
-#
-# # Hoặc nếu main.py này là file gốc của bạn:
-# # from fastapi import FastAPI
-# # # (để router = APIRouter(...) ở trên)
-# # app = FastAPI()
-# # app.include_router(router) # Include router vừa định nghĩa
