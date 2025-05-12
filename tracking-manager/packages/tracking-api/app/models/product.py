@@ -931,6 +931,10 @@ async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=Fa
         f"[Image Extract] Đang chạy trên hệ điều hành: {platform.platform()} | Hostname: {socket.gethostname()}")
     image_results = {}  # key: column name, value: (url or None, error or None)
     img_row = 0
+
+    logger.info(f"[Image Check] sheet._images = {sheet._images}")
+    logger.info(f"[Image Count] Tổng số ảnh trong sheet: {len(sheet._images)}")
+
     for image in sheet._images:
         try:
             anchor = image.anchor._from
