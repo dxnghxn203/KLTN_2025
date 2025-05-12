@@ -40,6 +40,7 @@ export const login = async (data: any): Promise<any> => {
 // Logout
 export const logout = async (token: string): Promise<boolean> => {
     try {
+        console.log("logout service api")
         await axiosClient.get('/v1/auth/logout')
         return true;
     } catch (error) {

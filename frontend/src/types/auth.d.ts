@@ -38,6 +38,14 @@ export interface Admin {
     role?: string;
 }
 
+export interface Pharmacist {
+    id: string;
+    email: string;
+    name?: string;
+    image?: string;
+    role?: string;
+}
+
 export interface AuthState {
     user: any | null;
     admin: any | null;

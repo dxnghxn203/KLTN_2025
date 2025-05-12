@@ -63,6 +63,7 @@ export default function Header() {
   const handleLogout = () => {
     console.log("Logout clicked");
     logout(
+      "user",
       () => {
         toast.showToast("Đăng xuất thành công", "success");
       },
