@@ -7,6 +7,7 @@ import locationReducer from './location/locationSlice';
 import categoryReducer from './category/categorySlice';
 import userReducer from "./user/userSlice";
 import reviewReducer from "./review/reviewSlice";
+import chatboxReducer from "./chatbox/chatboxSlice";
 import {getToken, getTokenAdmin, getTokenPharmacist} from '@/utils/cookie';
 import {setClientToken} from '@/utils/configs/axiosClient';
 import {ROLE_ACTIONS_ADMIN, ROLE_ACTIONS_PHARMACIST} from "@/utils/roleAction";
@@ -22,6 +23,7 @@ const reducer = combineReducers({
     category: categoryReducer,
     user: userReducer,
     review: reviewReducer,
+    chatbox: chatboxReducer,
     // Add other reducers here
 });
 

@@ -50,13 +50,15 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
           ? null
           : !showChatbotAI &&
             !showChatbotPharmacist && (
-              <button
-                onClick={handleToggleMenu}
-                className="fixed bottom-8 right-6 z-50 w-16 h-16 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 flex items-center justify-center text-2xl"
-                aria-label="Mở chatbot AI"
-              >
-                🤖
-              </button>
+              <div className="fixed bottom-8 right-6">
+                <button
+                  onClick={handleToggleMenu}
+                  className=" z-50 w-16 h-16 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 flex items-center justify-center text-2xl"
+                  aria-label="Mở chatbot AI"
+                >
+                  🤖
+                </button>
+              </div>
             )}
         {/* Pop-up menu */}
         {showMenu && (
