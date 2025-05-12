@@ -27,7 +27,9 @@ const Header = ({
 
   const handleLogout = async () => {
     try {
-      await logout(
+      console.log("logout is clicked");
+      logout(
+        "admin",
         () => {
           toast.showToast("Đăng xuất thành công", "success");
         },

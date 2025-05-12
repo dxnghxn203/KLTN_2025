@@ -48,11 +48,14 @@ export function useAuth() {
     };
 
     const logout = (
+        role_type: string,
         onSuccess: (message: any) => void,
         onFailure: (message: any) => void,
 ) => {
+        console.log("logout hook");
         dispatch(logoutStart(
             {
+                role_type: role_type,
                 onSuccess: onSuccess,
                 onFailure: onFailure,
             }
@@ -85,9 +88,6 @@ export function useAuth() {
             onFailure: onFailure,
         }));
     }
-
-    
-
 
     return {
         user: user || session?.user || null,

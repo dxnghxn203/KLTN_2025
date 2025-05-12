@@ -1,4 +1,4 @@
-import {Admin, AuthState, User} from "@/types/auth";
+import {Admin, AuthState, Pharmacist, User} from "@/types/auth";
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 const initialState: AuthState = {
@@ -55,6 +55,7 @@ export const authSlice = createSlice({
 
         // Logout actions
         logoutStart: (state, action) => {
+            console.log("logout start:", action.payload);
             state.loading = true;
             state.error = null;
         },
@@ -83,6 +84,7 @@ export const authSlice = createSlice({
         loginAdminSuccess: (state, action: PayloadAction<{ admin: Admin; token: string }>) => {
             state.loading = false;
             state.admin = action.payload.admin;
+            state.isAuthenticated = true;
             state.isAdmin = true;
             state.user = null;
             state.pharmacist = null;
@@ -97,8 +99,9 @@ export const authSlice = createSlice({
             state.loading = true;
             state.error = null;
         },
-        loginPharmacistSuccess: (state, action: PayloadAction<{ pharmacist: any; token: string }>) => {
+        loginPharmacistSuccess: (state, action: PayloadAction<{ pharmacist: Pharmacist; token: string }>) => {
             state.loading = false;
+            state.isAuthenticated = true;
             state.pharmacist = action.payload.pharmacist;
             state.isPharmacist = true;
             state.user = null;
