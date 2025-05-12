@@ -1088,11 +1088,11 @@ async def import_products(file: UploadFile):
                     image_list = []
                     for col, (img, err) in image_result_map.items():
                         if err:
-                            row_errors.append(f"Dòng {excel_row_idx}: {err}")
+                            error_messages.append(f"Dòng {excel_row_idx}: {err}")
                         elif img:
                             image_list.append(img)
                     if not image_list:
-                        row_errors.append(f"Dòng {excel_row_idx}: Không có ảnh nào hợp lệ")
+                        error_messages.append(f"Dòng {excel_row_idx}: Không có ảnh nào hợp lệ")
                 except Exception as e:
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi hình ảnh - {e}")
                     image_list = []
@@ -1101,7 +1101,7 @@ async def import_products(file: UploadFile):
                 try:
                     image_primary = await extract_images_direct(sheet, df, idx, {0: "images_primary"}, is_primary=True)
                     if not image_primary:
-                        row_errors.append(f"Dòng {excel_row_idx}: Lỗi hình ảnh chính không xác định")
+                        error_messages.append(f"Dòng {excel_row_idx}: Lỗi hình ảnh chính không xác định")
                 except Exception as e:
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi ảnh chính - {e}")
                     image_primary = None
