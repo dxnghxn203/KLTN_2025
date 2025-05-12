@@ -1,5 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomPagination from "../../CustomPagination/customPagination";
+import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
+import { useProduct } from "@/hooks/useProduct";
+import { useToast } from "@/providers/toastProvider";
+import { selectAllFileImport } from "@/store";
 
 const dataSource = [
   {
@@ -61,6 +65,8 @@ const dataSource = [
 ];
 
 const ProgressBar: React.FC<{ percent: number }> = ({ percent }) => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
   let bgColor = "bg-orange-500"; // Mặc định màu cam
 
   if (percent === 100) {
@@ -86,81 +92,152 @@ const ProgressBar: React.FC<{ percent: number }> = ({ percent }) => {
   );
 };
 
-export default function ManagerImport() {
+interface ManagerImportProps {
+  allFileImport: any;
+}
+
+const ManagerImport = ({ allFileImport }: ManagerImportProps) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const productsPerPage = 6;
   const totalproducts = dataSource;
+  const { fetchGetImportFileAddProduct } = useProduct();
+  const toast = useToast();
+  // const totalProducts = allProductAdmin ? allProductAdmin.length : 0;
   // Lọc các sản phẩm cho trang hiện tại
   const currentproducts = totalproducts.slice(
     (currentPage - 1) * productsPerPage,
     currentPage * productsPerPage
   );
+  const onPageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+  useEffect(() => {
+    fetchGetImportFileAddProduct(
+      (message: any) => {
+        toast.showToast(message, "success");
+      },
+      (message: any) => {
+        toast.showToast(message, "error");
+      }
+    );
+  }, []);
+  console.log("allFileiImport", allFileImport);
+  // const totalPages = Math.ceil(totalproducts / productsPerPage);
   return (
     <div className="mt-4 bg-white shadow-sm rounded-2xl overflow-hidden">
-      <table className="w-full ">
+      <table className="divide-y divide-gray-200 w-full">
         {/* Header */}
-        <thead>
-          {/* Hàng tiêu đề chính */}
-          <tr className="bg-[#F0F3FD] text-[#1E4DB7] text-sm font-bold text-center">
-            <th className="px-4 py-4 border-r ">#</th>
-            <th className="px-4 py-4 border-r ">Time</th>
-            <th className="px-4 py-4 border-r " colSpan={2}>
-              Quantity Product
+        <thead className="text-[#1E4DB7] text-sm font-bold bg-[#F0F3FD]">
+          <tr className="">
+            <th className="px-4 py-4 text-xs uppercase tracking-wider text-center">
+              STT
             </th>
-            <th className="px-4 py-4 border-r ">Status</th>
-            <th className="px-4 py-4 ">Action</th>
-          </tr>
 
-          {/* Hàng tiêu đề phụ */}
-          <tr className="bg-[#F0F3FD] text-[#1E4DB7] text-sm font-bold border-b border-gray-200 text-center">
-            <th className="px-4 py-3 " colSpan={2}>
-              {" "}
+            <th className="px-4 py-4 text-xs uppercase tracking-wider text-center">
+              Mã Import
             </th>
-            <th className="px-4 py-3 border-r ">Import</th>
-            <th className="px-4 py-3 ">Success</th>
-            <th className="px-4 py-3 " colSpan={2}>
-              {" "}
+
+            <th className="px-4 py-4 text-xs uppercase tracking-wider text-center">
+              File URL
+            </th>
+
+            <th className="px-4 py-4 text-xs uppercase tracking-wider text-center">
+              Trạng thái
             </th>
           </tr>
         </thead>
 
         {/* Body */}
         <tbody>
-          {currentproducts.map((item, index) => (
+          {allFileImport.map((file: any, indexa: any) => (
             <tr
-              key={index} // Thêm key tránh lỗi React
-              className={`text-sm text-center hover:bg-gray-50 transition ${
-                index !== currentproducts.length - 1
+              key={file.import_id} // Thêm key tránh lỗi React
+              className={`text-sm text-left hover:bg-gray-50 transition ${
+                file !== allFileImport.length - 1
                   ? "border-b border-gray-200"
                   : ""
               }`}
             >
-              <td className="p-4">
-                {(currentPage - 1) * productsPerPage + index + 1}
-              </td>
-              <td className="p-4">{item.time}</td>
-              <td className="p-4">{item.import}</td>
-              <td className="p-4">{item.success}</td>
-              <td className="p-4 w-40">
-                <ProgressBar percent={item.status} />
-              </td>
-              <td className="px-4 py-2">
-                <a href="#" className="text-blue-600">
-                  Detail
-                </a>
+              <td className="px-4 py-4">{indexa + 1}</td>
+              <td className="px-4 py-4">{file.import_id}</td>
+              <td className="px-2 py-4">{file.file_url}</td>
+              <td className="px-2 py-4">
+                <td className="px-4">
+                  {Array.isArray(file.error_message) ? (
+                    file.error_message.map((msg: string, i: number) =>
+                      msg.split("\n").map((line, j) => (
+                        <div
+                          key={`${i}-${j}`}
+                          className="text-red-600 font-semibold"
+                        >
+                          {line}
+                        </div>
+                      ))
+                    )
+                  ) : (
+                    <div className="text-green-700 bg-green-100 py-1 px-2 rounded-full">
+                      Thành công
+                    </div>
+                  )}
+                </td>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="flex justify-center p-6">
-        <CustomPagination
-          current={currentPage}
-          total={totalproducts.length} // Tổng số bản ghi
-          pageSize={productsPerPage}
-          onChange={(page) => setCurrentPage(page)}
-        />
-      </div>
+      {/* <div className="flex items-center justify-center space-x-2 py-4">
+              <button
+                onClick={() => onPageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+              >
+                <MdNavigateBefore className="text-xl" />
+              </button>
+      
+              {Array.from({ length: totalPages }, (_, idx) => {
+                const page = idx + 1;
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => onPageChange(page)}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                        currentPage === page
+                          ? "bg-blue-700 text-white"
+                          : "text-black hover:bg-gray-200"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                }
+                if (
+                  (page === currentPage - 2 && currentPage > 3) ||
+                  (page === currentPage + 2 && currentPage < totalPages - 2)
+                ) {
+                  return (
+                    <span key={page} className="px-2 text-gray-500">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+      
+              <button
+                onClick={() => onPageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+              >
+                <MdNavigateNext className="text-xl" />
+              </button>
+            </div> */}
     </div>
   );
-}
+};
+
+export default ManagerImport;

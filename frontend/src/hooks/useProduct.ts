@@ -27,6 +27,8 @@ import {
     fetchAllBrandStart,
     selectAllBrands,
     fetchImportFileAddProductStart,
+    selectAllFileImport,
+    fetchGetAllImportFileAddProductStart,
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -43,6 +45,7 @@ export function useProduct() {
     const productApproved = useSelector(selectProductApproved);
     const searchResult = useSelector(selectSearchProduct);
     const allBrands = useSelector(selectAllBrands);
+    const allFileImport = useSelector(selectAllFileImport);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(100);
@@ -253,12 +256,25 @@ export function useProduct() {
     ) => {
         dispatch(
             fetchImportFileAddProductStart({
-                ...params,
+                formData: params,
                 onSuccess,
                 onFailure: onFailed
             })
         );
     }   
+    const fetchGetImportFileAddProduct = async (
+        
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchGetAllImportFileAddProductStart({
+              
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
 
     
     
@@ -304,6 +320,8 @@ export function useProduct() {
         allBrands,
 
         fetchImportAddFileProduct,
+        fetchGetImportFileAddProduct,
+        allFileImport,
 
     };
 }

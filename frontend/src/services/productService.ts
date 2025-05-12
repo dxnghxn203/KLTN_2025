@@ -314,6 +314,10 @@ export const getAllBrands = async () => {
 
 export const importFileAddProduct  = async (params: any) => {
     try {
+        console.log("service", params)
+         params.forEach((value: any, key: any) => {
+            console.log(`${key}:`, value);
+          });
         const response: any = await axiosClient.post(`/v1/products/import`, params);
         return {
             status_code: response.status_code,
@@ -326,6 +330,16 @@ export const importFileAddProduct  = async (params: any) => {
             message: error?.response?.data?.message || "Internal server error",
             data: null
         }
+    }
+}
+
+export const getAllImportFileAddProduct = async () => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/import`);
+        return response;
+    } catch (error) {
+        console.error("Error fetching child category:", error);
+        throw error;
     }
 }
 

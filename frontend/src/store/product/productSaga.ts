@@ -72,6 +72,10 @@ import {
     fetchImportFileAddProductFailed,
     fetchImportFileAddProductStart,
     fetchImportFileAddProductSuccess,
+
+    fetchGetAllImportFileAddProductFailed,
+    fetchGetAllImportFileAddProductStart,
+    fetchGetAllImportFileAddProductSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -562,12 +566,15 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     try {
         const { payload } = action;
         const {
-            file,
+            
+            formData,
             onSuccess = () => {},
             onFailed = () => {},
         } = payload;
 
-        const product = yield call(productService.importFileAddProduct, file);
+        console.log("saga", formData)
+
+        const product = yield call(productService.importFileAddProduct, formData);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchImportFileAddProductSuccess(product.message));
@@ -580,6 +587,28 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
         yield put(fetchImportFileAddProductFailed('Failed to update images product'));
     }
   }
+
+  function* fetchGetAllImportFileAddProduct(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            
+            onSuccess = () => {},
+            onFailed = () => {},
+            
+        } = payload;
+
+        const product = yield call(productService.getAllImportFileAddProduct);
+        if (product.status_code === 200) {
+            yield put(fetchGetAllImportFileAddProductSuccess(product.data));
+            return;
+        }
+        yield put(fetchGetAllImportFileAddProductFailed("Product not found"));
+    } catch (error) {
+        yield put(fetchGetAllImportFileAddProductFailed("Failed to fetch product by slug"));
+    }
+  }
+
 
   
   
@@ -605,5 +634,6 @@ export function* productSaga() {
     yield takeLatest(fetchSearchProductStart.type, searchProduct);
     yield takeLatest(fetchAllBrandStart.type, handleGetAllBrand);
     yield takeLatest(fetchImportFileAddProductStart.type, handleImportFileAddProduct);
+    yield takeLatest(fetchGetAllImportFileAddProductStart.type, fetchGetAllImportFileAddProduct);
 
 }
