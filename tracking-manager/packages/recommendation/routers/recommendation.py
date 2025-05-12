@@ -1,100 +1,57 @@
-from fastapi import Depends, APIRouter
-
-from core import logger
-from core.response import BaseResponse
-from services.recommendation import RecommendationSystem
+from fastapi import APIRouter, HTTPException, Body
+from pydantic import BaseModel
+from services import chatbot as chatbot_service
+from models import product as product_model  # Cho endpoint lấy tồn kho trực tiếp
 
 router = APIRouter()
 
-recommender = RecommendationSystem()
 
-def get_recommender():
-    return recommender
+class ChatQuery(BaseModel):
+    query: str
 
-@router.get("/top-selling/", response_model=BaseResponse)
-def top_selling(top_n: int = 5, recommender: RecommendationSystem = Depends(get_recommender)):
-    try:
-        return BaseResponse(
-            status_code=200,
-            status="success",
-            message="Top selling products",
-            data=recommender.get_top_selling_products(top_n).to_dict(orient="records")
-        )
-    except Exception as e:
-        logger.info(e)
-        return BaseResponse(
-            status_code=500,
-            status="error",
-            message="Internal server error",
-            data=None
-        )
 
-@router.get("/recently-viewed/", response_model=BaseResponse)
-def recently_viewed(user_id: str, recommender: RecommendationSystem = Depends(get_recommender)):
-    try:
-        return BaseResponse(
-            status_code=200,
-            status="success",
-            message="Recently viewed products",
-            data=recommender.get_recently_viewed(user_id).to_dict(orient="records")
-        )
-    except Exception as e:
-        logger.info(e)
-        return BaseResponse(
-            status_code=500,
-            status="error",
-            message="Internal server error",
-            data=None
-        )
+class ChatResponse(BaseModel):
+    answer: str
 
-@router.get("/featured/", response_model=BaseResponse)
-def featured_products(main_category_id: str, sub_category_id: str =None, child_category_id: str=None,  top_n: int = 5, recommender: RecommendationSystem = Depends(get_recommender)):
+
+@router.post("/chat", response_model=ChatResponse)
+async def handle_chat(chat_query: ChatQuery = Body(...)):
+    """
+    Endpoint chính để người dùng tương tác với chatbot.
+    """
+    if not chat_query.query:
+        raise HTTPException(status_code=400, detail="Query không được để trống.")
     try:
-        return BaseResponse(
-            status_code=200,
-            status="success",
-            message="featured_products",
-            data=recommender.get_featured_products(main_category_id,sub_category_id, child_category_id,  top_n).to_dict(orient="records")
-        )
+        answer = await chatbot_service.handle_user_query(chat_query.query)
+        return ChatResponse(answer=answer)
     except Exception as e:
-        logger.info(e)
-        return BaseResponse(
-            status_code=500,
-            status="error",
-            message="Internal server error",
-            data=None
-        )
-@router.get("/related/", response_model=BaseResponse)
-def related_products(product_id: str, top_n: int = 5, recommender: RecommendationSystem = Depends(get_recommender)):
-    try:
-        return BaseResponse(
-            status_code=200,
-            status="success",
-            message="related_products",
-            data= recommender.get_related_products(product_id, top_n).to_dict(orient="records")
-        )
-    except Exception as e:
-        logger.info(e)
-        return BaseResponse(
-            status_code=500,
-            status="error",
-            message="Internal server error",
-            data=None
-        )
-@router.get("/collaborative/", response_model=BaseResponse)
-def collaborative_recommendations(user_id: str, top_n: int = 5, recommender: RecommendationSystem = Depends(get_recommender)):
-    try:
-        return BaseResponse(
-            status_code=200,
-            status="success",
-            message="collaborative_recommendations",
-            data=recommender.get_collaborative_recommendations(user_id, top_n).to_dict(orient="records")
-        )
-    except Exception as e:
-        logger.info(e)
-        return BaseResponse(
-            status_code=500,
-            status="error",
-            message="Internal server error",
-            data=None
-        )
+        # Log lỗi ở đây (e)
+        print(f"Error in /chat endpoint: {e}")  # In ra console cho debug
+        raise HTTPException(status_code=500, detail="Đã có lỗi xảy ra trong quá trình xử lý yêu cầu của bạn.")
+
+
+# Endpoint ví dụ để kiểm tra tồn kho trực tiếp (không qua LLM)
+class StockResponse(BaseModel):
+    product_name: str
+    inventory: int | str
+
+
+@router.get("/products/{product_name_or_id}/stock", response_model=StockResponse)
+async def get_stock_info(product_name_or_id: str):
+    """
+    Lấy thông tin tồn kho của một sản phẩm theo tên hoặc ID (product_id từ schema của bạn, hoặc _id của MongoDB).
+    """
+    inventory = product_model.get_product_inventory(product_name_or_id)
+
+    if inventory is None:
+        raise HTTPException(status_code=404,
+                            detail=f"Không tìm thấy sản phẩm hoặc thông tin tồn kho cho '{product_name_or_id}'.")
+
+    # Lấy lại tên sản phẩm cho đẹp
+    product_data = product_model.get_product_by_id(product_name_or_id)
+    if not product_data:
+        product_data = product_model.get_product_by_name(product_name_or_id)
+
+    product_name = product_data.get("name_primary", product_name_or_id) if product_data else product_name_or_id
+
+    return StockResponse(product_name=product_name, inventory=inventory)
