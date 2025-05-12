@@ -226,12 +226,7 @@ async def handle_websocket_connection(
             if pharmacist:
                 pharmacist_info = {
                     "id": str(pharmacist["_id"]),
-                    "name": pharmacist.get("name", ""),
-                    "avatar": pharmacist.get("avatar", ""),
-                    "qualification": pharmacist.get("qualification", ""),
-                    "experience": pharmacist.get("experience", ""),
-                    "specialization": pharmacist.get("specialization", ""),
-                    "rating": pharmacist.get("rating", 0),
+                    "user_name": pharmacist.get("name", ""),
                     "status": "online"
                 }
             else:
