@@ -133,17 +133,15 @@ async def handle_user_query(
             current_context, anrede, llm_instance, original_query_for_processing
         )
 
-    # --- Save Context & Log ---
     current_context["last_interaction_time"] = datetime.utcnow().isoformat()
     save_session_context(session_id, current_context)
 
     # SỬA LỖI Ở ĐÂY:
-    if conversation_log_collection_service is not None:  # <--- THAY ĐỔI Ở ĐÂY
-        # Đảm bảo llm_instance.model_name là hợp lệ hoặc cung cấp giá trị mặc định
+    if conversation_log_collection_service is not None:
         model_name_to_log = "unknown_model"
         if hasattr(llm_instance, 'model_name') and llm_instance.model_name:
             model_name_to_log = llm_instance.model_name
-        elif hasattr(llm_instance, 'model') and llm_instance.model:  # Một số thư viện LLM dùng .model
+        elif hasattr(llm_instance, 'model') and llm_instance.model:
             model_name_to_log = llm_instance.model
 
         helpers.log_conversation_turn(

@@ -99,7 +99,7 @@ def log_conversation_turn(mongo_collection, session_id: str, user_id: str | None
         "identified_intent": intent, "entities_extracted": entities, "context_at_turn": current_context
     }
     try:
-        if mongo_collection:  # Truyền collection vào để linh hoạt hơn
+        if mongo_collection:
             mongo_collection.insert_one(log_entry)
         else:
             print("WARNING (helpers): MongoDB collection not provided for logging.")
