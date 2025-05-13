@@ -16,12 +16,11 @@ import {
     loginPharmacistStart,
     loginPharmacistSuccess,
     loginPharmacistFailure,
-} from './authSlice';
+} from '@/store';
 import {getSession, signIn, signOut} from 'next-auth/react';
 import {PayloadAction} from '@reduxjs/toolkit';
 import {removeToken, setToken, getToken, setTokenAdmin, setTokenPharmacist} from '@/utils/cookie';
 import {getDeviceId} from '@/utils/deviceId';
-import {setClientToken} from '@/utils/configs/axiosClient';
 
 // Google Login
 function* handleGoogleLogin(): Generator<any, void, any> {
@@ -93,7 +92,7 @@ function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
         onFailed = () => {
         },
     } = payload;
-    
+
     try {
         const response = yield call(signOut, {redirect: false});
         const token = getToken();
@@ -103,7 +102,7 @@ function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
         removeToken();
         onSuccess();
         yield put(logoutSuccess(
-            
+
         ));
     } catch (error: any) {
         console.log('Logout error:', error);

@@ -1,30 +1,22 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
 import * as chatService from '@/services/chatService';
-import {
-    fetchChatBoxInitStart,
-    fetchChatBoxSuccess,
-    fetchChatBoxFailed,
-} from '@/store';
+import {fetchChatBoxFailed, fetchChatBoxInitStart, fetchChatBoxSuccess,} from '@/store';
 
-import {getSession, getToken, setSession} from '@/utils/cookie';
+import {getToken, setSession} from '@/utils/cookie';
 
 function* handleInitChatBox(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
+            data,
             onSuccess = () => {
             },
             onFailure = () => {
             },
         } = payload;
         const token = getToken()
-        const params = {
-            "guest_name": "string",
-            "guest_email": "user@example.com",
-            "guest_phone": "string"
-        };
         const response = token ?
-            yield call(chatService.startChatBoxGuest, params)
+            yield call(chatService.startChatBoxGuest, data)
             : yield call(chatService.startChatBoxUser, {token});
         if (response?.status_code === 200) {
             onSuccess(response?.data);
