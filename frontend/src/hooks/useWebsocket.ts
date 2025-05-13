@@ -4,10 +4,11 @@ import {WebSocketMessage, Message, SystemMessage, ChatMessage} from "@/types/cha
 interface UseWebSocketProps {
     conversationId: string | null;
     guest_id: string | null;
-    isGuest: boolean;
+    pharmacist_id: string | null;
+    type: 'guest' | 'pharmacist' | 'user';
 }
 
-export const useWebSocket = ({conversationId, guest_id, isGuest}: UseWebSocketProps) => {
+export const useWebSocket = ({conversationId, guest_id, pharmacist_id, type}: UseWebSocketProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [pharmacistInfo, setPharmacistInfo] = useState<WebSocketMessage['pharmacist_info'] | null>(null);
@@ -63,7 +64,7 @@ export const useWebSocket = ({conversationId, guest_id, isGuest}: UseWebSocketPr
             const newMessage: ChatMessage = {
                 type: 'chat',
                 content,
-                sender_type: isGuest ? 'guest' : 'user',
+                sender_type: type,
                 timestamp: new Date().toISOString()
             };
             setMessages(prev => [...prev, newMessage]);
@@ -71,13 +72,13 @@ export const useWebSocket = ({conversationId, guest_id, isGuest}: UseWebSocketPr
             const messageToSend = {
                 type: 'message',
                 content,
-                sender_type: isGuest ? 'guest' : 'user'
+                sender_type: type
             };
             wsRef.current.send(JSON.stringify(messageToSend));
         } else {
             console.warn('WebSocket is not connected. Message not sent.');
         }
-    }, [isGuest]);
+    }, [type]);
 
     const connect = useCallback(() => {
         if (!conversationId) {
@@ -88,9 +89,15 @@ export const useWebSocket = ({conversationId, guest_id, isGuest}: UseWebSocketPr
             wsRef.current.close();
         }
 
-        const wsUrl = isGuest
-            ? `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/v1/ws/${conversationId}/guest`
-            : `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/v1/ws/${conversationId}/user?user_id=${guest_id}`;
+        let wsUrl =
+            `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/v1/ws/${conversationId}/${type}`;
+
+        if (type === 'pharmacist') {
+            wsUrl += `?user_id=${pharmacist_id}`;
+        }
+        if (type === 'user') {
+            wsUrl += `?user_id=${pharmacist_id}`;
+        }
 
         const ws = new WebSocket(wsUrl);
 
@@ -131,7 +138,7 @@ export const useWebSocket = ({conversationId, guest_id, isGuest}: UseWebSocketPr
             ws.close();
             wsRef.current = null;
         };
-    }, [conversationId, isGuest, handleWebSocketMessage]);
+    }, [conversationId, type, handleWebSocketMessage]);
 
     const disconnect = useCallback(() => {
         if (wsRef.current) {

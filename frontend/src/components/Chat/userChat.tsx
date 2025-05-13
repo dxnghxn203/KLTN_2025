@@ -12,7 +12,8 @@ export const UserChat = () => {
     const {messages, sendMessage, isConnected, pharmacistInfo} = useWebSocket({
         conversationId: conversation?._id || null,
         guest_id: conversation?.guest_id || null,
-        isGuest: false
+        pharmacist_id: conversation?.pharmacist_id || null,
+        type: "user"
     });
 
     const scrollToBottom = () => {

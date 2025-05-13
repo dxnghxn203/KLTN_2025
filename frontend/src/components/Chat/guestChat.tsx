@@ -22,7 +22,9 @@ export const GuestChat = () => {
 
     const {messages, sendMessage, isConnected, pharmacistInfo} = useWebSocket({
         conversationId: conversation?._id || null,
-        isGuest: true
+        guest_id: conversation?.guest_id || null,
+        pharmacist_id: conversation?.pharmacist_id || null,
+        type: "guest"
     });
 
     const scrollToBottom = () => {
