@@ -15,11 +15,10 @@ import {
 import ApproveProductDialog from "../Dialog/approveProductDialog";
 import { FiEye } from "react-icons/fi";
 import { LuBadgeCheck, LuEye } from "react-icons/lu";
-import { useChatBox } from "@/hooks/useChatBox";
+import { useChat } from "@/hooks/useChat";
 
 const ConsultRoomList = () => {
-  const { fetchGetAllConversationWaiting, allConversationWaiting } =
-    useChatBox();
+  const { fetchGetAllConversationWaiting, allConversationWaiting } = useChat();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const productApprovedPerPage = 10; // Số đơn hàng hiển thị trên mỗi trang

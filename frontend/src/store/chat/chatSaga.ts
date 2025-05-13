@@ -4,10 +4,33 @@ import {
     fetchChatBoxInitStart,
     fetchChatBoxSuccess,
     fetchChatBoxFailed,
+
+    fetchGetAllConversationWaitingFailed,
+    fetchGetAllConversationWaitingStart,
+    fetchGetAllConversationWaitingSuccess,
 } from '@/store';
 
 import {getSession, getToken, setSession} from '@/utils/cookie';
 
+function* getAllConversationWaiting(action: any): Generator<any, void, any> {
+   const { payload } = action;
+        const {
+            limit,
+            onSuccess = () => {},
+            onFailure = () => {},
+        } = payload;
+    try {
+        const response = yield call(chatService.getAllConversationWaiting, limit);
+        if (response.status_code === 200) {
+                    yield put(fetchGetAllConversationWaitingSuccess(response.data));
+                    return;
+                }
+                yield put(fetchGetAllConversationWaitingFailed("Category not found"));
+        
+    } catch (error) {
+            yield put(fetchGetAllConversationWaitingFailed("Failed to fetch order"));
+        }
+}
 function* handleInitChatBox(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
@@ -41,4 +64,5 @@ function* handleInitChatBox(action: any): Generator<any, void, any> {
 
 export function* chatSaga() {
     yield takeLatest(fetchChatBoxInitStart.type, handleInitChatBox);
+    yield takeLatest(fetchGetAllConversationWaitingStart.type, getAllConversationWaiting);
 }
