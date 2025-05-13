@@ -3,10 +3,11 @@ import {WebSocketMessage, Message, SystemMessage, ChatMessage} from "@/types/cha
 
 interface UseWebSocketProps {
     conversationId: string | null;
+    guest_id: string | null;
     isGuest: boolean;
 }
 
-export const useWebSocket = ({conversationId, isGuest}: UseWebSocketProps) => {
+export const useWebSocket = ({conversationId, guest_id, isGuest}: UseWebSocketProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [pharmacistInfo, setPharmacistInfo] = useState<WebSocketMessage['pharmacist_info'] | null>(null);
@@ -52,6 +53,8 @@ export const useWebSocket = ({conversationId, isGuest}: UseWebSocketProps) => {
                     setMessages(prev => [...prev, systemMessage]);
                 }
                 break;
+
+
         }
     }, []);
 
@@ -87,7 +90,7 @@ export const useWebSocket = ({conversationId, isGuest}: UseWebSocketProps) => {
 
         const wsUrl = isGuest
             ? `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/v1/ws/${conversationId}/guest`
-            : `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/v1/ws/${conversationId}/user`;
+            : `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/v1/ws/${conversationId}/user?user_id=${guest_id}`;
 
         const ws = new WebSocket(wsUrl);
 
@@ -130,6 +133,16 @@ export const useWebSocket = ({conversationId, isGuest}: UseWebSocketProps) => {
         };
     }, [conversationId, isGuest, handleWebSocketMessage]);
 
+    const disconnect = useCallback(() => {
+        if (wsRef.current) {
+            wsRef.current.close();
+            wsRef.current = null;
+        }
+        setIsConnected(false);
+        setMessages([]);
+        setPharmacistInfo(null);
+    }, []);
+
     useEffect(() => {
         if (conversationId) {
             const cleanup = connect();
@@ -138,10 +151,18 @@ export const useWebSocket = ({conversationId, isGuest}: UseWebSocketProps) => {
             };
         }
     }, [connect, conversationId]);
+
+    useEffect(() => {
+        return () => {
+            disconnect();
+        };
+    }, [disconnect]);
+
     return {
         messages,
         isConnected,
         sendMessage,
-        pharmacistInfo
+        pharmacistInfo,
+        disconnect
     };
 };

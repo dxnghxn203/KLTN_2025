@@ -17,12 +17,12 @@ messages = db['messages']
 
 async def create_guest_conversation(guest_name: str, guest_email: Optional[str] = None,
                                     guest_phone: Optional[str] = None) -> Dict[str, Any]:
-    """Tạo hội thoại mới cho khách không đăng nhập"""
     conversation_data = {
         "guest_name": guest_name,
         "guest_email": guest_email,
         "guest_phone": guest_phone,
         "guest_id": None,
+        "type":"guest",
         "pharmacist_id": None,
         "status": "waiting",
         "created_at": datetime.utcnow(),
@@ -36,12 +36,12 @@ async def create_guest_conversation(guest_name: str, guest_email: Optional[str] 
 
 async def create_user_conversation(user_id: str, guest_name: str, guest_email: Optional[EmailStr] = None,
                                    guest_phone: Optional[str] = None) -> Dict[str, Any]:
-    """Tạo hội thoại mới cho người dùng đã đăng nhập"""
     conversation_data = {
         "guest_name": guest_name,
         "guest_email": guest_email,
         "guest_phone": guest_phone,
         "guest_id": user_id,
+        "type": "user",
         "pharmacist_id": None,
         "status": "waiting",
         "created_at": datetime.utcnow(),
@@ -54,13 +54,11 @@ async def create_user_conversation(user_id: str, guest_name: str, guest_email: O
 
 
 async def get_waiting_conversations(limit: int = 20) -> List[Dict[str, Any]]:
-    """Lấy danh sách các hội thoại đang ở trạng thái chờ"""
     cursor = conversations.find({"status": "waiting"}).sort("created_at", 1).limit(limit)
     return cursor.to_list(length=limit)
 
 
 async def get_conversation(conversation_id: str) -> Optional[Dict[str, Any]]:
-    """Lấy thông tin chi tiết một hội thoại"""
     if not ObjectId.is_valid(conversation_id):
         return None
 
@@ -68,11 +66,9 @@ async def get_conversation(conversation_id: str) -> Optional[Dict[str, Any]]:
 
 
 async def accept_conversation(conversation_id: str, pharmacist_id: str) -> Optional[Dict[str, Any]]:
-    """Dược sĩ nhận một hội thoại"""
     if not ObjectId.is_valid(conversation_id):
         return None
 
-    # Tìm và cập nhật hội thoại
     result = conversations.find_one_and_update(
         {"_id": ObjectId(conversation_id), "status": "waiting"},
         {"$set": {
@@ -87,7 +83,6 @@ async def accept_conversation(conversation_id: str, pharmacist_id: str) -> Optio
 
 
 async def update_conversation_status(conversation_id: str, status: str) -> Optional[Dict[str, Any]]:
-    """Cập nhật trạng thái của hội thoại"""
     if not ObjectId.is_valid(conversation_id):
         return None
 
@@ -103,7 +98,6 @@ async def update_conversation_status(conversation_id: str, status: str) -> Optio
     return result
 
 
-# -------------------- MESSAGES --------------------
 
 async def create_message(
         conversation_id: str,
@@ -112,7 +106,6 @@ async def create_message(
         sender_id: Optional[str] = None,
         message_type: str = "text"
 ) -> Dict[str, Any]:
-    """Tạo tin nhắn mới"""
     message_data = {
         "conversation_id": conversation_id,
         "content": content,
@@ -126,7 +119,6 @@ async def create_message(
     result = messages.insert_one(message_data)
     message_data["_id"] = result.inserted_id
 
-    # Cập nhật thời gian của cuộc hội thoại
     conversations.update_one(
         {"_id": ObjectId(conversation_id)},
         {"$set": {"updated_at": datetime.utcnow()}}
@@ -136,7 +128,6 @@ async def create_message(
 
 
 async def get_conversation_messages(conversation_id: str, limit: int = 50) -> List[Dict[str, Any]]:
-    """Lấy tin nhắn của một hội thoại"""
     if not ObjectId.is_valid(conversation_id):
         return []
 
@@ -145,14 +136,15 @@ async def get_conversation_messages(conversation_id: str, limit: int = 50) -> Li
 
 
 async def mark_messages_as_read(conversation_id: str, reader_type: str) -> int:
-    """Đánh dấu tin nhắn là đã đọc"""
     if not ObjectId.is_valid(conversation_id):
         return 0
 
-    # Xác định loại người gửi tin nhắn (đối tác của người đọc)
-    sender_type = "guest" if reader_type == "pharmacist" else "pharmacist"
+    if reader_type == "pharmacist":
+        sender_type = {"$in": ["guest", "user"]}
+    else:
+        sender_type = "pharmacist"
 
-    result =  messages.update_many(
+    result = messages.update_many(
         {"conversation_id": conversation_id, "sender_type": sender_type, "is_read": False},
         {"$set": {"is_read": True}}
     )
@@ -200,9 +192,7 @@ async def handle_websocket_connection(
             await accept_conversation(conversation_id, user_id)
             conversation = await get_conversation(conversation_id)
 
-            # Lấy thông tin dược sĩ để gửi cho khách
             pharmacist = await get_pharmacist_by_user_id(user_id)
-            pharmacist_info = None
 
             if pharmacist:
                 pharmacist_info = {
@@ -238,8 +228,15 @@ async def handle_websocket_connection(
             await websocket.close(code=1008, reason="Bạn không được phép tham gia hội thoại này")
             return
 
+    if client_type == "user":
+        if not user_id:
+            await websocket.close(code=1008, reason="User ID là bắt buộc cho client type user")
+            return
+
+        if conversation.get("guest_id") and conversation.get("guest_id") != user_id:
+            await websocket.close(code=1008, reason="Bạn không được phép tham gia hội thoại này")
+            return
     try:
-        # Kết nối WebSocket
         await manager.connect(websocket, conv_id, client_type)
         logger.info(f"{client_type.capitalize()} connected to conversation {conversation_id}")
 
@@ -249,7 +246,7 @@ async def handle_websocket_connection(
             if pharmacist:
                 pharmacist_info = {
                     "id": str(pharmacist["_id"]),
-                    "name": pharmacist.get("", ""),
+                    "name": pharmacist.get("user_name", ""),
                     "avatar": pharmacist.get("avatar", ""),
                     "qualification": pharmacist.get("qualification", ""),
                     "experience": pharmacist.get("experience", ""),
@@ -258,7 +255,6 @@ async def handle_websocket_connection(
                     "status": pharmacist.get("status", "offline")
                 }
             else:
-                # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
                 logger.warn(
                     f"No pharmacist record found for ID: {conversation['pharmacist_id']}, using default info")
                 pharmacist_info = {
@@ -277,16 +273,17 @@ async def handle_websocket_connection(
                 "status": conversation.get("status", "waiting"),
                 "created_at": conversation.get("created_at").isoformat() if conversation.get("created_at") else None,
                 "updated_at": conversation.get("updated_at").isoformat() if conversation.get("updated_at") else None,
-                "pharmacist": pharmacist_info  # Thêm thông tin dược sĩ
+                "pharmacist": pharmacist_info
             }
         })
 
-        partner_type = "pharmacist" if client_type == "guest" else "guest"
+        if client_type == "pharmacist":
+            partner_type = conversation.get("type", "guest")
+        else:
+            partner_type = "pharmacist"
 
         if client_type == "pharmacist" and conversation.get("pharmacist_id") == user_id:
-            # Lấy thông tin dược sĩ
             pharmacist = await get_pharmacist_by_user_id(user_id)
-            pharmacist_info = None
 
             if pharmacist:
                 pharmacist_info = {
@@ -300,7 +297,6 @@ async def handle_websocket_connection(
                     "status": "online"
                 }
             else:
-                # Tạo thông tin mặc định nếu không tìm thấy dược sĩ trong DB
                 logger.warn(f"No pharmacist record found for user_id: {user_id}, using default info")
                 pharmacist_info = {
                     "id": user_id,
@@ -310,12 +306,11 @@ async def handle_websocket_connection(
                     "status": "online"
                 }
 
-            # Gửi thông tin dược sĩ trong thông báo partner_connected
             await manager.send_to_client(
                 {
                     "type": "partner_connected",
                     "client_type": client_type,
-                    "pharmacist_info": pharmacist_info,  # Thêm thông tin dược sĩ
+                    "pharmacist_info": pharmacist_info,
                     "timestamp": datetime.utcnow().isoformat()
                 },
                 conv_id,
@@ -337,7 +332,6 @@ async def handle_websocket_connection(
         for msg in messages_history:
             if "_id" in msg:
                 msg["_id"] = str(msg["_id"])
-            # Định dạng datetime thành ISO string để dễ xử lý ở frontend
             if "created_at" in msg and isinstance(msg["created_at"], datetime):
                 msg["created_at"] = msg["created_at"].isoformat()
 
@@ -373,7 +367,6 @@ async def handle_websocket_connection(
                     continue
 
                 if "text" in raw_data:
-                    # Phân tích dữ liệu JSON từ text
                     try:
                         data = json.loads(raw_data["text"])
                     except json.JSONDecodeError as e:
@@ -386,7 +379,6 @@ async def handle_websocket_connection(
                         })
                         continue
                 elif "bytes" in raw_data:
-                    # Dữ liệu nhị phân - không hỗ trợ trong ví dụ này
                     logger.warn(f"Binary data received but not supported")
                     await websocket.send_json({
                         "type": "error",
@@ -395,7 +387,6 @@ async def handle_websocket_connection(
                     })
                     continue
                 else:
-                    # Trường hợp không có dữ liệu
                     logger.warn(f"Received WebSocket message without data")
                     continue
 
@@ -476,7 +467,6 @@ async def handle_websocket_connection(
                     updated_conv = await accept_conversation(conversation_id, user_id)
 
                     pharmacist = await get_pharmacist_by_user_id(user_id)
-                    pharmacist_info = None
 
                     if pharmacist:
                         pharmacist_info = {
@@ -506,7 +496,7 @@ async def handle_websocket_connection(
                             "timestamp": datetime.utcnow().isoformat()
                         },
                         conv_id,
-                        "guest"
+                        client_type
                     )
 
                     await websocket.send_json({
@@ -580,7 +570,11 @@ async def handle_websocket_connection(
         if disconnected_type:
             logger.info(f"{disconnected_type.capitalize()} disconnected from conversation {conversation_id}")
 
-            partner_type = "pharmacist" if disconnected_type == "guest" else "guest"
+            if disconnected_type == "pharmacist":
+                partner_type = conversation.get("type", "guest")
+            else:
+                partner_type = "pharmacist"
+
             try:
                 await manager.send_to_client(
                     {

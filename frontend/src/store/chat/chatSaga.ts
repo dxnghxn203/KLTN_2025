@@ -47,8 +47,8 @@ function* handleInitChatBox(action: any): Generator<any, void, any> {
         } = payload;
         const token = getToken()
         const response = token ?
-            yield call(chatService.startChatBoxGuest, data)
-            : yield call(chatService.startChatBoxUser, {token});
+            yield call(chatService.startChatBoxUser) :
+            yield call(chatService.startChatBoxGuest, data);
         if (response?.status_code === 200) {
             onSuccess(response?.data);
             setSession(response?.data);

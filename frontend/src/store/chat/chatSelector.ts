@@ -1,1 +1,1 @@
-export const selectAllConversationWaiting = (state: any) => state.chatbox.allConversationWaiting;
+export const selectAllConversationWaiting = (state: any) => state.chat.allConversationWaiting;

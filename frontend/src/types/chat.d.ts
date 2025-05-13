@@ -32,7 +32,7 @@ export interface SystemMessage extends BaseMessage {
 export type Message = ChatMessage | SystemMessage;
 
 export interface WebSocketMessage {
-    type: 'new_message' | 'message_sent' | 'message' | 'messages_read' | 'partner_connected';
+    type: 'new_message' | 'message_sent' | 'message' | 'messages_read' | 'partner_connected' | 'connection_established';
     message?: {
         conversation_id?: string;
         content: string;
