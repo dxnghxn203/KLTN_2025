@@ -714,11 +714,6 @@ const CreateSingleProduct = () => {
       images_primary: primaryImagePreview,
     };
 
-    const formData_Certificate = new FormData(e.currentTarget);
-    if (certificate_file) {
-      formData_Certificate.append("file", certificate_file);
-    }
-
     // Chuyển URL (string) thành File
     const urlToFile = async (
       url: string,
@@ -747,18 +742,16 @@ const CreateSingleProduct = () => {
       return formData_Images;
     };
 
-    const formData_Images = await prepareImages();
-
-    const formData_PrimaryImage = new FormData();
-    if (primaryImage) {
-      formData_PrimaryImage.append("file", primaryImage);
-    }
-    console.log("formData_Certificate", formData_Certificate);
-    console.log("formData_Images", formData_Images);
-    console.log("formData_PrimaryImage", formData_PrimaryImage);
+    // console.log("formData_Certificate", formData_Certificate);
+    // console.log("formData_Images", formData_Images);
+    // console.log("formData_PrimaryImage", formData_PrimaryImage);
     if (editId) {
       try {
         if (hasCertificateChanged) {
+          const formData_Certificate = new FormData(e.currentTarget);
+          if (certificate_file) {
+            formData_Certificate.append("file", certificate_file);
+          }
           await fetchUpdateCertificateFileProduct(
             { product_id: editId, file: formData_Certificate },
             (msg) => toast.showToast(msg, "success"),
@@ -767,6 +760,10 @@ const CreateSingleProduct = () => {
         }
 
         if (hasPrimaryImageChanged) {
+          const formData_PrimaryImage = new FormData();
+          if (primaryImage) {
+            formData_PrimaryImage.append("file", primaryImage);
+          }
           await fetchUpdateImagesPrimaryProduct(
             { product_id: editId, file: formData_PrimaryImage },
             (msg) => toast.showToast(msg, "success"),
@@ -775,6 +772,7 @@ const CreateSingleProduct = () => {
         }
 
         if (hasImagesChanged) {
+          const formData_Images = await prepareImages();
           await fetchUpdateImagesProduct(
             { product_id: editId, files: formData_Images },
             (msg) => toast.showToast(msg, "success"),

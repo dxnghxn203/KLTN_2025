@@ -1,14 +1,13 @@
-import {all, fork} from 'redux-saga/effects';
-import {authSaga} from './auth';
-import {cartSaga} from './cart';
-import {productSaga} from './product';
-import {orderSaga} from './order';
-import {locationSaga} from './location';
-import {categorySaga} from './category';
-import {userSaga} from './user';
-import {reviewSaga} from './review';
-import {chatSaga} from "./chat";
-
+import { all, fork } from 'redux-saga/effects';
+import { authSaga } from './auth';
+import { cartSaga } from './cart';
+import { productSaga } from './product';
+import { orderSaga } from './order';
+import { locationSaga } from './location';
+import { categorySaga } from './category';
+import { userSaga } from './user';
+import { reviewSaga } from './review';
+import { chatSaga } from './chat';
 export default function* rootSaga() {
     yield all([fork(authSaga)]);
     yield all([fork(cartSaga)]);

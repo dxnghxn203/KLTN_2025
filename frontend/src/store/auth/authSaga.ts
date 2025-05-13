@@ -19,7 +19,17 @@ import {
 } from '@/store';
 import {getSession, signIn, signOut} from 'next-auth/react';
 import {PayloadAction} from '@reduxjs/toolkit';
-import {removeToken, setToken, getToken, setTokenAdmin, setTokenPharmacist} from '@/utils/cookie';
+import {
+    removeToken,
+    removeTokenAdmin,
+    removeTokenPharmacist,
+    setToken,
+    setTokenAdmin,
+    setTokenPharmacist,
+    getToken,
+    getTokenAdmin,
+    getTokenPharmacist
+} from '@/utils/cookie';
 import {getDeviceId} from '@/utils/deviceId';
 
 // Google Login
@@ -87,16 +97,26 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
     const {payload} = action;
     const {
+        role_type,
         onSuccess = () => {
         },
-        onFailed = () => {
+        onFailure = () => {
         },
     } = payload;
-
     try {
+        console.log("logout call:", role_type);
         const response = yield call(signOut, {redirect: false});
-        const token = getToken();
+        var token = null;
+        if (role_type === "admin") {
+            token = getTokenAdmin();
+        } else if (role_type === "pharmacist") {
+            token = getTokenPharmacist();
+        } else {
+            token = getToken();
+        }
+        console.log("token", token);
         if (token) {
+            console.log("logout service")
             yield call(authService.logout, token);
         }
         removeToken();
@@ -106,7 +126,7 @@ function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
         ));
     } catch (error: any) {
         console.log('Logout error:', error);
-        onFailed(error?.message);
+        onFailure(error?.message);
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
         localStorage.removeItem('token');
         if (typeof window !== 'undefined') {

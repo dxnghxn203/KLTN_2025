@@ -1,6 +1,8 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 const initialState: any = {
+        allConversationWaiting : [],
+
     loading: false,
     error: null,
 };
@@ -19,13 +21,29 @@ export const chatSlice = createSlice({
             state.loading = false;
         },
 
+        fetchGetAllConversationWaitingStart (state, action) {
+                    state.loading = true
+        
+                },
+                fetchGetAllConversationWaitingSuccess(state, action: PayloadAction<any>) {
+                    state.allConversationWaiting = action.payload;
+                    state.loading = false;
+                },
+                fetchGetAllConversationWaitingFailed(state, action: PayloadAction<string>) {
+                    state.loading = false;
+                    state.error = action.payload;
+                },
+
     },
 });
 
 export const {
     fetchChatBoxInitStart,
     fetchChatBoxSuccess,
-    fetchChatBoxFailed
+    fetchChatBoxFailed,
+     fetchGetAllConversationWaitingStart,
+    fetchGetAllConversationWaitingSuccess,
+    fetchGetAllConversationWaitingFailed,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

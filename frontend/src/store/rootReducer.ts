@@ -24,7 +24,6 @@ const reducer = combineReducers({
     user: userReducer,
     review: reviewReducer,
     chat: chatReducer,
-    // Add other reducers here
 });
 
 const rootReducer = (state: any, action: any) => {

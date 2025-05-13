@@ -26,7 +26,8 @@ const Header = ({
 
   const handleLogout = async () => {
     try {
-      await logout(
+      logout(
+        "pharmacist",
         () => {
           toast.showToast("Đăng xuất thành công", "success");
         },

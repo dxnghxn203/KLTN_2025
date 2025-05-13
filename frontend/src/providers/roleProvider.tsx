@@ -12,7 +12,6 @@ import {
     PARTNER_ROUTES,
     PHARMACIST_ROUTES,
 } from "@/utils/constants";
-import {getToken, getTokenAdmin, getTokenPharmacist} from "@/utils/cookie";
 import ChatBoxPharmacist from "@/components/Chat/chatBoxPharmacist";
 
 export function RoleProvider({children}: { children: React.ReactNode }) {
@@ -63,7 +62,6 @@ export function RoleProvider({children}: { children: React.ReactNode }) {
                         </>
 
                     )}
-                {/* Pop-up menu */}
                 {showMenu && (
                     <div
                         className="mb-2 fixed bottom-24 right-6 z-50 bg-white border border-gray-300 rounded-lg shadow-xl animate-fade-in text-sm flex flex-col">
@@ -103,7 +101,6 @@ export function RoleProvider({children}: { children: React.ReactNode }) {
                             </div>
                             <div className="flex-1 p-4 overflow-y-auto">
                                 <p>Xin chào! Tôi có thể giúp gì cho bạn?</p>
-                                {/* Nội dung chat sẽ nằm ở đây */}
                             </div>
                             <div className="p-3 border-t flex space-x-2 justify-between items-center">
                                 <button>
@@ -129,4 +126,5 @@ export function RoleProvider({children}: { children: React.ReactNode }) {
 
         </>
     );
+
 }

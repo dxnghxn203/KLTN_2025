@@ -1,5 +1,5 @@
 import { FiPieChart, FiShoppingBag } from "react-icons/fi";
-import { BsBox } from "react-icons/bs";
+import { BsBox, BsChatQuote } from "react-icons/bs";
 import { TbCategory } from "react-icons/tb";
 import { FaRegUser } from "react-icons/fa";
 import Image from "next/image";
@@ -40,6 +40,12 @@ const menuHomeItems = [
     icon: <LuFileCheck2 />,
     label: "Yêu cầu tư vấn thuốc",
     path: "/kiem-duyet-yeu-cau-tu-van-thuoc",
+  },
+  {
+    id: "CensorshipRRequest",
+    icon: <BsChatQuote />,
+    label: "Phòng tư vấn",
+    path: "/phong-tu-van",
   },
 ];
 const menuSettingsItems = [
