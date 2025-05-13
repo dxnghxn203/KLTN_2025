@@ -1,4 +1,4 @@
-import { fetchChangePasswordAdminStart, fetchChangePasswordPharmacistStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordPharmacistStart, fetchForgotPasswordStart, fetchGetAllAdminStart, fetchGetAllPharmacistStart, fetchGetAllUserAdminStart, fetchInsertUserStart, fetchSendOtpStart, fetchUpdateStatusPharmacistStart, fetchUpdateStatusUserStart, fetchVerifyOtpStart } from "@/store";
+import { fetchChangePasswordAdminStart, fetchChangePasswordPharmacistStart, fetchChangePasswordStart, fetchForgotPasswordAdminStart, fetchForgotPasswordPharmacistStart, fetchForgotPasswordStart, fetchGetAllAdminStart, fetchGetAllPharmacistStart, fetchGetAllUserAdminStart, fetchInsertPharmacistStart, fetchInsertUserStart, fetchRegisterAdminStart, fetchSendOtpAdminStart, fetchSendOtpStart, fetchUpdateStatusPharmacistStart, fetchUpdateStatusUserStart, fetchVerifyOtpAdminStart, fetchVerifyOtpStart } from "@/store";
 import { insertUserSelector, selectAllAdmin, selectAllPharmacist, selectAllUserAdmin } from "@/store/user/userSelector";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuthContext } from "@/providers/authProvider";
@@ -208,6 +208,55 @@ const fetchUpdateStatusPharmacist = (
         onFailure
     }));
 }
+const fetchInsertPharmacist = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+) => {
+    dispatch(fetchInsertPharmacistStart({
+        ...params,
+        onSuccess,
+        onFailure
+    }));
+}
+
+const fetchRegisterAdmin = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+) => {
+    dispatch(fetchRegisterAdminStart({
+        ...params,
+        onSuccess,
+        onFailure
+    }));
+}
+
+const fetchVerifyEmail = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+) => {
+    dispatch(fetchVerifyOtpAdminStart({
+        ...params,
+        onSuccess,
+        onFailure
+    }));
+}
+const fetchSendOTPAdmin = (
+    params: any,
+    onSuccess: (message: string) => void,
+    onFailure: (message: string) => void
+
+) => {
+    dispatch(fetchSendOtpAdminStart({
+        ...params,
+        onSuccess,
+        onFailure
+    }));
+
+}
+
   
 
   return {
@@ -245,6 +294,14 @@ const fetchUpdateStatusPharmacist = (
     fetchAllAdmin,
 
     fetchUpdateStatusPharmacist,
+
+    fetchInsertPharmacist,
+
+    fetchRegisterAdmin,
+
+    fetchVerifyEmail,
+
+    fetchSendOTPAdmin
   };
 }
 

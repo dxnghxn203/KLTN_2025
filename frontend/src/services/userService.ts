@@ -296,6 +296,70 @@ export const updateStatusPharmacist = async (params: { pharmacist_id: string; st
     }
 }
 
+export const insertPharmacist = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/pharmacist/insert";
+        const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        throw error;
+    
+    }
+};
+
+export const registerAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/register";
+        const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        throw error;
+    
+    }
+};
+
+export const verifyOTPAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/verify-email";
+        const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        throw error;
+    
+    }
+};
+
+export const sendOTPAdmin = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/otp";
+        const result: any = await axiosClient.post(url, params);
+        console.log("result:", result);
+        return {
+            status_code: result.status_code,
+            message: result.message,
+            data: result.data,
+        };
+    } catch (error: any) {
+        throw error;
+    
+    }
+};
+
 
 
 

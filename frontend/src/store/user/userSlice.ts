@@ -197,6 +197,53 @@ export const userSlice = createSlice({
         fetchUpdateStatusAdminFailure: (state) => {
             state.loading = false;
         },
+        // insert pharmacist 
+        fetchInsertPharmacistStart: (state, action) => {
+            console.log("fetchInsertPharmacistStart", action.payload)
+            state.loading = true;
+        },
+        fetchInsertPharmacistSuccess: (state, action) => {
+            console.log("fetchInsertPharmacistSuccess", action.payload)
+            state.loading = false;
+        },
+        fetchInsertPharmacistFailure: (state) => {
+            console.log("fetchInsertPharmacistFailure")
+            state.loading = false;
+        },
+        // fetch register admin
+        fetchRegisterAdminStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchRegisterAdminSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchRegisterAdminFailure: (state) => {
+            state.loading = false;
+        },
+        // fecth verifyOtp Admin 
+        fetchVerifyOtpAdminStart: (state, action) => {
+            console.log("fetchVerifyOtpAdminStart")
+            state.loading = true;
+        },
+        fetchVerifyOtpAdminSuccess: (state) => {
+            console.log("fetchVerifyOtpAdminSuccess")
+            state.loading = false;
+        },
+        fetchVerifyOtpAdminFailure: (state) => {
+            console.log("fetchVerifyOtpAdminFailure")
+            state.loading = false;
+        },
+        // fetch sendOTP admin
+        fetchSendOtpAdminStart: (state, action) => {
+            
+            state.loading = true;
+        },
+        fetchSendOtpAdminSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchSendOtpAdminFailure: (state) => {
+            state.loading = false;
+        },
 
 
         
@@ -264,6 +311,22 @@ export const {
     fetchUpdateStatusAdminFailure,
     fetchUpdateStatusAdminStart,
     fetchUpdateStatusAdminSuccess,
+
+    fetchInsertPharmacistStart,
+    fetchInsertPharmacistSuccess,
+    fetchInsertPharmacistFailure,
+
+    fetchRegisterAdminFailure ,
+    fetchRegisterAdminStart,
+    fetchRegisterAdminSuccess,
+
+    fetchSendOtpAdminFailure,
+    fetchSendOtpAdminStart,
+    fetchSendOtpAdminSuccess,
+
+    fetchVerifyOtpAdminFailure,
+    fetchVerifyOtpAdminStart,
+    fetchVerifyOtpAdminSuccess
 
 } = userSlice.actions;
 

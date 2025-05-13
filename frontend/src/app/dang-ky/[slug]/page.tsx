@@ -15,12 +15,13 @@ const OtpVerificationPage: React.FC = () => {
   const router = useRouter();
 
   const maskEmail = (email: string) => {
-    const [name, domain] = email.split("%40");
+    const [name, domain] = email.split("@");
+    if (!name || name.length < 3) return email;
+
     const visibleStart = name[0];
     const visibleEnd = name.slice(-2);
-    const maskedMiddle = "*".repeat(
-      name.length - visibleStart.length - visibleEnd.length
-    );
+    const maskedMiddle = "*".repeat(name.length - 3);
+
     return `${visibleStart}${maskedMiddle}${visibleEnd}@${domain}`;
   };
   const getEmail = (email: string) => {

@@ -53,7 +53,7 @@ const DeleteProductDialog: React.FC<DeleteDialogProps> = ({
         <div className="flex justify-end gap-4">
           <button
             onClick={onClose}
-            className="mt-10 bg-[#EAEFFA] text-[#0053E2] font-semibold w-[120px] py-3 rounded-full hover:bg-[#002E99]"
+            className="mt-10 bg-[#EAEFFA] text-[#0053E2] font-semibold w-[120px] py-3 rounded-full"
           >
             Hủy
           </button>

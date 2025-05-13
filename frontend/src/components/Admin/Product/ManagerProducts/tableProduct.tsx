@@ -57,7 +57,6 @@ const TableProduct = () => {
     indexOfFirstProduct,
     indexOfLastProduct
   );
-
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
   return (

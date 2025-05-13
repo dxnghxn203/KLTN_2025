@@ -121,11 +121,12 @@ const Header = ({
                   </div>
                 </div>
               </Link>
-              <div className="flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1">
+              <div
+                className="flex px-4 py-2 items-center hover:bg-gray-100 cursor-pointer space-x-1"
+                onClick={handleLogout}
+              >
                 <IoMdLogOut className="text-lg text-red-600 " />
-                <div className="text-red-600 text-sm" onClick={handleLogout}>
-                  Đăng xuất
-                </div>
+                <div className="text-red-600 text-sm">Đăng xuất</div>
               </div>
             </div>
           </div>

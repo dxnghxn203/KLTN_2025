@@ -8,7 +8,15 @@ export const ADMIN_ROUTES = [
     '/thong-tin-tai-khoan',
     '/doi-mat-khau-admin',
     '/quen-mat-khau',
+    '/dang-ky-admin',
 ] as const;
+
+export const isVerifyEmailRoute = (path: string): boolean => {
+    return /^\/dang-ky-admin\/xac-thuc-[^/]+$/.test(path);
+};
+export const getVerifyEmailPath = (email: string): string => {
+    return `/dang-ky-admin/xac-thuc-${email}`;
+};
 export const PHARMACIST_ROUTES = [
     '/dashboard-duoc-si',
     '/kiem-duyet-thuoc',

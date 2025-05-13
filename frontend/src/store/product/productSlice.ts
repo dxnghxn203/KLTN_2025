@@ -318,6 +318,22 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        // delete import product
+        fetchDeleteImportProductStart(state, action: PayloadAction<any>) {
+            
+            console.log("fetchDeleteImportProductStart", action.payload);
+            state.loading = true;
+        },
+        fetchDeleteImportProductSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchDeleteImportProductSuccess", action.payload);
+            state.loading = false;
+            state.error = null;
+        },
+        fetchDeleteImportProductFailed(state, action: PayloadAction<string>) {
+            console.log("fetchDeleteImportProductFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        }
 
 
         
@@ -408,6 +424,10 @@ export const {
     fetchGetAllImportFileAddProductFailed,
     fetchGetAllImportFileAddProductStart,
     fetchGetAllImportFileAddProductSuccess,
+
+    fetchDeleteImportProductFailed,
+    fetchDeleteImportProductStart,
+    fetchDeleteImportProductSuccess
 
 
     

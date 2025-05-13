@@ -10,11 +10,13 @@ import { formatDate } from "@/utils/string";
 import clsx from "clsx";
 import TableAdmin from "./tableAdmin";
 import TablePharmacist from "./tablePharmacist";
+import { useToast } from "@/providers/toastProvider";
 
 const UserManagement = () => {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Khách hàng");
   const tabs = ["Khách hàng", "Quản trị viên", "Dược sĩ"];
+  const toast = useToast();
 
   const {
     allUserAdmin,
@@ -34,18 +36,7 @@ const UserManagement = () => {
     fetchAllAdmin();
     fetchAllPharmacist();
   }, []);
-  // const filteredUsers = allUserAdmin.filter(user=> user.role === selectedRole);
-
-  const handleAddUser = (newUser: {
-    name: string;
-    email: string;
-    role: string;
-    password: string;
-    confirmPassword: string;
-  }) => {};
-
-  // console.log("allAdmin", allAdmin);
-  // console.log("allPharmacist", allPharmacist);
+  // const filteredUsers = allUserAdmin.filter(user=> user.role === selectedRole)
 
   const exportToCSV = () => {
     let dataToExport: any[] = [];
@@ -184,7 +175,6 @@ const UserManagement = () => {
       <AddUserDialog
         isOpen={isDialogOpen}
         onClose={() => setDialogOpen(false)}
-        onAddUser={handleAddUser}
       />
     </div>
   );

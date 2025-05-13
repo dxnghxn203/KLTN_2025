@@ -16,6 +16,7 @@ const AlreadyLoggedIn = () => {
   const handleLogout = async () => {
     try {
       await logout(
+        "user",
         () => {
           toast.showToast("Đăng xuất thành công", "success");
         },

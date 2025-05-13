@@ -60,8 +60,24 @@ import {
     fetchUpdateStatusPharmacistStart,
     fetchUpdateStatusPharmacistSuccess,
 
+    fetchInsertPharmacistFailure,   
+    fetchInsertPharmacistStart,
+    fetchInsertPharmacistSuccess,
+
+    fetchRegisterAdminFailure,
+    fetchRegisterAdminStart,
+    fetchRegisterAdminSuccess,
+
+    fetchSendOtpAdminFailure,
+    fetchSendOtpAdminStart,
+    fetchSendOtpAdminSuccess,
+
+    fetchVerifyOtpAdminFailure,
+    fetchVerifyOtpAdminStart,
+    fetchVerifyOtpAdminSuccess
+
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist, getAllPharmacist, getAllAdmin, updateStatusAdmin, updateStatusPharmacist } from "@/services/userService";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist, getAllPharmacist, getAllAdmin, updateStatusAdmin, updateStatusPharmacist, insertPharmacist, registerAdmin, sendOTPAdmin, verifyOTPAdmin } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -391,6 +407,125 @@ function* updateStatusPharmacistWorkerSaga(action: any): Generator<any, void, an
     }
 }
 
+function* insertPharmacistWorkerSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        phone_number,
+        user_name,
+        email,
+        gender,
+        birthday,
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    const body = {
+        phone_number,
+        user_name,
+        email,
+        gender,
+        birthday
+    }
+    try {
+        const response = yield call(insertPharmacist, body);
+        if (response.status_code === 201) {
+            yield put(fetchInsertPharmacistSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchInsertPharmacistFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchInsertPharmacistFailure());
+    }
+}
+
+function* handlRegisterAdmin (action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        phone_number,
+        user_name,
+        email,
+        password,
+        gender,
+        birthday,
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+
+    const body = {
+        
+        phone_number,
+        user_name,
+        email,
+        password,
+        gender,
+        birthday
+    }
+    try {
+        const response = yield call(registerAdmin, body);
+        if (response.status_code === 201) {
+            yield put(fetchRegisterAdminSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchRegisterAdminFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchRegisterAdminFailure());
+    }
+}
+
+function* handleVerifyOTPAdmin (action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        email,
+        otp,
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    const body = {
+        email,
+        otp
+    }
+    try {
+        const response = yield call(verifyOTPAdmin, body);
+        if (response.status_code === 200) {
+            yield put(fetchVerifyOtpAdminSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchVerifyOtpAdminFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchVerifyOtpAdminFailure());
+    }
+}
+
+function* handleSendOTPAdmin (action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        email,
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    const body = {
+        email
+    }
+    try {
+        const response = yield call(sendOTPAdmin, body);
+        if (response.status_code === 200) {
+            yield put(fetchSendOtpAdminSuccess(response.data));
+            onSuccess(response.message);
+        } else {
+            yield put(fetchSendOtpAdminFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchSendOtpAdminFailure());
+    }
+}
+
+
 
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
@@ -408,5 +543,9 @@ export function* userSaga() {
     yield takeLatest(fetchGetAllAdminStart.type, userGetAllAdminWorkerSaga);
     // yield takeLatest(fetchUpdateStatusAdminStart.type, updateStatusAdminWorkerSaga);
     yield takeLatest(fetchUpdateStatusPharmacistStart.type, updateStatusPharmacistWorkerSaga);
+    yield takeLatest(fetchInsertPharmacistStart.type, insertPharmacistWorkerSaga);
+    yield takeLatest(fetchRegisterAdminStart.type, handlRegisterAdmin);
+    yield takeLatest(fetchVerifyOtpAdminStart.type, handleVerifyOTPAdmin);
+    yield takeLatest(fetchSendOtpAdminStart.type, handleSendOTPAdmin);
 }
 

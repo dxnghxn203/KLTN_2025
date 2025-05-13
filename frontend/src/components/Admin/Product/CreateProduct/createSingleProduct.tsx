@@ -99,6 +99,10 @@ const CreateSingleProduct = () => {
   });
 
   const [productName, setProductName] = useState<string>("");
+  // const [product_id, setProductId] = useState<string>("");
+
+  const [is_approved, setIsApproved] = useState<boolean>(false);
+
   const [namePrimary, setNamePrimary] = useState<string>("");
   const [origin, setOrigin] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -116,6 +120,7 @@ const CreateSingleProduct = () => {
     useState<boolean>(false);
 
   const [slug, setSlug] = useState<string>("");
+  const [rejected_note, setRejectedNote] = useState<string>("");
   const toast = useToast();
 
   // Add state for managing images
@@ -581,6 +586,8 @@ const CreateSingleProduct = () => {
     setProductName(product.product_name);
     setSlug(product.slug);
     setNamePrimary(product.name_primary);
+    setIsApproved(product.is_approved);
+    setRejectedNote(product.rejected_note);
     setOrigin(product.origin);
     setDescription(product.description);
     setInventory(product.inventory);
@@ -669,9 +676,12 @@ const CreateSingleProduct = () => {
     formData.set("full_descriptions", full_descriptions);
     formData.set("prescription_required", JSON.stringify(prescriptionRequired));
 
+    // nếu is_approve là false thì hiện là Từ chối, nếu true thì Duyệt
+
     const dataToSend = {
       product_id: editId,
       product_name: productName,
+      is_approved: is_approved,
       slug,
       name_primary: namePrimary,
       origin,
@@ -864,9 +874,64 @@ const CreateSingleProduct = () => {
           <div className="w-2/3 flex flex-col space-y-5">
             <div className="bg-white shadow-sm rounded-2xl p-5 flex flex-col h-full">
               {/* <General /> */}
-
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-3">Thông tin cơ bản</h3>
+                <div className="grid grid-cols-2 gap-4 mb-2">
+                  <div data-error={hasError("product_id")}>
+                    <label className="block text-sm font-medium mb-1">
+                      ID sản phẩm
+                    </label>
+                    <input
+                      type="text"
+                      name="product_id"
+                      value={detailId || ""}
+                      onChange={(e) => setProductName(e.target.value)}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("product_id") ? "border-red-500" : ""
+                      }`}
+                      disabled={isViewOnly}
+                    />
+                    {hasError("product_id") && (
+                      <ErrorMessage message={errors.product_id} />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Trạng thái
+                    </label>
+                    <input
+                      type="text"
+                      name="is_approved"
+                      className={`border rounded-lg p-2 w-full font-semibold
+    ${hasError("is_approved") ? "border-red-500" : ""}
+    ${is_approved ? "text-green-600" : "text-red-600"}
+  `}
+                      value={is_approved ? "Duyệt" : "TỪ CHỐI"}
+                      disabled={isViewOnly}
+                    />
+                    {hasError("is_approved") && (
+                      <ErrorMessage message={errors.is_approved} />
+                    )}
+                  </div>
+                </div>
+                {detailId && is_approved === false && (
+                  <div className="w-full">
+                    <label className="block text-sm font-medium mb-1 w-full">
+                      Lý do từ chối:
+                    </label>
+                    <textarea
+                      rows={4}
+                      name="note"
+                      value={rejected_note}
+                      // onChange={(e) => setSlug(e.target.value)}
+                      className={`border rounded-lg p-2 w-full ${
+                        hasError("slug") ? "border-red-500" : ""
+                      }`}
+                      disabled={isViewOnly}
+                    />
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
                   <div data-error={hasError("product_name")}>
                     <label className="block text-sm font-medium mb-1">

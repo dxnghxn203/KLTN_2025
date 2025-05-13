@@ -1,4 +1,5 @@
 import { comment } from "postcss";
+import { use } from "react";
 import { race } from "redux-saga/effects";
 
 // Kiểm tra mật khẩu
@@ -35,8 +36,8 @@ export const validatePassword = (value: string): string | null => {
     const keyToVietnamese: { [key: string]: string } = {
       email: "Email đăng nhập",
       password: "Mật khẩu",
-      username: "Tên người dùng",
-      phoneNumber: "Số điện thoại",
+      user_name: "Tên người dùng",
+      phone_number: "Số điện thoại",
       gender: "Giới tính",
       dateOfBirth: "Ngày sinh",
       confirmPassword: "Xác nhận mật khẩu",
@@ -51,6 +52,8 @@ export const validatePassword = (value: string): string | null => {
       name: "Tên người dùng",
       rejected_note: "Ghi chú từ chối",
       note: "Lý do từ chối",
+      birthday: "Ngày sinh",
+
       
     };
     

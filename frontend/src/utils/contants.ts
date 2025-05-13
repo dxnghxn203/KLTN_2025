@@ -1,4 +1,3 @@
-
 const routerAdmin = {
     DASHBOARD: '/dashboard',
     USERS: '/quan-ly-nguoi-dung',
@@ -11,4 +10,6 @@ const routerAdmin = {
     CHANGE_PASSWORD: '/doi-mat-khau-admin',
     PARTNER: '/partner/partner-order',
     FORGOT_PASSWORD: '/quen-mat-khau',
+    REGISTER_ADMIN :'/dang-ky-admin',
+    VERIFY_EMAIL: (email: string) => `/dang-ky-admin/xac-thuc-${email}`,
 }

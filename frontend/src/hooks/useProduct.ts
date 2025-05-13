@@ -29,6 +29,7 @@ import {
     fetchImportFileAddProductStart,
     selectAllFileImport,
     fetchGetAllImportFileAddProductStart,
+    fetchDeleteImportProductStart,
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -276,6 +277,20 @@ export function useProduct() {
         );
     }
 
+    const fetchDeleteImportFileProduct = async (
+        params: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void
+    ) => {
+        dispatch(
+            fetchDeleteImportProductStart({
+                import_id : params,
+                onSuccess,
+                onFailure: onFailed
+            })
+        );
+    }
+
     
     
 
@@ -322,6 +337,8 @@ export function useProduct() {
         fetchImportAddFileProduct,
         fetchGetImportFileAddProduct,
         allFileImport,
+
+        fetchDeleteImportFileProduct
 
     };
 }
