@@ -1,5 +1,7 @@
 "use client";
+import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { IoSend } from "react-icons/io5";
 
 export default function ChatBox() {
   const [messages, setMessages] = useState([
@@ -12,7 +14,6 @@ export default function ChatBox() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Tự động cuộn xuống cuối khi có tin nhắn mới
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -22,45 +23,53 @@ export default function ChatBox() {
     setInput("");
     setCurrentSender(currentSender === "user1" ? "user2" : "user1");
   };
+  // lấy id trên url
+  const pathname = usePathname();
+  const segments = pathname.split("/");
+  const ID = segments[segments.length - 1];
 
   return (
-    <div className="w-full flex flex-col h-full">
+    <div className="w-full min-h-screen flex flex-col">
       <div className="p-4 font-semibold text-center text-lg">
-        Chat giữa 2 người
+        Phòng tư vấn {ID}
       </div>
 
-      {/* Chat content area */}
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`max-w-[50%] p-2 rounded-lg text-sm ${
-              msg.sender === "user1"
-                ? "bg-blue-100 self-start"
-                : "bg-green-100 self-end ml-auto"
-            }`}
-          >
-            {msg.text}
-          </div>
-        ))}
-        <div ref={scrollRef} />
+      {/* Tin nhắn nằm đáy khi chưa đủ, cuộn khi vượt quá */}
+      <div className="flex-1 overflow-y-auto px-2 py-2 flex flex-col justify-end">
+        <div className="space-y-2">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-400">Chưa có tin nhắn</div>
+          ) : (
+            messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`w-fit p-2 rounded-lg text-sm ${
+                  msg.sender === "user1"
+                    ? "bg-blue-100 self-start"
+                    : "bg-green-100 self-end ml-auto"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))
+          )}
+          <div ref={scrollRef} />
+        </div>
       </div>
 
-      {/* Input area fixed at bottom */}
-      <div className="bottom-1">
-        <div className="flex gap-2">
+      {/* Input cố định bên dưới */}
+      <div className="sticky bottom-0 ">
+        <div className="flex justify-between gap-4">
           <input
-            className="flex-1 border rounded px-3 py-2 focus:outline-none"
+            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={`Nhập tin nhắn (${currentSender})`}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
-          <button
-            onClick={sendMessage}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Gửi
+          <button className="text-blue-600" onClick={sendMessage}>
+            <IoSend className="text-2xl" />
           </button>
         </div>
       </div>
