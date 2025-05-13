@@ -1,8 +1,8 @@
 import axiosClient from "@/utils/configs/axiosClient";
 
-export const startChatBoxUser = async (params: any) => {
+export const startChatBoxUser = async () => {
     try {
-        return await axiosClient.post(`/v1/conversations/user?user_id=${params.user_id}`);
+        return await axiosClient.post(`/v1/conversations/user`);
     } catch (error: any) {
         return {
             status: false,
@@ -22,14 +22,23 @@ export const startChatBoxGuest = async (params: any) => {
     }
 }
 
-export const getAllConversationWaiting = async (limit: any) : Promise<any>=> {
+export const getAllConversationWaiting = async (limit: any): Promise<any> => {
     try {
         const params = `/v1/conversations/waiting?limit=${limit}`;
-        const response = await axiosClient.get(params);
-        // console.log(response);
-        return response;
+        return await axiosClient.get(params);
     } catch (error) {
         throw error;
+    }
+}
+
+export const acceptConversation = async (params: any) => {
+    try {
+        return await axiosClient.patch(`/v1/conversations/${params}/accept`);
+    } catch (error: any) {
+        return {
+            status: false,
+            message: 'Lỗi bắt đầu chatbox USER',
+        };
     }
 }
 

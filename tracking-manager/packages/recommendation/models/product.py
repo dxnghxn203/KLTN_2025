@@ -49,126 +49,220 @@ def get_product_by_id(product_id: str):
     return None
 
 
+# def get_product_by_name_fuzzy(query_name: str, limit: int = 5,
+#                               exact_match_threshold: int = 80,
+#                               list_threshold: int = 65):
+#
+#     print(f"\nDEBUG product_model: --- Starting get_product_by_name_fuzzy for query: '{query_name}' ---")
+#     print(
+#         f"DEBUG product_model: Looser Thresholds: exact={exact_match_threshold}, list={list_threshold}, limit={limit}")
+#
+#     # Chỉ lấy các sản phẩm có product_name hoặc name_primary không rỗng
+#     all_products_cursor = products_collection.find(
+#         {"$or": [
+#             {"product_name": {"$ne": None, "$ne": ""}},
+#             {"name_primary": {"$ne": None, "$ne": ""}},
+#             {"uses": {"$ne": None, "$ne": ""}}
+#         ]},
+#         {"product_name": 1, "name_primary": 1, "uses": 1, "_id": 1}
+#     )
+#
+#     product_names_map = {}
+#     choices = []
+#     count = 0
+#
+#     for p_doc in all_products_cursor:
+#         count += 1
+#         name_to_check = p_doc.get("name_primary") or p_doc.get("product_name") or p_doc.get("uses")
+#
+#         if name_to_check:
+#             product_names_map[name_to_check] = {"_id": p_doc["_id"]}
+#             if name_to_check not in choices:
+#                 choices.append(name_to_check)
+#
+#     print(f"DEBUG product_model: Total products processed for choices: {count}")
+#     print(f"DEBUG product_model: Number of unique names in choices: {len(choices)}")
+#
+#     if not choices:
+#         print("DEBUG product_model: No product names found in DB to perform fuzzy search. Returning None.")
+#         return None
+#
+#     sample_size = min(10, len(choices))
+#     print(f"DEBUG product_model: Sample of choices (first {sample_size}): {choices[:sample_size]}")
+#
+#     scorer_to_use = fuzz.token_set_ratio
+#     print(f"DEBUG product_model: Using scorer: {scorer_to_use.__name__}")
+#
+#     best_match_tuple = process.extractOne(query_name, choices, scorer=scorer_to_use)
+#     print(f"DEBUG product_model: extractOne result for '{query_name}': {best_match_tuple}")
+#
+#     if best_match_tuple and best_match_tuple[1] >= exact_match_threshold:
+#         matched_name = best_match_tuple[0]
+#         score = best_match_tuple[1]
+#         print(
+#             f"DEBUG product_model: Exact match found! Score {score} >= {exact_match_threshold} for name '{matched_name}'")
+#
+#         partial_doc = product_names_map.get(matched_name)
+#         if partial_doc and "_id" in partial_doc:
+#             full_product_doc = products_collection.find_one({"_id": partial_doc["_id"]})
+#             if full_product_doc:
+#                 print(
+#                     f"DEBUG product_model: Returning single product: {full_product_doc.get('name_primary') or full_product_doc.get('product_name')}")
+#                 return product_helper(full_product_doc)
+#             else:
+#                 print(
+#                     f"DEBUG product_model: ERROR! Matched name '{matched_name}' from map, but full doc not found by _id '{partial_doc['_id']}'")
+#                 return None
+#         else:
+#             print(
+#                 f"DEBUG product_model: ERROR! Matched name '{matched_name}' not found in product_names_map or _id missing.")
+#             return None
+#
+#     print(f"DEBUG product_model: No single exact match. Trying multiple matches with score >= {list_threshold}.")
+#     multiple_best_matches = process.extract(query_name, choices, scorer=scorer_to_use,
+#                                             limit=limit * 2 if limit > 0 else 10)
+#     print(
+#         f"DEBUG product_model: extract (multiple) result for '{query_name}' (before score filter): {multiple_best_matches}")
+#
+#     matched_products_list = []
+#     if multiple_best_matches:
+#         for name, score in multiple_best_matches:
+#             print(f"DEBUG product_model: Checking match: '{name}' with score {score}")
+#             if score >= list_threshold:
+#                 print(f"DEBUG product_model: PASSED list_threshold ({score} >= {list_threshold}) for '{name}'")
+#                 partial_doc = product_names_map.get(name)
+#                 if partial_doc and "_id" in partial_doc:
+#                     full_product_doc = products_collection.find_one({"_id": partial_doc["_id"]})
+#                     if full_product_doc:
+#                         matched_products_list.append(product_helper(full_product_doc))
+#                         print(
+#                             f"DEBUG product_model: Added to list: {full_product_doc.get('name_primary') or full_product_doc.get('product_name')}")
+#                         if len(matched_products_list) >= limit and limit > 0:  # Tôn trọng `limit` gốc
+#                             print(f"DEBUG product_model: Reached list limit of {limit}. Breaking.")
+#                             break
+#                     else:
+#                         print(
+#                             f"DEBUG product_model: ERROR! Matched name '{name}' from map, but full doc not found by _id '{partial_doc['_id']}' (in multiple matches)")
+#                 else:
+#                     print(
+#                         f"DEBUG product_model: ERROR! Matched name '{name}' not found in product_names_map or _id missing (in multiple matches).")
+#             else:
+#                 print(
+#                     f"DEBUG product_model: FAILED list_threshold ({score} < {list_threshold}) for '{name}'. Further matches will be worse, breaking.")
+#                 break
+#
+#     if not matched_products_list:
+#         print(f"DEBUG product_model: No products passed list_threshold for query '{query_name}'. Returning None.")
+#         return None
+#     else:
+#         print(f"DEBUG product_model: Returning list of {len(matched_products_list)} products for query '{query_name}'.")
+#         return matched_products_list
+#
+
 def get_product_by_name_fuzzy(query_name: str, limit: int = 5,
-                              exact_match_threshold: int = 80,  # GIẢM NGƯỠNG: từ 90 xuống 80
-                              list_threshold: int = 65):  # GIẢM NGƯỠNG: từ 75 xuống 65
+                              exact_match_threshold: int = 80,
+                              list_threshold: int = 65):
     """
     Tìm kiếm sản phẩm theo tên gần đúng, chấp nhận sai sót chính tả và biến thể.
+    Bao gồm: product_name, name_primary, brand, uses, description, full_descriptions.
     - exact_match_threshold: Ngưỡng để coi là một kết quả khớp "chính xác" duy nhất.
     - list_threshold: Ngưỡng để đưa sản phẩm vào danh sách các kết quả gần đúng.
     """
     print(f"\nDEBUG product_model: --- Starting get_product_by_name_fuzzy for query: '{query_name}' ---")
     print(
-        f"DEBUG product_model: Looser Thresholds: exact={exact_match_threshold}, list={list_threshold}, limit={limit}")
-
-    # Chỉ lấy các sản phẩm có product_name hoặc name_primary không rỗng
-    all_products_cursor = products_collection.find(
-        {"$or": [{"product_name": {"$ne": None, "$ne": ""}}, {"name_primary": {"$ne": None, "$ne": ""}}]},
-        {"product_name": 1, "name_primary": 1, "_id": 1}
-        # Chỉ lấy các trường cần thiết cho việc so khớp và lấy full doc sau
+        f"DEBUG product_model: Thresholds: exact={exact_match_threshold}, list={list_threshold}, limit={limit}"
     )
 
-    product_names_map = {}  # Key: Tên dùng để so khớp (name_to_check), Value: Document rút gọn chứa _id
-    choices = []  # Danh sách các tên (name_to_check) để đưa vào a so khớp
-    count = 0
-    # target_product_in_choices = False # Bỏ cờ này nếu không debug cụ thể một sản phẩm nữa
+    # Lấy các sản phẩm với các trường liên quan không rỗng
+    all_products_cursor = products_collection.find(
+        {
+            "$or": [
+                {"product_name": {"$ne": None, "$ne": ""}},
+                {"name_primary": {"$ne": None, "$ne": ""}},
+                {"brand": {"$ne": None, "$ne": ""}},
+                {"uses": {"$ne": None, "$ne": ""}},
+                {"description": {"$ne": None, "$ne": ""}},
+                {"full_descriptions": {"$ne": None, "$ne": ""}},
+            ]
+        },
+        {
+            "product_name": 1,
+            "name_primary": 1,
+            "brand": 1,
+            "uses": 1,
+            "description": 1,
+            "full_descriptions": 1,
+            "_id": 1,
+        }
+    )
 
+    # Xây dựng map: key là từng chuỗi để so khớp, value là _id sản phẩm
+    match_map = {}
+    choices = []
     for p_doc in all_products_cursor:
-        count += 1
-        # Ưu tiên name_primary, nếu không có thì dùng product_name
-        name_to_check = p_doc.get("name_primary") or p_doc.get("product_name")
+        # Tập hợp các trường để fuzzy searching
+        fields = [
+            p_doc.get("name_primary"),
+            p_doc.get("product_name"),
+            p_doc.get("brand"),
+            p_doc.get("uses"),
+            p_doc.get("description"),
+            p_doc.get("full_descriptions"),
+        ]
+        for field in fields:
+            if field and isinstance(field, str):
+                field = field.strip()
+                # Đảm bảo không trùng lặp trong choices
+                if field and field not in match_map:
+                    match_map[field] = {"_id": p_doc["_id"]}
+                    choices.append(field)
 
-        if name_to_check:  # Đảm bảo name_to_check không rỗng
-            # if "special kid calcium vitamine d" in name_to_check.lower(): # Bỏ debug cụ thể này
-            #     target_product_in_choices = True
-            #     print(f"DEBUG product_model: Target product 'Siro Special Kid...' FOUND in choices list with name: '{name_to_check}'")
-
-            # Lưu document rút gọn (chỉ chứa _id) để tra cứu nhanh sau khi a khớp tên
-            # Nếu nhiều sản phẩm có cùng name_to_check, map sẽ bị ghi đè, nhưng choices vẫn giữ các tên đó (nếu thêm không trùng)
-            product_names_map[name_to_check] = {"_id": p_doc["_id"]}  # Chỉ cần _id ở đây
-            if name_to_check not in choices:  # Đảm bảo các tên trong `choices` là duy nhất
-                choices.append(name_to_check)
-
-    print(f"DEBUG product_model: Total products processed for choices: {count}")
-    print(f"DEBUG product_model: Number of unique names in choices: {len(choices)}")
-    # if not target_product_in_choices: # Bỏ debug cụ thể này
-    #     print(f"DEBUG product_model: WARNING! Target product 'Siro Special Kid...' NOT FOUND in the choices list from DB.")
-
+    print(f"DEBUG product_model: Number of unique choices: {len(choices)}")
     if not choices:
-        print("DEBUG product_model: No product names found in DB to perform fuzzy search. Returning None.")
+        print("DEBUG product_model: No choices for fuzzy search. Returning None.")
         return None
 
-    # Print a small sample of choices for debugging if list is long
-    sample_size = min(10, len(choices))
-    print(f"DEBUG product_model: Sample of choices (first {sample_size}): {choices[:sample_size]}")
-
-    # Sử dụng fuzz.token_set_ratio: tốt cho việc so khớp một phần, bỏ qua thứ tự từ và các từ nhiễu.
+    # Dùng fuzz.token_set_ratio cho so khớp nội dung tự nhiên
     scorer_to_use = fuzz.token_set_ratio
     print(f"DEBUG product_model: Using scorer: {scorer_to_use.__name__}")
 
-    # Tìm kiếm 1 kết quả khớp nhất
+    # 1. Kiểm tra best match duy nhất
     best_match_tuple = process.extractOne(query_name, choices, scorer=scorer_to_use)
     print(f"DEBUG product_model: extractOne result for '{query_name}': {best_match_tuple}")
 
     if best_match_tuple and best_match_tuple[1] >= exact_match_threshold:
-        matched_name = best_match_tuple[0]
+        matched_str = best_match_tuple[0]
         score = best_match_tuple[1]
-        print(
-            f"DEBUG product_model: Exact match found! Score {score} >= {exact_match_threshold} for name '{matched_name}'")
-
-        # Lấy _id từ product_names_map dựa trên tên đã khớp
-        partial_doc = product_names_map.get(matched_name)
+        print(f"DEBUG product_model: Exact match found! Score {score} >= {exact_match_threshold} for '{matched_str}'")
+        partial_doc = match_map.get(matched_str)
         if partial_doc and "_id" in partial_doc:
             full_product_doc = products_collection.find_one({"_id": partial_doc["_id"]})
             if full_product_doc:
-                print(
-                    f"DEBUG product_model: Returning single product: {full_product_doc.get('name_primary') or full_product_doc.get('product_name')}")
                 return product_helper(full_product_doc)
             else:
-                print(
-                    f"DEBUG product_model: ERROR! Matched name '{matched_name}' from map, but full doc not found by _id '{partial_doc['_id']}'")
-                return None  # Lỗi dữ liệu không nhất quán
+                print("DEBUG product_model: ERROR! Full doc not found by _id.")
+                return None
         else:
-            print(
-                f"DEBUG product_model: ERROR! Matched name '{matched_name}' not found in product_names_map or _id missing.")
-            return None  # Lỗi logic xây dựng map
+            print("DEBUG product_model: ERROR! No _id in match_map.")
+            return None
 
-    # Nếu không có kết quả khớp "chính xác" cao, tìm nhiều kết quả gần đúng
-    print(f"DEBUG product_model: No single exact match. Trying multiple matches with score >= {list_threshold}.")
-    # Lấy nhiều hơn `limit` một chút để sau đó lọc theo điểm số và cắt lại theo `limit`
-    multiple_best_matches = process.extract(query_name, choices, scorer=scorer_to_use,
-                                            limit=limit * 2 if limit > 0 else 10)
-    print(
-        f"DEBUG product_model: extract (multiple) result for '{query_name}' (before score filter): {multiple_best_matches}")
+    # 2. Nếu không có exact match, trả về list fuzzy theo list_threshold
+    multiple_best_matches = process.extract(
+        query_name, choices, scorer=scorer_to_use,
+        limit=limit * 2 if limit > 0 else 10
+    )
+    print(f"DEBUG product_model: extract (multiple) result for '{query_name}': {multiple_best_matches}")
 
     matched_products_list = []
-    if multiple_best_matches:
-        for name, score in multiple_best_matches:
-            print(f"DEBUG product_model: Checking match: '{name}' with score {score}")
-            if score >= list_threshold:
-                print(f"DEBUG product_model: PASSED list_threshold ({score} >= {list_threshold}) for '{name}'")
-                partial_doc = product_names_map.get(name)
-                if partial_doc and "_id" in partial_doc:
-                    full_product_doc = products_collection.find_one({"_id": partial_doc["_id"]})
-                    if full_product_doc:
-                        matched_products_list.append(product_helper(full_product_doc))
-                        print(
-                            f"DEBUG product_model: Added to list: {full_product_doc.get('name_primary') or full_product_doc.get('product_name')}")
-                        if len(matched_products_list) >= limit and limit > 0:  # Tôn trọng `limit` gốc
-                            print(f"DEBUG product_model: Reached list limit of {limit}. Breaking.")
-                            break
-                    else:
-                        print(
-                            f"DEBUG product_model: ERROR! Matched name '{name}' from map, but full doc not found by _id '{partial_doc['_id']}' (in multiple matches)")
-                else:
-                    print(
-                        f"DEBUG product_model: ERROR! Matched name '{name}' not found in product_names_map or _id missing (in multiple matches).")
-            else:
-                # Vì process.extract trả về danh sách đã sắp xếp theo điểm giảm dần,
-                # nếu một kết quả không đạt ngưỡng thì các kết quả sau cũng vậy.
-                print(
-                    f"DEBUG product_model: FAILED list_threshold ({score} < {list_threshold}) for '{name}'. Further matches will be worse, breaking.")
-                break
+    for field_value, score in multiple_best_matches:
+        if score >= list_threshold:
+            partial_doc = match_map.get(field_value)
+            if partial_doc and "_id" in partial_doc:
+                full_product_doc = products_collection.find_one({"_id": partial_doc["_id"]})
+                if full_product_doc:
+                    matched_products_list.append(product_helper(full_product_doc))
+                    if len(matched_products_list) >= limit and limit > 0:
+                        break
 
     if not matched_products_list:
         print(f"DEBUG product_model: No products passed list_threshold for query '{query_name}'. Returning None.")
@@ -176,11 +270,7 @@ def get_product_by_name_fuzzy(query_name: str, limit: int = 5,
     else:
         print(f"DEBUG product_model: Returning list of {len(matched_products_list)} products for query '{query_name}'.")
         return matched_products_list
-
-
-# --- Các hàm khác giữ nguyên cấu trúc ---
 def find_products_by_keyword(keyword: str, limit: int = 10):
-    # Hàm này tìm kiếm keyword trong nhiều trường, không phải fuzzy match tên sản phẩm
     regex_query = {"$regex": keyword, "$options": "i"}  # "i" for case-insensitive
     query = {
         "$or": [
@@ -188,7 +278,7 @@ def find_products_by_keyword(keyword: str, limit: int = 10):
             {"name_primary": regex_query},
             {"description": regex_query},
             {"uses": regex_query},
-            {"ingredients.ingredient_name": regex_query},  # Tìm trong tên thành phần
+            {"ingredients.ingredient_name": regex_query},
             {"brand": regex_query}
         ]
     }
@@ -197,13 +287,10 @@ def find_products_by_keyword(keyword: str, limit: int = 10):
 
 
 def get_product_inventory(product_id_or_name_query: str):
-    # Thử tìm bằng ID trước
     product = get_product_by_id(product_id_or_name_query)
     if product and "inventory" in product:
-        return product.get("inventory")  # Sử dụng .get() để tránh KeyError
+        return product.get("inventory")
 
-    # Nếu không phải ID, thử tìm bằng tên (fuzzy)
-    # Sử dụng ngưỡng "exact" cao hơn một chút cho việc lấy tồn kho, vì cần độ chính xác cao hơn
     found_product_or_list = get_product_by_name_fuzzy(product_id_or_name_query, limit=1,
                                                       exact_match_threshold=85,  # Có thể giữ 85-90 cho chức năng này
                                                       list_threshold=70)  # Ngưỡng list cũng có thể cao hơn ở đây
@@ -211,16 +298,12 @@ def get_product_inventory(product_id_or_name_query: str):
     if isinstance(found_product_or_list, dict) and "inventory" in found_product_or_list:
         return found_product_or_list.get("inventory")
 
-    # Nếu fuzzy search trả về list (dù chỉ 1 item), kiểm tra item đầu tiên
     if isinstance(found_product_or_list, list) and found_product_or_list:
         first_product = found_product_or_list[0]
         if "inventory" in first_product:
-            # Cân nhắc: có nên trả về tồn kho nếu có nhiều hơn 1 sản phẩm trong list_threshold không?
-            # Hiện tại, nếu exact_match_threshold không đạt, sẽ không trả về tồn kho từ list.
-            # Điều này an toàn hơn. Nếu muốn lấy từ list, cần logic rõ ràng hơn.
-            pass  # Không trả về nếu là list, trừ khi logic thay đổi
+            pass
 
-    return None  # Không tìm thấy sản phẩm rõ ràng để báo tồn kho
+    return None
 
 
 def find_products_by_symptom_keywords(keywords: list[str], limit: int = 5):
@@ -231,19 +314,14 @@ def find_products_by_symptom_keywords(keywords: list[str], limit: int = 5):
     fields_to_search = ["uses", "description", "product_name", "name_primary"]
 
     for field in fields_to_search:
-        # Tạo regex cho mỗi keyword và kết hợp chúng bằng $or cho field hiện tại
-        # Ví dụ: { "uses": { $or: [ { $regex: kw1, $options:"i" }, { $regex: kw2, $options:"i" } ] } }
-        # Tuy nhiên, logic hiện tại của bạn là (uses LIKE kw1) OR (uses LIKE kw2) OR (desc LIKE kw1) ...
-        # Điều này có nghĩa là chỉ cần 1 keyword khớp trong 1 field bất kỳ.
         for kw in keywords:
-            if kw.strip():  # Bỏ qua keyword rỗng
+            if kw.strip():
                 or_conditions.append({field: {"$regex": kw.strip(), "$options": "i"}})
 
     if not or_conditions:
         return []
 
     query = {"$or": or_conditions}
-    # print(f"DEBUG product_model: Symptom search query: {query}")
 
     try:
         products = products_collection.find(query).limit(limit)

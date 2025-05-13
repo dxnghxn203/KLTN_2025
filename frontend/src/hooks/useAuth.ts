@@ -13,7 +13,7 @@ import {
     selectPharmacistAuth,
     selectUserAuth
 } from '@/store';
-import { on } from 'events';
+import {getToken} from "@/utils/cookie";
 
 export function useAuth() {
     const dispatch = useDispatch();
@@ -51,7 +51,7 @@ export function useAuth() {
         role_type: string,
         onSuccess: (message: any) => void,
         onFailure: (message: any) => void,
-) => {
+    ) => {
         console.log("logout hook");
         dispatch(logoutStart(
             {
@@ -62,7 +62,7 @@ export function useAuth() {
         ));
         // onSuccess("Đăng xuất thành công!");
         // onFailure("Đăng xuất thất bại!");
-    };  
+    };
 
     const loginAdmin = (
         credentials: any,
@@ -91,7 +91,7 @@ export function useAuth() {
 
     return {
         user: user || session?.user || null,
-        isAuthenticated: isAuthenticated || !!session?.user,
+        isAuthenticated: isAuthenticated || !!session?.user || getToken(),
         isLoading: loading,
         error,
         signInWithGoogle,

@@ -12,7 +12,7 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchAddChildCategoryStart',
     'fetchAddSubCategoryStart',
     'fetchUpdateImageSubCategoryStart',
-    'fetchUpdateImageChildCategoryStart',   
+    'fetchUpdateImageChildCategoryStart',
     'fetchDeleteChildCategoryStart',
     'fetchDeleteSubCategoryStart',
     'fetchDeleteMainCategoryStart',
@@ -24,6 +24,7 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchChangePasswordPharmacistStart',
     'fetchForgotPasswordPharmacistStart',
     'fetchApproveProductByPharmacistStart',
-    'loginPharmacistStart'
-    
+    'loginPharmacistStart',
+    'fetchAcceptConversationStart'
+
 ]

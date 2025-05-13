@@ -1,5 +1,6 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
 import * as chatService from '@/services/chatService';
+
 import {
     fetchChatBoxInitStart,
     fetchChatBoxSuccess,
@@ -8,47 +9,79 @@ import {
     fetchGetAllConversationWaitingFailed,
     fetchGetAllConversationWaitingStart,
     fetchGetAllConversationWaitingSuccess,
+
+    fetchAcceptConversationStart,
+    fetchAcceptConversationSuccess,
+    fetchAcceptConversationFailed
 } from '@/store';
 
-import {getSession, getToken, setSession} from '@/utils/cookie';
+import {getToken, setSession} from '@/utils/cookie';
+
+function* handlerAcceptConversation(action: any): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        data,
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
+    } = payload;
+
+    try {
+        const response = yield call(chatService.acceptConversation, data);
+        if (response.status_code === 200) {
+            onSuccess(response.data)
+            yield put(fetchAcceptConversationSuccess(response.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchAcceptConversationFailed("Failed to accept conversation"));
+
+    } catch (error) {
+        onFailure()
+        yield put(fetchAcceptConversationFailed("Failed to accept conversation"));
+    }
+}
 
 function* getAllConversationWaiting(action: any): Generator<any, void, any> {
-   const { payload } = action;
-        const {
-            limit,
-            onSuccess = () => {},
-            onFailure = () => {},
-        } = payload;
+    const {payload} = action;
+    const {
+        limit,
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
+    } = payload;
     try {
         const response = yield call(chatService.getAllConversationWaiting, limit);
         if (response.status_code === 200) {
-                    yield put(fetchGetAllConversationWaitingSuccess(response.data));
-                    return;
-                }
-                yield put(fetchGetAllConversationWaitingFailed("Category not found"));
-        
-    } catch (error) {
-            yield put(fetchGetAllConversationWaitingFailed("Failed to fetch order"));
+            onSuccess()
+            yield put(fetchGetAllConversationWaitingSuccess(response.data));
+            return;
         }
+        onFailure()
+        yield put(fetchGetAllConversationWaitingFailed("Category not found"));
+
+    } catch (error) {
+        onFailure()
+        yield put(fetchGetAllConversationWaitingFailed("Failed to fetch order"));
+    }
 }
+
 function* handleInitChatBox(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
+            data,
             onSuccess = () => {
             },
             onFailure = () => {
             },
         } = payload;
         const token = getToken()
-        const params = {
-            "guest_name": "string",
-            "guest_email": "user@example.com",
-            "guest_phone": "string"
-        };
         const response = token ?
-            yield call(chatService.startChatBoxGuest, params)
-            : yield call(chatService.startChatBoxUser, {token});
+            yield call(chatService.startChatBoxUser) :
+            yield call(chatService.startChatBoxGuest, data);
         if (response?.status_code === 200) {
             onSuccess(response?.data);
             setSession(response?.data);
@@ -64,5 +97,6 @@ function* handleInitChatBox(action: any): Generator<any, void, any> {
 
 export function* chatSaga() {
     yield takeLatest(fetchChatBoxInitStart.type, handleInitChatBox);
+    yield takeLatest(fetchAcceptConversationStart.type, handlerAcceptConversation);
     yield takeLatest(fetchGetAllConversationWaitingStart.type, getAllConversationWaiting);
 }
