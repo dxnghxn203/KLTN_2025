@@ -1,10 +1,9 @@
-from fastapi import APIRouter, status, UploadFile, File
-
+from fastapi import APIRouter, status, UploadFile, File, Depends
 from app.core import logger, response
 from app.core.response import JsonException
 from app.entities.category.request import MainCategoryInReq, SubCategoryInReq, ChildCategoryInReq
-from app.models import category
-
+from app.models import category, admin
+from app.middleware import middleware
 router = APIRouter()
 
 @router.get("/category/", response_model=response.BaseResponse)
@@ -70,9 +69,15 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
         )
 
 @router.post("/category/add", response_model=response.BaseResponse)
-async def create_category(new_category: MainCategoryInReq):
+async def create_category(new_category: MainCategoryInReq, token: str = Depends(middleware.verify_token_admin)):
     try:
-        await category.add_category(new_category)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.add_category(new_category, admin_info.email)
         return response.SuccessResponse(message="Main-category added successfully")
 
     except JsonException as je:
@@ -85,9 +90,15 @@ async def create_category(new_category: MainCategoryInReq):
         )
 
 @router.post("/category/{main_slug}/sub-category/add", response_model=response.BaseResponse)
-async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
+async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq, token: str = Depends(middleware.verify_token_admin)):
     try:
-        await category.add_sub_category(main_slug, sub_category)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+        )
+        await category.add_sub_category(main_slug, sub_category, admin_info.email)
         return response.SuccessResponse(message="Sub-category added successfully")
     except JsonException as je:
         raise je
@@ -99,9 +110,16 @@ async def create_sub_category(main_slug: str, sub_category: SubCategoryInReq):
         )
 
 @router.post("/category/{main_slug}/sub-category/{sub_slug}/child-category/add", response_model=response.BaseResponse)
-async def create_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
+async def create_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq,
+                                token: str = Depends(middleware.verify_token_admin)):
     try:
-        await category.add_child_category(main_slug, sub_slug, child_category)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.add_child_category(main_slug, sub_slug, child_category, admin_info.email)
         return response.SuccessResponse(message="Child-category added successfully")
     except JsonException as je:
         raise je
@@ -116,10 +134,17 @@ async def create_child_category(main_slug: str, sub_slug: str, child_category: C
 async def update_main_category(
     main_category_id: str,
     main_category_name: str = None,
-    main_category_slug: str = None
+    main_category_slug: str = None,
+    token: str = Depends(middleware.verify_token_admin)
 ):
     try:
-        await category.update_main_category(main_category_id, main_category_name, main_category_slug)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.update_main_category(main_category_id, main_category_name, main_category_slug, admin_info.email)
         return response.SuccessResponse(message="Main category updated successfully")
     except JsonException as je:
         raise je
@@ -134,10 +159,17 @@ async def update_main_category(
 async def update_sub_category(
     sub_category_id: str,
     sub_category_name: str = None,
-    sub_category_slug: str = None
+    sub_category_slug: str = None,
+    token: str = Depends(middleware.verify_token_admin)
 ):
     try:
-        await category.update_sub_category(sub_category_id, sub_category_name, sub_category_slug)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.update_sub_category(sub_category_id, sub_category_name, sub_category_slug, admin_info.email)
         return response.SuccessResponse(message="Sub-category updated successfully")
     except JsonException as je:
         raise je
@@ -152,10 +184,17 @@ async def update_sub_category(
 async def update_child_category(
     child_category_id: str,
     child_category_name: str = None,
-    child_category_slug: str = None
+    child_category_slug: str = None,
+    token: str = Depends(middleware.verify_token_admin)
 ):
     try:
-        await category.update_child_category(child_category_id, child_category_name, child_category_slug)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.update_child_category(child_category_id, child_category_name, child_category_slug, admin_info.email)
         return response.SuccessResponse(message="Child-category updated successfully")
     except JsonException as je:
         raise je
@@ -167,9 +206,15 @@ async def update_child_category(
         )
 
 @router.put("/category/sub-category/{sub_category_id}/update-image", response_model=response.BaseResponse)
-async def update_sub_category_image(sub_category_id: str, image: UploadFile = File(...)):
+async def update_sub_category_image(sub_category_id: str, image: UploadFile = File(...), token: str = Depends(middleware.verify_token_admin)):
     try:
-        await category.update_sub_category_image(sub_category_id, image)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.update_sub_category_image(sub_category_id, image, admin_info.email)
         return response.SuccessResponse(message="Sub-category image updated successfully")
     except JsonException as je:
         raise je
@@ -182,9 +227,15 @@ async def update_sub_category_image(sub_category_id: str, image: UploadFile = Fi
 
 
 @router.put("/category/child-category/{child_category_id}/update-image", response_model=response.BaseResponse)
-async def update_child_category_image(child_category_id: str, image: UploadFile = File(...)):
+async def update_child_category_image(child_category_id: str, image: UploadFile = File(...), token: str = Depends(middleware.verify_token_admin)):
     try:
-        await category.update_child_category_image(child_category_id, image)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        await category.update_child_category_image(child_category_id, image, admin_info.email)
 
         return response.SuccessResponse(message="Child-category image updated successfully")
     except JsonException as je:

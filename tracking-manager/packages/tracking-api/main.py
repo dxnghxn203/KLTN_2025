@@ -20,7 +20,8 @@ from app.routers import (
     fee_router,
     time_router,
     pharmacist_router,
-    chat_box_router
+    chat_box_router,
+    voucher_router,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -54,6 +55,7 @@ app.include_router(admin_router, prefix="/v1", tags=["Admin"])
 app.include_router(pharmacist_router, prefix="/v1", tags=["Pharmacist"])
 app.include_router(user_router, prefix="/v1", tags=["User"])
 app.include_router(product_router, prefix="/v1", tags=["Product"])
+app.include_router(voucher_router, prefix="/v1", tags=["Voucher"])
 app.include_router(order_router, prefix="/v1", tags=["Order"])
 app.include_router(cart_router, prefix="/v1", tags=["Cart"])
 app.include_router(location_router, prefix="/v1", tags=["Location"])

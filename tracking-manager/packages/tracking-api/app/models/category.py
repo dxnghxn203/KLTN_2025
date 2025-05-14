@@ -167,7 +167,7 @@ async def get_child_category(main_slug: str, sub_slug: str, child_slug: str):
         logger.error(f"Error getting child-category: {str(e)}")
         raise e
 
-async def add_category(item: MainCategoryInReq):
+async def add_category(item: MainCategoryInReq, email):
     try:
         collection = db[collection_name]
         existing = collection.find_one({"main_category_slug": item.main_category_slug})
@@ -205,7 +205,9 @@ async def add_category(item: MainCategoryInReq):
             main_category_id=main_category_id,
             main_category_name=item.main_category_name,
             main_category_slug=item.main_category_slug,
-            sub_category=sub_categories
+            sub_category=sub_categories,
+            created_by=email,
+            updated_by=email,
         )
 
         collection.insert_one(category_data.dict())
@@ -214,7 +216,7 @@ async def add_category(item: MainCategoryInReq):
         raise e
 
 
-async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
+async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq, email):
     try:
         collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug})
@@ -254,13 +256,14 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq):
 
         collection.update_one(
             {"main_category_slug": main_slug},
-            {"$push": {"sub_category": new_sub_category.dict()}}
+            {"$push": {"sub_category": new_sub_category.dict()},
+             "$set": {"updated_by": email, "updated_at": datetime.now()}}
         )
     except Exception as e:
         logger.error(f"Error adding sub-category: {str(e)}")
         raise e
 
-async def add_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq):
+async def add_child_category(main_slug: str, sub_slug: str, child_category: ChildCategoryInReq, email):
     try:
         collection = db[collection_name]
         category = collection.find_one({"main_category_slug": main_slug})
@@ -294,7 +297,8 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
 
                 collection.update_one(
                     {"main_category_slug": main_slug, "sub_category.sub_category_slug": sub_slug},
-                    {"$push": {"sub_category.$.child_category": new_child_category.dict()}}
+                    {"$push": {"sub_category.$.child_category": new_child_category.dict()},
+                     "$set": {"updated_by": email, "updated_at": datetime.now()}}
                 )
                 return
 
@@ -306,7 +310,7 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
         logger.error(f"Error adding child category: {str(e)}")
         raise e
 
-async def update_main_category(main_category_id: str, main_category_name: str, main_category_slug: str):
+async def update_main_category(main_category_id: str, main_category_name: str, main_category_slug: str, email):
     try:
         collection = db[collection_name]
         update_data = {}
@@ -321,6 +325,8 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có dữ liệu để cập nhật"
             )
+        update_data["updated_by"] = email
+        update_data["updated_at"] = datetime.now()
 
         result = collection.update_one(
             {"main_category_id": main_category_id},
@@ -343,7 +349,7 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
         logger.error(f"Lỗi cập nhật danh mục chính: {str(e)}")
         raise e
 
-async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_category_slug: str):
+async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_category_slug: str, email):
     try:
         collection = db[collection_name]
 
@@ -358,6 +364,9 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có dữ liệu để cập nhật"
             )
+
+        update_data["updated_by"] = email
+        update_data["updated_at"] = datetime.now()
 
         result = collection.update_one(
             {"sub_category.sub_category_id": sub_category_id},
@@ -380,7 +389,7 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
         logger.error(f"Lỗi cập nhật danh mục con: {str(e)}")
         raise e
 
-async def update_child_category(child_category_id: str, child_category_name: str, child_category_slug: str):
+async def update_child_category(child_category_id: str, child_category_name: str, child_category_slug: str, email):
     try:
         collection = db[collection_name]
 
@@ -395,6 +404,9 @@ async def update_child_category(child_category_id: str, child_category_name: str
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không có dữ liệu để cập nhật"
             )
+
+        update_data["updated_by"] = email
+        update_data["updated_at"] = datetime.now()
 
         result = collection.update_one(
             {"sub_category.child_category.child_category_id": child_category_id},
@@ -418,7 +430,7 @@ async def update_child_category(child_category_id: str, child_category_name: str
         logger.error(f"Lỗi cập nhật danh mục con cấp 2: {str(e)}")
         raise e
 
-async def update_sub_category_image(sub_category_id: str, image: str):
+async def update_sub_category_image(sub_category_id: str, image: str, email):
     try:
         image_url = upload_file(image, "sub_category")
         if not image_url:
@@ -430,7 +442,7 @@ async def update_sub_category_image(sub_category_id: str, image: str):
         collection = db[collection_name]
         result = collection.update_one(
         {"sub_category.sub_category_id": sub_category_id},
-            {"$set": {"sub_category.$.sub_image_url": image_url}}
+            {"$set": {"sub_category.$.sub_image_url": image_url, "updated_by": email, "updated_at": datetime.now()}}
         )
         if result.modified_count == 0:
             raise response.JsonException(
@@ -441,7 +453,7 @@ async def update_sub_category_image(sub_category_id: str, image: str):
         logger.error(f"Lỗi cập nhật ảnh danh mục con: {str(e)}")
         raise e
 
-async def update_child_category_image(child_category_id: str, image: str):
+async def update_child_category_image(child_category_id: str, image: str, email):
     try:
         image_url = upload_file(image, "child_category")
 
@@ -453,7 +465,8 @@ async def update_child_category_image(child_category_id: str, image: str):
         collection = db[collection_name]
         result = collection.update_one(
             {"sub_category.child_category.child_category_id": child_category_id},
-            {"$set": {"sub_category.$[].child_category.$[child].child_image_url": image_url}},
+            {"$set": {"sub_category.$[].child_category.$[child].child_image_url": image_url,
+                      "updated_by": email, "updated_at": datetime.now()}},
             array_filters=[{"child.child_category_id": child_category_id}]
         )
         if result.modified_count == 0:
@@ -584,3 +597,15 @@ async def delete_child_category(child_category_id: str):
     except Exception as e:
         logger.error(f"Lỗi xóa danh mục con cấp 2: {str(e)}")
         raise e
+
+async def update_product_created_updated():
+    collection = db[collection_name]
+    collection.update_many(
+        {},
+        {"$set": {
+            "created_by": "tuannguyen23823@gmail.com",
+            "updated_by": "tuannguyen23823@gmail.com",
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }}
+    )

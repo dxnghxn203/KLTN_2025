@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from fastapi import UploadFile
@@ -165,6 +166,10 @@ class ItemProductDBReq(BaseModel):
     pharmacist_gender: str = ""
     is_approved: bool = False
     rejected_note: str = ""
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+    created_by: str = ""
+    updated_by: str = ""
 
 class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")

@@ -1,14 +1,14 @@
 import datetime
 from typing import Optional, Union
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 
 
 class ItemUserRes(BaseModel):
     id: str = Field(..., alias='_id')
     phone_number: Optional[Union[str, None]] = None
     user_name: Optional[Union[str, None]] = None
-    email: EmailStr = None
+    email: Optional[Union[str, None]] = None
     gender: Optional[Union[str, None]] = None
     auth_provider: Optional[Union[str, None]] = None
     birthday: Optional[Union[datetime.datetime, None]] = None

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List
+from datetime import datetime
 
 class ChildCategoryReq(BaseModel):
     child_category_id: str = ""
@@ -19,6 +20,10 @@ class MainCategoryReq(BaseModel):
     main_category_name: str = ""
     main_category_slug: str = ""
     sub_category: List[SubCategoryReq]
+    created_by: str = ""
+    updated_by: str = ""
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
 
 class ChildCategoryInReq(BaseModel):
     child_category_name: str = ""

@@ -14,9 +14,9 @@ from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
     get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, \
-    update_pharmacist_gender_for_all_products, check_product_consistency, \
+    check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
-    import_products, get_product_brands, get_imported_products, delete_imported_products
+    import_products, get_product_brands, get_imported_products, delete_imported_products, update_product_created_updated
 
 router = APIRouter()
 
@@ -114,10 +114,17 @@ async def get_product(slug: str, token: str = Depends(middleware.verify_token)):
 async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq),
                       images_primary: Optional[UploadFile] = File(None),
                       images: Optional[List[UploadFile]] = File(None),
-                      certificate_file: Optional[UploadFile] = File(None)):
+                      certificate_file: Optional[UploadFile] = File(None),
+                      token: str = Depends(middleware.verify_token_admin)):
     try:
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
         logger.info(f"item router: {item}")
-        await add_product_db(item, images_primary, images, certificate_file)
+        await add_product_db(item, images_primary, images, admin_info.email, certificate_file)
         return response.SuccessResponse(status="success", message="Thêm sản phẩm thành công")
     except JsonException as je:
         raise je
@@ -147,9 +154,15 @@ async def get_all_product_admin(page: int = 1, page_size: int = 10):
         )
 
 @router.put("/product/update_category", response_model=response.BaseResponse)
-async def update_category_product(item: UpdateCategoryReq):
+async def update_category_product(item: UpdateCategoryReq, token: str = Depends(middleware.verify_token_admin)):
     try:
-        return await update_product_category(item)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Quản trị viên không tồn tại."
+            )
+        return await update_product_category(item, admin_info.email)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -326,7 +339,13 @@ async def pharmacist_get_product(token: str = Depends(middleware.verify_token_ph
 @router.put("/products/update-status", response_model=response.BaseResponse)
 async def admin_update_product_status(item: UpdateProductStatusReq, token: str = Depends(middleware.verify_token_admin)):
     try:
-        return await update_product_status(item)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quan trị viên không tồn tại."
+            )
+        return await update_product_status(item, admin_info.email)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -340,10 +359,16 @@ async def admin_update_product_status(item: UpdateProductStatusReq, token: str =
 async def admin_update_images(
     product_id: str,
     files: Optional[List[UploadFile]] = File(None),
-    #token: str = Depends(middleware.verify_token_admin)
+    token: str = Depends(middleware.verify_token_admin)
 ):
     try:
-        return await update_product_images(product_id, files)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        return await update_product_images(product_id, files, admin_info.email)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -357,10 +382,16 @@ async def admin_update_images(
 async def admin_update_images_primary(
     product_id: str,
     file: UploadFile = File(...),
-    #token: str = Depends(middleware.verify_token_admin)
+    token: str = Depends(middleware.verify_token_admin)
 ):
     try:
-        return await update_product_images_primary(product_id, file)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        return await update_product_images_primary(product_id, file, admin_info.email)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -374,10 +405,16 @@ async def admin_update_images_primary(
 async def admin_update_certificate_file(
     product_id: str,
     file: UploadFile = File(...),
-    #token: str = Depends(middleware.verify_token_admin)
+    token: str = Depends(middleware.verify_token_admin)
 ):
     try:
-        return await update_product_certificate_file(product_id, file)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        return await update_product_certificate_file(product_id, file, admin_info.email)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -390,10 +427,16 @@ async def admin_update_certificate_file(
 
 @router.put("/products/update-product", response_model=response.BaseResponse)
 async def admin_update_product(item: ItemUpdateProductReq,
-                               #token: str = Depends(middleware.verify_token_admin)
+                               token: str = Depends(middleware.verify_token_admin)
                                ):
     try:
-        return await update_product_fields(item)
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        return await update_product_fields(item, admin_info.email)
     except JsonException as je:
         raise je
     except Exception as e:
@@ -452,14 +495,20 @@ async def get_all_brands():
         )
 
 @router.post("/products/import", response_model=response.BaseResponse)
-async def admin_import_products(file: Optional[UploadFile] = File(None)):
+async def admin_import_products(file: Optional[UploadFile] = File(None), token: str = Depends(middleware.verify_token_admin)):
     try:
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
         if not file:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="File is required"
             )
-        await import_products(file)
+        await import_products(file, admin_info.email)
         return response.SuccessResponse(status="success", message="Import sản phẩm thành công")
     except JsonException as je:
         raise je
@@ -501,7 +550,7 @@ async def admin_delete_imported_products(import_id: str):
 @router.post("/products/dev", response_model=response.BaseResponse)
 async def dev():
     try:
-        result = await update_pharmacist_gender_for_all_products()
+        result = await update_product_created_updated()
         return response.SuccessResponse(
             data=result
         )

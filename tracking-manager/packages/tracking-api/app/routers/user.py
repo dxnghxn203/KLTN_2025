@@ -12,7 +12,7 @@ from app.models.auth import handle_otp_verification, handle_password_verificatio
 
 router = APIRouter()
 
-@router.post("/user/register_email")
+@router.post("/user/register_email", response_model=BaseResponse)
 async def register_email(item: ItemUserRegisReq):
     try:
         return await user.add_user_email(item)

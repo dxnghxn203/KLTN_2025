@@ -18,6 +18,7 @@ from fastapi import UploadFile
 from pydantic import ValidationError
 from starlette import status
 from typing import Set, Dict, Tuple
+from datetime import datetime
 
 from starlette.responses import JSONResponse
 
@@ -257,7 +258,7 @@ async def get_product_featured(main_category_id, sub_category_id=None, child_cat
             message="Internal server error",
         )
 
-async def add_product_db(item: ItemProductDBInReq, images_primary, images, certificate_file=None):
+async def add_product_db(item: ItemProductDBInReq, images_primary, images, email, certificate_file=None):
     try:
         collection = db[collection_name]
         cur = collection.find_one({"slug": item.slug})
@@ -347,7 +348,9 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
             ingredients=ingredients_list,
             images_primary=images_primary_url,
             category=category_obj,
-            certificate_file=certificate_url
+            certificate_file=certificate_url,
+            created_by=email,
+            updated_by=email
         )
 
         insert_result = collection.insert_one(item_data.dict())
@@ -362,7 +365,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, certi
         logger.error(f"Lỗi khi thêm sản phẩm: {e}")
         raise e
 
-async def update_product_category(item: UpdateCategoryReq):
+async def update_product_category(item: UpdateCategoryReq, email: str):
     try:
         collection = db[collection_name]
         category_collection = db[collection_category]
@@ -414,6 +417,9 @@ async def update_product_category(item: UpdateCategoryReq):
             "category.child_category_id": item.child_category_id,
             "category.child_category_name": child_category.get("child_category_name", ""),
             "category.child_category_slug": child_category.get("child_category_slug", ""),
+
+            "updated_by": email,
+            "updated_at": datetime.now()
         }
 
         collection.update_one({"product_id": item.product_id}, {"$set": update_data})
@@ -584,16 +590,26 @@ async def get_approved_product(email: str):
         logger.error(f"Failed [get_approved_product]: {e}")
         raise e
 
-async def update_product_status(item: UpdateProductStatusReq):
+async def update_product_status(item: UpdateProductStatusReq, email: str):
     try:
         collection = db[collection_name]
-        collection.update_one({"product_id": item.product_id},{"$set": {"active": item.status}})
+        collection.update_one({
+                "product_id": item.product_id
+            },
+            {
+                "$set": {
+                    "active": item.status,
+                    "updated_by": email,
+                    "updated_at": datetime.now()
+                }
+            }
+        )
         return response.SuccessResponse(message="Product status updated successfully")
     except Exception as e:
         logger.error(f"Error updating product status: {str(e)}")
         raise e
 
-async def update_product_images_primary(product_id: str, file):
+async def update_product_images_primary(product_id: str, file, email: str):
     try:
         if not file:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
@@ -606,14 +622,14 @@ async def update_product_images_primary(product_id: str, file):
         url = upload_file(file, "images_primary")
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"images_primary": url}}
+            {"$set": {"images_primary": url, "updated_by": email, "updated_at": datetime.now()}},
         )
         return response.SuccessResponse(message="Cập nhật ảnh chính thành công")
     except Exception as e:
         logger.error(f"Error updating product images primary: {str(e)}")
         raise e
 
-async def update_product_certificate_file(product_id: str, file):
+async def update_product_certificate_file(product_id: str, file, email: str):
     try:
         if not file:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
@@ -626,14 +642,14 @@ async def update_product_certificate_file(product_id: str, file):
         url = upload_any_file(file, "certificates")
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"certificate_file": url}}
+            {"$set": {"certificate_file": url, "updated_by": email, "updated_at": datetime.now()}},
         )
         return response.SuccessResponse(message="Cập nhật chứng nhận thành công")
     except Exception as e:
         logger.error(f"Error updating product certificate file: {str(e)}")
         raise e
 
-async def update_product_images(product_id: str, files):
+async def update_product_images(product_id: str, files, email: str):
     try:
         if not files:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="File không hợp lệ")
@@ -654,14 +670,14 @@ async def update_product_images(product_id: str, files):
 
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"images": new_images}}
+            {"$set": {"images": new_images, "updated_by": email, "updated_at": datetime.now()}},
         )
         return response.SuccessResponse(message="Cập nhật images thành công")
     except Exception as e:
         logger.error(f"Error updating product images: {str(e)}")
         raise e
 
-async def update_product_fields(update_data: ItemUpdateProductReq):
+async def update_product_fields(update_data: ItemUpdateProductReq, email):
     try:
         collection = db[collection_name]
         product = collection.find_one({"product_id": update_data.product_id})
@@ -753,7 +769,9 @@ async def update_product_fields(update_data: ItemUpdateProductReq):
                 "verified_by": "",
                 "rejected_note": "",
                 "pharmacist_name": "",
-                "pharmacist_gender": ""
+                "pharmacist_gender": "",
+                "updated_by": email,
+                "updated_at": datetime.now()
             })
             collection.update_one({"product_id": update_data.product_id}, {"$set": update_fields})
 
@@ -762,33 +780,17 @@ async def update_product_fields(update_data: ItemUpdateProductReq):
         logger.error(f"Error updating product fields: {str(e)}")
         raise e
 
-async def update_pharmacist_gender_for_all_products():
-    product_collection = db[collection_name]
-    pharmacist_collection = db["pharmacists"]
-
-    cursor = product_collection.find({
-        "verified_by": {"$ne": ""}
-    })
-
-    updated_count = 0
-    for product in cursor:
-        email = product.get("verified_by")
-        if not email:
-            continue
-
-        pharmacist = pharmacist_collection.find_one({"email": email})
-        if not pharmacist:
-            continue
-
-        pharmacist_gender = pharmacist.get("gender", "")
-
-        product_collection.update_one(
-            {"_id": product["_id"]},
-            {"$set": {"pharmacist_gender": pharmacist_gender}}
-        )
-        updated_count += 1
-
-    return updated_count
+async def update_product_created_updated():
+    collection = db[collection_name]
+    collection.update_many(
+        {},
+        {"$set": {
+            "created_by": "tuannguyen23823@gmail.com",
+            "updated_by": "tuannguyen23823@gmail.com",
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }}
+    )
 
 async def get_all_mongodb_product_ids() -> Set[str]:
     collection = db[collection_name]
@@ -1032,7 +1034,7 @@ async def extract_certificates_from_excel(file_stream: BytesIO, df: pd.DataFrame
                 result_map[row_idx] = url
     return result_map
 
-async def import_products(file: UploadFile):
+async def import_products(file: UploadFile, email: str):
     try:
         if redis.is_import_locked():
             raise response.JsonException(
@@ -1187,7 +1189,9 @@ async def import_products(file: UploadFile):
                         registration_number=row.get("registration_number", ""),
                         images=image_list,
                         images_primary=image_primary,
-                        certificate_file=certificate_url
+                        certificate_file=certificate_url,
+                        created_by=email,
+                        updated_by=email
                     )
                     insert_result = collection.insert_one(product.dict())
 

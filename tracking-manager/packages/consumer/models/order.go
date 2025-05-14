@@ -178,32 +178,22 @@ func getPriceAmount(productId string, priceId string, ctx context.Context) int {
 }
 
 func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
-	db := database.GetDatabase()
-	collection := db.Collection("products")
-
 	var insufficientProducts []string
 
 	for _, p := range order.Product {
-		result := collection.FindOne(ctx, bson.M{"product_id": p.ProductId})
-		if result.Err() != nil {
-			slog.Error("Không tìm thấy sản phẩm", "product_id", p.ProductId, "err", result.Err())
+		result, err := database.GetProductTransaction(ctx, p.ProductId)
+		if err != nil {
+			slog.Error("Không tìm thấy sản phẩm", "product_id", p.ProductId, "err", err)
 			continue
 		}
 
-		var product ProductRes
-		if err := result.Decode(&product); err != nil {
-			slog.Error("Lỗi giải mã sản phẩm", "product_id", p.ProductId, "err", err)
-			continue
-		}
+		inventory := result["inventory"]
+		sold := result["sell"]
+		available := inventory - sold
 
-		for _, price := range product.Prices {
-			if price.PriceId == p.PriceId {
-				usedQuantity := p.Quantity * price.Amount
-				if product.Inventory < product.Sell+usedQuantity {
-					insufficientProducts = append(insufficientProducts, p.ProductName)
-				}
-				break
-			}
+		usedQuantity := p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx)
+		if available < usedQuantity {
+			insufficientProducts = append(insufficientProducts, p.ProductName)
 		}
 	}
 	if len(insufficientProducts) > 0 {
