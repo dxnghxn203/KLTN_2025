@@ -9,6 +9,7 @@ from app.entities.admin.response import ItemAdminRes
 from app.entities.pharmacist.request import ItemPharmacistRegisReq
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.helpers import redis
+from app.helpers.constant import get_time
 from app.middleware import middleware
 from app.middleware.middleware import decode_jwt, generate_password
 
@@ -44,8 +45,8 @@ async def create_pharmacist(item: ItemPharmacistRegisReq):
         item_dict["password"] = middleware.hash_password(password)
 
         item_dict.update({
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
+            "created_at": get_time(),
+            "updated_at": get_time(),
             "verified_email_at": None,
             "role_id": "pharmacist",
             "active": True,
@@ -76,7 +77,7 @@ async def create_pharmacist(item: ItemPharmacistRegisReq):
 
 async def update_pharmacist_verification(email: str):
     collection = database.db[collection_name]
-    collection.update_one({"email": email}, {"$set": {"verified_email_at": datetime.utcnow()}})
+    collection.update_one({"email": email}, {"$set": {"verified_email_at": get_time()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
 async def get_by_id(pharmacist_id: str):
@@ -120,7 +121,7 @@ async def update_pharmacist_password(email: str, new_password: str):
         collection = database.db[collection_name]
         collection.update_one(
             {"email": email},
-            {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
+            {"$set": {"password": middleware.hash_password(new_password), "updated_at": get_time()}})
         return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
     except response.JsonException as je:
         raise je
@@ -136,7 +137,7 @@ async def update_status(pharmacist_id: str, status: bool):
             {
                 "$set": {
                     "active": status,
-                    "updated_at": datetime.utcnow()
+                    "updated_at": get_time()
                 }
             }
         )

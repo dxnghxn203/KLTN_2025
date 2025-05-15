@@ -8,7 +8,7 @@ from app.core.s3 import upload_file
 from app.entities.category.request import MainCategoryInReq, MainCategoryReq, ChildCategoryReq, SubCategoryReq, \
     SubCategoryInReq, ChildCategoryInReq
 from app.entities.product.response import ItemProductDBRes
-from app.helpers.constant import generate_id
+from app.helpers.constant import generate_id, get_time
 from app.middleware.logging import logger
 from app.models.comment import count_comments
 from app.models.review import count_reviews, average_rating
@@ -257,7 +257,7 @@ async def add_sub_category(main_slug: str, sub_category: SubCategoryInReq, email
         collection.update_one(
             {"main_category_slug": main_slug},
             {"$push": {"sub_category": new_sub_category.dict()},
-             "$set": {"updated_by": email, "updated_at": datetime.now()}}
+             "$set": {"updated_by": email, "updated_at": get_time()}}
         )
     except Exception as e:
         logger.error(f"Error adding sub-category: {str(e)}")
@@ -298,7 +298,7 @@ async def add_child_category(main_slug: str, sub_slug: str, child_category: Chil
                 collection.update_one(
                     {"main_category_slug": main_slug, "sub_category.sub_category_slug": sub_slug},
                     {"$push": {"sub_category.$.child_category": new_child_category.dict()},
-                     "$set": {"updated_by": email, "updated_at": datetime.now()}}
+                     "$set": {"updated_by": email, "updated_at": get_time()}}
                 )
                 return
 
@@ -326,7 +326,7 @@ async def update_main_category(main_category_id: str, main_category_name: str, m
                 message="Không có dữ liệu để cập nhật"
             )
         update_data["updated_by"] = email
-        update_data["updated_at"] = datetime.now()
+        update_data["updated_at"] = get_time()
 
         result = collection.update_one(
             {"main_category_id": main_category_id},
@@ -366,7 +366,7 @@ async def update_sub_category(sub_category_id: str, sub_category_name: str, sub_
             )
 
         update_data["updated_by"] = email
-        update_data["updated_at"] = datetime.now()
+        update_data["updated_at"] = get_time()
 
         result = collection.update_one(
             {"sub_category.sub_category_id": sub_category_id},
@@ -406,7 +406,7 @@ async def update_child_category(child_category_id: str, child_category_name: str
             )
 
         update_data["updated_by"] = email
-        update_data["updated_at"] = datetime.now()
+        update_data["updated_at"] = get_time()
 
         result = collection.update_one(
             {"sub_category.child_category.child_category_id": child_category_id},
@@ -442,7 +442,7 @@ async def update_sub_category_image(sub_category_id: str, image: str, email):
         collection = db[collection_name]
         result = collection.update_one(
         {"sub_category.sub_category_id": sub_category_id},
-            {"$set": {"sub_category.$.sub_image_url": image_url, "updated_by": email, "updated_at": datetime.now()}}
+            {"$set": {"sub_category.$.sub_image_url": image_url, "updated_by": email, "updated_at": get_time()}}
         )
         if result.modified_count == 0:
             raise response.JsonException(
@@ -466,7 +466,7 @@ async def update_child_category_image(child_category_id: str, image: str, email)
         result = collection.update_one(
             {"sub_category.child_category.child_category_id": child_category_id},
             {"$set": {"sub_category.$[].child_category.$[child].child_image_url": image_url,
-                      "updated_by": email, "updated_at": datetime.now()}},
+                      "updated_by": email, "updated_at": get_time()}},
             array_filters=[{"child.child_category_id": child_category_id}]
         )
         if result.modified_count == 0:
@@ -605,7 +605,7 @@ async def update_product_created_updated():
         {"$set": {
             "created_by": "tuannguyen23823@gmail.com",
             "updated_by": "tuannguyen23823@gmail.com",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now()
+            "created_at": get_time(),
+            "updated_at": get_time()
         }}
     )

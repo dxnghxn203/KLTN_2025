@@ -6,7 +6,7 @@ from starlette import status
 from app.core import database, logger, response
 from app.entities.comment.request import ItemCommentReq, ItemAnswerReq
 from app.entities.comment.response import ItemCommentRes
-from app.helpers.constant import generate_id
+from app.helpers.constant import generate_id, get_time
 from app.models import user
 
 collection_name = "comments"
@@ -19,7 +19,7 @@ async def create_comment(item: ItemCommentReq, token):
         item_dict = item.dict()
         item_dict["user_id"] = user_info.id
         item_dict["user_name"] = user_info.user_name
-        item_dict["created_at"] = datetime.datetime.now() + datetime.timedelta(hours=7)
+        item_dict["created_at"] = get_time()
         item_dict["answers"] = []
         insert_result = collection.insert_one(item_dict)
         logger.info(f"[create_comment] Đã thêm bình luận mới, ID: {insert_result.inserted_id}")
@@ -68,7 +68,7 @@ async def answer_to_comment(item: ItemAnswerReq, token):
             "user_id": user_info.id,
             "user_name": user_info.user_name,
             "comment": item.comment,
-            "created_at": datetime.datetime.now() + datetime.timedelta(hours=7)
+            "created_at": get_time()
         }
 
         collection.update_one(

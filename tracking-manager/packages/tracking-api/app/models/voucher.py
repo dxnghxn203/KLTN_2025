@@ -4,7 +4,7 @@ from starlette import status
 from app.core import database, logger, response
 from app.entities.voucher.request import ItemVoucherDBInReq, ItemVoucherDBReq
 from app.entities.voucher.response import ItemVoucherDBRes
-from app.helpers.constant import generate_id
+from app.helpers.constant import generate_id, get_time
 
 collection_name = "vouchers"
 
@@ -42,7 +42,7 @@ async def update_status(voucher_id: str, status: bool, email):
             {
                 "$set": {
                     "active": status,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": get_time(),
                     "updated_by": email
                 }
             }

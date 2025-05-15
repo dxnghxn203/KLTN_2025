@@ -2,6 +2,9 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
+from app.models.time import get_time
+
+
 class ItemVoucherDBReq(BaseModel):
     voucher_id: str = ""
     voucher_name: str = ""
@@ -10,8 +13,8 @@ class ItemVoucherDBReq(BaseModel):
     description: str = ""
     discount: float = 0
     active: bool = True
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
+    created_at: datetime = get_time()
+    updated_at: datetime = get_time()
     created_by: str = ""
     updated_by: str = ""
     min_order_value: float = 0

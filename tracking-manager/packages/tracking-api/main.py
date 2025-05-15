@@ -6,7 +6,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core import response, exception
-from app.helpers.constant import get_time
 from app.routers import (
     user_router,
     admin_router,
@@ -76,7 +75,6 @@ def read_root():
     }
 @app.get("/")
 def home():
-    print(get_time())
     return {
         "service": "Tracking API",
         "version": "1.0.0",

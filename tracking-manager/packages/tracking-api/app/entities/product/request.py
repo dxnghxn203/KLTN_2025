@@ -5,6 +5,8 @@ from fastapi import UploadFile
 from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
 
+from app.models.time import get_time
+
 
 class ItemProductReq(BaseModel):
     product_id: str = ""
@@ -166,8 +168,8 @@ class ItemProductDBReq(BaseModel):
     pharmacist_gender: str = ""
     is_approved: bool = False
     rejected_note: str = ""
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
+    created_at: datetime = get_time()
+    updated_at: datetime = get_time()
     created_by: str = ""
     updated_by: str = ""
 

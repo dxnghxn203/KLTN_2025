@@ -9,6 +9,7 @@ from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware import middleware
 from app.middleware.middleware import decode_jwt
+from app.models.time import get_time
 
 collection_name = "users"
 
@@ -30,9 +31,9 @@ async def create_user(item: ItemUserRegisReq, auth_provider: str, password: str 
         item_dict["password"] = middleware.hash_password(password)
 
     item_dict.update({
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
-        "verified_email_at": datetime.utcnow() if auth_provider == "google" else None,
+        "created_at": get_time(),
+        "updated_at": get_time(),
+        "verified_email_at": get_time() if auth_provider == "google" else None,
         "role_id": "user",
         "active": True,
         "auth_provider": auth_provider,
@@ -89,7 +90,7 @@ async def add_user_google(email: str, user_name: str):
             phone_number="Google",
             password="Google@123",
             gender="Google",
-            birthday=datetime.now()
+            birthday=get_time()
         )
 
         user_id = await create_user(item, auth_provider="google", password="Google@123")
@@ -106,7 +107,7 @@ async def add_user_google(email: str, user_name: str):
 
 async def update_user_verification(email: str):
     collection = database.db[collection_name]
-    collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"verified_email_at": datetime.utcnow()}})
+    collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"verified_email_at": get_time()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
 async def get_by_id(user_id: str):
@@ -131,7 +132,7 @@ async def update_status(user_id: str, status: bool):
             {
                 "$set": {
                     "active": status,
-                    "updated_at": datetime.utcnow()
+                    "updated_at": get_time()
                 }
             }
         )
@@ -159,7 +160,7 @@ async def update_user_password(email: str, new_password: str):
         collection = database.db[collection_name]
         collection.update_one(
             {"email": email, "auth_provider": "email"},
-            {"$set": {"password": middleware.hash_password(new_password), "updated_at": datetime.utcnow()}})
+            {"$set": {"password": middleware.hash_password(new_password), "updated_at": get_time()}})
         return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
     except response.JsonException as je:
         raise je

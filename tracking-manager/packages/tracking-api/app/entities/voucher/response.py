@@ -2,6 +2,9 @@ from typing import Optional, Union, List
 from datetime import datetime
 from pydantic import BaseModel
 
+from app.models.time import get_time
+
+
 class ItemVoucherDBRes(BaseModel):
     voucher_id: Optional[Union[str, None]] = None
     voucher_name: Optional[Union[str, None]] = None
@@ -10,8 +13,8 @@ class ItemVoucherDBRes(BaseModel):
     description: Optional[Union[str, None]] = None
     discount: float = 0
     active: bool = True
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
+    created_at: datetime = get_time()
+    updated_at: datetime = get_time()
     created_by: Optional[Union[str, None]] = None
     updated_by: Optional[Union[str, None]] = None
     min_order_value: float = 0

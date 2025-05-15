@@ -23,7 +23,7 @@ from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, 
 from app.entities.product.response import ItemProductRes
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
-from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
+from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, get_time, \
     FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
     SENDER_COMMUNE_CODE
 from app.helpers.es_helpers import search_es
@@ -53,7 +53,7 @@ async def get_total_orders():
 async def get_total_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_time() - timedelta(days=365)
         total_orders = collection.count_documents({"created_date": {"$gte": one_year_ago}})
         return total_orders
     except Exception as e:
@@ -63,7 +63,7 @@ async def get_total_orders_last_365_days():
 async def get_new_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_time() - timedelta(days=365)
         new_orders = collection.count_documents({"status": "created", "created_date": {"$gte": one_year_ago}})
         return new_orders
     except Exception as e:
@@ -73,7 +73,7 @@ async def get_new_orders_last_365_days():
 async def get_completed_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_time() - timedelta(days=365)
         completed_orders = collection.count_documents({"status": "completed", "created_date": {"$gte": one_year_ago}})
         return completed_orders
     except Exception as e:
@@ -99,7 +99,7 @@ async def get_popular_products(top_n=3):
 async def get_cancel_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_time() - timedelta(days=365)
         cancel_orders = collection.count_documents({"status": "canceled", "created_date": {"$gte": one_year_ago}})
         return cancel_orders
     except Exception as e:
