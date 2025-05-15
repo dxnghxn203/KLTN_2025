@@ -49,7 +49,7 @@ const UpdateLocation = ({
         phone_number: ordererInfo.phone,
         address: addressInfo.address,
         province: addressInfo.city,
-          email:ordererInfo.email ,
+        email: ordererInfo.email,
         province_code: addressInfo.cityCode,
         district_code: addressInfo.districtCode,
         district: addressInfo.district,
@@ -105,6 +105,7 @@ const UpdateLocation = ({
           onClick={() => {
             handleUpdateLocation();
           }}
+          type="button"
           disabled={loadingUpdateLocation}
         >
           {loadingUpdateLocation ? "Đang xử lý..." : "Cập nhật"}

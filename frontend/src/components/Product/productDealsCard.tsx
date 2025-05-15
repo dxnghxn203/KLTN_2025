@@ -55,7 +55,7 @@ const ProductDealsCard = ({ product }: { product: any }) => {
               </div>
 
               <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] h-[48px]">
-                {product?.product_name}
+                {product?.name_primary}
               </div>
               <div className="mt-2">
                 <div

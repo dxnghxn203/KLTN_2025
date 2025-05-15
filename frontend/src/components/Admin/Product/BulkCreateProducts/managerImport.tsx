@@ -168,6 +168,7 @@ const ManagerImport = ({ allFileImport }: ManagerImportProps) => {
             selectedProduct.import_id,
             (message: any) => {
               toast.showToast(message, "success");
+              setIsOpenDialog(false);
               fetchGetImportFileAddProduct(
                 () => {},
                 () => {}

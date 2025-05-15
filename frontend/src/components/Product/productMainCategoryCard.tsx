@@ -45,7 +45,7 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
             </div>
           </Link>
           {/* Thông tin sản phẩm */}
-          <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100">
+          <div className="px-3 py-4 bg-white rounded-3xl border border-neutral-100 h-full">
             {/* Category + Rating */}
             <div className="flex justify-between mb-2 items-center">
               <span className="font-normal text-[#A7A8B0] text-xs ">
@@ -66,7 +66,25 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
               {products?.name_primary}
             </div>
 
-            {!products?.prescription_required && (
+            {products?.prescription_required ? (
+              <div className="mt-2 ">
+                <div
+                  className={`text-sm text-zinc-400 line-through opacity-0 select-none${
+                    products?.prices[0]?.original_price &&
+                    products?.prices[0]?.original_price !==
+                      products?.prices[0]?.price
+                      ? "opacity-100"
+                      : "opacity-0"
+                  }`}
+                >
+                  {products?.prices[0]?.original_price?.toLocaleString("vi-VN")}
+                  đ
+                </div>
+                <p className="text-[#A7A8B0] text-sm font-medium">
+                  Cần tư vấn từ dược sĩ
+                </p>
+              </div>
+            ) : (
               <div className="mt-2">
                 <div
                   className={`text-sm text-zinc-400 line-through ${
@@ -91,9 +109,6 @@ const ProductMainCategoryCard: React.FC<ProductMainCategoryCardProps> = ({
             <div className="mt-2 flex justify-center w-full">
               {products?.prescription_required ? (
                 <div className="flex flex-col justify-start w-full">
-                  <p className="text-[#A7A8B0] text-sm font-medium">
-                    Cần tư vấn từ dược sĩ
-                  </p>
                   <button
                     className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
                     onClick={() =>

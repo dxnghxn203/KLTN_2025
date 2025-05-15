@@ -21,7 +21,7 @@ const MedicineCensorshipList = () => {
   const { productApproved, fetchProductApproved } = useProduct();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const productApprovedPerPage = 6; // Số đơn hàng hiển thị trên mỗi trang
+  const productApprovedPerPage = 10; // Số đơn hàng hiển thị trên mỗi trang
 
   // Tính toán dữ liệu hiển thị theo trang
   const totalProducts = productApproved ? productApproved.length : 0;
