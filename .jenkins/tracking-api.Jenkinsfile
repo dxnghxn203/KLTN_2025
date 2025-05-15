@@ -11,26 +11,10 @@ pipeline {
         IMAGE_BASENAME = 'tracking-api'
         CONTAINER_NAME = "${IMAGE_BASENAME}-app"
         TRACKING_API_PATH = 'tracking-manager/packages/tracking-api'
-        DOCKERFILE_PATH = "${TRACKING_API_PATH}/Dockerfile"
         HOST_PORT_FOR_APP = 8000
     }
 
     stages {
-        stage('Initial Setup and Sanity Checks') {
-            steps {
-                script {
-                    if (env.BRANCH_NAME == null || env.BRANCH_NAME.isEmpty() || env.BRANCH_NAME == "null" || env.BRANCH_NAME.contains('unknown')) {
-                        error "FATAL: Không thể xác định tên nhánh hợp lệ (Branch: ${env.BRANCH_NAME}). Dừng pipeline."
-                    }
-                    echo "Đang làm việc trên nhánh: ${env.BRANCH_NAME}"
-                    if (!fileExists(env.DOCKERFILE_PATH)) {
-                        error "FATAL: Dockerfile không tồn tại tại ${env.DOCKERFILE_PATH}. Dừng pipeline."
-                    }
-                    echo "Dockerfile đã được tìm thấy tại: ${env.DOCKERFILE_PATH}"
-                }
-            }
-        }
-
         stage('Retrieve .env from Vault and Create File') {
             steps {
                 script {
@@ -75,8 +59,7 @@ pipeline {
                     }
                     echo "Sử dụng file ${env.WORKSPACE_DOTENV_FILENAME} để build Docker image."
 
-                    def safeBranchName = env.BRANCH_NAME.replaceAll('/', '-')
-                    def fullImageNameWithTag = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:${env.BUILD_NUMBER}-${safeBranchName}"
+                    def fullImageNameWithTag = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:${env.BUILD_NUMBER}"
                     def latestImageName = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:latest"
 
                     echo "Bắt đầu build Docker image: ${fullImageNameWithTag}"
@@ -94,10 +77,12 @@ pipeline {
         stage('Push Docker Image to Registry') {
             steps {
                 script {
-                    def safeBranchName = env.BRANCH_NAME.replaceAll('/', '-')
-                    def fullImageNameWithTag = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:${env.BUILD_NUMBER}-${safeBranchName}"
+                    def fullImageNameWithTag = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:${env.BUILD_NUMBER}"
                     def latestImageName = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:latest"
+
+                    echo "Đẩy image ${fullImageNameWithTag} lên registry"
                     docker.image(fullImageNameWithTag).push()
+                    echo "Đẩy image ${latestImageName} lên registry"
                     docker.image(latestImageName).push()
                 }
             }
@@ -107,6 +92,7 @@ pipeline {
             steps {
                 script {
                     def imageToDeploy = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:latest"
+                    echo "Deploy image: ${imageToDeploy}"
                     sh "docker pull ${imageToDeploy}"
                     sh "docker stop ${env.CONTAINER_NAME} || true"
                     sh "docker rm ${env.CONTAINER_NAME} || true"
@@ -127,6 +113,7 @@ pipeline {
             steps {
                 script {
                     if (fileExists(env.WORKSPACE_DOTENV_FILENAME)) {
+                        echo "Xóa file ${env.WORKSPACE_DOTENV_FILENAME}"
                         sh "rm -f ${env.WORKSPACE_DOTENV_FILENAME}"
                     }
                 }
