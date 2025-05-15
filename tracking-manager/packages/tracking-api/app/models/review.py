@@ -7,7 +7,8 @@ from app.core import database, logger, response
 from app.core.s3 import upload_file
 from app.entities.review.request import ItemReviewReq, ItemReplyReq
 from app.entities.review.response import ItemReviewRes
-from app.helpers.constant import generate_id, get_time
+from app.helpers.constant import generate_id
+from app.helpers.time_utils import get_current_time
 from app.models import user
 
 collection_name = "reviews"
@@ -25,7 +26,7 @@ async def create_review(item: ItemReviewReq, token, images):
             image_urls = [upload_file(img, "reviews") for img in images if img]
 
         item_dict["images"] = image_urls
-        item_dict["created_at"] = get_time()
+        item_dict["created_at"] = get_current_time()
         item_dict["replies"] = []
         insert_result = collection.insert_one(item_dict)
         logger.info(f"[create_review] Đã thêm đánh giá mới, ID: {insert_result.inserted_id}")
@@ -78,7 +79,7 @@ async def reply_to_review(item: ItemReplyReq, token, images):
             "user_id": user_info.id,
             "user_name": user_info.user_name,
             "comment": item.comment,
-            "created_at": get_time(),
+            "created_at": get_current_time(),
             "images": image_urls
         }
 

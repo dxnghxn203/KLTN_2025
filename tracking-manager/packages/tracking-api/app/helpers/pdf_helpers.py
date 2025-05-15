@@ -4,7 +4,7 @@ import pdfkit
 import os
 
 from app.entities.order.response import ItemOrderRes
-from app.models.time import get_time
+from app.helpers.time_utils import get_current_time
 
 
 def get_wkhtmltopdf_path():
@@ -17,7 +17,7 @@ def get_wkhtmltopdf_path():
 
 def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
     try:
-        now = get_time()
+        now = get_current_time()
         current_date = now.strftime("%d/%m/%Y")
         current_time = now.strftime("%H:%M:%S")
 

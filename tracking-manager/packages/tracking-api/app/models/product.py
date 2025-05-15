@@ -31,7 +31,8 @@ from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, Ite
     ItemUpdateProductReq, ItemIngredientDBReq, ItemManufacturerDBReq, ItemProductImportReq
 from app.entities.product.response import ItemProductDBRes, ItemProductImportRes
 from app.helpers import redis
-from app.helpers.constant import generate_id, get_time
+from app.helpers.constant import generate_id
+from app.helpers.time_utils import get_current_time
 from app.models.category import get_all_categories, get_all_categories_admin
 from app.models.comment import count_comments
 from app.models.review import count_reviews, average_rating
@@ -419,7 +420,7 @@ async def update_product_category(item: UpdateCategoryReq, email: str):
             "category.child_category_slug": child_category.get("child_category_slug", ""),
 
             "updated_by": email,
-            "updated_at": get_time()
+            "updated_at": get_current_time()
         }
 
         collection.update_one({"product_id": item.product_id}, {"$set": update_data})
@@ -600,7 +601,7 @@ async def update_product_status(item: UpdateProductStatusReq, email: str):
                 "$set": {
                     "active": item.status,
                     "updated_by": email,
-                    "updated_at": get_time()
+                    "updated_at": get_current_time()
                 }
             }
         )
@@ -622,7 +623,7 @@ async def update_product_images_primary(product_id: str, file, email: str):
         url = upload_file(file, "images_primary")
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"images_primary": url, "updated_by": email, "updated_at": get_time()}},
+            {"$set": {"images_primary": url, "updated_by": email, "updated_at": get_current_time()}},
         )
         return response.SuccessResponse(message="Cập nhật ảnh chính thành công")
     except Exception as e:
@@ -642,7 +643,7 @@ async def update_product_certificate_file(product_id: str, file, email: str):
         url = upload_any_file(file, "certificates")
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"certificate_file": url, "updated_by": email, "updated_at": get_time()}},
+            {"$set": {"certificate_file": url, "updated_by": email, "updated_at": get_current_time()}},
         )
         return response.SuccessResponse(message="Cập nhật chứng nhận thành công")
     except Exception as e:
@@ -670,7 +671,7 @@ async def update_product_images(product_id: str, files, email: str):
 
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"images": new_images, "updated_by": email, "updated_at": get_time()}},
+            {"$set": {"images": new_images, "updated_by": email, "updated_at": get_current_time()}},
         )
         return response.SuccessResponse(message="Cập nhật images thành công")
     except Exception as e:
@@ -771,7 +772,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
                 "pharmacist_name": "",
                 "pharmacist_gender": "",
                 "updated_by": email,
-                "updated_at": get_time()
+                "updated_at": get_current_time()
             })
             collection.update_one({"product_id": update_data.product_id}, {"$set": update_fields})
 
@@ -787,8 +788,8 @@ async def update_product_created_updated():
         {"$set": {
             "created_by": "tuannguyen23823@gmail.com",
             "updated_by": "tuannguyen23823@gmail.com",
-            "created_at": get_time(),
-            "updated_at": get_time()
+            "created_at": get_current_time(),
+            "updated_at": get_current_time()
         }}
     )
 

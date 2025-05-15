@@ -4,9 +4,7 @@ import json
 from fastapi import UploadFile
 from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional
-
-from app.models.time import get_time
-
+from app.helpers.time_utils import get_current_time
 
 class ItemProductReq(BaseModel):
     product_id: str = ""
@@ -38,6 +36,7 @@ class ItemPriceDBReq(BaseModel):
     weight: float = 0
     amount: int = 0
     original_price: float = 0
+    expired_date: datetime = get_current_time()
 
 class ItemPriceDBInReq(BaseModel):
     discount: float
@@ -45,6 +44,7 @@ class ItemPriceDBInReq(BaseModel):
     weight: float = 0
     amount: int = 0
     original_price: float = 0
+    expired_date: datetime = get_current_time()
 
     @model_validator(mode="before")
     @classmethod
@@ -168,8 +168,8 @@ class ItemProductDBReq(BaseModel):
     pharmacist_gender: str = ""
     is_approved: bool = False
     rejected_note: str = ""
-    created_at: datetime = get_time()
-    updated_at: datetime = get_time()
+    created_at: datetime = get_current_time()
+    updated_at: datetime = get_current_time()
     created_by: str = ""
     updated_by: str = ""
 

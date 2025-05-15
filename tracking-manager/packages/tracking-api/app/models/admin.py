@@ -7,7 +7,7 @@ from app.core import database, logger, response, mail
 from app.entities.admin.request import ItemAdminRegisReq
 from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
-from app.helpers.constant import get_time
+from app.helpers.time_utils import get_current_time
 from app.middleware import middleware
 from app.middleware.middleware import decode_jwt, generate_password
 
@@ -42,8 +42,8 @@ async def create_admin(item: ItemAdminRegisReq):
         item_dict["password"] = middleware.hash_password(item.password)
 
         item_dict.update({
-            "created_at": get_time(),
-            "updated_at": get_time(),
+            "created_at": get_current_time(),
+            "updated_at": get_current_time(),
             "verified_email_at": None,
             "role_id": "admin",
             "active": True,
@@ -74,7 +74,7 @@ async def create_admin(item: ItemAdminRegisReq):
 
 async def update_admin_verification(email: str):
     collection = database.db[collection_name]
-    collection.update_one({"email": email}, {"$set": {"verified_email_at": get_time()}})
+    collection.update_one({"email": email}, {"$set": {"verified_email_at": get_current_time()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
 async def get_by_id(admin_id: str):
@@ -110,7 +110,7 @@ async def update_admin_password(email: str, new_password: str):
         collection = database.db[collection_name]
         collection.update_one(
             {"email": email},
-            {"$set": {"password": middleware.hash_password(new_password), "updated_at": get_time()}})
+            {"$set": {"password": middleware.hash_password(new_password), "updated_at": get_current_time()}})
         return response.SuccessResponse(message="Cập nhật mật khẩu thành công")
     except response.JsonException as je:
         raise je
