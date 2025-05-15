@@ -1,4 +1,6 @@
 from bson import ObjectId
+
+from core import logger
 from core.mongo import db
 from helpers import redis
 
@@ -62,7 +64,8 @@ def check_out_of_stock(product_id: str):
     inventory = data.get("inventory", 0)
     sell = data.get("sell", 0)
 
-    return inventory > sell
+    logger.info(f"Inventory: {inventory}, Sell: {sell}")
+    return inventory <= sell
 
 
 def search_products_by_text(search_text: str, limit: int = 5) -> list[dict]:
