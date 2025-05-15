@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'recommendation-api'
         IMAGE_TAG = "${REGISTRY_URL}/${IMAGE_NAME}:${BUILD_NUMBER}"
 
-        APP_PATH = 'packages/recommendation'
+        APP_PATH = 'tracking-manager/packages/recommendation'
         DOCKERFILE_PATH = "${APP_PATH}/Dockerfile"
 
         GIT_REPO = 'https://github.com/dxnghxn203/KLTN_2025.git'

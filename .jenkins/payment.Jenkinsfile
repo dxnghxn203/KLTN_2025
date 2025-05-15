@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'payment-api'
         IMAGE_TAG = "${REGISTRY_URL}/${IMAGE_NAME}:${BUILD_NUMBER}"
 
-        APP_PATH = 'packages/payment'
+        APP_PATH = 'tracking-manager/packages/payment'
         DOCKERFILE_PATH = "${APP_PATH}/Dockerfile"
 
         GIT_REPO = 'https://github.com/dxnghxn203/KLTN_2025.git'
