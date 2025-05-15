@@ -6,11 +6,13 @@ import os
 
 logger.set_pymongo_log_level()
 
-DB_NAME = "KLTN_2025"
-USERNAME = quote_plus("dxnghxn203")
-PASSWORD = quote_plus("2908203Hen@")
-CLUSTER = "kltn2025.qyu1q.mongodb.net"
-# Build connection string
+load_dotenv()
+
+DB_NAME = os.getenv("API_MONGO_DB")
+USERNAME = quote_plus(os.getenv("API_MONGO_USER"))
+PASSWORD = quote_plus(os.getenv("API_MONGO_PWS"))
+CLUSTER = os.getenv("MONGO_HOST")
+
 conn = f"mongodb+srv://{USERNAME}:{PASSWORD}@{CLUSTER}/{DB_NAME}"
 logger.info("Connecting to MongoDB...")
 logger.info("Url mongo : " + conn)

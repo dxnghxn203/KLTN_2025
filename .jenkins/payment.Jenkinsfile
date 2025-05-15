@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         REGISTRY_URL = '159.65.7.99:5000'
-        IMAGE_NAME = 'tracking-api'
+        IMAGE_NAME = 'payment-api'
         IMAGE_TAG = "${REGISTRY_URL}/${IMAGE_NAME}:${BUILD_NUMBER}"
 
-        APP_PATH = 'tracking-manager/packages/tracking-api'
+        APP_PATH = 'packages/payment'
         DOCKERFILE_PATH = "${APP_PATH}/Dockerfile"
 
         GIT_REPO = 'https://github.com/dxnghxn203/KLTN_2025.git'
@@ -127,7 +127,7 @@ pipeline {
                                 # Tạo file .env mẫu
                                 echo "# Generated .env file (SAMPLE) - \$(date)" > ${APP_PATH}/.env
                                 echo "ALGORITHM=HS256" >> ${APP_PATH}/.env
-                                echo "API_MONGO_DB=tracking_api" >> ${APP_PATH}/.env
+                                echo "API_MONGO_DB=payment_api" >> ${APP_PATH}/.env
                                 echo "API_MONGO_PWS=admin123" >> ${APP_PATH}/.env
                                 echo "API_MONGO_USER=admin" >> ${APP_PATH}/.env
                                 echo "ES_HOST=elasticsearch" >> ${APP_PATH}/.env
@@ -230,7 +230,7 @@ pipeline {
                         docker run -d \
                             --name ${containerName} \
                             --restart unless-stopped \
-                            -p 8001:80 \
+                            -p 8002:80 \
                             --env-file ./docker-env-file \
                             ${IMAGE_TAG}
 
@@ -255,7 +255,7 @@ pipeline {
                 ✅ Triển khai thành công!
 
                 - Image: ${IMAGE_TAG}
-                - Application URL: http://159.65.7.99:8001
+                - Application URL: http://159.65.7.99:8002
                 - Build ID: ${BUILD_NUMBER}
                 - Thời gian: \$(date)
                 ===========================================
