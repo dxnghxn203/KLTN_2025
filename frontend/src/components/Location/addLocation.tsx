@@ -128,6 +128,7 @@ const AddLocation = ({
             handleAddLocation();
           }}
           disabled={loadingAddLocation}
+          type="button"
         >
           {loadingAddLocation ? "Đang xử lý..." : "Thêm địa chỉ"}
         </button>

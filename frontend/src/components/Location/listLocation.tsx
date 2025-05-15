@@ -87,13 +87,24 @@ const ListLocation = ({
                                         )}
                                     </div>
 
+                                    {/*<<<<<<< HEAD*/}
+                                    {/*                                    <button*/}
+                                    {/*                                        onClick={() => handleUpdateLocation(location)} // Gọi hàm khi bấm Cập nhật*/}
+                                    {/*                                        className="flex items-center justify-center text-[#0053E2] px-3 py-1 rounded-full text-sm transition"*/}
+                                    {/*                                    >*/}
+                                    {/*                                        Cập nhật*/}
+                                    {/*                                    </button>*/}
+                                    {/*                                </div>*/}
+                                    {/*=======*/}
                                     <button
+                                        type="button"
                                         onClick={() => handleUpdateLocation(location)} // Gọi hàm khi bấm Cập nhật
                                         className="flex items-center justify-center text-[#0053E2] px-3 py-1 rounded-full text-sm transition"
                                     >
                                         Cập nhật
                                     </button>
                                 </div>
+                                {/*>>>>>>> d758706a0c38ccba1b5a8d6f8e54a30c31c2e00c*/}
 
                                 <div className="flex items-center text-sm text-black/50 ml-7 py-1">
                   <span>
@@ -106,6 +117,36 @@ const ListLocation = ({
                         </div>
                     ))}
 
+                {/*                <div className="flex items-center px-6">*/}
+                {/*                    <button*/}
+                {/*                        className="bg-gray-100 text-gray-700 px-2 py-2 rounded-lg text-sm font-medium"*/}
+                {/*                        onClick={() => setOnAddLocation(true)}*/}
+                {/*                    >*/}
+                {/*                        + Thêm địa chỉ mới*/}
+                {/*                    </button>*/}
+                {/*                </div>*/}
+                {/*            </div>*/}
+
+                {/*<<<<<<< HEAD*/}
+                {/*            <div className="flex justify-end mt-6 space-x-4 px-6">*/}
+                {/*                <button*/}
+                {/*                    className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-lg"*/}
+                {/*                    onClick={() => {*/}
+                {/*                        closeDialog(false);*/}
+                {/*                    }}*/}
+                {/*                >*/}
+                {/*                    Hủy*/}
+                {/*                </button>*/}
+                {/*                <button*/}
+                {/*                    onClick={handleConfirmUpdate} // Xác nhận thay đổi*/}
+                {/*                    className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"*/}
+                {/*                >*/}
+                {/*                    Xác nhận*/}
+                {/*                </button>*/}
+                {/*            </div>*/}
+                {/*        </>*/}
+                {/*    );*/}
+                {/*=======*/}
                 <div className="flex items-center px-6">
                     <button
                         className="bg-gray-100 text-gray-700 px-2 py-2 rounded-lg text-sm font-medium"
@@ -118,6 +159,7 @@ const ListLocation = ({
 
             <div className="flex justify-end mt-6 space-x-4 px-6">
                 <button
+                    type="button"
                     className="text-sm bg-[#EAEFFA] text-[#1E4DB7] font-semibold py-2 px-6 rounded-lg"
                     onClick={() => {
                         closeDialog(false);
@@ -126,6 +168,7 @@ const ListLocation = ({
                     Hủy
                 </button>
                 <button
+                    type="button"
                     onClick={handleConfirmUpdate} // Xác nhận thay đổi
                     className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
                 >
@@ -134,6 +177,7 @@ const ListLocation = ({
             </div>
         </>
     );
+// >>>>>>> d758706a0c38ccba1b5a8d6f8e54a30c31c2e00c
 };
 
 export default ListLocation;

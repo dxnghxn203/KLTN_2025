@@ -21,6 +21,7 @@ const BulkCreateProduct = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
@@ -55,6 +56,7 @@ const BulkCreateProduct = () => {
       toast.showToast("Vui lòng chọn file Excel trước khi upload!", "error");
       return;
     }
+    setIsLoading(true);
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -62,6 +64,7 @@ const BulkCreateProduct = () => {
     fetchImportAddFileProduct(
       formData,
       () => {
+        setIsLoading(false);
         toast.showToast("Import file thành công", "success");
         handleCloseDialog();
         fetchGetImportFileAddProduct(
@@ -70,6 +73,7 @@ const BulkCreateProduct = () => {
         );
       },
       (message: any) => {
+        setIsLoading(false);
         toast.showToast(message, "error");
       }
     );
@@ -164,15 +168,41 @@ const BulkCreateProduct = () => {
                 Hủy
               </button>
               <button
-                className={`px-4 py-2 rounded-lg ${
-                  selectedFile
+                className={`px-4 py-2 rounded-lg flex items-center justify-center gap-2 ${
+                  selectedFile && !isLoading
                     ? "bg-blue-600 text-white hover:bg-blue-700"
                     : "bg-gray-400 text-white cursor-not-allowed"
                 } transition`}
                 onClick={handleUploadFile}
-                disabled={!selectedFile}
+                disabled={!selectedFile || isLoading}
               >
-                Tiếp tục
+                {isLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                      />
+                    </svg>
+                    Đang tải...
+                  </>
+                ) : (
+                  "Tiếp tục"
+                )}
               </button>
             </div>
           </div>

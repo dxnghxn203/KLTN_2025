@@ -4,6 +4,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/providers/toastProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { FaDollarSign, FaEye, FaTrash, FaUsers } from "react-icons/fa6";
+import { FaEdit, FaShoppingCart } from "react-icons/fa";
+import OverviewCards from "@/components/Admin/Dashboard/OverviewCards";
+import SalesChart from "@/components/Admin/Dashboard/SalesChart";
+import LatestOrders from "@/components/Admin/Dashboard/LatestOrders";
+import TopSellingMedicine from "@/components/Admin/Dashboard/TopSellingMedicine";
 
 const Dashboard = () => {
   const toast = useToast();
@@ -16,29 +22,15 @@ const Dashboard = () => {
     }
   }, [admin, router]);
 
-  const showtext = () => {
-    toast.showToast("Hello, this is a sdsge dvcddfdf", "success");
-
-    setTimeout(() => {
-      toast.showToast("Hello, this is a sdsge", "error");
-    }, 1000);
-    setTimeout(() => {
-      toast.showToast("Hello, this is a sdsge", "warning");
-    }, 2000);
-    setTimeout(() => {
-      toast.showToast("Hello, this is a sdsge", "info");
-    }, 3000);
-    setTimeout(() => {
-      toast.showToast("Hello, this is a sdsge cdcd ", "default");
-    }, 4000);
-  };
-
   return (
-    <>
-      <h2>Welcome to the Dashboard</h2>
-      <button onClick={showtext}>Click me</button>
-    </>
+    <div className="min-h-screen space-y-6">
+      <OverviewCards />
+      <SalesChart />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LatestOrders />
+        <TopSellingMedicine />
+      </div>
+    </div>
   );
 };
-
 export default Dashboard;
