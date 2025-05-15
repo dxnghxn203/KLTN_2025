@@ -24,11 +24,9 @@ pipeline {
 
                     try {
                         withVault(
-                            configuration: [
-                                url: env.VAULT_URL,
-                                credentialsId: env.VAULT_CREDENTIAL_ID,
-                                engineVersion: 2
-                            ],
+                            url: env.VAULT_URL,
+                            credentialsId: env.VAULT_CREDENTIAL_ID,
+                            engineVersion: 2,
                             vaultSecrets: [
                                 [
                                     path: env.VAULT_SECRET_PATH,
