@@ -136,7 +136,7 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
         )
 
 @router.get("/products/all-product-admin", response_model=response.BaseResponse)
-async def get_all_product_admin(page: int = 1, page_size: int = 10):
+async def get_all_product_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
     try:
         logger.info(f"page: {page}, page_size: {page_size}")
         result = await get_all_product(page, page_size)

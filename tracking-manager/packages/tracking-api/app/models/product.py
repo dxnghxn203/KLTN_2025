@@ -786,10 +786,10 @@ async def update_product_created_updated():
     collection.update_many(
         {},
         {"$set": {
-            "created_by": "tuannguyen23823@gmail.com",
-            "updated_by": "tuannguyen23823@gmail.com",
-            "created_at": get_current_time(),
-            "updated_at": get_current_time()
+            "prices.$[].expired_date": "2025-05-31",
+            # "updated_by": "tuannguyen23823@gmail.com",
+            # "created_at": get_current_time(),
+            # "updated_at": get_current_time()
         }}
     )
 
@@ -1122,6 +1122,7 @@ async def import_products(file: UploadFile, email: str):
                             amount=price.get("amount", 0),
                             original_price=price.get("original_price", 0),
                             price=price.get("original_price", 0) * (100 - price.get("discount", 0)) / 100,
+                            expired_date=price.get("expired_date", get_current_time())
                         )
                         for price in prices_list
                     ]
