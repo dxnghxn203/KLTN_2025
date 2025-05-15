@@ -2,147 +2,141 @@ pipeline {
     agent any
 
     environment {
-        PAYMENT_API_URL_FROM_VAULT = "" // Biến cho secret từ Vault
-        APP_VERSION = ""                // Biến cho phiên bản ứng dụng/image tag
-        BRANCH_NAME_ENV = ""            // Biến cho tên nhánh
-        DOCKER_NAMESPACE = "dxnghxn203" // Namespace Docker Hub của bạn
-        SERVICE_NAME = "tracking-api"   // Tên service
+        VAULT_CREDENTIAL_ID = 'vault-dev-secretid-for-dotenv'
+        VAULT_URL = 'http://localhost:8200'
+        VAULT_SECRET_PATH = 'secret/.env'
+        WORKSPACE_DOTENV_FILENAME = 'tracking-manager/packages/tracking-api/.env.from.vault'
+
+        REGISTRY_HOST = '159.65.7.99:5000'
+        IMAGE_BASENAME = 'tracking-api'
+        CONTAINER_NAME = "${IMAGE_BASENAME}-app"
+        TRACKING_API_PATH = 'tracking-manager/packages/tracking-api'
+        DOCKERFILE_PATH = "${TRACKING_API_PATH}/Dockerfile"
+        HOST_PORT_FOR_APP = 8000
     }
 
     stages {
-        stage('Checkout') {
+        stage('Initial Setup and Sanity Checks') {
             steps {
                 script {
-                    echo "Starting Checkout stage..."
-                    checkout scm
-                    echo "SCM checkout complete."
-
-                    // Xác định tên nhánh
-                    BRANCH_NAME_ENV = env.BRANCH_NAME ?: "unknown-branch"
-                    if (BRANCH_NAME_ENV == "unknown-branch" && env.CHANGE_BRANCH) { // Thường dùng cho PRs
-                        BRANCH_NAME_ENV = env.CHANGE_BRANCH
+                    if (env.BRANCH_NAME == null || env.BRANCH_NAME.isEmpty() || env.BRANCH_NAME == "null" || env.BRANCH_NAME.contains('unknown')) {
+                        error "FATAL: Không thể xác định tên nhánh hợp lệ (Branch: ${env.BRANCH_NAME}). Dừng pipeline."
                     }
-                    if (BRANCH_NAME_ENV == "unknown-branch" && env.TAG_NAME) { // Nếu build từ tag, nhánh có thể không rõ ràng
-                        BRANCH_NAME_ENV = "tag-${env.TAG_NAME}"
+                    echo "Đang làm việc trên nhánh: ${env.BRANCH_NAME}"
+                    if (!fileExists(env.DOCKERFILE_PATH)) {
+                        error "FATAL: Dockerfile không tồn tại tại ${env.DOCKERFILE_PATH}. Dừng pipeline."
                     }
-
-
-                    // Xác định phiên bản ứng dụng (cho Docker tag)
-                    if (env.TAG_NAME) {
-                        APP_VERSION = env.TAG_NAME // Ưu tiên tag Git nếu có
-                    } else {
-                        // Sử dụng build number và tên nhánh đã được làm sạch (loại bỏ ký tự không hợp lệ cho tag Docker)
-                        def cleanBranchName = BRANCH_NAME_ENV.replaceAll('[^a-zA-Z0-9_.-]', '-')
-                        APP_VERSION = "${env.BUILD_NUMBER}-${cleanBranchName}"
-                    }
-                    echo "Branch: ${BRANCH_NAME_ENV}"
-                    echo "App Version (for Docker tag): ${APP_VERSION}"
-
-                    if (BRANCH_NAME_ENV == "unknown-branch") {
-                        error "Critical: Branch name could not be determined. Halting."
-                    }
+                    echo "Dockerfile đã được tìm thấy tại: ${env.DOCKERFILE_PATH}"
                 }
             }
         }
 
-        stage('Setup Environment') {
+        stage('Retrieve .env from Vault and Create File') {
             steps {
                 script {
-                    echo "Setting up environment..."
-                    echo "Fetching secrets from Vault..."
-                }
-                withVault(
-                    configuration: [
-                        url: 'http://localhost:8200', // Hoặc IP Vault server
-                        credentialsId: 'vault-dev-approle-for-dotenv', // ID Vault AppRole Credential
-                        engineVersion: 2
-                    ],
-                    vaultSecrets: [
-                        [
-                            path: 'secret/.env', // Path của secret trong Vault
-                            secretValues: [
-                                [vaultKey: 'PAYMENT_API_URL', envVar: 'PAYMENT_API_URL_FROM_VAULT']
-                                // Thêm các secret khác cần thiết cho service này ở đây
+                    echo "Đang lấy tất cả key-value từ Vault path: ${env.VAULT_SECRET_PATH}"
+                    echo "Sẽ ghi vào file: ${env.WORKSPACE_DOTENV_FILENAME} với định dạng .env"
+                    echo "Vault URL: ${env.VAULT_URL}"
+
+                    try {
+                        withVault(
+                            configuration: [
+                                url: env.VAULT_URL,
+                                credentialsId: env.VAULT_CREDENTIAL_ID,
+                                engineVersion: 2
+                            ],
+                            vaultSecrets: [
+                                [
+                                    path: env.VAULT_SECRET_PATH,
+                                    secretValues: [],
+                                    fileOutputPath: env.WORKSPACE_DOTENV_FILENAME,
+                                    fileOutputFormat: '.env'
+                                ]
                             ]
-                        ]
-                    ]
-                ) {
-                    script {
-                        echo "Fetched Payment API URL from Vault: ${PAYMENT_API_URL_FROM_VAULT ?: 'NOT FOUND'}"
-                        // Kiểm tra các secret quan trọng khác nếu có
-                    }
-                }
-                script {
-                    // Các bước setup môi trường khác nếu có
-                    // Ví dụ: cài đặt tools, kiểm tra dependencies, v.v.
-                    echo "Environment setup complete."
-                }
-            }
-        }
-
-        stage('Build') {
-            steps {
-                dir("tracking-manager/packages/${SERVICE_NAME}") { // Sử dụng biến SERVICE_NAME
-                    script {
-                        echo "Building Docker image for ${SERVICE_NAME}..."
-                        echo "Using App Version for tagging: ${APP_VERSION}"
-
-                        def imageName = "${DOCKER_NAMESPACE ? DOCKER_NAMESPACE + '/' : ''}${SERVICE_NAME}:${APP_VERSION}"
-
-                        echo "Target Docker image name: ${imageName}"
-
-                        // Lệnh build Docker
-                        sh "docker build -t ${imageName} ."
-
-                        echo "Successfully built Docker image: ${imageName}"
-
-                        // Tùy chọn: Hiển thị danh sách Docker images để kiểm tra
-                        // sh "docker images ${DOCKER_NAMESPACE ? DOCKER_NAMESPACE + '/' : ''}${SERVICE_NAME}"
+                        ) {
+                            if (!fileExists(env.WORKSPACE_DOTENV_FILENAME)) {
+                                error "Không thể tạo file ${env.WORKSPACE_DOTENV_FILENAME} từ Vault. Kiểm tra lại cấu hình Vault và permissions."
+                            }
+                            echo "Đã tạo thành công file ${env.WORKSPACE_DOTENV_FILENAME} từ Vault."
+                            sh "ls -l ${env.WORKSPACE_DOTENV_FILENAME}"
+                        }
+                    } catch (e) {
+                        error "Lỗi khi lấy secret từ Vault hoặc tạo file .env: ${e.getMessage()}"
                     }
                 }
             }
         }
 
-        stage('Deploy') {
-            // Stage này là placeholder, bạn cần điền logic deploy thực tế
-            // Ví dụ: push image lên registry, cập nhật Kubernetes deployment, v.v.
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Starting Deploy stage for ${SERVICE_NAME} version ${APP_VERSION}..."
-                    echo "Deployment logic not yet implemented."
-                    // Ví dụ:
-                    // if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master' || env.TAG_NAME) {
-                    //    echo "Pushing image ${imageName} to registry..."
-                    //    withCredentials([string(credentialsId: 'YOUR_DOCKER_REGISTRY_CREDENTIALS_ID', variable: 'DOCKER_PASSWORD')]) {
-                    //        sh "echo \"${DOCKER_PASSWORD}\" | docker login -u \"${YOUR_DOCKER_USERNAME}\" --password-stdin your.registry.com"
-                    //        sh "docker push ${imageName}"
-                    //    }
-                    //    echo "Deploying to production/staging environment..."
-                    //    sh "./scripts/deploy.sh ${imageName} production"
-                    // } else {
-                    //    echo "Skipping deployment for non-production branch: ${BRANCH_NAME_ENV}"
-                    // }
+                    if (!fileExists(env.WORKSPACE_DOTENV_FILENAME)) {
+                        error "FATAL: File ${env.WORKSPACE_DOTENV_FILENAME} không tìm thấy. Bước lấy từ Vault có thể đã thất bại."
+                    }
+                    echo "Sử dụng file ${env.WORKSPACE_DOTENV_FILENAME} để build Docker image."
+
+                    def safeBranchName = env.BRANCH_NAME.replaceAll('/', '-')
+                    def fullImageNameWithTag = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:${env.BUILD_NUMBER}-${safeBranchName}"
+                    def latestImageName = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:latest"
+
+                    echo "Bắt đầu build Docker image: ${fullImageNameWithTag}"
+                    echo "Build context: ${env.TRACKING_API_PATH}"
+
+                    docker.build(fullImageNameWithTag, "${env.TRACKING_API_PATH}")
+                    echo "Build thành công image: ${fullImageNameWithTag}"
+
+                    docker.image(fullImageNameWithTag).tag(latestImageName)
+                    echo "Đã tag image ${fullImageNameWithTag} thành ${latestImageName}"
+                }
+            }
+        }
+
+        stage('Push Docker Image to Registry') {
+            steps {
+                script {
+                    def safeBranchName = env.BRANCH_NAME.replaceAll('/', '-')
+                    def fullImageNameWithTag = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:${env.BUILD_NUMBER}-${safeBranchName}"
+                    def latestImageName = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:latest"
+                    docker.image(fullImageNameWithTag).push()
+                    docker.image(latestImageName).push()
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                script {
+                    def imageToDeploy = "${env.REGISTRY_HOST}/${env.IMAGE_BASENAME}:latest"
+                    sh "docker pull ${imageToDeploy}"
+                    sh "docker stop ${env.CONTAINER_NAME} || true"
+                    sh "docker rm ${env.CONTAINER_NAME} || true"
+                    sh """
+                        docker run -d \\
+                            --name ${env.CONTAINER_NAME} \\
+                            --restart unless-stopped \\
+                            -p ${env.HOST_PORT_FOR_APP}:80 \\
+                            ${imageToDeploy}
+                    """
+                    sh "sleep 5"
+                    sh "docker ps -f name=${env.CONTAINER_NAME}"
+                }
+            }
+        }
+
+        stage('Cleanup Workspace (Optional)') {
+            steps {
+                script {
+                    if (fileExists(env.WORKSPACE_DOTENV_FILENAME)) {
+                        sh "rm -f ${env.WORKSPACE_DOTENV_FILENAME}"
+                    }
                 }
             }
         }
     }
-
     post {
-        always {
-            script {
-                echo "Pipeline for ${SERVICE_NAME} (Branch: ${BRANCH_NAME_ENV}, Version: ${APP_VERSION}) finished."
-                // cleanWs() // Tùy chọn: dọn dẹp workspace
-            }
-        }
-        success {
-            script {
-                echo "${SERVICE_NAME} build & (placeholder) deploy on branch ${BRANCH_NAME_ENV} (Version: ${APP_VERSION}) succeeded!"
-            }
-        }
-        failure {
-            script {
-                echo "${SERVICE_NAME} build or deploy on branch ${BRANCH_NAME_ENV} (Version: ${APP_VERSION}) failed!"
-            }
-        }
+        always { echo "Pipeline đã kết thúc." }
+        success { echo "Pipeline hoàn thành THÀNH CÔNG!" }
+        failure { echo "Pipeline đã THẤT BẠI." }
+        aborted { echo "Pipeline đã bị HỦY BỎ." }
     }
 }
