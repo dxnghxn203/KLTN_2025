@@ -1,7 +1,8 @@
 import random
 import string
 from datetime import datetime
-
+import os
+from datetime import timedelta
 from app.entities.order.request import InfoAddressOrderReq, AddressOrderReq
 
 
@@ -19,6 +20,13 @@ def generate_id(prefix: str) -> str:
     random_id = generate_random_string(3)
     timestamp = int(datetime.utcnow().timestamp())
     return f"{prefix}{random_id}{timestamp}"
+
+def get_time():
+    try:
+        offset_hours = int(os.getenv("TIMEZONE_OFFSET_HOURS", "0"))
+    except ValueError:
+        offset_hours = 0
+    return datetime.now() + timedelta(hours=offset_hours)
 
 prefix = "stg"
 CITY_INDEX = f"{prefix}_cities"
