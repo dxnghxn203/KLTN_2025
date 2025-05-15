@@ -1,87 +1,107 @@
-from fastapi import APIRouter, Header, HTTPException, Depends, status  # Đổi FastAPI thành APIRouter
-from pydantic import BaseModel
-from typing import Annotated, Optional
 import uuid
+from typing import Optional
 
-from core import logger
-from middleware import middleware
-from models import user
-from services.chatbot import save_session_context
+from fastapi import APIRouter, Body, WebSocket
+from starlette import status
+from pydantic import BaseModel
 
-class UserInfoFromToken(BaseModel):
-    id: str
-    name: Optional[str] = "Quý khách"
-    email: Optional[str] = None
-
-
-from services.chatbot_service import handle_user_query as process_chat_query
-from services.chatbot_helpers import get_session_context
-from datetime import datetime
+from core import logger as app_logger
+from core import response
+from models.chatbot import create_or_update_chatbot_session, add_chatbot_message
+from models.chatbot_websocket_handler import handle_chatbot_websocket_connection
+from core.websocket import manager as ws_manager
+from services import chatbot
 
 router = APIRouter()
 
 
-class InitSessionResponse(BaseModel):
-    session_id: str
-    user_name: Optional[str] = None
-    message: str
-
-
-class ChatMessageRequest(BaseModel):
-    session_id: str
-    query: str
-
-
-class ChatMessageResponse(BaseModel):
-    answer: str
+class ChatRequest(BaseModel):
+    question: str
     session_id: str
 
 
-@router.post("/session/init", response_model=InitSessionResponse)
-async def init_chatbot_session(
-        token: str = Depends(middleware.verify_token)
-):
-    current_user = await user.get_current(token)
-    if not current_user or not current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found for the provided token."
+class StartConversationResponseData(BaseModel):
+    session_id: str
+
+@router.post("/conversation/start", response_model=response.BaseResponse)
+async def start_conversation_endpoint():
+    try:
+        new_session_id = str(uuid.uuid4())
+        session_document = await create_or_update_chatbot_session(
+            session_id=new_session_id,
+            user_id=None
         )
 
-    session_id_for_user = current_user.id
-    context = get_session_context(session_id_for_user)
+        if not session_document or "_id" not in session_document:
+            app_logger.error(f"Failed to create session in database for session_id: {new_session_id}")
+            return response.BaseResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Failed to initialize conversation session in the database."
+            )
 
-    context["user_id"] = current_user.id
-    context["user_name"] = current_user.user_name
-    context["user_email"] = current_user.email
-    context["access_token"] = token
-    context["is_registered_user"] = True
-    context["last_interaction_time"] = datetime.utcnow().isoformat()
-    context.setdefault("recently_mentioned_products", [])
-    context.setdefault("last_explicit_product", None)
-    context.setdefault("disambiguation_options", None)
-    context.setdefault("pending_action", None)
-    if "current_cart" in context: del context["current_cart"]
+        app_logger.info(f"New conversation session created successfully in database. Session ID: {new_session_id}")
 
-    save_session_context(session_id_for_user, context)
+        return response.BaseResponse(
+            message="New conversation session started successfully.",
+            data=StartConversationResponseData(session_id=new_session_id)
+        )
+    except Exception as e:
+        app_logger.error(f"Error starting new conversation: {e}", exc_info=True)
+        return response.BaseResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error while starting new conversation."
+        )
 
-    print(f"INFO API: Session initialized for user_id: {session_id_for_user}, Name: {current_user.user_name}")
-    return InitSessionResponse(
-        session_id=session_id_for_user,
-        user_name=current_user.user_name,
-        message="Chat session initialized successfully for registered user."
+
+@router.post("/message", response_model=response.BaseResponse)
+async def chat_message_endpoint(chat_request: ChatRequest = Body(...)):
+    try:
+        app_logger.info(
+            f"Received chat request for session_id: {chat_request.session_id}, question: '{chat_request.question}'")
+
+        ai_answer_content = chatbot.generate_response(
+            session_id=chat_request.session_id,
+            user_input=chat_request.question
+        )
+
+        app_logger.info(f"AI response content for session_id {chat_request.session_id}: '{ai_answer_content}'")
+
+        bot_sender_id = "chatbot_v1"
+
+        saved_ai_message = await add_chatbot_message(
+            session_id=chat_request.session_id,
+            sender_type="ai",
+            content=ai_answer_content,
+            sender_id=bot_sender_id,
+            message_type="text"
+        )
+
+        if not saved_ai_message or "_id" not in saved_ai_message:
+            app_logger.error(
+                f"Failed to save AI message to database for session {chat_request.session_id}. `add_chatbot_message` returned: {saved_ai_message}")
+
+        return response.BaseResponse(
+            message="AI response successfully generated and processed.",
+            data={"ai_answer": ai_answer_content}
+        )
+    except Exception as e:
+        app_logger.error(f"Error processing chat message for session_id {chat_request.session_id}: {e}", exc_info=True)
+        return response.BaseResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error while processing chat message."
+        )
+
+
+@router.websocket("/ws/chatbot/{session_id}")
+async def websocket_chatbot_endpoint(
+        websocket: WebSocket,
+        session_id: str,
+):
+    user_id_for_ws: Optional[str] = None
+
+    await handle_chatbot_websocket_connection(
+        websocket=websocket,
+        session_id=session_id,
+        user_id=user_id_for_ws,
+        manager=ws_manager
     )
-
-
-@router.post("/message", response_model=ChatMessageResponse)
-async def chat_message_endpoint(request_body: ChatMessageRequest):
-    if not request_body.query:
-        raise HTTPException(status_code=400, detail="Query cannot be empty")
-    if not request_body.session_id:
-        raise HTTPException(status_code=400, detail="session_id is required")
-
-    response_data = await process_chat_query(
-        session_id=request_body.session_id,
-        user_query=request_body.query
-    )
-    return ChatMessageResponse(answer=response_data["answer"], session_id=response_data["session_id"])

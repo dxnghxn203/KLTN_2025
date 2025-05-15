@@ -13,6 +13,7 @@ import {
     PHARMACIST_ROUTES,
 } from "@/utils/constants";
 import ChatBoxPharmacist from "@/components/Chat/chatBoxPharmacist";
+import ChatBot from "@/components/Chat/chatbot";
 
 export function RoleProvider({children}: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -121,6 +122,12 @@ export function RoleProvider({children}: { children: React.ReactNode }) {
                 {showChatbotPharmacist && (
                     <ChatBoxPharmacist setShowChatbotPharmacist={setShowChatbotPharmacist}/>
                 )
+
+                }
+                {
+                    showChatbotAI && (
+                        <ChatBot setShowChatbot={setShowChatbotAI}/>
+                    )
                 }
             </div>
 
