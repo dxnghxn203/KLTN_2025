@@ -18,7 +18,7 @@ from fastapi import UploadFile
 from pydantic import ValidationError
 from starlette import status
 from typing import Set, Dict, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from starlette.responses import JSONResponse
 
@@ -71,6 +71,49 @@ async def get_all_product(page: int, page_size: int):
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
+        raise e
+
+async def get_discount_product(page: int, page_size: int):
+    try:
+        collection = db[collection_name]
+        skip_count = (page - 1) * page_size
+        now = get_current_time()
+
+        product_list = collection.find({
+            "is_approved": True,
+            "active": True,
+            "prices": {
+                "$elemMatch": {
+                    "discount": {"$gt": 0},
+                    "expired_date": {"$gt": now}
+                }
+            }
+        }).skip(skip_count).limit(page_size)
+
+        result = []
+        for product in product_list:
+            product["prices"] = [
+                p for p in product.get("prices", [])
+                if p.get("discount", 0) > 0 and
+                   p.get("expired_date") and
+                p["expired_date"] > now
+            ]
+            product_id = product["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            result.append(ItemProductDBRes(**product))
+
+        return result
+    except Exception as e:
+        logger.error(f"Failed [get_discount_product]: {e}")
         raise e
 
 async def get_product_top_selling(top_n):
@@ -786,7 +829,7 @@ async def update_product_created_updated():
     collection.update_many(
         {},
         {"$set": {
-            "prices.$[].expired_date": "2025-05-31",
+            "prices.$[].expired_date": get_current_time() + timedelta(days=15),
             # "updated_by": "tuannguyen23823@gmail.com",
             # "created_at": get_current_time(),
             # "updated_at": get_current_time()

@@ -168,7 +168,13 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
 
         price_info = product_info.prices[0]
 
-        total_price += price_info.price * product.quantity
+        now = get_current_time()
+        expired_date = price_info.expired_date
+        is_expired = expired_date and isinstance(expired_date, datetime) and expired_date < now
+
+        actual_price = price_info.original_price if is_expired else price_info.price
+
+        total_price += actual_price * product.quantity
         weight += price_info.weight * product.quantity
 
         product_item = ItemProductReq(
@@ -177,10 +183,10 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
             product_name=product_info.product_name,
             unit=price_info.unit,
             quantity=product.quantity,
-            price=price_info.price,
+            price=actual_price,
             weight=price_info.weight,
             original_price=price_info.original_price,
-            discount=price_info.discount,
+            discount=0 if is_expired else price_info.discount,
             images_primary=product_info.images_primary,
         )
         product_items.append(product_item)
