@@ -16,7 +16,7 @@ class ItemVoucherDBRes(BaseModel):
     updated_by: Optional[Union[str, None]] = None
     min_order_value: float = 0
     max_discount_value: float = 0
-    voucher_type: "order"
+    voucher_type: Optional[Union[str, None]] = None
     used_by: List[str] = []
 
     @classmethod
