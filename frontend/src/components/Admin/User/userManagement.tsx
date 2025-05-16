@@ -105,16 +105,20 @@ const UserManagement = () => {
             Quản lý người dùng
           </Link>
         </div>
+
         <div className="flex justify-end">
           <div className="justify-end flex items-center gap-4">
-            <button
-              className="bg-[#1E4DB7] text-white px-2 py-2 rounded-lg hover:bg-[#173F98] text-sm flex items-center gap-1
+            {activeTab === "Dược sĩ" && (
+              <button
+                className="bg-[#1E4DB7] text-white px-2 py-2 rounded-lg hover:bg-[#173F98] text-sm flex items-center gap-1
           "
-              onClick={() => setDialogOpen(true)}
-            >
-              <HiOutlinePlusSmall className="text-lg" />
-              Thêm mới
-            </button>
+                onClick={() => setDialogOpen(true)}
+              >
+                <HiOutlinePlusSmall className="text-lg" />
+                Thêm mới
+              </button>
+            )}
+
             <button
               className="flex items-center gap-1 px-2 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition"
               onClick={exportToCSV}

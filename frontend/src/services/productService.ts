@@ -360,3 +360,16 @@ export const deleteImportFileProduct  = async (import_id: any) => {
     }
 }
 
+export const getProductDiscount = async (page: any, page_size: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/discount?page=${page}&page_size=${page_size}`);
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+

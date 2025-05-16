@@ -1,17 +1,21 @@
 "use client";
 import ProductCatalog from "../components/Home/productCatalog";
-import ProductList from "@/components/Product/productList";
 import BrandList from "@/components/BrandList/brandList";
 import ProductDealsList from "@/components/Product/productDealsList";
 import IntroMedicare from "../components/Home/introMedicare";
 import HealthCorner from "../components/Home/healthCorner";
+import SanDealHeader from "@/components/Product/dealProduct";
+import ProductList from "@/components/Product/productList";
 
 export default function Home() {
   return (
     <>
       <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
-        <main className="flex flex-col space-y-8 px-5">
+        <main className="flex flex-col space-y-8">
           <ProductCatalog />
+
+          <SanDealHeader />
+
           <div className="self-start text-2xl font-extrabold text-black">
             Sản phẩm bán chạy
           </div>

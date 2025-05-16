@@ -13,6 +13,7 @@ interface ProductState {
     allBrand: any[];
     searchResult: any[];
     fileImport: any[];
+    productDiscount: any[];
     loading: boolean;
     error: string | null;
 }
@@ -30,6 +31,7 @@ const initialState: ProductState = {
     allBrand: [],
     searchResult: [],
     fileImport: [],
+    productDiscount: [],
     loading: false,
     error: null,
 };
@@ -335,6 +337,25 @@ export const productSlice = createSlice({
             state.error = action.payload;
         }
 
+        , 
+        // fetch product discount 
+        fetchProductDiscountStart(state, action: PayloadAction<any>) {
+            console.log("fetchProductDiscountStart", action.payload);
+            state.loading = true;
+        },
+        fetchProductDiscountSuccess(state, action: PayloadAction<any[]>) {
+            console.log("fetchProductDiscountSuccess", action.payload);
+            state.productDiscount = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchProductDiscountFailed(state, action: PayloadAction<string>) {
+            console.log("fetchProductDiscountFailed", action.payload);
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+
 
         
         
@@ -427,7 +448,11 @@ export const {
 
     fetchDeleteImportProductFailed,
     fetchDeleteImportProductStart,
-    fetchDeleteImportProductSuccess
+    fetchDeleteImportProductSuccess,
+
+    fetchProductDiscountFailed,
+    fetchProductDiscountStart,
+    fetchProductDiscountSuccess,
 
 
     

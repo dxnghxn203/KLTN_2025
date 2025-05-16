@@ -25,11 +25,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen space-y-6">
       <OverviewCards />
-      <SalesChart />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <LatestOrders />
-        <TopSellingMedicine />
-      </div>
     </div>
   );
 };

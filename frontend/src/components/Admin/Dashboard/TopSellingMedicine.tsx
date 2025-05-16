@@ -17,8 +17,8 @@ const monthlyMedicineData: Record<
     },
     {
       day: "02",
-      value: 12,
-      color: "bg-black",
+      value: 300,
+      color: "bg-blue-500",
       image: image.src,
       name: "dhfvbjdf",
     },
@@ -35,7 +35,7 @@ const monthlyMedicineData: Record<
     {
       day: "02",
       value: 500,
-      color: "bg-black",
+      color: "bg-blue-500",
       image: image.src,
       name: "dhfvbjdf",
     },
@@ -46,21 +46,6 @@ const monthlyMedicineData: Record<
       image: image.src,
       name: "dhfvbjdf",
     },
-    {
-      day: "04",
-      value: 300,
-      color: "bg-lime-400",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-    {
-      day: "05",
-      value: 110,
-      color: "bg-lime-400",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-    // ...
   ],
 };
 
@@ -91,7 +76,7 @@ export default function TopSellingMedicine() {
   }
 
   return (
-    <div className="mx-auto rounded-2xl shadow p-6 bg-white">
+    <div className="rounded-2xl shadow p-6 bg-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800">

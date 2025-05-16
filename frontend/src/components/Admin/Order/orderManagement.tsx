@@ -87,7 +87,6 @@ const Order = () => {
     dayjs().startOf("month"), // Ngày đầu tháng hiện tại
     dayjs().endOf("month"), // Ngày cuối tháng hiện tại
   ]);
-  const { allStatistics365Days, statistics365Days } = useOrder();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -109,12 +108,6 @@ const Order = () => {
   }) => {
     console.log("User added:", newUser);
   };
-  useEffect(() => {
-    allStatistics365Days(
-      () => {},
-      () => {}
-    );
-  }, [statistics365Days]);
 
   return (
     <div>
@@ -129,75 +122,7 @@ const Order = () => {
             Quản lý đơn hàng
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-[#E7ECF7] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
-            <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">Tổng đơn hàng</span>
-              <div className="flex text-[#1E4DB7] text-2xl items-center">
-                <span className="font-medium">{statistics365Days?.total}</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Tổng số đơn hàng trong 365 ngày qua
-              </div>
-            </div>
 
-            <div className="bg-[#1E4DB7] rounded-full h-12 w-12 flex justify-center items-center self-start relative z-10 flex-shrink-0">
-              <BsInboxes className="text-white text-2xl" />
-            </div>
-          </div>
-
-          <div className="bg-[#EBFAF2] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
-            <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">Đơn hàng mới</span>
-              <div className="flex text-[#00C292] text-2xl items-center">
-                <span className="font-medium">{statistics365Days?.new}</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Đơn hàng mới trong 365 ngày qua
-              </div>
-            </div>
-
-            <div className="bg-[#00C292] rounded-full h-12 w-12 flex justify-center items-center self-start relative z-10 flex-shrink-0">
-              <BsBoxSeam className="text-white text-2xl" />
-            </div>
-          </div>
-
-          <div className="bg-[#FDF3F5] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
-            <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">
-                Đơn hàng hoàn thành
-              </span>
-              <div className="flex text-[#FD5171] text-2xl items-center">
-                <span className="font-medium">
-                  {statistics365Days?.completed}
-                </span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Đơn hàng hoàn thành trong 365 ngày qua
-              </div>
-            </div>
-
-            <div className="bg-[#FD5171] rounded-full h-12 w-12 flex justify-center items-center self-start relative z-10 flex-shrink-0">
-              <BsBox2Heart className="text-white text-2xl" />
-            </div>
-          </div>
-
-          <div className="bg-[#FFF4E5] rounded-3xl p-4 flex items-center justify-between w-full max-w-sm relative overflow-hidden">
-            <div className="space-y-2 relative z-10">
-              <span className="text-black font-medium">Đơn hàng hủy</span>
-              <div className="flex text-[#FDC90F] text-2xl items-center">
-                <span className="font-medium">{statistics365Days?.cancel}</span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Đơn hàng hủy trong 365 ngày qua
-              </div>
-            </div>
-
-            <div className="bg-[#FDC90F] rounded-full h-12 w-12 flex justify-center items-center self-start relative z-10 flex-shrink-0">
-              <BsXCircle className="text-white text-2xl" />
-            </div>
-          </div>
-        </div>
         <div className="flex items-center justify-between w-full">
           <div className="flex  ">
             <RangePicker

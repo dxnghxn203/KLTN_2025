@@ -9,6 +9,20 @@ import AddNewDropdown from "./addNewDropdown";
 
 import { IoArrowDown, IoFilter } from "react-icons/io5";
 import TableProduct from "./tableProduct";
+import {
+  FaBox,
+  FaCapsules,
+  FaLungs,
+  FaNotesMedical,
+  FaPills,
+  FaSyringe,
+  FaTablets,
+} from "react-icons/fa6";
+import {
+  FaExclamationTriangle,
+  FaHeartbeat,
+  FaTimesCircle,
+} from "react-icons/fa";
 
 const ManagerProducts = () => {
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
@@ -56,6 +70,7 @@ const ManagerProducts = () => {
           </button>
         </div>
       </div>
+
       {showFilter && (
         <FilterBar onFilterChange={(filters) => console.log(filters)} />
       )}

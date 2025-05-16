@@ -23,7 +23,7 @@ export default function MenuHeader() {
   const extraCategories = allCategory?.slice(6) || [];
 
   return (
-    <nav className="bg-[#F0F5FF] text-[#002E99] py-3 flex justify-center items-center relative">
+    <nav className="bg-[#F0F5FF] text-[#002E99] py-3 flex justify-center items-center">
       <ul className="flex justify-center space-x-14 font-normal text-[14px]">
         {/* 5 category đầu tiên */}
         {visibleCategories.map((category: any) => (
@@ -40,7 +40,7 @@ export default function MenuHeader() {
         {/* Góc sức khỏe */}
         <li className="relative group">
           <div className="cursor-pointer hover:text-blue-500">Góc sức khỏe</div>
-          <div className="absolute left-0 top-full mt-0 bg-white border border-gray-200 shadow-lg rounded-lg hidden group-hover:block z-50 w-[180px]">
+          <div className="absolute left-0 top-full mt-0 bg-white border border-gray-200 shadow-lg rounded-lg hidden group-hover:block z-10 w-[180px]">
             <ul className="text-sm text-gray-700 py-2">
               <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
                 <FaHandHoldingHeart className="w-4 h-4 text-blue-700" />
@@ -68,7 +68,7 @@ export default function MenuHeader() {
         <li className="relative group">
           <div className="cursor-pointer hover:text-blue-500">Khác</div>
           {extraCategories.length > 0 && (
-            <div className="absolute left-0 top-full mt-0 bg-white border border-gray-200 shadow-lg rounded-lg hidden group-hover:block z-50 w-[200px]">
+            <div className="absolute left-0 top-full mt-0 bg-white border border-gray-200 shadow-lg rounded-lg hidden group-hover:block z-10 w-[200px]">
               <ul className="text-sm text-gray-700 py-2">
                 {extraCategories.map((category: any) => (
                   <li

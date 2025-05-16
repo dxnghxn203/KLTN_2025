@@ -122,7 +122,7 @@ export default function LatestOrders() {
     <div className="bg-white rounded-xl p-4 shadow">
       <div className="flex justify-between mb-4">
         <h2 className="font-bold">Đơn hàng mới đặt</h2>
-        <a href="#" className="text-blue-500 text-sm">
+        <a href="/quan-ly-don-hang" className="text-blue-500 text-sm">
           Xem tất cả
         </a>
       </div>

@@ -79,7 +79,11 @@ import {
 
     fetchDeleteImportProductFailed,
     fetchDeleteImportProductStart,
-    fetchDeleteImportProductSuccess
+    fetchDeleteImportProductSuccess,
+
+    fetchProductDiscountFailed, 
+    fetchProductDiscountStart,
+    fetchProductDiscountSuccess,
 } from './productSlice';
 import { getSession, getToken, setSession } from '@/utils/cookie';
 
@@ -634,6 +638,26 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     }
   }
 
+  function* fetchProductDiscount(action: any): Generator<any, void, any> {
+    try {
+        const { payload } = action;
+        const {
+            page,
+            page_size,
+        } = payload;
+
+        const product = yield call(productService.getProductDiscount, page, page_size);
+        if (product.status_code === 200) {
+            yield put(fetchProductDiscountSuccess(product.data));
+            return;
+        }
+
+        yield put(fetchProductDiscountFailed(product.data || 'Failed to update images product'));
+    } catch (error) {
+        yield put(fetchProductDiscountFailed('Failed to update images product'));
+    }
+  }
+
 
   
   
@@ -661,5 +685,7 @@ export function* productSaga() {
     yield takeLatest(fetchImportFileAddProductStart.type, handleImportFileAddProduct);
     yield takeLatest(fetchGetAllImportFileAddProductStart.type, fetchGetAllImportFileAddProduct);
     yield takeLatest(fetchDeleteImportProductStart.type, handleDeleteImportFileAddProduct);
+    yield takeLatest(fetchProductDiscountStart.type, fetchProductDiscount);
+
 
 }

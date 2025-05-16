@@ -16,3 +16,4 @@ export const selectSearchProduct = (state: any) => state.product.searchResult;
 export const selectAllBrands = (state: any) => state.product.allBrand;
 // all file import 
 export const selectAllFileImport = (state: any) => state.product.fileImport;
+export const selectAllProductDiscount = (state: any) => state.product.productDiscount;
