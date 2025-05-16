@@ -62,6 +62,7 @@ pipeline {
                                     [vaultKey: 'JWT_PUBLIC_KEY', envVar: 'vault_JWT_PUBLIC_KEY'],
                                     [vaultKey: 'MONGO_HOST', envVar: 'vault_MONGO_HOST'],
                                     [vaultKey: 'PAYMENT_API_URL', envVar: 'vault_PAYMENT_API_URL'],
+                                    [vaultKey: 'RECOMMENDATION_API_URL', envVar: 'vault_RECOMMENDATION_API_URL'],
                                     [vaultKey: 'RABBITMQ_HOST', envVar: 'vault_RABBITMQ_HOST'],
                                     [vaultKey: 'RABBITMQ_PORT', envVar: 'vault_RABBITMQ_PORT'],
                                     [vaultKey: 'RABBITMQ_PW', envVar: 'vault_RABBITMQ_PW'],
@@ -99,6 +100,7 @@ pipeline {
                             echo "JWT_PUBLIC_KEY=\${vault_JWT_PUBLIC_KEY}" >> ${APP_PATH}/.env
                             echo "MONGO_HOST=\${vault_MONGO_HOST}" >> ${APP_PATH}/.env
                             echo "PAYMENT_API_URL=\${vault_PAYMENT_API_URL}" >> ${APP_PATH}/.env
+                            echo "RECOMMENDATION_API_URL=\${vault_RECOMMENDATION_API_URL}" >> ${APP_PATH}/.env
                             echo "RABBITMQ_HOST=\${vault_RABBITMQ_HOST}" >> ${APP_PATH}/.env
                             echo "RABBITMQ_PORT=\${vault_RABBITMQ_PORT}" >> ${APP_PATH}/.env
                             echo "RABBITMQ_PW=\${vault_RABBITMQ_PW}" >> ${APP_PATH}/.env
@@ -140,6 +142,7 @@ pipeline {
                                 echo "JWT_PUBLIC_KEY=publickey" >> ${APP_PATH}/.env
                                 echo "MONGO_HOST=mongodb" >> ${APP_PATH}/.env
                                 echo "PAYMENT_API_URL=https://api.payment.com" >> ${APP_PATH}/.env
+                                echo "RECOMMENDATION_API_URL=https://api.recommendation.com" >> ${APP_PATH}/.env
                                 echo "RABBITMQ_HOST=rabbitmq" >> ${APP_PATH}/.env
                                 echo "RABBITMQ_PORT=5672" >> ${APP_PATH}/.env
                                 echo "RABBITMQ_PW=guest" >> ${APP_PATH}/.env
