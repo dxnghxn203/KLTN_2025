@@ -1,9 +1,12 @@
 import json
 
 import  requests
+import os
+
+from dotenv import load_dotenv
 
 TIME_OUT = 5
-BASE_URL = "https://kltn-2025-recommendation.onrender.com"
+BASE_URL = os.getenv("RECOMMENDATION_API_URL")
 
 headers = {
   'accept': 'application/json'
