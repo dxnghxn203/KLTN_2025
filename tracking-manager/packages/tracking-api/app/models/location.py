@@ -8,6 +8,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from app.core import database, logger, response
 from app.entities.location.request import ItemLocationReq
 from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_INDEX, generate_id, special_cities
+from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import delete_index, insert_es_common, query_es_data, search_es
 from app.models import user
 
@@ -114,7 +115,7 @@ async def create_location(item: ItemLocationReq, token: str):
             "province_code": item.province_code,
             "district_code": item.district_code,
             "ward_code": item.ward_code,
-            "created_at": datetime.datetime.now() + datetime.timedelta(hours=7)
+            "created_at": get_current_time()
         }
         if not location:
             collection.insert_one({

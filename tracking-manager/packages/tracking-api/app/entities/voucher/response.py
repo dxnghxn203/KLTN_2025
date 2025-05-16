@@ -1,6 +1,8 @@
 from typing import Optional, Union, List
 from datetime import datetime
 from pydantic import BaseModel
+from app.helpers.time_utils import get_current_time
+
 
 class ItemVoucherDBRes(BaseModel):
     voucher_id: Optional[Union[str, None]] = None
@@ -10,13 +12,13 @@ class ItemVoucherDBRes(BaseModel):
     description: Optional[Union[str, None]] = None
     discount: float = 0
     active: bool = True
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
+    created_at: datetime = get_current_time()
+    updated_at: datetime = get_current_time()
     created_by: Optional[Union[str, None]] = None
     updated_by: Optional[Union[str, None]] = None
     min_order_value: float = 0
     max_discount_value: float = 0
-    voucher_type: "order"
+    voucher_type: Optional[Union[str, None]] = None
     used_by: List[str] = []
 
     @classmethod

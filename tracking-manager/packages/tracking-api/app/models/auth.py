@@ -7,6 +7,7 @@ from starlette import status
 
 from app.core import logger, response, mail
 from app.helpers import redis
+from app.helpers.time_utils import get_current_time
 from app.middleware.middleware import get_private_key, generate_otp, generate_password
 
 TOKEN_EXPIRY_SECONDS = 31536000
@@ -16,7 +17,7 @@ async def get_token(username: str, role_id: str, device_id: str = "web"):
     token = redis.get_jwt_token(username, device_id)
     if token:
         return token
-    expire = datetime.now() + timedelta(seconds=TOKEN_EXPIRY_SECONDS)
+    expire = get_current_time() + timedelta(seconds=TOKEN_EXPIRY_SECONDS)
     payload = {"exp": expire, "username": username, "role_id": role_id, "device_id": device_id}
     encoded_jwt = jwt.encode(payload, get_private_key(), algorithm=os.getenv("ALGORITHM"))
     redis.save_jwt_token(username, encoded_jwt, device_id)

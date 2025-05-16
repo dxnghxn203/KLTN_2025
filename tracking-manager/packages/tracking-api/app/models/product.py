@@ -18,7 +18,7 @@ from fastapi import UploadFile
 from pydantic import ValidationError
 from starlette import status
 from typing import Set, Dict, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from starlette.responses import JSONResponse
 
@@ -32,6 +32,7 @@ from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, Ite
 from app.entities.product.response import ItemProductDBRes, ItemProductImportRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
+from app.helpers.time_utils import get_current_time
 from app.models.category import get_all_categories, get_all_categories_admin
 from app.models.comment import count_comments
 from app.models.review import count_reviews, average_rating
@@ -70,6 +71,49 @@ async def get_all_product(page: int, page_size: int):
         return [ItemProductDBRes(**product) for product in product_list]
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
+        raise e
+
+async def get_discount_product(page: int, page_size: int):
+    try:
+        collection = db[collection_name]
+        skip_count = (page - 1) * page_size
+        now = get_current_time()
+
+        product_list = collection.find({
+            "is_approved": True,
+            "active": True,
+            "prices": {
+                "$elemMatch": {
+                    "discount": {"$gt": 0},
+                    "expired_date": {"$gt": now}
+                }
+            }
+        }).skip(skip_count).limit(page_size)
+
+        result = []
+        for product in product_list:
+            product["prices"] = [
+                p for p in product.get("prices", [])
+                if p.get("discount", 0) > 0 and
+                   p.get("expired_date") and
+                p["expired_date"] > now
+            ]
+            product_id = product["product_id"]
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            result.append(ItemProductDBRes(**product))
+
+        return result
+    except Exception as e:
+        logger.error(f"Failed [get_discount_product]: {e}")
         raise e
 
 async def get_product_top_selling(top_n):
@@ -419,7 +463,7 @@ async def update_product_category(item: UpdateCategoryReq, email: str):
             "category.child_category_slug": child_category.get("child_category_slug", ""),
 
             "updated_by": email,
-            "updated_at": datetime.now()
+            "updated_at": get_current_time()
         }
 
         collection.update_one({"product_id": item.product_id}, {"$set": update_data})
@@ -600,7 +644,7 @@ async def update_product_status(item: UpdateProductStatusReq, email: str):
                 "$set": {
                     "active": item.status,
                     "updated_by": email,
-                    "updated_at": datetime.now()
+                    "updated_at": get_current_time()
                 }
             }
         )
@@ -622,7 +666,7 @@ async def update_product_images_primary(product_id: str, file, email: str):
         url = upload_file(file, "images_primary")
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"images_primary": url, "updated_by": email, "updated_at": datetime.now()}},
+            {"$set": {"images_primary": url, "updated_by": email, "updated_at": get_current_time()}},
         )
         return response.SuccessResponse(message="Cập nhật ảnh chính thành công")
     except Exception as e:
@@ -642,7 +686,7 @@ async def update_product_certificate_file(product_id: str, file, email: str):
         url = upload_any_file(file, "certificates")
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"certificate_file": url, "updated_by": email, "updated_at": datetime.now()}},
+            {"$set": {"certificate_file": url, "updated_by": email, "updated_at": get_current_time()}},
         )
         return response.SuccessResponse(message="Cập nhật chứng nhận thành công")
     except Exception as e:
@@ -670,7 +714,7 @@ async def update_product_images(product_id: str, files, email: str):
 
         collection.update_one(
             {"product_id": product_id},
-            {"$set": {"images": new_images, "updated_by": email, "updated_at": datetime.now()}},
+            {"$set": {"images": new_images, "updated_by": email, "updated_at": get_current_time()}},
         )
         return response.SuccessResponse(message="Cập nhật images thành công")
     except Exception as e:
@@ -771,7 +815,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
                 "pharmacist_name": "",
                 "pharmacist_gender": "",
                 "updated_by": email,
-                "updated_at": datetime.now()
+                "updated_at": get_current_time()
             })
             collection.update_one({"product_id": update_data.product_id}, {"$set": update_fields})
 
@@ -785,10 +829,10 @@ async def update_product_created_updated():
     collection.update_many(
         {},
         {"$set": {
-            "created_by": "tuannguyen23823@gmail.com",
-            "updated_by": "tuannguyen23823@gmail.com",
-            "created_at": datetime.now(),
-            "updated_at": datetime.now()
+            "prices.$[].expired_date": get_current_time() + timedelta(days=15),
+            # "updated_by": "tuannguyen23823@gmail.com",
+            # "created_at": get_current_time(),
+            # "updated_at": get_current_time()
         }}
     )
 
@@ -1121,6 +1165,7 @@ async def import_products(file: UploadFile, email: str):
                             amount=price.get("amount", 0),
                             original_price=price.get("original_price", 0),
                             price=price.get("original_price", 0) * (100 - price.get("discount", 0)) / 100,
+                            expired_date=price.get("expired_date", get_current_time())
                         )
                         for price in prices_list
                     ]

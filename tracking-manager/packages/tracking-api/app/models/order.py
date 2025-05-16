@@ -26,6 +26,7 @@ from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
     SENDER_COMMUNE_CODE
+from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
 from app.helpers.redis import get_product_transaction, save_product, remove_cart_item, product_key
@@ -53,7 +54,7 @@ async def get_total_orders():
 async def get_total_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_current_time() - timedelta(days=365)
         total_orders = collection.count_documents({"created_date": {"$gte": one_year_ago}})
         return total_orders
     except Exception as e:
@@ -63,7 +64,7 @@ async def get_total_orders_last_365_days():
 async def get_new_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_current_time() - timedelta(days=365)
         new_orders = collection.count_documents({"status": "created", "created_date": {"$gte": one_year_ago}})
         return new_orders
     except Exception as e:
@@ -73,7 +74,7 @@ async def get_new_orders_last_365_days():
 async def get_completed_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_current_time() - timedelta(days=365)
         completed_orders = collection.count_documents({"status": "completed", "created_date": {"$gte": one_year_ago}})
         return completed_orders
     except Exception as e:
@@ -99,7 +100,7 @@ async def get_popular_products(top_n=3):
 async def get_cancel_orders_last_365_days():
     try:
         collection = database.db[collection_name]
-        one_year_ago = datetime.now() - timedelta(days=365)
+        one_year_ago = get_current_time() - timedelta(days=365)
         cancel_orders = collection.count_documents({"status": "canceled", "created_date": {"$gte": one_year_ago}})
         return cancel_orders
     except Exception as e:
@@ -167,7 +168,13 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
 
         price_info = product_info.prices[0]
 
-        total_price += price_info.price * product.quantity
+        now = get_current_time()
+        expired_date = price_info.expired_date
+        is_expired = expired_date and isinstance(expired_date, datetime) and expired_date < now
+
+        actual_price = price_info.original_price if is_expired else price_info.price
+
+        total_price += actual_price * product.quantity
         weight += price_info.weight * product.quantity
 
         product_item = ItemProductReq(
@@ -176,10 +183,10 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
             product_name=product_info.product_name,
             unit=price_info.unit,
             quantity=product.quantity,
-            price=price_info.price,
+            price=actual_price,
             weight=price_info.weight,
             original_price=price_info.original_price,
-            discount=price_info.discount,
+            discount=0 if is_expired else price_info.discount,
             images_primary=product_info.images_primary,
         )
         product_items.append(product_item)

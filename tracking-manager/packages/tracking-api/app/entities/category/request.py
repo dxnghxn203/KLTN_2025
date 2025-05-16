@@ -2,6 +2,9 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 
+from app.helpers.time_utils import get_current_time
+
+
 class ChildCategoryReq(BaseModel):
     child_category_id: str = ""
     child_category_name: str = ""
@@ -22,8 +25,8 @@ class MainCategoryReq(BaseModel):
     sub_category: List[SubCategoryReq]
     created_by: str = ""
     updated_by: str = ""
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
+    created_at: datetime = get_current_time()
+    updated_at: datetime = get_current_time()
 
 class ChildCategoryInReq(BaseModel):
     child_category_name: str = ""

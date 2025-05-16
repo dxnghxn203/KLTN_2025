@@ -6,6 +6,7 @@ from starlette.status import HTTP_400_BAD_REQUEST
 from app.core import logger
 from app.core import response
 from app.helpers.constant import TIME_INDEX
+from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import insert_es_common, delete_index, query_es_data, search_es
 
 
@@ -40,6 +41,6 @@ async def get_range_time(route_code: str) -> Union[str, response.JsonException]:
 
     days = int(range_time)
     seconds = (range_time % 1) * 86400
-    delivery_time = (datetime.utcnow() + timedelta(days=days, seconds=seconds, hours=7)).replace(tzinfo=timezone.utc)
+    delivery_time = (get_current_time() + timedelta(days=days, seconds=seconds)).replace(tzinfo=timezone.utc)
 
     return delivery_time.isoformat()

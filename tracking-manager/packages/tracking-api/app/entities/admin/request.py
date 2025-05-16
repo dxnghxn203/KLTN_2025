@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, field_validator, model_validator
 
 from app.common import password
+from app.helpers.time_utils import get_current_time
 
 
 class ItemAdminRegisReq(BaseModel):
@@ -49,7 +50,7 @@ class ItemAdminRegisReq(BaseModel):
         try:
             parsed_date = datetime.datetime.fromisoformat(v.replace("Z", "+00:00"))
             parsed_date = parsed_date.replace(tzinfo=None)
-            if parsed_date > datetime.datetime.now() + datetime.timedelta(hours=7):
+            if parsed_date > get_current_time():
                 raise ValueError("Ngày sinh không thể lớn hơn ngày hiện tại")
             return parsed_date
         except ValueError:

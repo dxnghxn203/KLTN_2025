@@ -16,7 +16,8 @@ from app.models.product import get_product_by_slug, add_product_db, get_all_prod
     get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, \
     check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
-    import_products, get_product_brands, get_imported_products, delete_imported_products, update_product_created_updated
+    import_products, get_product_brands, get_imported_products, delete_imported_products, \
+    update_product_created_updated, get_discount_product
 
 router = APIRouter()
 
@@ -136,7 +137,7 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
         )
 
 @router.get("/products/all-product-admin", response_model=response.BaseResponse)
-async def get_all_product_admin(page: int = 1, page_size: int = 10):
+async def get_all_product_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
     try:
         logger.info(f"page: {page}, page_size: {page_size}")
         result = await get_all_product(page, page_size)
@@ -148,6 +149,23 @@ async def get_all_product_admin(page: int = 1, page_size: int = 10):
         raise je
     except Exception as e:
         logger.error("Error getting product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/discount", response_model=response.BaseResponse)
+async def get_product_discount(page: int = 1, page_size: int = 10):
+    try:
+        data = await get_discount_product(page, page_size)
+        return response.BaseResponse(
+            message="Tìm thấy sản phẩm giảm giá",
+            data=data
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting product discount", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

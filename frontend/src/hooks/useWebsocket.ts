@@ -96,7 +96,7 @@ export const useWebSocket = ({conversationId, guest_id, pharmacist_id, type}: Us
             wsUrl += `?user_id=${pharmacist_id}`;
         }
         if (type === 'user') {
-            wsUrl += `?user_id=${pharmacist_id}`;
+            wsUrl += `?user_id=${guest_id}`;
         }
 
         const ws = new WebSocket(wsUrl);

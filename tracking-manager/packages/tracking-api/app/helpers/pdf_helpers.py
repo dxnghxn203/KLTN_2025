@@ -4,6 +4,8 @@ import pdfkit
 import os
 
 from app.entities.order.response import ItemOrderRes
+from app.helpers.time_utils import get_current_time
+
 
 def get_wkhtmltopdf_path():
     if platform.system() == "Windows":
@@ -15,7 +17,7 @@ def get_wkhtmltopdf_path():
 
 def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
     try:
-        now = datetime.now()
+        now = get_current_time()
         current_date = now.strftime("%d/%m/%Y")
         current_time = now.strftime("%H:%M:%S")
 

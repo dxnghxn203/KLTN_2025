@@ -1,6 +1,8 @@
 from typing import Optional, Union, List
-
+from datetime import datetime
 from pydantic import BaseModel
+
+from app.helpers.time_utils import get_current_time
 
 
 class ItemProductRes(BaseModel):
@@ -23,6 +25,7 @@ class ItemPriceDBRes(BaseModel):
     weight: float = 0
     amount: int = 0
     original_price: float = 0
+    expired_date: datetime = get_current_time()
 
 class ItemImageDBRes(BaseModel):
     images_id: Optional[Union[str, None]] = None
