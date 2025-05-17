@@ -9,14 +9,12 @@ from app.helpers.time_utils import get_current_time
 
 def get_wkhtmltopdf_path():
     if platform.system() == "Windows":
-        # Nếu là Windows thì lấy file .exe trong static
         return os.path.join(os.getcwd(), "app", "static", "wkhtmltopdf", "bin", "wkhtmltopdf.exe")
     else:
         default_path = "/usr/bin/wkhtmltopdf"
         if os.path.exists(default_path):
             return default_path
         else:
-            # Dùng lệnh `which` để tìm path
             path = shutil.which("wkhtmltopdf")
             if path:
                 return path

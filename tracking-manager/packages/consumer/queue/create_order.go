@@ -5,7 +5,6 @@ import (
 	"consumer/statics"
 	"context"
 	"encoding/json"
-	"log/slog"
 
 	"github.com/streadway/amqp"
 )
@@ -21,46 +20,48 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 		return false, err
 	}
 
-	var trackingRaw models.Tracking
-	err = json.Unmarshal(msg, &trackingRaw)
-	if err != nil {
-		return false, err
-	}
+	// helper.ExportInvoiceToPDF(orderRaw, "tuan nguyen")
 
-	err = models.CheckInventoryAndUpdateOrder(ctx, &orderRaw)
-	if err != nil {
-		slog.Warn("Lỗi sản phẩm, vẫn tạo đơn với trạng thái canceled", "err", err)
-	}
+	// var trackingRaw models.Tracking
+	// err = json.Unmarshal(msg, &trackingRaw)
+	// if err != nil {
+	// 	return false, err
+	// }
 
-	res, _id, err := orderRaw.Create(ctx)
-	if err != nil {
-		return res, err
-	}
+	// err = models.CheckInventoryAndUpdateOrder(ctx, &orderRaw)
+	// if err != nil {
+	// 	slog.Warn("Lỗi sản phẩm, vẫn tạo đơn với trạng thái canceled", "err", err)
+	// }
 
-	if _id != "" && orderRaw.Status != "canceled" {
-		err = models.UpdateProductSellCount(ctx, orderRaw.Product, 1)
-		if err != nil {
-			slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
-		}
-		err = models.UpdateProductSellRedis(ctx, orderRaw.Product, 1)
-		if err != nil {
-			slog.Error("Lỗi cập nhật số lượng bán sau khi tạo đơn hàng", "id", _id, "err", err)
-		}
-	} else {
-		trackingRaw.Status = orderRaw.Status
-		trackingRaw.DeliveryInstruction = orderRaw.DeliveryInstruction
-	}
+	// res, _id, err := orderRaw.Create(ctx)
+	// if err != nil {
+	// 	return res, err
+	// }
 
-	err = orderRaw.DeleteOrderRedis(ctx)
-	if err != nil {
-		slog.Error("Failed to delete order from redis", "id", _id, "err", err)
-	}
+	// if _id != "" && orderRaw.Status != "canceled" {
+	// 	err = models.UpdateProductSellCount(ctx, orderRaw.Product, 1)
+	// 	if err != nil {
+	// 		slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
+	// 	}
+	// 	err = models.UpdateProductSellRedis(ctx, orderRaw.Product, 1)
+	// 	if err != nil {
+	// 		slog.Error("Lỗi cập nhật số lượng bán sau khi tạo đơn hàng", "id", _id, "err", err)
+	// 	}
+	// } else {
+	// 	trackingRaw.Status = orderRaw.Status
+	// 	trackingRaw.DeliveryInstruction = orderRaw.DeliveryInstruction
+	// }
 
-	res, _, err = trackingRaw.Create(ctx)
-	if err != nil {
-		return res, err
-	}
-	return res, nil
+	// err = orderRaw.DeleteOrderRedis(ctx)
+	// if err != nil {
+	// 	slog.Error("Failed to delete order from redis", "id", _id, "err", err)
+	// }
+
+	// res, _, err = trackingRaw.Create(ctx)
+	// if err != nil {
+	// 	return res, err
+	// }
+	return true, nil
 }
 
 func (e *CreateOrderQueue) queueName() string {

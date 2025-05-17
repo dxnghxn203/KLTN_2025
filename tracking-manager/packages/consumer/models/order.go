@@ -69,17 +69,17 @@ type Orders struct {
 }
 
 type ProductInfo struct {
-	ProductId     string     `json:"product_id" bson:"product_id"`
-	PriceId       string     `json:"price_id" bson:"price_id"`
-	ProductName   string     `json:"product_name" bson:"product_name"`
-	Unit          string     `json:"unit" bson:"unit"`
-	Quantity      int        `json:"quantity" bson:"quantity"`
-	Price         float64    `json:"price" bson:"price"`
-	Weight        float64    `json:"weight" bson:"weight"`
-	OrginalPrice  float64    `json:"original_price" bson:"original_price"`
-	Discount      float64    `json:"discount" bson:"discount"`
-	ImagesPrimary string     `json:"images_primary" bson:"images_primary"`
-	ExpiredDate   *time.Time `json:"expired_date" bson:"expired_date"`
+	ProductId     string    `json:"product_id" bson:"product_id"`
+	PriceId       string    `json:"price_id" bson:"price_id"`
+	ProductName   string    `json:"product_name" bson:"product_name"`
+	Unit          string    `json:"unit" bson:"unit"`
+	Quantity      int       `json:"quantity" bson:"quantity"`
+	Price         float64   `json:"price" bson:"price"`
+	Weight        float64   `json:"weight" bson:"weight"`
+	OriginalPrice float64   `json:"original_price" bson:"original_price"`
+	Discount      float64   `json:"discount" bson:"discount"`
+	ImagesPrimary string    `json:"images_primary" bson:"images_primary"`
+	ExpiredDate   time.Time `json:"expired_date" bson:"expired_date"`
 }
 
 type PriceRes struct {
@@ -209,11 +209,11 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 			continue
 		}
 
-		if p.ExpiredDate != nil && p.ExpiredDate.Before(GetCurrentTime()) {
+		if !p.ExpiredDate.IsZero() && p.ExpiredDate.Before(GetCurrentTime()) {
 			expiredProducts = append(expiredProducts, p.ProductName)
 			order.Status = "canceled"
 			p.Discount = 0
-			p.Price = p.OrginalPrice
+			p.Price = p.OriginalPrice
 		}
 	}
 	if len(insufficientProducts) > 0 || len(expiredProducts) > 0 {

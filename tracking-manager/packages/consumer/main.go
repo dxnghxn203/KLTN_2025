@@ -1,6 +1,7 @@
 package main
 
 import (
+	"consumer/helper"
 	"consumer/pkg/database"
 	"consumer/queue"
 	"context"
@@ -59,7 +60,10 @@ func main() {
 		cancelF()
 		quit <- true
 	}()
-
+	err = helper.SendOtpEmail("tuannguyen23823@gmail.com", "123456")
+	if err != nil {
+		slog.Error("Gửi email không thành công", "err", err)
+	}
 	go startHTTPServer()
 
 	<-quit

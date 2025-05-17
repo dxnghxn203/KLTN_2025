@@ -33,7 +33,7 @@ from app.helpers.redis import get_product_transaction, save_product, remove_cart
 from app.models.cart import remove_product_from_cart
 from app.models.fee import calculate_shipping_fee
 from app.models.location import determine_route
-from app.models.product import get_product_by_id, restore_product_sell
+from app.models.product import get_product_by_id, restore_product_sell, check_all_product_discount_expired
 from app.models.time import get_range_time
 from app.models.user import get_by_id
 
@@ -132,11 +132,13 @@ async def get_tracking_order_by_order_id(order_id: str):
         logger.error(f"Failed [get_tracking_order_by_order_id]: {e}")
         return []
 
-async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[ItemProductReq], float, float, List[Dict[str, str]]]:
+async def process_order_products(products: List[ItemProductInReq])\
+        ->Tuple[List[ItemProductReq], float, float, List[Dict[str, str]], List[Dict[str, str]]]:
     total_price = 0
     weight = 0
     product_items = []
     out_of_stock = []
+    out_of_date = []
 
     for product in products:
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
@@ -170,7 +172,18 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
 
         now = get_current_time()
         expired_date = price_info.expired_date
-        is_expired = expired_date and isinstance(expired_date, datetime) and expired_date < now
+        is_expired = (
+                expired_date
+                and isinstance(expired_date, datetime)
+                and expired_date < now
+                and price_info.discount > 0
+        )
+
+        if is_expired:
+            out_of_date.append({
+                "product_id": product.product_id,
+                "price_id": product.price_id,
+            })
 
         actual_price = price_info.original_price if is_expired else price_info.price
 
@@ -188,11 +201,14 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
             original_price=price_info.original_price,
             discount=0 if is_expired else price_info.discount,
             images_primary=product_info.images_primary,
-            expired_date=price_info.expired_date
+            expired_date=price_info.expired_date.isoformat()
         )
         product_items.append(product_item)
 
-    return product_items, total_price, weight, out_of_stock
+    if out_of_date:
+        await check_all_product_discount_expired()
+
+    return product_items, total_price, weight, out_of_stock, out_of_date
 
 async def check_shipping_fee(
         receiver_province_code: int,
@@ -232,13 +248,16 @@ async def check_order(item: ItemOrderInReq, user_id: str):
         order_id = generate_id("ORDER")
         tracking_id = f"{generate_id('TRACKING')}_V{1:03}"
 
-        product_items, product_price, weight, out_of_stock = await process_order_products(item.product)
+        product_items, product_price, weight, out_of_stock, out_of_date = await process_order_products(item.product)
 
-        if out_of_stock:
+        if out_of_stock or out_of_date:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Một số sản phẩm đã hết hàng",
-                data={"out_of_stock": out_of_stock}
+                message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                data={
+                    "out_of_stock": out_of_stock,
+                    "out_of_date": out_of_date
+                }
             )
 
         fee_data = await check_shipping_fee(
@@ -535,13 +554,16 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
                 message="Không tìm thấy sản phẩm"
             )
 
-        product_items, _, _, out_of_stock = await process_order_products(item.product.product)
+        product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
 
-        if out_of_stock:
+        if out_of_stock or out_of_date:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Một số sản phẩm đã hết hàng",
-                data={"out_of_stock": out_of_stock}
+                message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                data={
+                    "out_of_stock": out_of_stock,
+                    "out_of_date": out_of_date
+                }
             )
 
         image_list = []
@@ -623,13 +645,16 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
                 message="Không tìm thấy sản phẩm"
             )
 
-        product_items, _, _, out_of_stock = await process_order_products(item.product)
+        product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product)
 
-        if out_of_stock:
+        if out_of_stock or out_of_date:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Một số sản phẩm đã hết hàng",
-                data={"out_of_stock": out_of_stock}
+                message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                data={
+                    "out_of_stock": out_of_stock,
+                    "out_of_date": out_of_date
+                }
             )
 
         collection.update_one(
