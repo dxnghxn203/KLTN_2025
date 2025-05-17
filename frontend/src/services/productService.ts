@@ -13,7 +13,7 @@ export const getProductBySlug = async (slug: string) => {
 
 export const getProductTopSelling = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/top-selling`, {params:{params}} );
+        const response: any = await axiosClient.get(`/v1/products/top-selling`, {params: {params}});
         return response;
     } catch (error: any) {
         return {
@@ -24,7 +24,7 @@ export const getProductTopSelling = async (params: any) => {
     }
 }
 
-export const addProduct = async (data: any) : Promise<any>=> {
+export const addProduct = async (data: any): Promise<any> => {
     try {
         const response: any = await axiosClient.post(`/v1/product/add`, data);
         console.log("response", response);
@@ -32,24 +32,23 @@ export const addProduct = async (data: any) : Promise<any>=> {
             status_code: response.status_code,
             message: response.message,
             data: response.data,
-                }
+        }
 
-    }
-    catch (error: any) {
+    } catch (error: any) {
         // console.log("error", error?.response?.data?.message);
         return {
             status_code: error?.response?.status || 500,
             message: error?.response?.data?.message || "Internal server error",
             data: null
         }
-       
+
     }
 }
 
 export const getAllProductAdmin = async (page: any, pageSize: any) => {
     try {
         const response: any = await axiosClient.get(`/v1/products/all-product-admin?page=${page}&page_size=${pageSize}`);
-        console.log(response.data); 
+        console.log(response.data);
         return {
             status_code: response.status_code,
             message: response.message,
@@ -66,7 +65,7 @@ export const getAllProductAdmin = async (page: any, pageSize: any) => {
 
 export const getProductBySlugSession = async (slug: any, session_id: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/product/session/${slug}`, { params: { session_id } });
+        const response: any = await axiosClient.get(`/v1/product/session/${slug}`, {params: {session_id}});
         return response;
     } catch (error: any) {
         return {
@@ -79,7 +78,7 @@ export const getProductBySlugSession = async (slug: any, session_id: any) => {
 
 export const getProductsRelated = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/get-relate/`, { params });
+        const response: any = await axiosClient.get(`/v1/products/get-relate/`, {params});
         return response;
     } catch (error: any) {
         return {
@@ -93,7 +92,7 @@ export const getProductsRelated = async (params: any) => {
 
 export const getProductReviewSession = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/get-recently-viewed/${params}`, {  });
+        const response: any = await axiosClient.get(`/v1/products/get-recently-viewed/${params}`, {});
         return response;
     } catch (error: any) {
         return {
@@ -106,7 +105,7 @@ export const getProductReviewSession = async (params: any) => {
 
 export const getProductReviewToken = async () => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/get-recently-viewed`, {  });
+        const response: any = await axiosClient.get(`/v1/products/get-recently-viewed`, {});
         return response;
     } catch (error: any) {
         return {
@@ -120,7 +119,7 @@ export const getProductReviewToken = async () => {
 
 export const getProductFeatured = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/featured`, { params });
+        const response: any = await axiosClient.get(`/v1/products/featured`, {params});
         return response;
     } catch (error: any) {
         return {
@@ -133,7 +132,7 @@ export const getProductFeatured = async (params: any) => {
 
 export const getProductsBestDeal = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/best-deal`, { params });
+        const response: any = await axiosClient.get(`/v1/products/best-deal`, {params});
         return response;
     } catch (error: any) {
         return {
@@ -149,14 +148,14 @@ export const deleteProduct = async (product_id: any) => {
         const params = `/v1/product/delete?product_id=${product_id}`;
         const response: any = await axiosClient.delete(params);
         return {
-          status_code: response.status_code,
-          message: response.message,
-          data: response.data,
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
         };
-      } catch (error: any) {
-          throw error;
-        }
-      
+    } catch (error: any) {
+        throw error;
+    }
+
 }
 
 export const getAllProductApproved = async () => {
@@ -166,6 +165,31 @@ export const getAllProductApproved = async () => {
             status_code: response.status_code,
             message: response.message,
             data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
+export const getSimilarProducts = async (product_id: any, pageSize: number = 10, page: number = 1) => {
+    try {
+        const response: any = await axiosClient.get(`https://recommendation.medicaretech.io.vn/v1/related/${product_id}`);
+        if (response.status_code === 200 && Array.isArray(response.data)) {
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedProducts = response.data.slice(startIndex, endIndex);
+
+            return {
+                products: paginatedProducts,
+                total: response.data.length
+            };
+        } else {
+            console.error('API response error:', response.message || 'Unknown error');
+            return {products: [], total: 0};
         }
     } catch (error: any) {
         return {
@@ -248,7 +272,7 @@ export const updateCertificateFileProduct = async (product_id: any, params: any)
     }
 
 }
-export const updateImagesPrimaryProduct = async (product_id:any, params: any) => {
+export const updateImagesPrimaryProduct = async (product_id: any, params: any) => {
     try {
         const response: any = await axiosClient.put(`/v1/products/update-images-primary?product_id=${product_id}`, params);
         return {
@@ -266,7 +290,7 @@ export const updateImagesPrimaryProduct = async (product_id:any, params: any) =>
 
 }
 
-export const updateImagesProduct = async (product_id:any, params: any) => {
+export const updateImagesProduct = async (product_id: any, params: any) => {
     try {
         // console.log("params", params);
         // console.log("product_id", product_id);
@@ -303,7 +327,7 @@ export const searchProduct = async (query: any, page: any, page_size: any) => {
 
 export const getAllBrands = async () => {
     try {
-        
+
         const response: any = await axiosClient.get(`/v1/products/get_all_brands`);
         return response;
     } catch (error) {
@@ -312,12 +336,12 @@ export const getAllBrands = async () => {
     }
 }
 
-export const importFileAddProduct  = async (params: any) => {
+export const importFileAddProduct = async (params: any) => {
     try {
         console.log("service", params)
-         params.forEach((value: any, key: any) => {
+        params.forEach((value: any, key: any) => {
             console.log(`${key}:`, value);
-          });
+        });
         const response: any = await axiosClient.post(`/v1/products/import`, params);
         return {
             status_code: response.status_code,
@@ -343,7 +367,7 @@ export const getAllImportFileAddProduct = async () => {
     }
 }
 
-export const deleteImportFileProduct  = async (import_id: any) => {
+export const deleteImportFileProduct = async (import_id: any) => {
     try {
         const response: any = await axiosClient.delete(`/v1/products/import?import_id=${import_id}`);
         return {

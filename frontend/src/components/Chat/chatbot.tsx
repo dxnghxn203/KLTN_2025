@@ -35,7 +35,7 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
             setIsLoadingSession(true);
             setErrorSession(null);
             try {
-                const response = await fetch('http://127.0.0.1:8000/v1/conversation/start', {
+                const response = await fetch('https://recommendation.medicaretech.io.vn/v1/conversation/start', {
                     method: 'POST',
                     headers: {
                         'accept': 'application/json',
@@ -97,7 +97,7 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
         setErrorSendingMessage(null);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/v1/message', {
+            const response = await fetch('https://recommendation.medicaretech.io.vn/v1/message', {
                 method: 'POST',
                 headers: {
                     'accept': 'application/json',

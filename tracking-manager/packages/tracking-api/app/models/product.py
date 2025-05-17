@@ -495,6 +495,24 @@ async def delete_product(product_id: str):
         logger.error(f"Error deleting product: {str(e)}")
         raise e
 
+async def getAvailableQuantity(product_id: str, price_id: str):
+    try:
+        product = await get_product_by_id(product_id, price_id)
+
+        if not product:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Product not found"
+            )
+        sell = product.sell
+        inventory = product.inventory
+
+        return (inventory - sell) // product.prices[0].amount
+
+    except Exception as e:
+        logger.error(f"Error getting available quantity: {str(e)}")
+        return None
+
 async def get_product_by_id(product_id: str, price_id: str):
     try:
         collection = db[collection_name]

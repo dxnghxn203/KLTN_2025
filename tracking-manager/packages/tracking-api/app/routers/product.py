@@ -17,7 +17,7 @@ from app.models.product import get_product_by_slug, add_product_db, get_all_prod
     check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
     import_products, get_product_brands, get_imported_products, delete_imported_products, \
-    update_product_created_updated, get_discount_product, check_all_product_discount_expired
+    update_product_created_updated, get_discount_product, check_all_product_discount_expired, getAvailableQuantity
 
 router = APIRouter()
 
@@ -135,6 +135,24 @@ async def add_product(item: ItemProductDBInReq = BodyDepends(ItemProductDBInReq)
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.get("/products/getAvailableQuantity", response_model=response.BaseResponse)
+async def get_available_quantity(product_id: str, price_id: str):
+    try:
+        result = await getAvailableQuantity(product_id, price_id)
+        return response.BaseResponse(
+            message="Available quantity found",
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting available quantity", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 
 @router.get("/products/all-product-admin", response_model=response.BaseResponse)
 async def get_all_product_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
