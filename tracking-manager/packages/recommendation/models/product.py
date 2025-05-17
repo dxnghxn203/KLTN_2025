@@ -1,3 +1,5 @@
+from typing import Optional, List, Dict, Any
+
 from bson import ObjectId
 
 from core import logger
@@ -95,4 +97,76 @@ def search_products_by_text(search_text: str, limit: int = 5) -> list[dict]:
             product_docs.append(product_helper(product))
         return product_docs
     except Exception as e:
+        return []
+
+#recommendation
+async def get_all_products_recommendation() -> List[Dict[str, Any]]:
+    """
+    Lấy tất cả sản phẩm từ MongoDB cho hệ thống gợi ý
+    """
+    try:
+        products = db.products.find({"active": True}).to_list(length=None)
+        return [product_helper(p) for p in products]
+    except Exception as e:
+        logger.error(f"Error fetching all products for recommendation: {str(e)}")
+        return []
+
+async def get_product_by_id_recommendation(product_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Lấy thông tin sản phẩm theo ID cho hệ thống gợi ý
+    """
+    try:
+        product = db.products.find_one({"product_id": product_id})
+        if product:
+            return product_helper(product)
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching product by ID {product_id} for recommendation: {str(e)}")
+        return None
+
+async def get_products_by_category_recommendation(category_slug: str) -> List[Dict[str, Any]]:
+    """
+    Lấy sản phẩm theo danh mục
+    """
+    try:
+        products = db.products.find({
+            "active": True,
+            "$or": [
+                {"category.main_category_slug": category_slug},
+                {"category.sub_category_slug": category_slug},
+                {"category.child_category_slug": category_slug}
+            ]
+        }).to_list(length=None)
+        return products
+    except Exception as e:
+        logger.error(f"Error fetching products by category {category_slug}: {str(e)}")
+        return []
+
+async def get_products_with_discount_recommendation(min_discount: int = 10) -> List[Dict[str, Any]]:
+    """
+    Lấy sản phẩm có khuyến mãi từ mức nhất định
+    """
+    try:
+        products = db.products.find({
+            "active": True,
+            "prices": {
+                "$elemMatch": {
+                    "discount": {"$gte": min_discount}
+                }
+            }
+        }).to_list(length=None)
+        return products
+    except Exception as e:
+        logger.error(f"Error fetching products with discount: {str(e)}")
+        return []
+
+async def get_newest_products_recommendation(limit: int = 20) -> List[Dict[str, Any]]:
+    """
+    Lấy sản phẩm mới nhất
+    """
+    try:
+        products = db.products.find({"active": True}).sort("created_at", -1).limit(limit).to_list(length=limit)
+        return products
+    except Exception as e:
+        logger.error(f"Error fetching newest products: {str(e)}")
         return []
