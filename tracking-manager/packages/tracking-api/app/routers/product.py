@@ -581,7 +581,7 @@ async def dev():
             message="Internal server error"
         )
 
-@router.post("/products/automatic", response_model=response.BaseResponse)
+@router.get("/products/automatic", response_model=response.BaseResponse)
 async def automatic():
     try:
         result = await check_all_product_discount_expired()
