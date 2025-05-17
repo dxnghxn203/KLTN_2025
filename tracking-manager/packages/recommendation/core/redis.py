@@ -1,24 +1,21 @@
-
 import redis
 import os
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_DB = int(os.getenv("REDIS_DB", 0))
+REDIS_PASSWORD= os.getenv("REDIS_PASSWORD", None)
+REDIS_USER = os.getenv("REDIS_USER", None)
 
-# Khởi tạo redis_client để các module khác có thể import và sử dụng
 try:
     redis_client = redis.Redis(
-        host='redis-18988.c124.us-central1-1.gce.redns.redis-cloud.com',
-        port=18988,
-        decode_responses=True,
-        username="default",
-        password="m3kR4XnG3rIGEaDu8Q9uabOdFpFsjaLT"
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        decode_responses=False,
+        username=REDIS_USER,
+        password=REDIS_PASSWORD
     )
-    redis_client.ping() # Kiểm tra kết nối
+    redis_client.ping()
     print(f"Successfully connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
 except redis.exceptions.ConnectionError as e:
     print(f"Could not connect to Redis: {e}")
-    redis_client = None # Xử lý trường hợp không kết nối được
-
-# Bạn có thể thêm các hàm tiện ích liên quan đến Redis ở đây nếu cần
+    redis_client = None
