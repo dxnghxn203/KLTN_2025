@@ -17,7 +17,7 @@ from app.models.product import get_product_by_slug, add_product_db, get_all_prod
     check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
     import_products, get_product_brands, get_imported_products, delete_imported_products, \
-    update_product_created_updated, get_discount_product
+    update_product_created_updated, get_discount_product, check_all_product_discount_expired
 
 router = APIRouter()
 
@@ -576,6 +576,22 @@ async def dev():
         raise je
     except Exception as e:
         logger.error("Error updating pharmacist gender", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.post("/products/automatic", response_model=response.BaseResponse)
+async def automatic():
+    try:
+        result = await check_all_product_discount_expired()
+        return response.SuccessResponse(
+            data=f"{result} products updated"
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error automatic", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

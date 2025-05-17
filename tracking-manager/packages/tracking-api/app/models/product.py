@@ -16,6 +16,7 @@ import olefile
 import pandas as pd
 from fastapi import UploadFile
 from pydantic import ValidationError
+from pymongo import UpdateOne
 from starlette import status
 from typing import Set, Dict, Tuple
 from datetime import datetime, timedelta
@@ -1291,4 +1292,49 @@ async def delete_imported_products(import_id: str):
             return response.SuccessResponse(message="Xóa Import thành công")
     except Exception as e:
         logger.error(f"Error deleting imported product: {str(e)}")
+        raise e
+
+async def check_all_product_discount_expired():
+    try:
+        collection = db[collection_name]
+        now = get_current_time()
+        products = collection.find({
+            "prices": {
+                "$elemMatch": {
+                    "discount": {"$gt": 0},
+                    "expired_date": {"$lt": now}
+                }
+            }
+        })
+
+        updates = []
+
+        for product in products:
+            updated_prices = []
+            changed = False
+
+            for price in product.get("prices", []):
+                if price.get("discount", 0) > 0 and price.get("expired_date") and price["expired_date"] < now:
+                    price["discount"] = 0
+                    price["price"] = price.get("original_price", 0)
+                    changed = True
+                updated_prices.append(price)
+
+            if changed:
+                updates.append(
+                    UpdateOne(
+                        {"product_id": product["product_id"]},
+                        {"$set": {"prices": updated_prices}}
+                    )
+                )
+
+        if updates:
+            result = collection.bulk_write(updates)
+            logger.info(f"[discount_expired] Matched: {result.matched_count}, Modified: {result.modified_count}")
+            return result.modified_count
+        else:
+            logger.info("No expired discount to update.")
+            return 0
+    except Exception as e:
+        logger.error(f"Failed to update expired discounts: {e}")
         raise e
