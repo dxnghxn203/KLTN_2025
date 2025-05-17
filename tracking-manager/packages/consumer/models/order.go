@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"os"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,7 +15,14 @@ import (
 )
 
 func GetCurrentTime() time.Time {
-	return time.Now().Add(7 * time.Hour)
+	offsetStr := os.Getenv("TIMEZONE_OFFSET_HOURS")
+	offset := 0
+	if offsetStr != "" {
+		if val, err := strconv.Atoi(offsetStr); err == nil {
+			offset = val
+		}
+	}
+	return time.Now().Add(time.Duration(offset) * time.Hour)
 }
 
 type addressOrderReq struct {
@@ -60,16 +69,17 @@ type Orders struct {
 }
 
 type ProductInfo struct {
-	ProductId     string  `json:"product_id" bson:"product_id"`
-	PriceId       string  `json:"price_id" bson:"price_id"`
-	ProductName   string  `json:"product_name" bson:"product_name"`
-	Unit          string  `json:"unit" bson:"unit"`
-	Quantity      int     `json:"quantity" bson:"quantity"`
-	Price         float64 `json:"price" bson:"price"`
-	Weight        float64 `json:"weight" bson:"weight"`
-	OrginalPrice  float64 `json:"original_price" bson:"original_price"`
-	Discount      float64 `json:"discount" bson:"discount"`
-	ImagesPrimary string  `json:"images_primary" bson:"images_primary"`
+	ProductId     string     `json:"product_id" bson:"product_id"`
+	PriceId       string     `json:"price_id" bson:"price_id"`
+	ProductName   string     `json:"product_name" bson:"product_name"`
+	Unit          string     `json:"unit" bson:"unit"`
+	Quantity      int        `json:"quantity" bson:"quantity"`
+	Price         float64    `json:"price" bson:"price"`
+	Weight        float64    `json:"weight" bson:"weight"`
+	OrginalPrice  float64    `json:"original_price" bson:"original_price"`
+	Discount      float64    `json:"discount" bson:"discount"`
+	ImagesPrimary string     `json:"images_primary" bson:"images_primary"`
+	ExpiredDate   *time.Time `json:"expired_date" bson:"expired_date"`
 }
 
 type PriceRes struct {
@@ -179,8 +189,10 @@ func getPriceAmount(productId string, priceId string, ctx context.Context) int {
 
 func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 	var insufficientProducts []string
+	var expiredProducts []string
 
-	for _, p := range order.Product {
+	for i := range order.Product {
+		p := &order.Product[i]
 		result, err := database.GetProductTransaction(ctx, p.ProductId)
 		if err != nil {
 			slog.Error("Không tìm thấy sản phẩm", "product_id", p.ProductId, "err", err)
@@ -194,15 +206,34 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 		usedQuantity := p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx)
 		if available < usedQuantity {
 			insufficientProducts = append(insufficientProducts, p.ProductName)
+			continue
+		}
+
+		if p.ExpiredDate != nil && p.ExpiredDate.Before(GetCurrentTime()) {
+			expiredProducts = append(expiredProducts, p.ProductName)
+			order.Status = "canceled"
+			p.Discount = 0
+			p.Price = p.OrginalPrice
 		}
 	}
-	if len(insufficientProducts) > 0 {
+	if len(insufficientProducts) > 0 || len(expiredProducts) > 0 {
 		order.Status = "canceled"
-		message := fmt.Sprintf("Các sản phẩm sau không đủ hàng: %s", stringJoin(insufficientProducts, ", "))
+
+		var reasons []string
+		if len(insufficientProducts) > 0 {
+			reasons = append(reasons, fmt.Sprintf("không đủ hàng: %s", stringJoin(insufficientProducts, ", ")))
+		}
+		if len(expiredProducts) > 0 {
+			reasons = append(reasons, fmt.Sprintf("hết hạn giảm giá: %s", stringJoin(expiredProducts, ", ")))
+		}
+
+		message := "Đơn hàng bị hủy do " + stringJoin(reasons, "; ")
 		order.DeliveryInstruction = message
-		slog.Info("Đơn hàng bị hủy do không đủ tồn kho", "order_id", order.OrderId, "products", insufficientProducts)
+
+		slog.Info("Đơn hàng bị hủy", "order_id", order.OrderId, "lý do", message)
 		return fmt.Errorf("%s", message)
 	}
+
 	return nil
 }
 

@@ -12,8 +12,15 @@ def get_wkhtmltopdf_path():
         # Nếu là Windows thì lấy file .exe trong static
         return os.path.join(os.getcwd(), "app", "static", "wkhtmltopdf", "bin", "wkhtmltopdf.exe")
     else:
-        # Nếu là Linux thì assume wkhtmltopdf đã được cài global
-        return "/usr/bin/wkhtmltopdf"
+        default_path = "/usr/bin/wkhtmltopdf"
+        if os.path.exists(default_path):
+            return default_path
+        else:
+            # Dùng lệnh `which` để tìm path
+            path = shutil.which("wkhtmltopdf")
+            if path:
+                return path
+            raise FileNotFoundError("wkhtmltopdf không được cài đặt trên hệ thống.")
 
 def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
     try:
