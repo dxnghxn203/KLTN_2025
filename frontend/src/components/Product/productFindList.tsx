@@ -5,7 +5,7 @@ import shopping from "@/images/shopping.png";
 import Image from "next/image";
 import { useProduct } from "@/hooks/useProduct";
 import ProductFindCard from "./productFindCard";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import Loading from "@/app/loading";
 
@@ -14,11 +14,15 @@ export default function ProductFindList() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [isLoading, setLoading] = useState(true);
-  const [topN, setTopN] = useState(5);
+  const [topN, setTopN] = useState(10);
   const searchParams = useSearchParams();
   const keyword = searchParams.get("search");
+  const pathname = usePathname();
   useEffect(() => {
-    if (keyword) {
+    const shouldFetch =
+      typeof window !== "undefined" &&
+      sessionStorage.getItem("searchTriggered") === "true";
+    if (keyword && shouldFetch) {
       setLoading(true);
       fetchSearchProduct(
         {
@@ -32,6 +36,7 @@ export default function ProductFindList() {
         },
         () => {
           setLoading(false);
+          sessionStorage.removeItem("searchTriggered");
         }
       );
     }
@@ -121,18 +126,27 @@ export default function ProductFindList() {
             filteredProducts.length > 0 ? (
               <>
                 <div className="grid grid-cols-5 gap-3 max-md:grid-cols-1">
-                  {filteredProducts.map((productData: any, index: any) => (
+                  {(showAll
+                    ? filteredProducts
+                    : filteredProducts.slice(0, topN)
+                  ).map((productData: any, index: any) => (
                     <ProductFindCard key={index} products={productData} />
                   ))}
                 </div>
-                <div className="text-center mt-5">
-                  <button
-                    className="px-6 py-2 border border-[#0053E2] text-[#0053E2] rounded-lg transition"
-                    onClick={() => setShowAll(!showAll)}
-                  >
-                    {showAll ? "Thu gọn" : "Xem thêm"}
-                  </button>
-                </div>
+                {filteredProducts.length > topN && (
+                  <div className="text-center mt-5">
+                    <button
+                      className="px-6 py-2 text-[#0053E2] rounded-lg transition text-sm font-medium"
+                      onClick={() => setShowAll(!showAll)}
+                    >
+                      {showAll
+                        ? "Thu gọn"
+                        : `Xem thêm (${
+                            filteredProducts.length - topN
+                          } sản phẩm)`}
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-gray-500 py-10">

@@ -86,6 +86,10 @@ export default function Header() {
       }
     );
   }
+  const handleSuggestionClick = (term: string) => {
+    setSearch(term);
+    // nếu như chuyển
+  };
 
   const handleClear = () => {
     setSearch("");
@@ -160,6 +164,8 @@ export default function Header() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+
+    // If the cart dropdown menu is open and the click is outside the menu, close it.
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -252,13 +258,15 @@ export default function Header() {
             </div>
 
             <div
-              className="absolute left-1/2 -translate-x-1/2 w-full max-w-[580px] 
+              className="flex-grow px-4 max-w-[580px]
+ 
             "
               ref={searchRef}
             >
               <div className="flex items-center bg-white rounded-full px-4 py-2 h-[48px]">
                 <input
                   type="text"
+                  value={search}
                   placeholder="Nhập từ khóa hoặc sản phẩm..."
                   onChange={(e) => setSearch(e.target.value)}
                   onFocus={() => {
@@ -275,8 +283,7 @@ export default function Header() {
                       e.preventDefault();
                       if (search.trim() !== "") {
                         e.currentTarget.blur();
-                        setShowSuggestions(false);
-                        setSearchResultProduct(false);
+                        sessionStorage.setItem("searchTriggered", "true");
                         handleSearch();
                       }
                     }
@@ -313,7 +320,10 @@ export default function Header() {
                           key={index}
                           className="flex justify-between items-center text-blue-600 hover:underline mb-1"
                         >
-                          <div className="flex items-center gap-1 cursor-pointer">
+                          <div
+                            className="flex items-center gap-1 cursor-pointer"
+                            onClick={() => handleSuggestionClick(term)}
+                          >
                             <GoHistory
                               className="text-gray-400 mr-1"
                               size={16}
@@ -342,6 +352,7 @@ export default function Header() {
                         <button
                           key={i}
                           className="border px-3 py-1 rounded-full text-sm text-gray-800 hover:bg-gray-100"
+                          onClick={() => handleSuggestionClick(item)}
                         >
                           {item}
                         </button>
@@ -350,11 +361,6 @@ export default function Header() {
                   </div>
                 </div>
               )}
-              {/* {isLoading && (
-                <div className="flex justify-center mb-4">
-                  <div className="animate-spin border-2 border-blue-600 border-t-transparent w-6 h-6 rounded-full"></div>
-                </div>
-              )} */}
 
               {searchResultProduct && searchResult !== null && !isLoading && (
                 <div className="absolute top-[53px] bg-white shadow-lg rounded-lg z-50 w-full max-w-[580px] overflow-y-auto max-h-[500px] hide-scrollbar ">
@@ -398,7 +404,7 @@ export default function Header() {
                       )}
                     </>
                   ) : (
-                    <p className="text-center text-sm text-gray-500">
+                    <p className="text-center text-sm text-gray-500 p-4 w-full">
                       Không tìm thấy sản phẩm phù hợp.
                     </p>
                   )}
