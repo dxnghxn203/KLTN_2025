@@ -10,7 +10,7 @@ pipeline {
         DOCKERFILE_PATH = "${APP_PATH}/Dockerfile"
 
         GIT_REPO = 'https://github.com/dxnghxn203/KLTN_2025.git'
-        GIT_BRANCH = 'demo-deploy'
+        GIT_BRANCH = 'main'
 
         VAULT_ADDR = 'http://localhost:8200'
     }
@@ -69,10 +69,14 @@ pipeline {
                                     [vaultKey: 'RABBITMQ_VHOST', envVar: 'vault_RABBITMQ_VHOST'],
                                     [vaultKey: 'REDIS_HOST', envVar: 'vault_REDIS_HOST'],
                                     [vaultKey: 'REDIS_PASSWORD', envVar: 'vault_REDIS_PASSWORD'],
+                                    [vaultKey: 'REDIS_USER', envVar: 'vault_REDIS_USER'],
                                     [vaultKey: 'REDIS_PORT', envVar: 'vault_REDIS_PORT'],
                                     [vaultKey: 'SUPABASE_PASS', envVar: 'vault_SUPABASE_PASS'],
                                     [vaultKey: 'SUPABASE_key', envVar: 'vault_SUPABASE_key'],
-                                    [vaultKey: 'SUPABSE_URL', envVar: 'vault_SUPABSE_URL']
+                                    [vaultKey: 'SUPABSE_URL', envVar: 'vault_SUPABSE_URL'],
+                                    [vaultKey: 'OPENAI_API_KEY', envVar: 'vault_OPENAI_API_KEY'],
+                                    [vaultKey: 'OPENAI_BASE_URL', envVar: 'vault_OPENAI_BASE_URL'],
+                                    [vaultKey: 'LLM_MODEL_NAME', envVar: 'vault_LLM_MODEL_NAME']
                                 ]
                             ]
                         ]
@@ -106,10 +110,14 @@ pipeline {
                             echo "RABBITMQ_VHOST=\${vault_RABBITMQ_VHOST}" >> ${APP_PATH}/.env
                             echo "REDIS_HOST=\${vault_REDIS_HOST}" >> ${APP_PATH}/.env
                             echo "REDIS_PASSWORD=\${vault_REDIS_PASSWORD}" >> ${APP_PATH}/.env
+                            echo "REDIS_USER=\${vault_REDIS_USER}" >> ${APP_PATH}/.env
                             echo "REDIS_PORT=\${vault_REDIS_PORT}" >> ${APP_PATH}/.env
                             echo "SUPABASE_PASS=\${vault_SUPABASE_PASS}" >> ${APP_PATH}/.env
                             echo "SUPABASE_key=\${vault_SUPABASE_key}" >> ${APP_PATH}/.env
                             echo "SUPABSE_URL=\${vault_SUPABSE_URL}" >> ${APP_PATH}/.env
+                            echo "OPENAI_API_KEY=\${vault_OPENAI_API_KEY}" >> ${APP_PATH}/.env
+                            echo "OPENAI_BASE_URL=\${vault_OPENAI_BASE_URL}" >> ${APP_PATH}/.env
+                            echo "LLM_MODEL_NAME=\${vault_LLM_MODEL_NAME}" >> ${APP_PATH}/.env
 
                             # Hiển thị thông tin về file .env
                             echo "===== File .env đã được tạo ====="
@@ -151,6 +159,9 @@ pipeline {
                                 echo "SUPABASE_PASS=password" >> ${APP_PATH}/.env
                                 echo "SUPABASE_key=key" >> ${APP_PATH}/.env
                                 echo "SUPABSE_URL=https://yourproject.supabase.co" >> ${APP_PATH}/.env
+                                echo "OPENAI_API_KEY=" >> ${APP_PATH}/.env
+                                echo "OPENAI_BASE_URL=" >> ${APP_PATH}/.env
+                                echo "LLM_MODEL_NAME=" >> ${APP_PATH}/.env
 
                                 echo "Đã tạo file .env mẫu với các giá trị mặc định"
                             """
