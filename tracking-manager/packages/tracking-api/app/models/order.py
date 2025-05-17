@@ -188,6 +188,7 @@ async def process_order_products(products: List[ItemProductInReq])-> Tuple[List[
             original_price=price_info.original_price,
             discount=0 if is_expired else price_info.discount,
             images_primary=product_info.images_primary,
+            expired_date=price_info.expired_date
         )
         product_items.append(product_item)
 

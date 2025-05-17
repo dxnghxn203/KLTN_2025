@@ -29,7 +29,7 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 
 	err = models.CheckInventoryAndUpdateOrder(ctx, &orderRaw)
 	if err != nil {
-		slog.Warn("Inventory không đủ, vẫn tạo đơn với trạng thái canceled", "err", err)
+		slog.Warn("Lỗi sản phẩm, vẫn tạo đơn với trạng thái canceled", "err", err)
 	}
 
 	res, _id, err := orderRaw.Create(ctx)

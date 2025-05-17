@@ -17,6 +17,7 @@ class ItemProductReq(BaseModel):
     original_price: float = 0
     discount: float = 0
     images_primary: str = ""
+    expired_date: datetime = get_current_time()
 
 class ItemProductInReq(BaseModel):
     product_id: str = ""

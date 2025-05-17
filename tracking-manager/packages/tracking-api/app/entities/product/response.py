@@ -16,6 +16,7 @@ class ItemProductRes(BaseModel):
     original_price: float = 0
     discount: float = 0
     images_primary: Optional[Union[str, None]] = None
+    expired_date: datetime = get_current_time()
 
 class ItemPriceDBRes(BaseModel):
     price_id: Optional[Union[str, None]] = None

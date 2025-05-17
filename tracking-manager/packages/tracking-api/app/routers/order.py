@@ -57,12 +57,6 @@ async def check_order(item: ItemOrderInReq, session: str= None, token: str = Dep
             user_id = user_info.id
             is_session_user = False
 
-        if is_session_user and item.payment_type == PAYMENT_COD:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Vui lòng đăng nhập để sử dụng phương thức thanh toán COD"
-            )
-
         return await order.check_order(item, user_id)
     except response.JsonException as je:
         raise je
