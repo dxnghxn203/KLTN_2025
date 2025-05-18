@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
 import {IoCloseOutline} from "react-icons/io5";
 import {getSimilarProducts} from "@/services/productService";
-import ProductCardInCart from "@/components/Cart/ProductCardInCart";
+import ProductCardInCart from "@/components/Cart/productCardInCart";
 import clsx from "clsx";
 import {BsCart} from "react-icons/bs";
 
