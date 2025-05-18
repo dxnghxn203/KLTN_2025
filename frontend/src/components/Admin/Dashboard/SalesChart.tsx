@@ -6,11 +6,6 @@ const monthlySalesData: Record<string, { day: string; value: number }[]> = {
     { day: "01", value: 8000 },
     { day: "02", value: 12500 },
     { day: "03", value: 7500 },
-  ],
-  "2025-05": [
-    { day: "01", value: 8000 },
-    { day: "02", value: 12500 },
-    { day: "03", value: 7500 },
     { day: "04", value: 7700 },
     { day: "05", value: 11000 },
     { day: "06", value: 15000 },
@@ -21,6 +16,11 @@ const monthlySalesData: Record<string, { day: string; value: number }[]> = {
     { day: "11", value: 13000 },
     { day: "12", value: 25000 },
     // ...
+  ],
+  "2025-05": [
+    { day: "01", value: 8000 },
+    { day: "02", value: 12500 },
+    { day: "03", value: 7500 },
   ],
 };
 

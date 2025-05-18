@@ -22,7 +22,7 @@ const Sidebar = () => {
       await logout(
         "user",
         () => {
-          toast.showToast("Đăng xuất thành công", "success");
+          // toast.showToast("Đăng xuất thành công", "success");
         },
         (error) => {
           toast.showToast(error, "error");

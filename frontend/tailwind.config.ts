@@ -8,8 +8,7 @@ const config: Config = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   prefix: '',
-  theme: {
-    container: {
+  theme: { container: {
       center: true,
       padding: '2rem',
       screens: {

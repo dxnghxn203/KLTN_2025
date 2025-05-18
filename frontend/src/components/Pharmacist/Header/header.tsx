@@ -29,7 +29,7 @@ const Header = ({
       logout(
         "pharmacist",
         () => {
-          toast.showToast("Đăng xuất thành công", "success");
+          // toast.showToast("Đăng xuất thành công", "success");
         },
         (error) => {
           toast.showToast(error, "error");

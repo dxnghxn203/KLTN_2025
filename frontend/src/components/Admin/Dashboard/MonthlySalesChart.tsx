@@ -81,7 +81,7 @@ export default function MonthlySalesChart() {
         </div>
       </div>
 
-      <div className="flex items-end justify-between h-48 relative">
+      <div className="flex items-end justify-between h-full pb-12">
         {salesData.map((item, i) => {
           const heightPercent = (item.value / maxValue) * 100;
           const isHovered = hoverIndex === i;

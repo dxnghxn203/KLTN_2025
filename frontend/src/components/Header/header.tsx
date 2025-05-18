@@ -176,7 +176,7 @@ export default function Header() {
     logout(
       "user",
       () => {
-        toast.showToast("Đăng xuất thành công", "success");
+        // toast.showToast("Đăng xuất thành công", "success");
       },
       (error: string) => {
         console.error("Logout error:", error);
@@ -257,12 +257,7 @@ export default function Header() {
               </Link>
             </div>
 
-            <div
-              className="flex-grow px-4 max-w-[580px]
- 
-            "
-              ref={searchRef}
-            >
+            <div className="flex-grow max-w-[580px]" ref={searchRef}>
               <div className="flex items-center bg-white rounded-full px-4 py-2 h-[48px]">
                 <input
                   type="text"
@@ -300,7 +295,7 @@ export default function Header() {
               </div>
 
               {showSuggestions && (
-                <div className="absolute top-[53px] bg-white shadow-lg rounded-lg z-50 p-4 w-full max-w-[580px]">
+                <div className="absolute bg-white shadow-lg rounded-lg z-50 p-4 w-full max-w-[580px] mt-1">
                   {/* Lịch sử tìm kiếm */}
                   <div>
                     <div className="flex justify-between items-center mb-2 font-medium text-sm">
@@ -363,7 +358,7 @@ export default function Header() {
               )}
 
               {searchResultProduct && searchResult !== null && !isLoading && (
-                <div className="absolute top-[53px] bg-white shadow-lg rounded-lg z-50 w-full max-w-[580px] overflow-y-auto max-h-[500px] hide-scrollbar ">
+                <div className="absolute bg-white shadow-lg rounded-lg z-50 w-full max-w-[580px] overflow-y-auto max-h-[500px] hide-scrollbar mt-1 ">
                   {searchResult.length > 0 ? (
                     <>
                       {searchResult

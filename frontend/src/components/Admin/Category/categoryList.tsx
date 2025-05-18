@@ -83,7 +83,7 @@ export default function QuanLyDanhMuc() {
               </p>
 
               {/* Danh mục cấp 1 */}
-              <p className="flex items-center justify-center gap-1 pt-4">
+              <p className="flex items-center justify-center gap-1">
                 <span className="text-xl text-[#039855] font-bold">
                   {categoryMain?.sub_category?.length || 0}
                 </span>

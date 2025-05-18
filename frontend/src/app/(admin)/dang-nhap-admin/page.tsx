@@ -168,7 +168,7 @@ export default function LoginPage() {
 
             <button
               disabled={isLoading}
-              className={`w-full text-white text-sm font-semibold py-3 px-4 rounded-lg transition duration-300 ${
+              className={`w-full text-white text-sm font-semibold py-3 px-4 transition duration-300 rounded-lg ${
                 isLoading
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-[#0053E2] hover:bg-blue-600"
@@ -178,7 +178,7 @@ export default function LoginPage() {
               {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
             </button>
 
-            <div className="mt-4 text-center text-sm text-gray-600">
+            <div className="mt-4 text-center text-sm text-gray-600 ">
               Bạn chưa có tài khoản?{" "}
               <a
                 href="/dang-ky-admin"
