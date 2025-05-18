@@ -1,4 +1,4 @@
-import { call, put, takeLatest } from 'redux-saga/effects';
+import {call, put, takeLatest} from 'redux-saga/effects';
 import * as productService from '@/services/productService';
 import {
     fetchProductBySlugStart,
@@ -52,7 +52,7 @@ import {
     fetchAddMediaProductStart,
     fetchAddMediaProductSuccess,
 
-    fetchUpdateCertificateFileProductFailed,    
+    fetchUpdateCertificateFileProductFailed,
     fetchUpdateCertificateFileProductStart,
     fetchUpdateCertificateFileProductSuccess,
     fetchUpdateImagesPrimaryProductFailed,
@@ -81,23 +81,25 @@ import {
     fetchDeleteImportProductStart,
     fetchDeleteImportProductSuccess,
 
-    fetchProductDiscountFailed, 
+    fetchProductDiscountFailed,
     fetchProductDiscountStart,
     fetchProductDiscountSuccess,
 } from './productSlice';
-import { getSession, getToken, setSession } from '@/utils/cookie';
+import {getSession, getToken, setSession} from '@/utils/cookie';
 
 // Fetch product Featured
 function* fetchProductFeatured(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             mainCategory,
             subCategory,
             childCategory,
             top_n,
-            onSuccess = () => { },
-            onFailed = () => { }
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            }
         } = payload;
 
         interface ProductData {
@@ -106,9 +108,9 @@ function* fetchProductFeatured(action: any): Generator<any, void, any> {
             child_category_id?: string | null;
             top_n?: number | null;
         }
-        
+
         const data: ProductData = {}
-        
+
         if (mainCategory) {
             data.main_category_id = mainCategory;
         }
@@ -132,21 +134,24 @@ function* fetchProductFeatured(action: any): Generator<any, void, any> {
         yield put(fetchAllProductGetProductFeaturedFailed());
     }
 }
+
 // Fetch product by slug
 function* fetchProductBySlug(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             slug,
-            onSucces = () => { },
-            onFailed = () => { }
+            onSucces = () => {
+            },
+            onFailed = () => {
+            }
         } = payload;
-        const token: any= getToken();
+        const token: any = getToken();
         const session = getSession();
         const product = token ?
             yield call(productService.getProductBySlug, slug) :
             yield call(productService.getProductBySlugSession, slug, session)
-            ;
+        ;
         if (product?.status_code === 200) {
             onSucces();
             yield put(fetchProductBySlugSuccess(product?.data?.product));
@@ -166,33 +171,34 @@ function* fetchProductBySlug(action: any): Generator<any, void, any> {
 // Add product reviewed
 function* fetchGetProductGetRecentlyViewed(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const token: any = getToken();
         const session = getSession();
 
-        const product:any = token ?
+        const product: any = token ?
             yield call(productService.getProductReviewToken) :
             yield call(productService.getProductReviewSession, session)
-            ;
+        ;
 
         if (product?.status_code === 200) {
             yield put(fetchAllProductGetRecentlyViewedSuccess(product?.data));
             return;
         }
         yield put(fetchAllProductGetRecentlyViewedFailed());
-    }
-    catch (error) {
+    } catch (error) {
         yield put(fetchAllProductGetRecentlyViewedFailed());
     }
 }
 
 function* handlerAddProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             form,
-            onsucces = () => { },
-            onfailed = () => { }
+            onsucces = () => {
+            },
+            onfailed = () => {
+            }
         } = payload;
 
         const product = yield call(productService.addProduct, form);
@@ -204,17 +210,16 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
         }
         // console.log("test",product.message);
         onfailed(product.message);
-        
+
         yield put(fetchAddProductFailed(
             product.message || "Failed to add product"
-
         ));
 
     } catch (error) {
         yield put(fetchAddProductFailed(
             "Failed to add product"
         ));
-        
+
         // console.log("final",error);
 
     }
@@ -222,7 +227,7 @@ function* handlerAddProduct(action: any): Generator<any, void, any> {
 
 function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             page,
             page_size
@@ -244,7 +249,7 @@ function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
 // Fetch all product top selling
 function* handlerGetAllProductTopSelling(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const product = yield call(productService.getProductTopSelling, payload);
         if (product.status_code === 200) {
             yield put(fetchAllProductTopSellingSuccess(product.data));
@@ -259,15 +264,14 @@ function* handlerGetAllProductTopSelling(action: any): Generator<any, void, any>
 // Fetch all product related
 function* handlerGetAllProductRelated(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const product = yield call(productService.getProductsRelated, payload);
         if (product.status_code === 200) {
             yield put(fetchAllProductRelatedSuccess(product.data));
             return;
         }
         yield put(fetchAllProductRelatedFailed("Product not found"));
-    }
-    catch (error) {
+    } catch (error) {
         yield put(fetchAllProductRelatedFailed("Failed to fetch product by slug"));
     }
 }
@@ -275,8 +279,8 @@ function* handlerGetAllProductRelated(action: any): Generator<any, void, any> {
 // Fetch all product best deal
 function* handlerGetAllProductBestDeal(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
-        const product = yield call(productService.getProductsBestDeal, payload);
+        const {payload} = action;
+        const product = yield call(productService.getDealForYou, payload);
         if (product.status_code === 200) {
             yield put(fetchAllProductBestDealSuccess(product.data));
             return;
@@ -290,12 +294,14 @@ function* handlerGetAllProductBestDeal(action: any): Generator<any, void, any> {
 // Fetch delete product
 function* handlerDeleteProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
 
         const {
             product_id,
-            onSuccess = (message: any) => {},
-            onFailure = (message: any) => {}
+            onSuccess = (message: any) => {
+            },
+            onFailure = (message: any) => {
+            }
         } = payload;
         const product = yield call(productService.deleteProduct, product_id);
         if (product.status_code === 200) {
@@ -313,7 +319,7 @@ function* handlerDeleteProduct(action: any): Generator<any, void, any> {
 
 function* getAllProductApproved(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const product = yield call(productService.getAllProductApproved);
         if (product.status_code === 200) {
             yield put(fetchProductApprovedSuccess(product.data));
@@ -325,15 +331,17 @@ function* getAllProductApproved(action: any): Generator<any, void, any> {
     }
 }
 
-function * handleApproveProduct(action: any): Generator<any, void, any> {
+function* handleApproveProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             product_id,
             rejected_note,
             is_approved,
-            onSuccess = (message: any) => {},
-            onFailure = (message: any) => {}
+            onSuccess = (message: any) => {
+            },
+            onFailure = (message: any) => {
+            }
         } = payload;
         const body = {
             product_id,
@@ -356,81 +364,84 @@ function * handleApproveProduct(action: any): Generator<any, void, any> {
 
 function* handleUpdateProduct(action: any): Generator<any, void, any> {
     try {
-      const { payload } = action;
-      const {
-        product_id,
-        product_name,
-        name_primary,
-        prices, // array of price objects
-        inventory,
-        slug,
-        description,
-        full_descriptions,
-        category,
-        origin,
-        ingredients, // array of ingredient objects
-        uses,
-        dosage,
-        side_effects,
-        precautions,
-        storage,
-        manufacturer,
-        dosage_form,
-        brand,
-        prescription_required,
-        registration_number,
-        onSuccess = () => {},
-        onFailed = () => {},
-      } = payload;
-  
-      const body = {
-        product_id,
-        product_name,
-        name_primary,
-        prices,
-        inventory,
-        slug,
-        description,
-        full_descriptions,
-        category,
-        origin,
-        ingredients,
-        uses,
-        dosage,
-        side_effects,
-        precautions,
-        storage,
-        manufacturer,
-        dosage_form,
-        brand,
-        prescription_required,
-        registration_number,
-      };
-  
-      const product = yield call(productService.updateProduct, body);
-      if (product.status_code === 200) {
-        onSuccess(product.message);
-        yield put(fetchUpdateProductSuccess(product.message));
-        return;
-      }
-  
-      onFailed(product.message);
-      yield put(fetchUpdateProductFailed(product.message || 'Failed to update product'));
-    } catch (error) {
-      yield put(fetchUpdateProductFailed('Failed to update product'));
-    }
-  }
-
-  function* handleAddMediaProduct(action: any): Generator<any, void, any> {
-    try {
-        const { payload } = action;
+        const {payload} = action;
         const {
-            formData,
-            onSuccess = () => {},
-            onFailed = () => {},
+            product_id,
+            product_name,
+            name_primary,
+            prices, // array of price objects
+            inventory,
+            slug,
+            description,
+            full_descriptions,
+            category,
+            origin,
+            ingredients, // array of ingredient objects
+            uses,
+            dosage,
+            side_effects,
+            precautions,
+            storage,
+            manufacturer,
+            dosage_form,
+            brand,
+            prescription_required,
+            registration_number,
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
 
-        
+        const body = {
+            product_id,
+            product_name,
+            name_primary,
+            prices,
+            inventory,
+            slug,
+            description,
+            full_descriptions,
+            category,
+            origin,
+            ingredients,
+            uses,
+            dosage,
+            side_effects,
+            precautions,
+            storage,
+            manufacturer,
+            dosage_form,
+            brand,
+            prescription_required,
+            registration_number,
+        };
+
+        const product = yield call(productService.updateProduct, body);
+        if (product.status_code === 200) {
+            onSuccess(product.message);
+            yield put(fetchUpdateProductSuccess(product.message));
+            return;
+        }
+
+        onFailed(product.message);
+        yield put(fetchUpdateProductFailed(product.message || 'Failed to update product'));
+    } catch (error) {
+        yield put(fetchUpdateProductFailed('Failed to update product'));
+    }
+}
+
+function* handleAddMediaProduct(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            formData,
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
+        } = payload;
+
 
         const product = yield call(productService.addMediaProduct, formData);
         if (product.status_code === 200) {
@@ -444,19 +455,21 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchAddMediaProductFailed('Failed to add media product'));
     }
-  }
+}
 
-  function* handleUpdateCertificateFileProduct(action: any): Generator<any, void, any> {
+function* handleUpdateCertificateFileProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             product_id,
             file,
-            onSuccess = () => {},
-            onFailed = () => {},
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
-        
-        const product = yield call(productService.updateCertificateFileProduct,product_id, file);
+
+        const product = yield call(productService.updateCertificateFileProduct, product_id, file);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchUpdateCertificateFileProductSuccess(product.message));
@@ -468,20 +481,22 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchUpdateCertificateFileProductFailed('Failed to update certificate file product'));
     }
-  }
-  function* handleUpdateImagesPrimaryProduct(action: any): Generator<any, void, any> {
+}
+
+function* handleUpdateImagesPrimaryProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             product_id,
             file,
-            onSuccess = () => {},
-            onFailed = () => {},
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
 
-       
 
-        const product = yield call(productService.updateImagesPrimaryProduct,product_id, file);
+        const product = yield call(productService.updateImagesPrimaryProduct, product_id, file);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchUpdateImagesPrimaryProductSuccess(product.message));
@@ -493,21 +508,22 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchUpdateImagesPrimaryProductFailed('Failed to update images primary product'));
     }
-  }
+}
 
-  function* handleUpdateImagesProduct(action: any): Generator<any, void, any> {
+function* handleUpdateImagesProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             product_id,
             files,
-            onSuccess = () => {},
-            onFailed = () => {},
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
 
-        
 
-        const product = yield call(productService.updateImagesProduct,product_id, files);
+        const product = yield call(productService.updateImagesProduct, product_id, files);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchUpdateImagesProductSuccess(product.message));
@@ -519,17 +535,19 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchUpdateImagesProductFailed('Failed to update images product'));
     }
-  }
+}
 
-  function* searchProduct(action: any): Generator<any, void, any> {
+function* searchProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             query,
             page,
             page_size,
-            onSuccess = () => {},
-            onFailed = () => {},
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
 
         const product = yield call(productService.searchProduct, query, page, page_size);
@@ -545,14 +563,16 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchSearchProductFailed('Failed to update images product'));
     }
-  }
+}
 
-  function* handleGetAllBrand(action: any): Generator<any, void, any> {
+function* handleGetAllBrand(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
-            onSuccess = () => {},
-            onFailed = () => {},
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
         console.log("payload", payload);
 
@@ -568,16 +588,18 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchAllBrandFailed('Failed to update images product'));
     }
-  }
+}
 
-  function* handleImportFileAddProduct(action: any): Generator<any, void, any> {
+function* handleImportFileAddProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
-            
+
             formData,
-            onSuccess = () => {},
-            onFailed = () => {},
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
 
         console.log("saga", formData)
@@ -594,16 +616,18 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchImportFileAddProductFailed('Failed to update images product'));
     }
-  }
+}
 
-  function* fetchGetAllImportFileAddProduct(action: any): Generator<any, void, any> {
+function* fetchGetAllImportFileAddProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
-            
-            onSuccess = () => {},
-            onFailed = () => {},
-            
+
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
+
         } = payload;
 
         const product = yield call(productService.getAllImportFileAddProduct);
@@ -615,17 +639,19 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchGetAllImportFileAddProductFailed("Failed to fetch product by slug"));
     }
-  }
+}
 
-  function* handleDeleteImportFileAddProduct(action: any): Generator<any, void, any> {
+function* handleDeleteImportFileAddProduct(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
-            import_id ,
-            onSuccess = () => {},
-            onFailed = () => {},
+            import_id,
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
-        const product = yield call(productService.deleteImportFileProduct, import_id );
+        const product = yield call(productService.deleteImportFileProduct, import_id);
         if (product.status_code === 200) {
             onSuccess(product.message);
             yield put(fetchDeleteImportProductSuccess(product.message));
@@ -636,11 +662,11 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchDeleteImportProductFailed('Failed to update images product'));
     }
-  }
+}
 
-  function* fetchProductDiscount(action: any): Generator<any, void, any> {
+function* fetchProductDiscount(action: any): Generator<any, void, any> {
     try {
-        const { payload } = action;
+        const {payload} = action;
         const {
             page,
             page_size,
@@ -656,11 +682,7 @@ function* handleUpdateProduct(action: any): Generator<any, void, any> {
     } catch (error) {
         yield put(fetchProductDiscountFailed('Failed to update images product'));
     }
-  }
-
-
-  
-  
+}
 
 
 export function* productSaga() {

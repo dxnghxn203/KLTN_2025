@@ -31,7 +31,7 @@ import {
     fetchGetAllImportFileAddProductStart,
     fetchDeleteImportProductStart,
     selectAllProductDiscount,
-    fetchProductDiscountStart,
+    fetchProductDiscountStart, selectProductBestDeal,
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -44,7 +44,7 @@ export function useProduct() {
     const productRelated = useSelector(selectProductRelated);
     const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
     const productGetFeatured = useSelector(selectProductRelated);
-    const productBestDeal = useSelector(selectProductTopSelling);
+    const productBestDeal = useSelector(selectProductBestDeal);
     const productApproved = useSelector(selectProductApproved);
     const searchResult = useSelector(selectSearchProduct);
     const allBrands = useSelector(selectAllBrands);
@@ -120,7 +120,7 @@ export function useProduct() {
 
     const fetchProductBestDeal = () => {
         dispatch(fetchAllProductBestDealStart({
-            top_n: top_n
+            top_n: 5
         }))
     }
 
@@ -265,15 +265,14 @@ export function useProduct() {
                 onFailure: onFailed
             })
         );
-    }   
+    }
     const fetchGetImportFileAddProduct = async (
-        
         onSuccess: (message: any) => void,
         onFailed: (message: any) => void
     ) => {
         dispatch(
             fetchGetAllImportFileAddProductStart({
-              
+
                 onSuccess,
                 onFailure: onFailed
             })
@@ -287,25 +286,21 @@ export function useProduct() {
     ) => {
         dispatch(
             fetchDeleteImportProductStart({
-                import_id : params,
+                import_id: params,
                 onSuccess,
                 onFailure: onFailed
             })
         );
     }
-    const fetchGetProductDiscount = async (
-    ) => {
+    const fetchGetProductDiscount = async () => {
         dispatch(
             fetchProductDiscountStart({
-            page: page,
-            page_size: pageSize, 
-                
+                page: page,
+                page_size: pageSize,
+
             })
         );
     }
-
-    
-    
 
 
     return {

@@ -11,6 +11,19 @@ export const getProductBySlug = async (slug: string) => {
 
 }
 
+export const getDealForYou = async (params: any) => {
+    try {
+        const response: any = await axiosClient.get(`${process.env.NEXT_PUBLIC_RECOMMENDATION_API}/v1/deals/?top_n=${params.top_n}`);
+        return response;
+    } catch (error: any) {
+        return {
+            status: 500,
+            message: error.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
 export const getProductTopSelling = async (params: any) => {
     try {
         const response: any = await axiosClient.get(`/v1/products/top-selling`, {params: {params}});
@@ -78,7 +91,7 @@ export const getProductBySlugSession = async (slug: any, session_id: any) => {
 
 export const getProductsRelated = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/get-relate/`, {params});
+        const response: any = await axiosClient.get(`${process.env.NEXT_PUBLIC_RECOMMENDATION_API}/v1/related/${params.product_id}?top_n=${params.top_n}`);
         return response;
     } catch (error: any) {
         return {
@@ -198,7 +211,7 @@ export const getAvailableProduct = async (product_id: string, price_id: string) 
 
 export const getSimilarProducts = async (product_id: any, pageSize: number = 10, page: number = 1) => {
     try {
-        const response: any = await axiosClient.get(`https://recommendation.medicaretech.io.vn/v1/related/${product_id}`);
+        const response: any = await axiosClient.get(`${process.env.NEXT_PUBLIC_RECOMMENDATION_API}/v1/related/${product_id}`);
         if (response.status_code === 200 && Array.isArray(response.data)) {
             const startIndex = (page - 1) * pageSize;
             const endIndex = startIndex + pageSize;
