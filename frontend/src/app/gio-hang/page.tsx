@@ -5,7 +5,7 @@ import ProductsViewedList from "@/components/Product/productsViewedList";
 import {useCart} from "@/hooks/useCart";
 import {ChevronLeft} from "lucide-react";
 import Link from "next/link";
-import React, {use, useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState, useRef} from "react";
 import Loading from "../loading";
 import Checkout from "@/components/Checkout/checkout";
 import {useOrder} from "@/hooks/useOrder";
@@ -16,8 +16,10 @@ import OutOfStock from "@/components/Checkout/outOfStock";
 
 export default function Cart() {
     const {cart, getProductFromCart} = useCart();
-
     const [loadingGetCart, setLoadingGetCart] = useState(false);
+
+    // Reference to ShoppingCart component to access its methods
+    const shoppingCartRef = useRef<any>(null);
 
     const fetchingCart = () => {
         setLoadingGetCart(true);
@@ -49,6 +51,20 @@ export default function Cart() {
     const [isOutOfStock, setIsOutOfStock] = useState(false);
     const [productsOutOfStock, setProductsOutOfStock] = useState<any>([])
     const [isLoadingCheckFee, setIsLoadingCheckFee] = useState(false);
+
+    // Function to trigger showing similar products through the ShoppingCart component
+    const handleShowSimilarProducts = (product: any) => {
+        // Close the OutOfStock dialog
+        setIsOutOfStock(false);
+
+        // Use a small timeout to ensure proper render sequence
+        setTimeout(() => {
+            // Access the ShoppingCart's method to show similar products
+            if (shoppingCartRef.current && shoppingCartRef.current.handleShowSimilarProducts) {
+                shoppingCartRef.current.handleShowSimilarProducts(product);
+            }
+        }, 100);
+    };
 
     const validateData = () => {
         if (!data || !data?.ordererInfo || !data?.addressInfo) {
@@ -168,6 +184,10 @@ export default function Cart() {
         setImageQR(null);
     };
 
+    // Current date and user information
+    const currentDateTime = "2025-05-17 17:30:06";
+    const currentUser = "dxnghxn203";
+
     return (
         <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
             {isQR && orderID && imageQR && productForCheckOut ? (
@@ -209,6 +229,7 @@ export default function Cart() {
                                     <>
                                         {cart && cart?.length ? (
                                             <ShoppingCart
+                                                ref={shoppingCartRef}
                                                 cart={cart}
                                                 setIsCheckout={setIsCheckout}
                                                 setProductForCheckOut={setProductForCheckOut}
@@ -231,23 +252,23 @@ export default function Cart() {
                     )}
                 </>
             )}
-            {
-                isOutOfStock && (
-                    OutOfStock(
-                        {
-                            products: productsOutOfStock,
-                            onContinue: () => {
-                                setIsOutOfStock(false);
-                                setIsCheckout(true);
-                                setProductForCheckOut(productsOutOfStock?.availableProducts);
-                            },
-                            closeDialog: (isClose: boolean) => {
-                                setIsOutOfStock(isClose);
-                            }
-                        }
-                    )
-                )
-            }
+
+            {/* OutOfStock component */}
+            {isOutOfStock && (
+                <OutOfStock
+                    products={productsOutOfStock}
+                    onContinue={() => {
+                        setIsOutOfStock(false);
+                        setIsCheckout(true);
+                        setProductForCheckOut(productsOutOfStock?.availableProducts);
+                    }}
+                    closeDialog={(isClose: boolean) => {
+                        setIsOutOfStock(isClose);
+                    }}
+                    onShowSimilarProducts={handleShowSimilarProducts}
+                />
+            )}
+
             {isLoadingCheckFee && <LoaingCenter/>}
         </div>
     );

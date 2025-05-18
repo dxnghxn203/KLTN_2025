@@ -174,6 +174,27 @@ export const getAllProductApproved = async () => {
         }
     }
 }
+export const getAvailableProduct = async (product_id: string, price_id: string) => {
+    try {
+        const response: any = await axiosClient.get("/v1/products/getAvailableQuantity", {
+            params: {
+                product_id,
+                price_id
+            }
+        });
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
 
 export const getSimilarProducts = async (product_id: any, pageSize: number = 10, page: number = 1) => {
     try {

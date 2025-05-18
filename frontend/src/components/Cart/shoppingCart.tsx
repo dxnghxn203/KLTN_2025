@@ -1,5 +1,5 @@
 "use client";
-import React, {useState, useMemo, useEffect, useRef} from "react";
+import React, {useState, useMemo, useEffect, useRef, forwardRef, useImperativeHandle} from "react";
 import {ImBin} from "react-icons/im";
 import {FiSearch} from "react-icons/fi";
 import Image from "next/image";
@@ -9,14 +9,16 @@ import SimilarProductsList from "@/components/Cart/similarProductsList";
 import {useCart} from "@/hooks/useCart";
 import {useToast} from "@/providers/toastProvider";
 import {getPriceFromProduct} from "@/utils/price";
+import {getAvailableProduct} from "@/services/productService";
 import clsx from "clsx";
 
-const ShoppingCart = ({
-                          cart,
-                          setIsCheckout,
-                          setProductForCheckOut,
-                          setPriceOrder,
-                      }: any) => {
+// Change to forwardRef to expose methods to parent
+const ShoppingCart = forwardRef(({
+                                     cart,
+                                     setIsCheckout,
+                                     setProductForCheckOut,
+                                     setPriceOrder,
+                                 }: any, ref) => {
     const [selectedProducts, setSelectedProducts] = useState<
         { product_id: string; price_id: string }[]
     >([]);
@@ -24,6 +26,9 @@ const ShoppingCart = ({
     const [isSimilarProductsOpen, setIsSimilarProductsOpen] = useState(false);
     const [currentProductForSimilar, setCurrentProductForSimilar] = useState<any>(null);
     const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
+    // Add state for available quantities
+    const [availableQuantities, setAvailableQuantities] = useState<{ [key: string]: number | null }>({});
+    const [loadingQuantities, setLoadingQuantities] = useState<{ [key: string]: boolean }>({});
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(
         null
@@ -38,6 +43,14 @@ const ShoppingCart = ({
     const [loadingGetCart, setLoadingGetCart] = useState(false);
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+    // Expose methods to parent component
+    useImperativeHandle(ref, () => ({
+        handleShowSimilarProducts: (product: any) => {
+            setCurrentProductForSimilar(product);
+            setIsSimilarProductsOpen(true);
+        }
+    }));
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -54,6 +67,39 @@ const ShoppingCart = ({
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    // Fetch available quantities when cart changes
+    useEffect(() => {
+        if (cart && cart.length > 0) {
+            cart.forEach((item: any) => {
+                fetchAvailableQuantity(item.product.product_id, item.price_id);
+            });
+        }
+    }, [cart]);
+
+    const fetchAvailableQuantity = async (productId: string, priceId: string) => {
+        const key = `${productId}-${priceId}`;
+
+        // Skip if already loading or if we already have the data
+        if (loadingQuantities[key]) return;
+
+        setLoadingQuantities(prev => ({...prev, [key]: true}));
+
+        try {
+            const response = await getAvailableProduct(productId, priceId);
+
+            if (response.status_code === 200 && response.data !== null) {
+                setAvailableQuantities(prev => ({...prev, [key]: response.data}));
+            } else {
+                setAvailableQuantities(prev => ({...prev, [key]: null}));
+            }
+        } catch (error) {
+            console.error("Error fetching available quantity:", error);
+            setAvailableQuantities(prev => ({...prev, [key]: null}));
+        } finally {
+            setLoadingQuantities(prev => ({...prev, [key]: false}));
+        }
+    };
 
     const handleDebouncedQuantityChange = (
         productId: string,
@@ -227,6 +273,9 @@ const ShoppingCart = ({
         quantity: any,
         old_unit: string
     ) => {
+        // When changing unit, fetch the available quantity for the new unit
+        fetchAvailableQuantity(id, newUnit);
+
         addProductTocart(
             id,
             newUnit,
@@ -278,6 +327,8 @@ const ShoppingCart = ({
         const price = getPrice(product.product, price_id);
         const productId = product.product.product_id;
         const dropdownKey = `${productId}-${price_id}`;
+        const availableQuantity = availableQuantities[dropdownKey];
+        const isLoadingQuantity = loadingQuantities[dropdownKey];
 
         return (
             <>
@@ -344,8 +395,8 @@ const ShoppingCart = ({
                     </button>
                 </div>
 
-                {/* Custom Unit Dropdown */}
-                <div className="w-[12%] text-center relative"
+                {/* Custom Unit Dropdown with Available Quantity */}
+                <div className="w-[12%] text-center relative flex flex-col"
                      ref={(el) => {
                          dropdownRefs.current[dropdownKey] = el;
                      }}>
@@ -361,10 +412,21 @@ const ShoppingCart = ({
                         </svg>
                     </div>
 
+                    {/* Available quantity display */}
+                    {isLoadingQuantity ? (
+                        <div className="text-xs text-gray-500 mt-1">Đang tải...</div>
+                    ) : availableQuantity !== null && availableQuantity !== undefined ? (
+                        <div className="text-xs text-gray-500 mt-1">
+                            <span className={availableQuantity < 10 ? "text-orange-500 font-medium" : ""}>
+                                Còn {availableQuantity} {price?.unit}
+                            </span>
+                        </div>
+                    ) : null}
+
                     {/* Dropdown menu */}
                     {openDropdowns[dropdownKey] && (
                         <div
-                            className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
+                            className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto top-9">
                             {product?.product?.prices && product?.product?.prices.map((priceOption: any) => (
                                 <div
                                     key={priceOption.price_id}
@@ -548,31 +610,35 @@ const ShoppingCart = ({
                         }}
                     />
                 )}
-
-                {/* Similar Products Modal */}
-                {isSimilarProductsOpen && currentProductForSimilar && (
-                    <SimilarProductsList
-                        product={currentProductForSimilar.product}
-                        onClose={() => setIsSimilarProductsOpen(false)}
-                        addToCart={(productId, priceId, quantity) => {
-                            addProductTocart(
-                                productId,
-                                priceId,
-                                quantity,
-                                () => {
-                                    toast.showToast("Thêm vào giỏ hàng thành công", "success");
-                                    getCart();
-                                },
-                                (error: string) => {
-                                    toast.showToast("Thêm vào giỏ hàng thất bại", "error");
-                                }
-                            );
-                        }}
-                    />
-                )}
             </div>
+
+            {/* Similar Products Modal */}
+            {isSimilarProductsOpen && currentProductForSimilar && (
+                <SimilarProductsList
+                    product={currentProductForSimilar}
+                    onClose={() => setIsSimilarProductsOpen(false)}
+                    addToCart={(productId, priceId, quantity) => {
+                        addProductTocart(
+                            productId,
+                            priceId,
+                            quantity,
+                            () => {
+                                toast.showToast("Thêm vào giỏ hàng thành công", "success");
+                                getCart();
+                                setIsSimilarProductsOpen(false);
+                            },
+                            (error: string) => {
+                                toast.showToast("Thêm vào giỏ hàng thất bại", "error");
+                            }
+                        );
+                    }}
+                />
+            )}
         </>
     );
-};
+});
+
+// Add display name for React DevTools
+ShoppingCart.displayName = "ShoppingCart";
 
 export default ShoppingCart;
