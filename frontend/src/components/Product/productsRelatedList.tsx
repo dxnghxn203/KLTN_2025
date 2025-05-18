@@ -24,9 +24,11 @@ const ProductsRelatedList = ({ product }: any) => {
       <div className="self-center mt-5 w-full max-md:max-w-full">
         <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
           {productRelated &&
-            productRelated.map((product: any, index: any) => (
-              <ProductsViewCard key={index} product={product} />
-            ))}
+            productRelated
+              .slice(0, 5)
+              .map((product: any, index: any) => (
+                <ProductsViewCard key={index} product={product} />
+              ))}
         </div>
       </div>
     </div>

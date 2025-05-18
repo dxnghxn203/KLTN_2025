@@ -77,13 +77,15 @@ export default function ProductFeaturedList({
           <>
             <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
               {productRelated &&
-                productRelated.map((productData: any, index: any) => (
-                  <ProductFeaturedCard
-                    key={index}
-                    products={productData}
-                    mainCategoryName={mainCategoryName}
-                  />
-                ))}
+                productRelated
+                  .slice(0, 5)
+                  .map((productData: any, index: any) => (
+                    <ProductFeaturedCard
+                      key={index}
+                      products={productData}
+                      mainCategoryName={mainCategoryName}
+                    />
+                  ))}
             </div>
             {showAll && (
               <div className="text-center mt-5">
