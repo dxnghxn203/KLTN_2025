@@ -14,10 +14,10 @@ from app.models import order, pharmacist, user, admin
 from app.models.product import get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product, get_product_top_selling, get_product_featured, get_product_by_list_id, get_related_product, \
     get_product_best_deals, approve_product, get_approved_product, update_product_status, update_product_fields, \
-    check_product_consistency, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
     import_products, get_product_brands, get_imported_products, delete_imported_products, \
-    update_product_created_updated, get_discount_product, check_all_product_discount_expired, getAvailableQuantity
+    get_discount_product, check_all_product_discount_expired, getAvailableQuantity, \
+    normalize_products_inventory
 
 router = APIRouter()
 
@@ -482,22 +482,6 @@ async def admin_update_product(item: ItemUpdateProductReq,
             message="Internal server error"
         )
 
-@router.get("/products/asynchronous", response_model=response.BaseResponse)
-async def get_asynchronous():
-    try:
-        result = await check_product_consistency()
-        return response.SuccessResponse(
-            data=result
-        )
-    except JsonException as je:
-        raise je
-    except Exception as e:
-        logger.error("Error getting asynchronous", error=str(e))
-        raise response.JsonException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="Internal server error"
-        )
-
 @router.get("/products/search", response_model=response.BaseResponse)
 async def search_product(query: str, page: int = 1, page_size: int = 10):
     try:
@@ -586,14 +570,14 @@ async def admin_delete_imported_products(import_id: str):
 @router.post("/products/dev", response_model=response.BaseResponse)
 async def dev():
     try:
-        result = await update_product_created_updated()
+        result = await normalize_products_inventory()
         return response.SuccessResponse(
             data=result
         )
     except JsonException as je:
         raise je
     except Exception as e:
-        logger.error("Error updating pharmacist gender", error=str(e))
+        logger.error("Error dev products", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

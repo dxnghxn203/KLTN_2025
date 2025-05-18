@@ -82,17 +82,12 @@ type ProductInfo struct {
 	ExpiredDate   time.Time `json:"expired_date" bson:"expired_date"`
 }
 
-type PriceRes struct {
-	PriceId string `json:"price_id" bson:"price_id"`
-	Amount  int    `json:"amount" bson:"amount"`
-}
-
 type ProductRes struct {
-	ProductId string     `json:"product_id" bson:"product_id"`
-	Prices    []PriceRes `json:"prices" bson:"prices"`
-	Inventory int        `json:"inventory" bson:"inventory"`
-	Sell      int        `json:"sell" bson:"sell"`
-	Delivery  int        `json:"delivery" bson:"delivery"`
+	ProductId string `json:"product_id" bson:"product_id"`
+	PriceId   string `json:"price_id" bson:"price_id"`
+	Inventory int    `json:"inventory" bson:"inventory"`
+	Sell      int    `json:"sell" bson:"sell"`
+	Delivery  int    `json:"delivery" bson:"delivery"`
 }
 
 type OrderRes struct {
@@ -163,28 +158,23 @@ func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	return false, _id, nil
 }
 
-func getPriceAmount(productId string, priceId string, ctx context.Context) int {
+func getProductInventory(productId string, priceId string, ctx context.Context) (ProductRes, error) {
 	db := database.GetDatabase()
-	collection := db.Collection("products")
+	collection := db.Collection("products_inventory")
 
-	result := collection.FindOne(ctx, bson.M{"product_id": productId})
+	result := collection.FindOne(ctx, bson.M{"product_id": productId, "price_id": priceId})
 	if result.Err() != nil {
-		slog.Error("Không tìm thấy sản phẩm khi lấy amount", "product_id", productId, "err", result.Err())
-		return 1
+		slog.Error("Không tìm thấy kho sản phẩm", "product_id", productId, "price_id", priceId, "err", result.Err())
+		return ProductRes{}, result.Err()
 	}
 
 	var product ProductRes
 	if err := result.Decode(&product); err != nil {
-		slog.Error("Lỗi giải mã khi lấy amount", "product_id", productId, "err", err)
-		return 1
+		slog.Error("Lỗi giải mã khi tìm thấy kho sản phẩm", "product_id", productId, "price_id", priceId, "err", err)
+		return ProductRes{}, err
 	}
-
-	for _, price := range product.Prices {
-		if price.PriceId == priceId {
-			return price.Amount
-		}
-	}
-	return 1
+	slog.Info("Tìm thấy kho sản phẩm", "product_id", productId, "price_id", priceId, "result", product)
+	return product, nil
 }
 
 func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
@@ -193,25 +183,19 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 
 	for i := range order.Product {
 		p := &order.Product[i]
-		result, err := database.GetProductTransaction(ctx, p.ProductId)
+		result, err := getProductInventory(p.ProductId, p.PriceId, ctx)
 		if err != nil {
-			slog.Error("Không tìm thấy sản phẩm", "product_id", p.ProductId, "err", err)
+			slog.Error("Lỗi khi lấy thông tin kho sản phẩm", "product_id", p.ProductId, "price_id", p.PriceId, "err", err)
 			continue
 		}
 
-		inventory := result["inventory"]
-		sold := result["sell"]
-		available := inventory - sold
-
-		usedQuantity := p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx)
-		if available < usedQuantity {
+		if result.Inventory-result.Sell < p.Quantity {
 			insufficientProducts = append(insufficientProducts, p.ProductName)
 			continue
 		}
 
 		if !p.ExpiredDate.IsZero() && p.ExpiredDate.Before(GetCurrentTime()) {
 			expiredProducts = append(expiredProducts, p.ProductName)
-			order.Status = "canceled"
 			p.Discount = 0
 			p.Price = p.OriginalPrice
 		}
@@ -268,45 +252,51 @@ func GetOrderByOrderId(ctx context.Context, order_id string) (*OrderRes, error) 
 	return &res, nil
 }
 
-func UpdateProductSellCount(ctx context.Context, products []ProductInfo, modifier int) error {
+func UpdateProductCount(ctx context.Context, products []ProductInfo, field string, modifier int) error {
 	db := database.GetDatabase()
-	collection := db.Collection("products")
+	productCol := db.Collection("products")
+	inventoryCol := db.Collection("products_inventory")
 
 	for _, p := range products {
+		quantityChange := p.Quantity * modifier
+
+		// Cập nhật trong collection "products"
 		filter := bson.M{
 			"product_id": p.ProductId,
+			"prices": bson.M{
+				"$elemMatch": bson.M{
+					"price_id": p.PriceId,
+				},
+			},
 		}
 		update := bson.M{
-			"$inc": bson.M{"sell": p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx) * modifier},
+			"$inc": bson.M{
+				fmt.Sprintf("prices.$.%s", field): quantityChange,
+			},
 		}
 
-		_, err := collection.UpdateOne(ctx, filter, update)
-		if err != nil {
-			slog.Error("Không thể cập nhật số lượng đã bán", "product_id", p.ProductId, "err", err)
-			return fmt.Errorf("lỗi cập nhật số lượng bán cho sản phẩm %s: %w", p.ProductId, err)
+		if _, err := productCol.UpdateOne(ctx, filter, update); err != nil {
+			slog.Error("Không thể cập nhật sản phẩm", "field", field, "product_id", p.ProductId, "err", err)
+			return fmt.Errorf("lỗi cập nhật %s cho sản phẩm %s: %w", field, p.ProductId, err)
 		}
-	}
 
-	return nil
-}
-
-func UpdateProductDeliveryCount(ctx context.Context, products []ProductInfo, modifier int) error {
-	db := database.GetDatabase()
-	collection := db.Collection("products")
-
-	for _, p := range products {
-		filter := bson.M{
+		// Cập nhật trong inventory
+		inventoryFilter := bson.M{
 			"product_id": p.ProductId,
+			"price_id":   p.PriceId,
 		}
-		update := bson.M{
-			"$inc": bson.M{"delivery": p.Quantity * getPriceAmount(p.ProductId, p.PriceId, ctx) * modifier},
+		inventoryUpdate := bson.M{
+			"$inc": bson.M{
+				field: quantityChange,
+			},
 		}
 
-		_, err := collection.UpdateOne(ctx, filter, update)
-		if err != nil {
-			slog.Error("Không thể cập nhật số lượng đã vận chuyển", "product_id", p.ProductId, "err", err)
-			return fmt.Errorf("lỗi cập nhật số lượng vận chuyển cho sản phẩm %s: %w", p.ProductId, err)
+		if _, err := inventoryCol.UpdateOne(ctx, inventoryFilter, inventoryUpdate); err != nil {
+			slog.Error("Không thể cập nhật inventory", "field", field, "product_id", p.ProductId, "err", err)
+			return fmt.Errorf("lỗi cập nhật %s trong inventory cho sản phẩm %s: %w", field, p.ProductId, err)
 		}
+
+		slog.Info("Cập nhật thành công", "product_id", p.ProductId, "field", field, "quantity", quantityChange)
 	}
 
 	return nil
@@ -319,26 +309,6 @@ func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 		return err
 	}
 	slog.Info("Order deleted successfully from Redis", "order_id", order.OrderId)
-	return nil
-}
-
-func UpdateProductSellRedis(ctx context.Context, products []ProductInfo, modifier int) error {
-	for _, p := range products {
-		err := database.UpdateProductSales(ctx, p.ProductId, p.Quantity*getPriceAmount(p.ProductId, p.PriceId, ctx), modifier)
-		if err != nil {
-			slog.Error("Lỗi khi cập nhật số lượng bán của sản phẩm", "product", p.ProductId, "err", err)
-		}
-	}
-	return nil
-}
-
-func UpdateProductDeliveryRedis(ctx context.Context, products []ProductInfo, modifier int) error {
-	for _, p := range products {
-		err := database.UpdateProductDelivery(ctx, p.ProductId, p.Quantity*getPriceAmount(p.ProductId, p.PriceId, ctx), modifier)
-		if err != nil {
-			slog.Error("Lỗi khi cập nhật số lượng cập nhật của sản phẩm", "product", p.ProductId, "err", err)
-		}
-	}
 	return nil
 }
 
@@ -369,4 +339,67 @@ func (o *OrderToUpdate) Update(ctx context.Context) (bool, string, error) {
 
 	slog.Info("Update successful", "order_id", o.OrderId, "order", o, "singleResult", order)
 	return true, order.Id.Hex(), nil
+}
+
+func RemoveItemCartByOrder(ctx context.Context, orders Orders) bool {
+	db := database.GetDatabase()
+	collection := db.Collection("users")
+	var userInfo bson.M
+
+	userID, err := primitive.ObjectIDFromHex(orders.CreatedBy)
+	if err == nil {
+		err = collection.FindOne(ctx, bson.M{"_id": userID}).Decode(&userInfo)
+	}
+
+	if err == nil && userInfo != nil {
+		userIDStr := userID.Hex()
+		for _, product := range orders.Product {
+			err := RemoveProductFromCart(ctx, userIDStr, product.ProductId, product.PriceId)
+			if err != nil {
+				slog.Error("Failed to remove product from cart in MongoDB", "error", err)
+				return false
+			}
+		}
+		return true
+	} else {
+		for _, product := range orders.Product {
+			database.RemoveCartItem(orders.CreatedBy, fmt.Sprintf("%s_%s", product.ProductId, product.PriceId))
+		}
+		return true
+	}
+}
+
+func RemoveProductFromCart(ctx context.Context, userID string, productID string, priceID string) error {
+	db := database.GetDatabase()
+	collection := db.Collection("cart")
+
+	var cartData bson.M
+	err := collection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&cartData)
+	if err != nil {
+		return fmt.Errorf("cart not found: %w", err)
+	}
+
+	products, ok := cartData["products"].(primitive.A)
+	if !ok {
+		return fmt.Errorf("invalid products format")
+	}
+
+	var newProducts []bson.M
+	for _, p := range products {
+		item, ok := p.(bson.M)
+		if !ok {
+			continue
+		}
+		if item["product_id"] == productID && item["price_id"] == priceID {
+			continue
+		}
+		newProducts = append(newProducts, item)
+	}
+
+	_, err = collection.UpdateOne(ctx, bson.M{"user_id": userID}, bson.M{"$set": bson.M{"products": newProducts}})
+	if err != nil {
+		return fmt.Errorf("failed to update cart: %w", err)
+	}
+
+	return nil
 }

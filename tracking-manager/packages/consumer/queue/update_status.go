@@ -49,24 +49,16 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 
 	if trackingReq.Status == "delivery_success" {
 		orderRes.PaymentStatus = "PAID"
-		err = models.UpdateProductDeliveryCount(ctx, orderRes.Product, 1)
+		err = models.UpdateProductCount(ctx, orderRes.Product, "delivery", 1)
 		if err != nil {
 			slog.Error("Lỗi cập nhật số lượng vận chuyển của sản phẩm", "err", err)
-		}
-		err = models.UpdateProductDeliveryRedis(ctx, orderRes.Product, 1)
-		if err != nil {
-			slog.Error("Lỗi cập nhật số lượng vận chuyển của sản phẩm trên redis", "err", err)
 		}
 	}
 
 	if trackingReq.Status == "returned" || trackingReq.Status == "canceled" {
-		err = models.UpdateProductSellCount(ctx, orderRes.Product, -1)
+		err = models.UpdateProductCount(ctx, orderRes.Product, "sell", -1)
 		if err != nil {
 			slog.Error("Lỗi cập nhật số lượng đã bán của sản phẩm", "err", err)
-		}
-		err = models.UpdateProductSellRedis(ctx, orderRes.Product, -1)
-		if err != nil {
-			slog.Error("Lỗi cập nhật số lượng đã bán của sản phẩm trên redis", "err", err)
 		}
 	}
 

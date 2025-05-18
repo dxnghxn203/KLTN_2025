@@ -137,8 +137,6 @@ func encodeBase64(data []byte) string {
 	return buf.String()
 }
 
-// Các hàm gửi email cụ thể tương tự Python, ví dụ:
-
 func SendOtpEmail(email, otpCode string) error {
 	slog.Info("Gửi email OTP đến:", "email", email)
 	slog.Info("Mã OTP:", "otpCode", otpCode)
@@ -154,21 +152,10 @@ func SendOtpEmail(email, otpCode string) error {
 	return SendEmail(email, subject, htmlContent, nil)
 }
 
-func SendNewPasswordEmail(email, newPassword string) error {
-	subject := "Mật khẩu mới của bạn"
-	htmlContent := fmt.Sprintf(`
-        <html>
-        <body>
-            <h3>Mật khẩu mới của bạn là: <strong>%s</strong></h3>
-            <p>Vui lòng đăng nhập và đổi mật khẩu sau khi đăng nhập để đảm bảo an toàn.</p>
-        </body>
-        </html>`, newPassword)
-
-	return SendEmail(email, subject, htmlContent, nil)
-}
-
 func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 	subject := fmt.Sprintf("Hóa đơn mua hàng #%s", orderID)
+	slog.Info("Gửi email hóa đơn đến:", "email", email)
+	slog.Info("Hóa đơn ID:", "orderID", orderID)
 	htmlContent := `
         <html>
         <body>
@@ -182,19 +169,4 @@ func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 	}
 
 	return SendEmail(email, subject, htmlContent, attachments)
-}
-
-func SendNewPharmacistEmail(email, otpCode, password string) error {
-	subject := "Tài khoản dược sĩ của bạn đã được tạo"
-	htmlContent := fmt.Sprintf(`
-        <html>
-        <body>
-            <h3>Mã OTP của bạn là: <strong>%s</strong></h3>
-            <p>Mã chỉ có hiệu lực 5 phút. Vui lòng xác thực tài khoản trước khi đăng nhập</p>
-            <h3>Mật khẩu của bạn là: <strong>%s</strong></h3>
-            <p>Vui lòng đăng nhập và đổi mật khẩu sau khi đăng nhập để đảm bảo an toàn.</p>
-        </body>
-        </html>`, otpCode, password)
-
-	return SendEmail(email, subject, htmlContent, nil)
 }

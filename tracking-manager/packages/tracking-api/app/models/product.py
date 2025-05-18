@@ -16,7 +16,7 @@ import olefile
 import pandas as pd
 from fastapi import UploadFile
 from pydantic import ValidationError
-from pymongo import UpdateOne
+from pymongo import UpdateOne, ReplaceOne
 from starlette import status
 from typing import Set, Dict, Tuple
 from datetime import datetime, timedelta
@@ -28,9 +28,9 @@ from app.core.database import db
 from app.core.s3 import upload_file, upload_any_file
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductDBInReq, ItemImageDBReq, ItemPriceDBReq, ItemProductDBReq, \
-    ItemProductRedisReq, UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
-    ItemUpdateProductReq, ItemIngredientDBReq, ItemManufacturerDBReq, ItemProductImportReq
-from app.entities.product.response import ItemProductDBRes, ItemProductImportRes
+    UpdateCategoryReq, ItemCategoryDBReq, ApproveProductReq, UpdateProductStatusReq, \
+    ItemUpdateProductReq, ItemIngredientDBReq, ItemManufacturerDBReq, ItemProductImportReq, ItemProductInventoryReq
+from app.entities.product.response import ItemProductDBRes, ItemProductImportRes, ItemProductInventoryRes
 from app.helpers import redis
 from app.helpers.constant import generate_id
 from app.helpers.time_utils import get_current_time
@@ -41,6 +41,7 @@ from app.models.review import count_reviews, average_rating
 collection_name = "products"
 collection_category = "categories"
 collection_import = "products_imports"
+collection_inventory = "products_inventory"
 
 VALID_MEDIA_TYPES = {"images", "images_primary", "certificate_file"}
 
@@ -305,8 +306,11 @@ async def get_product_featured(main_category_id, sub_category_id=None, child_cat
 
 async def add_product_db(item: ItemProductDBInReq, images_primary, images, email, certificate_file=None):
     try:
-        collection = db[collection_name]
-        cur = collection.find_one({"slug": item.slug})
+        product_collection = db[collection_name]
+        inventory_collection = db[collection_inventory]
+        category_collection = db[collection_category]
+
+        cur = product_collection.find_one({"slug": item.slug})
         if cur:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -326,25 +330,37 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, email
         logger.info(f"{image_list}")
 
         price_list = []
+        inventory_docs = []
+        product_id = generate_id("PRODUCT")
+
         if item.prices and item.prices.prices:
-            price_list = [
-                ItemPriceDBReq(
-                    price_id=generate_id("PRICE"),
-                    price=price.original_price*(100-price.discount)/100,
+            for price in item.prices.prices:
+                price_id = generate_id("PRICE")
+                price_obj = ItemPriceDBReq(
+                    price_id=price_id,
+                    price=price.original_price * (100 - price.discount) / 100,
                     discount=price.discount,
                     unit=price.unit,
                     weight=price.weight,
                     amount=price.amount,
-                    original_price=price.original_price
-                ) for idx, price in enumerate(item.prices.prices)
-            ]
+                    original_price=price.original_price,
+                    inventory=price.inventory,
+                    expired_date=price.expired_date
+                )
+                price_list.append(price_obj)
+
+                inventory_obj = ItemProductInventoryReq(
+                    product_id=product_id,
+                    price_id=price_id,
+                    amount=price.amount,
+                    inventory=price.inventory,
+                )
+
+                inventory_docs.append(inventory_obj.dict())
 
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
         images_primary_url = (upload_file(images_primary, "images_primary") or "") if images_primary else ""
 
-        product_id = generate_id("PRODUCT")
-
-        category_collection = db[collection_category]
         main_category = category_collection.find_one({"main_category_id": item.category.main_category_id})
         if not main_category:
             raise response.JsonException(
@@ -398,13 +414,12 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, email
             updated_by=email
         )
 
-        insert_result = collection.insert_one(item_data.dict())
-
+        insert_result = product_collection.insert_one(item_data.dict())
         logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
 
-        redis_product = ItemProductRedisReq(inventory=item.inventory)
-        redis.save_product(redis_product, product_id)
-        logger.info(f"Đã lưu sản phẩm vào Redis với key: {product_id}")
+        if inventory_docs:
+            inventory_collection.insert_many(inventory_docs)
+            logger.info(f"Đã thêm {len(inventory_docs)} bản ghi vào bảng products_inventory")
 
     except Exception as e:
         logger.error(f"Lỗi khi thêm sản phẩm: {e}")
@@ -487,8 +502,10 @@ async def delete_product(product_id: str):
             if delete_result.deleted_count == 0:
                 logger.info(f"Product not deleted for product_id: {product_id}")
 
-        redis.delete_product(product_id)
-        logger.info(f"Đã xóa sản phẩm vào Redis với key: {product_id}")
+            inventory_collection = db[collection_inventory]
+            delete_inventory = inventory_collection.delete_many({"product_id": product_id})
+            if delete_inventory.deleted_count == 0:
+                logger.info(f"Inventory not deleted for product_id: {product_id}")
 
         return response.SuccessResponse(message="Xóa sản phẩm thành công")
     except Exception as e:
@@ -504,8 +521,8 @@ async def getAvailableQuantity(product_id: str, price_id: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
             )
-        sell = product.sell
-        inventory = product.inventory
+        sell = product.prices[0].sell
+        inventory = product.prices[0].sell
 
         return (inventory - sell) // product.prices[0].amount
 
@@ -540,19 +557,53 @@ async def get_product_by_id(product_id: str, price_id: str):
         logger.error(f"Error getting product by id: {str(e)}")
         raise e
 
+async def get_product_inventory(product_id: str, price_id: str):
+    try:
+        inventory_collection = db["products_inventory"]
+        inventory_doc = inventory_collection.find_one({
+            "product_id": product_id,
+            "price_id": price_id
+        })
+
+        if not inventory_doc:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy thông tin tồn kho"
+            )
+
+        return ItemProductInventoryRes(**inventory_doc)
+
+    except Exception as e:
+        logger.error(f"Error getting product inventory: {str(e)}")
+        raise e
+
 async def restore_product_sell(product_id: str, price_id: str, quantity: int):
     try:
         collection = db[collection_name]
+        inventory_collection = db[collection_inventory]
 
         result = collection.update_one(
             {"product_id": product_id, "prices.price_id": price_id},
             {"$inc": {"prices.$.sell": -quantity}}
         )
+
+        inventory_result = inventory_collection.update_one(
+            {"product_id": product_id, "price_id": price_id},
+            {"$inc": {"sell": -quantity}}
+        )
+
         if result.modified_count == 0:
             raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found or quantity not updated"
             )
+
+        if inventory_result.modified_count == 0:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Inventory not found or quantity not updated"
+            )
+
         logger.info(f"Product sell restored successfully for product_id: {product_id}, price_id: {price_id}")
     except Exception as e:
         logger.error(f"Error restoring product sell: {str(e)}")
@@ -743,6 +794,7 @@ async def update_product_images(product_id: str, files, email: str):
 async def update_product_fields(update_data: ItemUpdateProductReq, email):
     try:
         collection = db[collection_name]
+        inventory_collection = db[collection_inventory]
         product = collection.find_one({"product_id": update_data.product_id})
         if not product:
 
@@ -751,7 +803,6 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
                 message="Không tìm thấy sản phẩm"
             )
 
-        collection = db[collection_name]
         cur = collection.find_one({
             "slug": update_data.slug,
             "product_id": {"$ne": update_data.product_id}
@@ -765,7 +816,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
         update_fields = {}
 
         for field in [
-            "product_name", "name_primary", "inventory", "slug", "description", "origin",
+            "product_name", "name_primary", "slug", "description", "origin",
             "uses", "dosage", "side_effects", "precautions", "storage", "dosage_form", "brand",
             "prescription_required", "registration_number", "full_descriptions"
         ]:
@@ -773,19 +824,33 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
             if value is not None:
                 update_fields[field] = value
 
-        if update_data.prices and update_data.prices.prices:
-            update_fields["prices"] = [
-                ItemPriceDBReq(
-                    price_id=generate_id("PRICE"),
+        if update_data.prices:
+            price_list = []
+            for price in update_data.prices:
+                price_info = await get_product_by_id(update_data.product_id, price.price_id)
+                price_obj = ItemPriceDBReq(
+                    price_id=price.price_id,
                     price=price.original_price * (100 - price.discount) / 100,
                     discount=price.discount,
                     unit=price.unit,
                     weight=price.weight,
                     amount=price.amount,
                     original_price=price.original_price,
-                ).dict()
-                for price in update_data.prices.prices
-            ]
+                    inventory=price.inventory,
+                    sell=price_info.prices[0].sell,
+                    delivery=price_info.prices[0].delivery,
+                    expired_date=price.expired_date
+                )
+                price_list.append(price_obj.dict())
+
+                inventory_collection.update_one(
+                    {"product_id": update_data.product_id, "price_id": price.price_id},
+                    {"$set": {
+                        "amount": price.amount,
+                        "inventory": price.inventory
+                    }}
+                )
+            update_fields["prices"] = price_list
 
         if update_data.ingredients and update_data.ingredients.ingredients:
             update_fields["ingredients"] = [i.dict() for i in update_data.ingredients.ingredients]
@@ -841,43 +906,6 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
         return response.SuccessResponse(message="Cập nhật sản phẩm thành công")
     except Exception as e:
         logger.error(f"Error updating product fields: {str(e)}")
-        raise e
-
-async def update_product_created_updated():
-    collection = db[collection_name]
-    collection.update_many(
-        {},
-        {"$set": {
-            "prices.$[].expired_date": get_current_time() + timedelta(days=15),
-            # "updated_by": "tuannguyen23823@gmail.com",
-            # "created_at": get_current_time(),
-            # "updated_at": get_current_time()
-        }}
-    )
-
-async def get_all_mongodb_product_ids() -> Set[str]:
-    collection = db[collection_name]
-    cursor = collection.find({}, {"product_id": 1})
-    product_ids = set()
-    for doc in cursor:
-        product_ids.add(doc["product_id"])
-    return product_ids
-
-async def check_product_consistency():
-    try:
-        redis_product_ids = await redis.get_all_redis_product_ids()
-
-        mongodb_product_ids = await get_all_mongodb_product_ids()
-
-        in_redis_not_mongo = redis_product_ids - mongodb_product_ids
-        in_mongo_not_redis = mongodb_product_ids - redis_product_ids
-
-        return {
-            "in_redis_not_mongo": list(in_redis_not_mongo),
-            "in_mongo_not_redis": list(in_mongo_not_redis),
-        }
-    except Exception as e:
-        logger.error(f"Lỗi kiểm tra dữ liệu product giữa Redis và MongoDB: {e}")
         raise e
 
 async def search_products_by_name(keyword: str, page: int, page_size: int):
@@ -1131,6 +1159,7 @@ async def import_products(file: UploadFile, email: str):
         certificate_map = await extract_certificates_from_excel(BytesIO(contents), df)
 
         collection = db[collection_name]
+        inventory_collection = db[collection_inventory]
 
         for idx, row in df.iterrows():
             try:
@@ -1171,26 +1200,39 @@ async def import_products(file: UploadFile, email: str):
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi ảnh chính - {e}")
                     image_primary = None
 
+                product_id = generate_id("PRODUCT")
+
                 # Extract prices
                 try:
                     prices_raw = row.get("prices", "[]")
                     prices_list = json.loads(prices_raw)
-                    prices = [
-                        ItemPriceDBReq(
-                            price_id=generate_id("PRICE"),
-                            discount=price.get("discount", 0),
-                            unit=price.get("unit", ""),
-                            weight=price.get("weight", 0),
-                            amount=price.get("amount", 0),
-                            original_price=price.get("original_price", 0),
-                            price=price.get("original_price", 0) * (100 - price.get("discount", 0)) / 100,
-                            expired_date=price.get("expired_date", get_current_time())
+                    prices = []
+                    inventory_list = []
+                    for price in prices_list:
+                        price_obj = ItemPriceDBReq(
+                                price_id=generate_id("PRICE"),
+                                discount=price.get("discount", 0),
+                                unit=price.get("unit", ""),
+                                weight=price.get("weight", 0),
+                                amount=price.get("amount", 0),
+                                original_price=price.get("original_price", 0),
+                                price=price.get("original_price", 0) * (100 - price.get("discount", 0)) / 100,
+                                expired_date=price.get("expired_date", get_current_time()),
+                                inventory=price.get("inventory", 0)
+                            )
+                        prices.append(price_obj)
+
+                        inventory_obj = ItemProductInventoryReq(
+                            product_id=product_id,
+                            price_id=price_obj.price_id,
+                            inventory=price_obj.inventory,
+                            amount=price_obj.amount,
                         )
-                        for price in prices_list
-                    ]
+                        inventory_list.append(inventory_obj)
                 except Exception as e:
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi đọc prices - {e}")
                     prices = []
+                    inventory_list = []
 
                 # Extract category
                 category_obj, cat_error = await extract_category_object(row, categories)
@@ -1228,13 +1270,11 @@ async def import_products(file: UploadFile, email: str):
                     continue
 
                 try:
-                    product_id = generate_id("PRODUCT")
                     product = ItemProductDBReq(
                         product_id=product_id,
                         product_name=row.get("product_name", ""),
                         name_primary=row.get("name_primary", ""),
                         prices=prices,
-                        inventory=row.get("inventory", 0),
                         slug=row.get("slug", ""),
                         description=row.get("description", ""),
                         full_descriptions=row.get("full_descriptions", ""),
@@ -1261,9 +1301,8 @@ async def import_products(file: UploadFile, email: str):
 
                     logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
 
-                    redis_product = ItemProductRedisReq(inventory=product.inventory)
-                    redis.save_product(redis_product, product_id)
-                    logger.info(f"Đã lưu sản phẩm vào Redis với key: {product_id}")
+                    inventory_collection.insert_many(inventory_list)
+                    logger.info(f"Thêm lượng kho hàng: {len(inventory_list)}")
                 except ValidationError as e:
                     error_messages.append(f"Dòng {excel_row_idx}: Lỗi dữ liệu không hợp lệ - {e}")
 
@@ -1356,3 +1395,38 @@ async def check_all_product_discount_expired():
     except Exception as e:
         logger.error(f"Failed to update expired discounts: {e}")
         raise e
+
+async def normalize_products_inventory():
+    product_collection = db[collection_name]
+    inventory_collection = db[collection_inventory]
+
+    products = list(product_collection.find({}, {"product_id": 1, "prices": 1}))
+    bulk_ops = []
+
+    for product in products:
+        product_id = product["product_id"]
+        for price in product.get("prices", []):
+            price_id = price.get("price_id")
+            if not price_id:
+                continue
+
+            # Tạo bản ghi inventory từ toàn bộ thông tin trong price
+            inventory_doc = {
+                "product_id": product_id,
+                "price_id": price_id,
+                "amount": price.get("amount", 0),
+                "inventory": price.get("inventory", 0),
+                "sell": price.get("sell", 0),
+                "delivery": price.get("delivery", 0)
+            }
+
+            bulk_ops.append(ReplaceOne(
+                {"product_id": product_id, "price_id": price_id},
+                inventory_doc,
+                upsert=True
+            ))
+
+    if bulk_ops:
+        inventory_collection.bulk_write(bulk_ops)
+
+    print(f"Đã cập nhật đầy đủ {len(bulk_ops)} bản ghi từ prices sang products_inventory.")

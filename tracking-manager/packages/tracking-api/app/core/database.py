@@ -38,7 +38,7 @@ try:
         'comments', 'products', 'reviews',
         'users','trackings', 'pharmacists',
         'orders_requests', 'products_imports',
-        'vouchers']
+        'vouchers', 'products_inventory',]
     for collection in collections:
         if collection not in existing_collections:
             db.create_collection(collection)

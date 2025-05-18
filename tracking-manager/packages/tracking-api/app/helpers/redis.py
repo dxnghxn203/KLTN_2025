@@ -3,7 +3,6 @@ import uuid
 from typing import Set
 from app.core import redis_client, logger
 from app.entities.order.request import ItemOrderReq
-from app.entities.product.request import ItemProductRedisReq
 
 redis = redis_client.redis
 REQUEST_COUNT_MAX=5
@@ -83,45 +82,13 @@ def save_jwt_token(username: str, token: str, device_id: str = "web"):
 def delete_jwt_token(username: str, device_id: str = "web"):
     redis.delete(jwt_token_key(username, device_id))
 
-# ==== PRODUCT MANAGEMENT ====
-
-def product_key(product_id: str) -> str:
-    return f"product:{product_id}"
-
-def get_product_transaction(product_id: str):
-    key = product_key(product_id)
-    data = redis.hgetall(key)
-
-    return {field: int(data[field]) for field in ["inventory", "sell"] if field in data} if data else None
-
-def save_product(product: ItemProductRedisReq, redis_id: str):
-    redis.hmset(product_key(redis_id), {
-        "inventory": product.inventory,
-        "sell": product.sell,
-        "delivery": product.delivery
-    })
-    redis.persist(product_key(redis_id))
-
-def delete_product(product_id: str):
-    redis.delete(product_key(product_id))
-
-async def get_all_redis_product_ids() -> Set[str]:
-    keys = redis.keys("product:*")
-    product_ids = set()
-    for key in keys:
-        if isinstance(key, bytes):
-            key = key.decode()
-        product_ids.add(key.split(":")[1])
-    return product_ids
-
 # ==== ORDER MANAGEMENT ====
 
 def order_key(order_id: str) -> str:
     return f"order:{order_id}"
 
 def save_order(order: ItemOrderReq):
-    redis.set(order_key(order.order_id), json.dumps(order.dict(), ensure_ascii=False), 6000)
-    redis.persist(order_key(order.order_id))
+    redis.set(order_key(order.order_id), json.dumps(order.dict(), ensure_ascii=False), SESSION_TTL)
 
 def get_order(order_id: str):
     data = redis.get(order_key(order_id))

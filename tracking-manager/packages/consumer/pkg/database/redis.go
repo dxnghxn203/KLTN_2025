@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -77,59 +76,11 @@ func DeleteOrder(ctx context.Context, orderID string) error {
 	return err
 }
 
-func GetProductKey(productID string) string {
-	return fmt.Sprintf("product:%s", productID)
+func cartKey(identifier string) string {
+	return fmt.Sprintf("cart:%s", identifier)
 }
 
-func GetProductTransaction(ctx context.Context, productID string) (map[string]int, error) {
-	key := GetProductKey(productID)
-	data, err := RedisClient.HGetAll(ctx, key).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	result := map[string]int{
-		"inventory": parseIntWithDefault(data["inventory"], 0),
-		"sell":      parseIntWithDefault(data["sell"], 0),
-	}
-	return result, nil
-}
-
-func parseInt(value string) (int, error) {
-	if value == "" {
-		return 0, nil
-	}
-	return strconv.Atoi(value)
-}
-
-func parseIntWithDefault(value string, defaultValue int) int {
-	result, err := parseInt(value)
-	if err != nil {
-		return defaultValue
-	}
-	return result
-}
-
-func UpdateProductSales(ctx context.Context, productID string, quantity int, modifier int) error {
-	productKey := GetProductKey(productID)
-	_, err := RedisClient.HIncrBy(ctx, productKey, "sell", int64(modifier*quantity)).Result()
-	if err != nil {
-		slog.Error("Không thể cập nhật số lượng bán của sản phẩm", "product", productID, "err", err)
-		return err
-	}
-
-	slog.Info("Cập nhật số lượng bán thành công", "product", productID, "quantity", quantity)
-	return nil
-}
-
-func UpdateProductDelivery(ctx context.Context, productID string, quantity int, modifier int) error {
-	productKey := GetProductKey(productID)
-	_, err := RedisClient.HIncrBy(ctx, productKey, "delivery", int64(modifier*quantity)).Result()
-	if err != nil {
-		slog.Error("Không thể cập nhật số lượng vận chuyển của sản phẩm", "product", productID, "err", err)
-		return err
-	}
-
-	slog.Info("Cập nhật số lượng vận chuyển thành công", "product", productID, "quantity", quantity)
-	return nil
+func RemoveCartItem(identifier string, redisID string) {
+	key := cartKey(identifier)
+	RedisClient.HDel(context.Background(), key, redisID)
 }

@@ -24,20 +24,18 @@ class ItemProductInReq(BaseModel):
     price_id: str = ""
     quantity: int = 0
 
-class ItemProductRedisReq(BaseModel):
-    inventory: int = 0
-    sell: int = 0
-    delivery: int = 0
-
 class ItemPriceDBReq(BaseModel):
     price_id: str = ""
-    price: float = 0
-    discount: float = 0
-    unit: str = ""
+    discount: float
+    unit: str
     weight: float = 0
     amount: int = 0
     original_price: float = 0
     expired_date: datetime = get_current_time()
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
+    price: float = 0
 
 class ItemPriceDBInReq(BaseModel):
     discount: float
@@ -46,6 +44,7 @@ class ItemPriceDBInReq(BaseModel):
     amount: int = 0
     original_price: float = 0
     expired_date: datetime = get_current_time()
+    inventory: int = 0
 
     @model_validator(mode="before")
     @classmethod
@@ -136,14 +135,19 @@ class ItemManufacturerDBReq(BaseModel):
             return data
         raise ValueError("Invalid ItemManufacturerDBReq format")
 
+class ItemProductInventoryReq(BaseModel):
+    product_id: str = ""
+    price_id: str = ""
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
+    amount: int = 0
+
 class ItemProductDBReq(BaseModel):
     product_id: str = ""
     product_name: str = ""
     name_primary: str = ""
     prices: List[ItemPriceDBReq] = None
-    inventory: int = 0
-    sell: int = 0
-    delivery: int = 0
     slug: str = ""
     description: str = ""
     full_descriptions: str = ""
@@ -174,11 +178,11 @@ class ItemProductDBReq(BaseModel):
     created_by: str = ""
     updated_by: str = ""
 
+
 class ItemProductDBInReq(BaseModel):
     product_name: Optional[str] = Field(default="")
     name_primary: Optional[str] = Field(default="")
     prices: Optional[ListPriceDBInReq] = Field(None)
-    inventory: Optional[int] = Field(default=0)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
     full_descriptions: Optional[str] = Field(default="")
@@ -211,12 +215,21 @@ class UpdateProductStatusReq(BaseModel):
     product_id: str = ""
     status: bool = False
 
+class ItemUpdatePriceDBReq(BaseModel):
+    price_id: str = ""
+    discount: float = 0
+    unit: str = ""
+    weight: float = 0
+    original_price: float = 0
+    expired_date: datetime = get_current_time()
+    inventory: int = 0
+    amount: int = 0
+
 class ItemUpdateProductReq(BaseModel):
     product_id: Optional[str] = Field(default="")
     product_name: Optional[str] = Field(default="")
     name_primary: Optional[str] = Field(default="")
-    prices: Optional[ListPriceDBInReq] = Field(None)
-    inventory: Optional[int] = Field(default=0)
+    prices: Optional[List[ItemUpdatePriceDBReq]] = Field(None)
     slug: Optional[str] = Field(default="")
     description: Optional[str] = Field(default="")
     full_descriptions: Optional[str] = Field(default="")

@@ -2,7 +2,7 @@ import base64
 import json
 import os
 import io
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Tuple, Dict
 
 import httpx
@@ -19,7 +19,7 @@ from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderReques
     ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
 from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
 from app.entities.pharmacist.response import ItemPharmacistRes
-from app.entities.product.request import ItemProductRedisReq, ItemProductInReq, ItemProductReq
+from app.entities.product.request import ItemProductInReq, ItemProductReq
 from app.entities.product.response import ItemProductRes
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
@@ -29,11 +29,12 @@ from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_CO
 from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
-from app.helpers.redis import get_product_transaction, save_product, remove_cart_item, product_key
+from app.helpers.redis import remove_cart_item
 from app.models.cart import remove_product_from_cart
 from app.models.fee import calculate_shipping_fee
 from app.models.location import determine_route
-from app.models.product import get_product_by_id, restore_product_sell, check_all_product_discount_expired
+from app.models.product import restore_product_sell, check_all_product_discount_expired, \
+    get_product_inventory, get_product_by_id
 from app.models.time import get_range_time
 from app.models.user import get_by_id
 
@@ -132,8 +133,9 @@ async def get_tracking_order_by_order_id(order_id: str):
         logger.error(f"Failed [get_tracking_order_by_order_id]: {e}")
         return []
 
-async def process_order_products(products: List[ItemProductInReq])\
-        ->Tuple[List[ItemProductReq], float, float, List[Dict[str, str]], List[Dict[str, str]]]:
+async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
+    List[ItemProductReq], float, float, List[Dict[str, str]], List[Dict[str, str]]
+]:
     total_price = 0
     weight = 0
     product_items = []
@@ -141,27 +143,21 @@ async def process_order_products(products: List[ItemProductInReq])\
     out_of_date = []
 
     for product in products:
+        # Lấy thông tin sản phẩm và đơn giá theo price_id
         product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
         if isinstance(product_info, response.JsonException):
-            out_of_stock.append({
-                "product_id": product.product_id,
-                "price_id": product.price_id
-            })
+            out_of_stock.append({"product_id": product.product_id})
             continue
-        data = redis.get_product_transaction(product_id=product.product_id)
-        logger.info(f"Product data from Redis: {data}")
 
-        if not data:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Không tìm thấy sản phẩm"
-            )
+        # Lấy thông tin tồn kho đúng đơn vị (price_id)
+        inventory_data = await get_product_inventory(product_id=product.product_id, price_id=product.price_id)
+        if isinstance(inventory_data, response.JsonException):
+            out_of_stock.append({"product_id": product.product_id})
+            continue
 
-        inventory = data.get("inventory", 0)
-        sell = data.get("sell", 0)
-        total_requested = product.quantity * product_info.prices[0].amount + sell
-
-        if total_requested > inventory:
+        # Tổng số lượng đã bán + số lượng cần đặt không vượt quá tồn kho
+        total_requested = product.quantity + inventory_data.sell
+        if total_requested > inventory_data.inventory:
             out_of_stock.append({
                 "product_id": product.product_id,
                 "price_id": product.price_id
@@ -170,6 +166,7 @@ async def process_order_products(products: List[ItemProductInReq])\
 
         price_info = product_info.prices[0]
 
+        # Kiểm tra hạn dùng
         now = get_current_time()
         expired_date = price_info.expired_date
         is_expired = (
@@ -178,7 +175,6 @@ async def process_order_products(products: List[ItemProductInReq])\
                 and expired_date < now
                 and price_info.discount > 0
         )
-
         if is_expired:
             out_of_date.append({
                 "product_id": product.product_id,
@@ -390,25 +386,6 @@ async def add_order(item: OrderRequest):
 
         rabbitmq.send_message(get_create_order_queue(), order_json)
 
-        order_res = ItemOrderRes(**order_dict)
-
-        user_name = "Khách lẻ"
-        try:
-            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_res.created_by)))
-            user_name = user_info.user_name
-        except (InvalidId, TypeError):
-            logger.error(f"User not found: {order_res.created_by}")
-
-        pdf_bytes = export_invoice_to_pdf(order_res, user_name)
-        if not pdf_bytes:
-            raise response.JsonException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                message="Không thể tạo file PDF"
-            )
-
-        send_invoice_email(order_res.pick_to.email, pdf_bytes, order_res.order_id)
-
-        await remove_item_cart_by_order(order_res, order_res.created_by)
         return item.order_id
     except Exception as e:
         logger.error(f"Failed [add_order]: {e}")
@@ -489,21 +466,6 @@ async def cancel_order(order_id: str):
             )
 
         for product in order.product:
-            product_key_redis = f"{product.product_id}_{product.price_id}"
-            redis_data = get_product_transaction(product_key_redis)
-
-            if redis_data:
-                new_sell = max(0, redis_data["sell"] - product.quantity)
-                save_product(ItemProductRedisReq(
-                    inventory=redis_data["inventory"],
-                    sell=new_sell,
-                    delivery=redis_data.get("delivery", 0)
-                ), product_key_redis)
-
-                logger.info(f"Đã cập nhật Redis cho sản phẩm {product.product_id}: giảm sell: {product.quantity}")
-            else:
-                logger.error(f"Không tìm thấy dữ liệu trong Redis: {product_key_redis}")
-
             await restore_product_sell(product.product_id, product.price_id, product.quantity)
         logger.info(f"Đã hủy đơn hàng: {order_id}")
         return response.SuccessResponse(message="Hủy đơn hàng thành công")
@@ -689,36 +651,34 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
         raise e
 
 async def reset_dev_system():
-    # Xóa toàn bộ đơn hàng
     order_result = database.db[collection_name].delete_many({})
     logger.info(f"Deleted {order_result.deleted_count} orders")
 
-    # Reset sell & delivery trong MongoDB
     product_result = database.db["products"].update_many(
         {},
-        {"$set": {"sell": 0, "delivery": 0}}
+        {
+            "$set": {
+                "prices.$[].sell": 0,
+                "prices.$[].delivery": 0
+            }
+        }
     )
     logger.info(f"Updated {product_result.modified_count} products in MongoDB")
-    # Reset Redis
 
-    product_cursor = database.db["products"].find({}, {"product_id": 1, "inventory": 1})
-    redis_reset_count = 0
-
-    for product in product_cursor:
-        product_id = str(product.get("product_id", ""))
-        redis_key = product_key(product_id)
-        item = ItemProductRedisReq(
-            inventory=product.get("inventory", 0),
-            sell=0,
-            delivery=0
-        )
-        save_product(item, product_id)
-        redis_reset_count += 1
-
-    logger.info(f"Reset sell/delivery for {redis_reset_count} products in Redis")
+    inventory_result = database.db["products_inventory"].update_many(
+        {},
+        {
+            "$set": {
+                "sell": 0,
+                "delivery": 0
+            }
+        }
+    )
+    logger.info(f"Updated {inventory_result.modified_count} products in Redis")
 
     return {
         "orders_deleted": order_result.deleted_count,
         "products_updated": product_result.modified_count,
-        "redis_reset": redis_reset_count
+        "inventory_updated": inventory_result.modified_count
     }
+

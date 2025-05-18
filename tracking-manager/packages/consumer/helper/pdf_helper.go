@@ -33,7 +33,7 @@ func getWkhtmltopdfPath() (string, error) {
 	return path, nil
 }
 
-func ExportInvoiceToPDF(order models.Orders, userName string) ([]byte, error) {
+func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 	now := time.Now()
 	currentDate := now.Format("02/01/2006")
 	currentTime := now.Format("15:04:05")
@@ -96,7 +96,7 @@ func ExportInvoiceToPDF(order models.Orders, userName string) ([]byte, error) {
 		<p style="text-align: right;"><strong>Tiền phải trả:</strong> %.0f</p>
 	  </body>
 	</html>`,
-		currentDate, currentTime, order.OrderId, userName,
+		currentDate, currentTime, order.OrderId, order.PickTo.Name,
 		itemsHTML.String(),
 		totalFeeBeforeDiscount, voucherDiscount, shippingFeeDisplay, order.TotalFee,
 	)

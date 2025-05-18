@@ -27,6 +27,9 @@ class ItemPriceDBRes(BaseModel):
     amount: int = 0
     original_price: float = 0
     expired_date: datetime = get_current_time()
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
 
 class ItemImageDBRes(BaseModel):
     images_id: Optional[Union[str, None]] = None
@@ -57,9 +60,6 @@ class ItemProductDBRes(BaseModel):
     product_name: Optional[Union[str, None]] = None
     name_primary: Optional[Union[str, None]] = None
     prices: List[Optional[Union[ItemPriceDBRes, None]]] = None
-    inventory: Optional[Union[int, None]] = None
-    sell: Optional[Union[int, None]] = None
-    delivery: Optional[Union[int, None]] = None
     slug: Optional[Union[str, None]] = None
     description: Optional[Union[str, None]] = None
     full_descriptions: Optional[Union[str, None]] = None
@@ -98,3 +98,11 @@ class ItemProductImportRes(BaseModel):
     import_id: Optional[Union[str, None]] = None
     file_url: Optional[Union[str, None]] = None
     error_message: List[Optional[Union[str, None]]] = None
+
+class ItemProductInventoryRes(BaseModel):
+    product_id: Optional[Union[str, None]] = None
+    price_id: Optional[Union[str, None]] = None
+    inventory: int = 0
+    sell: int = 0
+    delivery: int = 0
+    amount: int = 0
