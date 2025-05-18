@@ -19,6 +19,7 @@ origins = [
     "http://localhost:8000",
     "http://localhost:3000",
     "https://kltn-2025-tracking-api.onrender.com",
+    "https://shop.medicaretech.io.vn"
 ]
 
 app.add_middleware(
