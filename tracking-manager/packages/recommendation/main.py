@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from core import response, exception
 from routers.recommendation import router as recommendation_router
 from routers.chat import router as chat_router
+from routers.document_router import router as medical_document_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,6 +38,7 @@ app.add_exception_handler(RequestValidationError, exception.validation_exception
 # Routers
 app.include_router(recommendation_router, prefix="/v1", tags=["Recommendation"])
 app.include_router(chat_router, prefix="/v1", tags=["Chatbot"])
+app.include_router(medical_document_router, prefix="/v1", tags=["Medical Document"])
 @app.get("/read-root")
 def read_root():
     return {

@@ -1,11 +1,22 @@
-# Dockerfile
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
+
+# Cài đặt Tesseract OCR, poppler-utils và các dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-vie \
+    poppler-utils \
+    libgl1-mesa-glx \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements.txt /requirements.txt
 
 RUN pip install --no-cache-dir -r /requirements.txt
 
-ENV ROOT /packages/recommendation/
+ENV ROOT /app/
 
 COPY ./ $ROOT
 
