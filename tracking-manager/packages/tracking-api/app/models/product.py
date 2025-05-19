@@ -522,26 +522,36 @@ async def getAvailableQuantity(product_id: str, price_id: str):
                 message="Product not found"
             )
         sell = product.prices[0].sell
-        inventory = product.prices[0].sell
+        inventory = product.prices[0].inventory
 
-        return (inventory - sell) // product.prices[0].amount
+        logger.info(f"Sell: {sell}, Inventory: {inventory}")
+
+        return inventory - sell
 
     except Exception as e:
         logger.error(f"Error getting available quantity: {str(e)}")
         return None
 
-async def get_product_by_id(product_id: str, price_id: str):
+async def get_product_by_id(product_id: str, price_id: str, is_admin: bool = False):
     try:
         collection = db[collection_name]
 
-        product = collection.find_one({
+        query = {
             "product_id": product_id,
-            "prices.price_id": price_id,
-            "is_approved": True,
-            "active": True
-        },{"_id": 0})
+            "prices": {
+                "$elemMatch": {"price_id": price_id}
+            }
+        }
+        if not is_admin:
+            query.update({
+                "is_approved": True,
+                "active": True
+            })
+
+        product = collection.find_one(query, {"_id": 0})
 
         if not product:
+            logger.info(f"Product not found for product_id: {product_id}")
             raise response.JsonException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Product not found"
@@ -551,6 +561,8 @@ async def get_product_by_id(product_id: str, price_id: str):
             price for price in product.get("prices", [])
             if price.get("price_id") == price_id
         ]
+
+        logger.info(f"Product: {product}")
 
         return ItemProductDBRes(**product)
     except Exception as e:
@@ -827,7 +839,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
         if update_data.prices:
             price_list = []
             for price in update_data.prices:
-                price_info = await get_product_by_id(update_data.product_id, price.price_id)
+                price_info = await get_product_by_id(update_data.product_id, price.price_id, is_admin=True)
                 price_obj = ItemPriceDBReq(
                     price_id=price.price_id,
                     price=price.original_price * (100 - price.discount) / 100,
