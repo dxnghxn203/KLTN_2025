@@ -131,33 +131,64 @@ const TableProduct = () => {
                     </td>
                     <td className="py-4 px-2 text-center font-medium">
                       <span className="font-normal">
-                        {product.inventory - product.sell}{" "}
-                        {product.prices.find((p: any) => p.amount === 1)?.unit}
+                        {(() => {
+                          const inventoryByUnit: { [unit: string]: number } =
+                            {};
+
+                          // Tính tổng inventory theo đơn vị
+                          product.prices.forEach((p: any) => {
+                            if (!inventoryByUnit[p.unit]) {
+                              inventoryByUnit[p.unit] = 0;
+                            }
+                            inventoryByUnit[p.unit] += p.inventory;
+                          });
+
+                          // Trả về chuỗi hiển thị
+                          return Object.entries(inventoryByUnit)
+                            .map(([unit, qty]) => `${qty} ${unit}`)
+                            .join(", ");
+                        })()}
                       </span>
                       <br />
-                      {product.inventory - product.sell === 0 ? (
-                        <span className="text-red-500">Hết hàng</span>
-                      ) : product.inventory - product.sell < 60 ? (
-                        <span className="text-yellow-500">Sắp hết</span>
-                      ) : (
-                        <span className="text-green-500">Còn hàng</span>
-                      )}
+                      {(() => {
+                        const totalInventory = product.prices.reduce(
+                          (sum: number, p: any) => sum + p.inventory,
+                          0
+                        );
+                        if (totalInventory === 0) {
+                          return <span className="text-red-500">Hết hàng</span>;
+                        } else if (totalInventory < 60) {
+                          return (
+                            <span className="text-yellow-500">Sắp hết</span>
+                          );
+                        } else {
+                          return (
+                            <span className="text-green-500">Còn hàng</span>
+                          );
+                        }
+                      })()}
                     </td>
+
                     <td className="py-4 px-2 w-[100px] text-center">
                       <span className="text-sm">
                         {product.sell}{" "}
                         {product.prices.find((p: any) => p.amount === 1)?.unit}
                       </span>
                     </td>
-                    <td className="py-4 px-2 text-center">
-                      {product.prices.map((p: any, idx: number) => (
-                        <div key={idx} className="mb-2">
-                          <span>{p.price.toLocaleString("vi-VN")}đ</span>
-                          <span className="text-xs text-gray-500">
-                            / {p.unit}
-                          </span>
-                        </div>
-                      ))}
+                    <td className="py-4 px-2 w-[100px] text-center">
+                      <span className="text-sm">
+                        {Object.entries(
+                          product.prices.reduce(
+                            (acc: { [unit: string]: number }, p: any) => {
+                              acc[p.unit] = (acc[p.unit] || 0) + p.sell;
+                              return acc;
+                            },
+                            {}
+                          )
+                        )
+                          .map(([unit, qty]) => `${qty} ${unit}`)
+                          .join(", ")}
+                      </span>
                     </td>
 
                     <td className="py-4 px-2 text-center">
@@ -232,8 +263,19 @@ const TableProduct = () => {
           </table>
         </div>
       </div>
-
-      <div className="flex items-center justify-center space-x-2 py-4">
+      <div className="flex items-center justify-between ">
+        <span className="text-sm text-gray-700">
+          Hiện có {totalProducts} sản phẩm
+        </span>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-700">
+            Hiển thị {indexOfFirstProduct + 1} đến{" "}
+            {Math.min(indexOfLastProduct, totalProducts)} trong số{" "}
+            {totalProducts} sản phẩm
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center justify-center space-x-2">
         {/* Nút previous */}
         <button
           onClick={() => onPageChange(currentPage - 1)}
@@ -285,7 +327,6 @@ const TableProduct = () => {
           return null;
         })}
 
-        {/* Nút next */}
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
@@ -295,7 +336,6 @@ const TableProduct = () => {
         </button>
       </div>
       <div>
-        {" "}
         <DeleteProductDialog
           onClose={() => setIsOpenDialog(false)}
           onDelete={() => {

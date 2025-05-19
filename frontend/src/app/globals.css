@@ -108,6 +108,20 @@
     transform: scale(0.95);
   }
 }
+/* Global styles để chỉnh nội bộ ReactQuill */
+.custom-quill .ql-toolbar {
+  border-top-left-radius: 0.5rem; /* = rounded-lg */
+  border-top-right-radius: 0.5rem;
+  border: 1px solid #f9fafb;; 
+}
+
+.custom-quill .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border: 1px solid #f9fafb; 
+
+}
+
 
 
 

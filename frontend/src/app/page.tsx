@@ -6,6 +6,7 @@ import IntroMedicare from "../components/Home/introMedicare";
 import HealthCorner from "../components/Home/healthCorner";
 import SanDealHeader from "@/components/Product/dealProduct";
 import ProductList from "@/components/Product/productList";
+import VoucherList from "@/components/Voucher/voucherList";
 
 export default function Home() {
   return (
@@ -13,9 +14,8 @@ export default function Home() {
       <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
         <main className="flex flex-col space-y-8">
           <ProductCatalog />
-
           <SanDealHeader />
-
+          <VoucherList />
           <div className="self-start text-2xl font-extrabold text-black">
             Sản phẩm bán chạy
           </div>
