@@ -23,6 +23,7 @@ import { useProduct } from "@/hooks/useProduct";
 import { X } from "lucide-react";
 import { GoHistory } from "react-icons/go";
 import Loading from "@/app/loading";
+import { RiSearchLine } from "react-icons/ri";
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -262,7 +263,7 @@ export default function Header() {
                 <input
                   type="text"
                   value={search}
-                  placeholder="Nhập từ khóa hoặc sản phẩm..."
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
                   onChange={(e) => setSearch(e.target.value)}
                   onFocus={() => {
                     if (search.trim() === "") {
@@ -287,10 +288,10 @@ export default function Header() {
                 />
                 <button
                   type="button"
-                  className="w-[32px] h-[32px] bg-[#002E99] rounded-full flex items-center justify-center shrink-0 hover:bg-[#001F70] transition"
+                  className="flex items-center justify-center shrink-0 transition"
                   onClick={handleSearch}
                 >
-                  <LuSearch className="text-white text-xl" />
+                  <RiSearchLine className="text-[#0053E2] text-2xl" />
                 </button>
               </div>
 

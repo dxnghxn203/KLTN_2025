@@ -24,6 +24,7 @@ const Header = ({
   const { pharmacist, logout } = useAuth();
   const toast = useToast();
 
+  console.log("pharmacist", pharmacist);
   const handleLogout = async () => {
     try {
       logout(

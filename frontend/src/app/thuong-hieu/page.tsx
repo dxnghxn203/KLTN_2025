@@ -139,7 +139,10 @@ const brands: BrandProps[] = [
 ];
 
 const BrandItem: React.FC<BrandProps> = ({ name, imageSrc }) => (
-  <Link href={`/brand/${encodeURIComponent(name)}`} className="flex flex-col">
+  <Link
+    href={`/thuong-hieu/${encodeURIComponent(name)}`}
+    className="flex flex-col"
+  >
     <div className="flex flex-col justify-center items-center px-7 rounded-full bg-neutral-100 h-[170px] w-[170px] max-md:px-5">
       <img
         loading="lazy"
