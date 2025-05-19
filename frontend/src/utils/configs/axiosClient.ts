@@ -42,17 +42,17 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
     function (response: any) {
         if (response?.status_code === 401 || response?.status_code === 403) {
-            removeToken();
-            removeTokenAdmin();
-            removeTokenPharmacist();
+            // removeToken();
+            // removeTokenAdmin();
+            // removeTokenPharmacist();
         }
         return response?.data;
     },
     function (error) {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            removeToken();
-            removeTokenAdmin();
-            removeTokenPharmacist();
+            // removeToken();
+            // removeTokenAdmin();
+            // removeTokenPharmacist();
         }
         return Promise.reject(error);
     }
