@@ -111,7 +111,7 @@ export default function SalesChart() {
 
                 <div className="w-12 h-64 bg-gray-100 rounded-full relative overflow-hidden">
                   <div
-                    className="absolute bottom-0 left-0 w-12 bg-[#1E4DB7] hover:bg-blue-700 transition-all duration-300 rounded-full"
+                    className="absolute bottom-0 left-0 w-12 bg-green-700 hover:bg-green-800 transition-all duration-300 rounded-full"
                     style={{ height: `${height}px` }}
                   ></div>
                 </div>

@@ -64,6 +64,7 @@ const CreateSingleProduct = () => {
         amount: 0,
         weight: 0,
         inventory: 0,
+        expired_date: "",
       },
     ],
     ingredients: [
@@ -123,6 +124,7 @@ const CreateSingleProduct = () => {
   // verify_by
   const [verified_by, setVerify_by] = useState<string>("");
   const [is_approved, setIs_approved] = useState<boolean>(false);
+  const [expired_date, setExpired_date] = useState<string>("");
 
   // Load categories on mount
   useEffect(() => {
@@ -179,6 +181,7 @@ const CreateSingleProduct = () => {
         amount: p.amount,
         weight: p.weight,
         inventory: p.inventory,
+        expired_date: p.expired_date,
       })),
       ingredients: product.ingredients.map((i: any) => ({
         ingredient_name: i.ingredient_name,
@@ -583,10 +586,10 @@ const CreateSingleProduct = () => {
         if (Object.keys(dataToSend).length > 0) {
           await fetchUpdateProduct(
             dataToSend,
-            (msg) => toast.showToast(msg, "success"),
-            (msg) => Promise.reject(new Error(msg))
+            (msg: string) => toast.showToast(msg, "success"),
+            () => router.push("/san-pham/them-san-pham-don?chi-tiet=" + editId)
           );
-          console.log("dataToSend", dataToSend);
+          // console.log("dataToSend", dataToSend);
         }
       } catch (error: any) {
         toast.showToast("Lỗi khi cập nhật: " + error.message, "error");
@@ -633,6 +636,7 @@ const CreateSingleProduct = () => {
           amount: 0,
           weight: 0,
           inventory: 0,
+          expired_date: "",
         },
       ],
       ingredients: [{ ingredient_name: "", ingredient_amount: "" }],
@@ -724,7 +728,7 @@ const CreateSingleProduct = () => {
       <h2 className="text-2xl font-extrabold text-black">
         <h1>
           {editId
-            ? "Chỉnh sửa sản phẩm"
+            ? "Cập nhật sản phẩm"
             : detailId
             ? "Xem chi tiết sản phẩm"
             : "Thêm sản phẩm"}
@@ -737,7 +741,7 @@ const CreateSingleProduct = () => {
         <span> / </span>
         <Link href="/create-single-product" className="text-gray-800">
           {editId
-            ? "Chỉnh sửa sản phẩm"
+            ? "Cập nhật sản phẩm"
             : detailId
             ? "Xem chi tiết sản phẩm"
             : "Thêm sản phẩm"}

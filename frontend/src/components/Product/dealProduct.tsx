@@ -28,7 +28,10 @@ export default function SanDealHeader() {
         </div>
 
         {/* Xem thêm */}
-        <a href="#" className="text-white hover:underline font-medium text-sm">
+        <a
+          href="/bo-suu-tap/san-uu-dai-xin"
+          className="text-white hover:underline font-medium text-sm"
+        >
           Xem thêm
         </a>
       </div>

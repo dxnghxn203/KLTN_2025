@@ -30,6 +30,7 @@ export const PriceForm = ({
         amount: 0,
         weight: 0,
         inventory: 0,
+        expired_date: "",
       },
     ]);
   };
@@ -47,7 +48,7 @@ export const PriceForm = ({
     updatedPrices[index] = { ...updatedPrices[index], [field]: value };
     updatePrices(updatedPrices);
   };
-
+  console.log(prices);
   return (
     <div className="bg-white shadow-sm rounded-2xl p-5">
       <h3 className="text-lg font-semibold mb-3">Giá và đơn vị</h3>
@@ -96,6 +97,17 @@ export const PriceForm = ({
                   onChange={(e) =>
                     updatePriceItem(index, "discount", Number(e.target.value))
                   }
+                  disabled={isViewOnly}
+                  className="border rounded-lg p-2 w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Ngày hết hạn
+                </label>
+                <input
+                  type="date"
+                  value={price.expired_date?.split("T")[0]}
                   disabled={isViewOnly}
                   className="border rounded-lg p-2 w-full"
                 />

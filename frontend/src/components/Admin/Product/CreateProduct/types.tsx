@@ -10,6 +10,7 @@ export interface PriceItem {
   amount: number;
   weight: number;
   inventory: number;
+  expired_date: string;
 }
 
 export interface IngredientItem {

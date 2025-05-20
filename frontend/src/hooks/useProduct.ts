@@ -156,15 +156,6 @@ export function useProduct() {
         onFailed: (message: any) => void
     ) => {
         dispatch(
-// <<<<<<< HEAD
-//             fetchApproveProductByPharmacistStart({
-//                 ...params,
-//                 onSuccess,
-//                 onFailure: onFailed
-//             })
-//         );
-//     }
-// =======
             fetchUpdateProductStart({
                 ...params,
                 onSuccess,

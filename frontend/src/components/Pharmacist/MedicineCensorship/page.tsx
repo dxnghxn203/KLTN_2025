@@ -159,13 +159,7 @@ const MedicineCensorshipList = () => {
                         </span>
                       </td>
                       <td className="py-4 px-2 text-center">
-                        <span
-                          className={`${
-                            product?.prescription_required
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          } px-2 py-1 rounded-full`}
-                        >
+                        <span className="">
                           {product?.prescription_required ? "Có" : "Không"}
                         </span>
                       </td>

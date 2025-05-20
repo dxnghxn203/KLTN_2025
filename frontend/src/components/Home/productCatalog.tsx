@@ -174,26 +174,35 @@ const ProductCatalog: React.FC = () => {
       <div className="mt-8 text-2xl font-extrabold text-black">
         Danh mục sản phẩm
       </div>
-      <div className="mt-5 grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {categories.map((category, index) => (
-          <Link key={index} href={category.path}>
-            <div
-              className={`flex justify-between items-start gap-4 p-4 rounded-xl ${category.bgColor} hover:shadow-md transition-all duration-200`}
-            >
-              <div>
-                <div className="text-base font-semibold">{category.title}</div>
-                <div className="text-sm mt-2">{category.description}</div>
-              </div>
-              <Image
-                src={category.imageSrc}
-                alt={category.title}
-                width={88}
-                height={88}
-                className="object-contain rounded-br-xl"
-              />
-            </div>
-          </Link>
-        ))}
+      <div className="w-full max-md:px-5 max-md:max-w-full">
+        <div className="self-center mt-5 w-full">
+          <div className="grid grid-cols-4 gap-6 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
+            {categories.map((category, index) => (
+              <Link key={index} href={category.path} passHref>
+                <div
+                  key={index}
+                  className={`flex grow gap-5 justify-between items-start pt-4 pl-3.5 w-full text-black ${category.bgColor} rounded-xl max-md:mt-8 hover:shadow-md transition-all duration-200`}
+                >
+                  <div className="flex flex-col self-start">
+                    <div className="text-base font-semibold">
+                      {category.title}
+                    </div>
+                    <div className="self-start mt-3 text-sm">
+                      {category.description}
+                    </div>
+                  </div>
+                  <Image
+                    src={category.imageSrc}
+                    alt={category.title}
+                    width={88}
+                    height={88}
+                    className="object-contain shrink-0 self-end mt-6 aspect-square w-111px h-111px rounded-br-xl"
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

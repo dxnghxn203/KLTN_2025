@@ -11,5 +11,6 @@ const routerAdmin = {
     PARTNER: '/partner/partner-order',
     FORGOT_PASSWORD: '/quen-mat-khau',
     REGISTER_ADMIN :'/dang-ky-admin',
+    DISCOUNT: '/quan-ly-giam-gia',
     VERIFY_EMAIL: (email: string) => `/dang-ky-admin/xac-thuc-${email}`,
 }

@@ -1,6 +1,6 @@
 import { FiPieChart, FiShoppingBag } from "react-icons/fi";
 import { BsBox } from "react-icons/bs";
-import { TbCategory } from "react-icons/tb";
+import { TbCategory, TbShoppingBagDiscount } from "react-icons/tb";
 import { FaRegUser } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,6 +51,12 @@ const menuHomeItems = [
     icon: <TbCategory />,
     label: "Danh mục",
     path: "/quan-ly-danh-muc",
+  },
+  {
+    id: "Discount",
+    icon: <TbShoppingBagDiscount />,
+    label: "Chiến dịch giảm giá",
+    path: "/quan-ly-giam-gia",
   },
 ];
 const menuSettingsItems = [

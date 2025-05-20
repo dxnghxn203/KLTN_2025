@@ -6,22 +6,41 @@ import { IoImage } from "react-icons/io5";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
+  MdModeEdit,
   MdMoreHoriz,
   MdNavigateBefore,
   MdNavigateNext,
   MdOutlineModeEdit,
 } from "react-icons/md";
-import DeleteProductDialog from "../../Dialog/confirmDeleteProductDialog";
 import { useToast } from "@/providers/toastProvider";
 import { FiEye } from "react-icons/fi";
+import { getAllProductAdmin } from "@/services/productService";
+import UpdateDiscountDialog from "../Dialog/updateDiscountDialog";
 
-const TableProduct = () => {
-  const { allProductAdmin, getAllProductsAdmin, deleteProduct } = useProduct();
+interface TableManagementDiscountProps {
+  allProductAdmin: any[];
+}
+
+const TableManagementDiscount = ({
+  allProductAdmin,
+}: TableManagementDiscountProps) => {
+  const { allProductDiscount, fetchGetProductDiscount } = useProduct();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const tabs = ["discounted", "pending"];
+  const [activeTab, setActiveTab] = useState<"discounted" | "pending">(
+    "discounted"
+  );
+  const [isOpenUpdateProduct, setIsOpenUpdateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const router = useRouter();
+
+  const filteredPendingDiscountProducts = allProductAdmin?.filter(
+    (product: any) =>
+      product.verified_by === "" &&
+      product.prices.some((p: any) => p.discount && !p.status_discount)
+  );
+
+  console.log("allProductAdmin", allProductAdmin);
 
   const onPageChange = (page: number) => {
     setCurrentPage(page);
@@ -31,7 +50,7 @@ const TableProduct = () => {
   const productsPerPage = 10;
 
   useEffect(() => {
-    getAllProductsAdmin();
+    fetchGetProductDiscount();
   }, []);
 
   const toggleMenu = (productId: string) => {
@@ -49,35 +68,57 @@ const TableProduct = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Phân trang
-  const totalProducts = allProductAdmin ? allProductAdmin.length : 0;
+  const currentList =
+    activeTab === "discounted"
+      ? allProductDiscount
+      : filteredPendingDiscountProducts;
+
+  const totalProducts = currentList ? currentList.length : 0;
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = allProductAdmin?.slice(
+  const currentProducts = currentList?.slice(
     indexOfFirstProduct,
     indexOfLastProduct
   );
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
   return (
-    <>
+    <div>
+      <div className="flex border-b border-gray-200 mb-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => {
+              setActiveTab(tab as "discounted" | "pending");
+              setCurrentPage(1); // reset page khi đổi tab
+            }}
+            className={`pb-2 px-3 text-sm font-medium border-b-2 transition flex items-center ${
+              activeTab === tab
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-blue-500"
+            }`}
+          >
+            {tab === "discounted" ? "Sản phẩm giảm giá" : "Chờ duyệt"}
+          </button>
+        ))}
+      </div>
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full table-auto border-collapse">
             <thead className="text-left text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
-              <tr className="uppercase text-sm">
-                <th className="py-4 px-2 text-center w-[130px]">Hình ảnh</th>
-                <th className="py-4 px-2 ">Tên sản phẩm</th>
-                <th className="py-4 px-2 text-center">Mã sản phẩm/ danh mục</th>
-                <th className="py-4 px-8 text-center">Kho</th>
-                <th className="py-4 px-2 text-center">Bán</th>
-                <th className="py-4 px-2 text-center">Giá</th>
-                <th className="py-4 px-2 text-center">Trạng thái</th>
-                <th className="py-4 px-2 text-center"></th>
+              <tr className="uppercase text-sm space-x-2">
+                <th className="py-4 text-center px-4">Hình ảnh</th>
+                <th className="py-4">Tên sản phẩm</th>
+                <th className="py-4 text-center">Mã sản phẩm/ danh mục</th>
+                <th className="py-4 text-center">Kho</th>
+                <th className="py-4 text-center">Bán</th>
+
+                <th className="py-4 text-center">Giảm giá</th>
+                <th className="py-4 px-4 text-center"></th>
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className="space-x-2">
               {currentProducts && currentProducts.length > 0 ? (
                 currentProducts.map((product: any, index: number) => (
                   <tr
@@ -88,7 +129,7 @@ const TableProduct = () => {
                         : ""
                     }`}
                   >
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-4 px-2 text-center ">
                       {product.images_primary ? (
                         <div className="relative h-16 w-16 mx-auto">
                           <Image
@@ -104,38 +145,34 @@ const TableProduct = () => {
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-2 text-left leading-5">
+                    <td className="py-4 text-left leading-5">
                       <div className="line-clamp-2 font-medium">
                         {product.product_name}
                       </div>
-                      <div className="line-clamp-2 text-xs text-gray-500 mt-1">
+                      <div className="line-clamp-2 text-xs text-gray-500 mt-1 w-[180px]">
                         {product.name_primary}
                       </div>
                     </td>
-                    <td className="py-4 px-2 text-center text-xs flex flex-col gap-2 items-center justify-center">
+                    <td className="py-4 text-center text-xs flex flex-col gap-2 items-center justify-center">
                       <span className="font-semibold">
                         {product.product_id}
                       </span>
-                      <span
-                        className="
-                      px-2 py-1 bg-blue-100 text-blue-700 rounded-full w-fit"
-                      >
+                      <span className="py-1 px-2 bg-blue-100 text-blue-700 rounded-full w-fit">
                         {product.category?.main_category_id}
                       </span>
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full w-fit">
+                      <span className="py-1 px-2 bg-green-100 text-green-700 rounded-full w-fit">
                         {product.category?.sub_category_id}
                       </span>
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full w-fit">
+                      <span className="py-1 px-2 bg-red-100 text-red-700 rounded-full w-fit">
                         {product.category?.child_category_id}
                       </span>
                     </td>
-                    <td className="py-4 px-2 text-center font-medium">
+                    <td className="py-4 text-center font-medium">
                       <span className="font-normal">
                         {(() => {
                           const inventoryByUnit: { [unit: string]: number } =
                             {};
 
-                          // Tính tổng inventory theo đơn vị
                           product.prices.forEach((p: any) => {
                             if (!inventoryByUnit[p.unit]) {
                               inventoryByUnit[p.unit] = 0;
@@ -143,7 +180,6 @@ const TableProduct = () => {
                             inventoryByUnit[p.unit] += p.inventory;
                           });
 
-                          // Trả về chuỗi hiển thị
                           return Object.entries(inventoryByUnit)
                             .map(([unit, qty]) => `${qty} ${unit}`)
                             .join(", ");
@@ -169,7 +205,7 @@ const TableProduct = () => {
                       })()}
                     </td>
 
-                    <td className="py-4 px-2 w-[100px] text-center">
+                    <td className="py-4 text-center">
                       <span className="text-sm">
                         {Object.entries(
                           product.prices.reduce(
@@ -184,85 +220,49 @@ const TableProduct = () => {
                           .join(", ")}
                       </span>
                     </td>
-                    <td className="py-4 px-2 w-[100px] text-center">
-                      <span className="text-sm">
-                        {Object.entries(
-                          product.prices.reduce(
-                            (acc: { [unit: string]: number }, p: any) => {
-                              acc[p.unit] = (acc[p.unit] || 0) + p.price;
-                              return acc;
-                            },
-                            {}
-                          )
-                        )
-                          .map(
-                            ([unit, qty]) =>
-                              `${new Intl.NumberFormat("vi-VN", {
-                                style: "currency",
-                                currency: "VND",
-                              }).format(Number(qty))} / ${unit}`
-                          )
-                          .join(", ")}
-                      </span>
-                    </td>
 
-                    <td className="py-4 px-2 text-center">
-                      {product.verified_by === "" ? (
-                        <span className="text-yellow-500 font-semibold">
-                          Đang chờ duyệt
-                        </span>
-                      ) : product.is_approved === true ? (
-                        <span className="text-green-500 font-semibold">
-                          Đã duyệt bởi{" "}
-                          <span className="text-xs text-gray-500 font-normal">
-                            {product.verified_by}
-                          </span>
-                        </span>
+                    <td className="py-4 text-center relative">
+                      {product.prices && product.prices.length > 0 ? (
+                        product.prices.map((p: any, index: number) => (
+                          <div key={index} className="mb-1">
+                            {p.discount ? (
+                              <div>
+                                {p.discount ? `${p.discount}% / ${p.unit}` : ""}
+                              </div>
+                            ) : (
+                              ""
+                            )}
+
+                            <div className="text-xs text-gray-500">
+                              {p.expired_date && p.discount
+                                ? new Date(p.expired_date).toLocaleDateString(
+                                    "vi-VN",
+                                    {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                    }
+                                  )
+                                : ""}
+                            </div>
+                          </div>
+                        ))
                       ) : (
-                        <span className="text-red-500 font-semibold">
-                          Từ chối bởi{" "}
-                          <span className="text-xs text-gray-500 font-normal">
-                            {product.verified_by}
-                          </span>
-                        </span>
+                        <span>—</span>
                       )}
                     </td>
-
-                    <td className="py-4 px-2 text-center relative">
-                      <div className="menu-container">
-                        <div
-                          className="p-2 rounded-full hover:text-[#1E4DB7] hover:bg-[#E7ECF7] cursor-pointer inline-flex items-center justify-center"
-                          onClick={() => toggleMenu(product.product_id)}
+                    <td className="py-4 px-4 text-center">
+                      <div className="flex items-center justify-center">
+                        <button
+                          className="text-blue-800 font-medium flex items-center space-x-2 "
+                          onClick={() => {
+                            setIsOpenUpdateProduct(true);
+                            setSelectedProduct(product);
+                          }}
                         >
-                          <MdMoreHoriz className="text-xl" />
-                        </div>
-
-                        {menuOpen === product.product_id && (
-                          <div className="absolute right-0 bg-white border rounded-lg shadow-lg z-10 w-32 items-center">
-                            <button
-                              className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 space-x-1"
-                              onClick={() => {
-                                router.push(
-                                  `/san-pham/them-san-pham-don?chi-tiet=${product.product_id}`
-                                );
-                              }}
-                            >
-                              <FiEye className="text-base" />
-                              <span>Chi tiết</span>
-                            </button>
-
-                            <button
-                              className="flex items-center gap-1 w-full px-4 py-2 text-sm hover:bg-gray-100 text-red-500 space-x-1"
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setIsOpenDialog(true);
-                              }}
-                            >
-                              <ImBin className="text-base text-sm" />
-                              <span>Xóa</span>
-                            </button>
-                          </div>
-                        )}
+                          <MdModeEdit className="text-blue-800 mr-1" />
+                          Sửa
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -278,7 +278,7 @@ const TableProduct = () => {
           </table>
         </div>
       </div>
-      <div className="flex items-center justify-between ">
+      <div className="flex items-center justify-between mt-4">
         <span className="text-sm text-gray-700">
           Hiện có {totalProducts} sản phẩm
         </span>
@@ -350,28 +350,13 @@ const TableProduct = () => {
           <MdNavigateNext className="text-xl" />
         </button>
       </div>
-      <div>
-        <DeleteProductDialog
-          onClose={() => setIsOpenDialog(false)}
-          onDelete={() => {
-            deleteProduct(
-              selectedProduct.product_id,
-              (message) => {
-                toast.showToast(message, "success");
-                getAllProductsAdmin();
-                setIsOpenDialog(false);
-                setSelectedProduct(null);
-              },
-              (message) => {
-                toast.showToast(message, "error");
-              }
-            );
-          }}
-          isOpen={isOpenDialog}
-        />
-      </div>
-    </>
+      <UpdateDiscountDialog
+        isOpen={isOpenUpdateProduct}
+        onClose={() => setIsOpenUpdateProduct(false)}
+        selectedProduct={selectedProduct}
+      />
+    </div>
   );
 };
 
-export default TableProduct;
+export default TableManagementDiscount;
