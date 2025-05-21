@@ -38,7 +38,7 @@ from app.models.product import restore_product_sell, check_all_product_discount_
     get_product_inventory, get_product_by_id
 from app.models.time import get_range_time
 from app.models.user import get_by_id
-from app.models.voucher import get_voucher_by_id
+from app.models.voucher import get_voucher_by_id, restore_voucher
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -152,7 +152,6 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
             out_of_stock.append({"product_id": product.product_id})
             continue
 
-
         # Lấy thông tin tồn kho đúng đơn vị (price_id)
         try:
             inventory_data = await get_product_inventory(product_id=product.product_id, price_id=product.price_id)
@@ -190,7 +189,9 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
 
         total_price += actual_price * product.quantity
         weight += price_info.weight * product.quantity
-
+        expired_date = price_info.expired_date
+        if expired_date and expired_date.tzinfo is None:
+            expired_date = expired_date.replace(tzinfo=timezone.utc)
         product_item = ItemProductReq(
             product_id=product.product_id,
             price_id=product.price_id,
@@ -202,7 +203,7 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
             original_price=price_info.original_price,
             discount=0 if is_expired else price_info.discount,
             images_primary=product_info.images_primary,
-            expired_date=price_info.expired_date.isoformat()
+            expired_date=expired_date.isoformat()
         )
         product_items.append(product_item)
 
@@ -212,42 +213,57 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
     return product_items, total_price, weight, out_of_stock, out_of_date
 
 
-async def process_single_voucher(voucher_id: str, expected_type: str) -> Union[ItemVoucherReq, Dict[str, str]]:
+async def process_single_voucher(voucher_id: str, expected_type: str, user_id: str = None) -> Union[ItemVoucherReq, Dict[str, str]]:
     try:
         voucher = await get_voucher_by_id(voucher_id)
     except response.JsonException as je:
         return {voucher_id: je.message}
     if voucher.voucher_type != expected_type:
         return {voucher_id: "Voucher không hợp lệ"}
-    elif voucher.expired_date < get_current_time():
+    if voucher.expired_date < get_current_time():
         return {voucher_id: "Voucher hết hạn"}
+    if voucher.used >= voucher.inventory:
+        return {voucher_id: "Voucher hết số lượng"}
 
+    if user_id:
+        user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(user_id)))
+        if not user_info:
+            return {voucher_id: "Vui lòng đăng nhập tài khoản để sử dụng voucher"}
+        if user_id in voucher.used_by:
+            return {voucher_id: "Voucher chỉ được sử dụng 1 lần"}
+    else:
+        return {voucher_id: "Vui lòng đăng nhập tài khoản để sử dụng voucher"}
+    expired_date = voucher.expired_date
+    if expired_date and expired_date.tzinfo is None:
+        expired_date = expired_date.replace(tzinfo=timezone.utc)
     return ItemVoucherReq(
         voucher_id=voucher.voucher_id,
+        voucher_name=voucher.voucher_name,
         discount=voucher.discount,
         min_order_value=voucher.min_order_value,
         max_discount_value=voucher.max_discount_value,
         voucher_type=voucher.voucher_type,
-        expired_date=voucher.expired_date.isoformat()
+        expired_date=expired_date.isoformat()
     )
 
 async def process_order_voucher(
     voucher_order_id: str,
-    voucher_delivery_id: str
+    voucher_delivery_id: str,
+    user_id: str = None
 ) -> Tuple[List[ItemVoucherReq], List[Dict[str, str]]]:
     try:
         voucher_list = []
         voucher_error = []
 
         if voucher_order_id:
-            order_voucher = await process_single_voucher(voucher_order_id, "order")
+            order_voucher = await process_single_voucher(voucher_order_id, "order", user_id=user_id)
             if isinstance(order_voucher, dict):
                 for key, msg in order_voucher.items():
                     voucher_error.append({"voucher_id": key, "message": msg})
             else:
                 voucher_list.append(order_voucher)
         if voucher_delivery_id:
-            delivery_voucher = await process_single_voucher(voucher_delivery_id, "delivery")
+            delivery_voucher = await process_single_voucher(voucher_delivery_id, "delivery", user_id=user_id)
             if isinstance(delivery_voucher, dict):
                 for key, msg in delivery_voucher.items():
                     voucher_error.append({"voucher_id": key, "message": msg})
@@ -304,7 +320,8 @@ async def check_shipping_fee(
             "weight": weight,
             "voucher_order_discount": order_discount_amount,
             "voucher_delivery_discount": delivery_discount_amount,
-            "total_fee": total_fee,
+            "basic_total_fee": total_fee,
+            "estimated_total_fee": total_fee - order_discount_amount - delivery_discount_amount,
             "out_of_stock": [],
             "out_of_date": [],
             "voucher_error": voucher_error or []
@@ -321,24 +338,31 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
         product_items, product_price, weight, out_of_stock, out_of_date = await process_order_products(item.product)
 
-        if out_of_stock or out_of_date:
+        voucher_items, voucher_error = await process_order_voucher(
+            item.voucher_order_id, item.voucher_delivery_id, user_id
+        )
+
+        if out_of_stock or out_of_date or voucher_error:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                message="Một số sản phẩm hoặc voucher không khả dụng, vui lòng làm mới lại trang",
                 data={
                     "out_of_stock": out_of_stock,
-                    "out_of_date": out_of_date
+                    "out_of_date": out_of_date,
+                    "voucher_error": voucher_error
                 }
             )
 
         fee_data = await check_shipping_fee(
             receiver_province_code=item.receiver_province_code,
             product_price=product_price,
-            weight=weight
+            weight=weight,
+            voucher=voucher_items,
+            voucher_error=voucher_error
         )
         logger.info(f"Fee data: {fee_data}")
 
-        if not await save_order_to_redis(item, order_id, tracking_id, user_id, fee_data, product_items):
+        if not await save_order_to_redis(item, order_id, tracking_id, user_id, fee_data, product_items, voucher_items):
             return response.BaseResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 message="Không thể lưu đơn hàng"
@@ -418,12 +442,14 @@ async def save_order_to_redis(
         tracking_id: str,
         user_id: str,
         fee_data: dict,
-        product_items: List[ItemProductReq]
+        product_items: List[ItemProductReq],
+        voucher_items: Optional[List[ItemVoucherReq]] = None
     ):
     try:
         item_data = ItemOrderReq(
             **item.model_dump(exclude={"product"}),
             product=product_items,
+            voucher=voucher_items or [],
             order_id=order_id,
             tracking_id=tracking_id,
             status="created",
@@ -431,7 +457,10 @@ async def save_order_to_redis(
             delivery_time=fee_data["delivery_time"],
             shipping_fee=fee_data["shipping_fee"],
             product_fee=fee_data["product_fee"],
-            total_fee=fee_data["total_fee"],
+            basic_total_fee=fee_data["basic_total_fee"],
+            estimated_total_fee=fee_data["estimated_total_fee"],
+            voucher_order_discount=fee_data["voucher_order_discount"],
+            voucher_delivery_discount=fee_data["voucher_delivery_discount"],
             weight=fee_data["weight"],
             pick_from=WAREHOUSE_ADDRESS,
             sender_province_code=SENDER_PROVINCE_CODE,
@@ -542,6 +571,9 @@ async def cancel_order(order_id: str):
 
         for product in order.product:
             await restore_product_sell(product.product_id, product.price_id, product.quantity)
+
+        for voucher in order.voucher:
+            await restore_voucher(voucher.voucher_id, order.created_by)
         logger.info(f"Đã hủy đơn hàng: {order_id}")
         return response.SuccessResponse(message="Hủy đơn hàng thành công")
 

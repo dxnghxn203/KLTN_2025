@@ -41,31 +41,35 @@ type infoAddressOrderReq struct {
 
 type Orders struct {
 	// Id            primitive.ObjectID  `json:"_id" bson:"_id"`
-	OrderId              string              `json:"order_id" bson:"order_id"`
-	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
-	Status               string              `json:"status" bson:"status"`
-	ShipperId            string              `json:"shipper_id" bson:"shipper_id"`
-	ShipperName          string              `json:"shipper_name" bson:"shipper_name"`
-	Product              []ProductInfo       `json:"product" bson:"product"`
-	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
-	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
-	SenderProvinceCode   int                 `json:"sender_province_code" bson:"sender_province_code"`
-	SenderDistrictCode   int                 `json:"sender_district_code" bson:"sender_district_code"`
-	SenderCommuneCode    int                 `json:"sender_commune_code" bson:"sender_commune_code"`
-	ReceiverProvinceCode int                 `json:"receiver_province_code" bson:"receiver_province_code"`
-	ReceiverDistrictCode int                 `json:"receiver_district_code" bson:"receiver_district_code"`
-	ReceiverCommuneCode  int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
-	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
-	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
-	CreatedBy            string              `json:"created_by" bson:"created_by"`
-	DeliveryTime         time.Time           `json:"delivery_time" bson:"delivery_time"`
-	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
-	PaymentType          string              `json:"payment_type" bson:"payment_type"`
-	PaymentStatus        string              `json:"payment_status" bson:"payment_status"`
-	Weight               float64             `json:"weight" bson:"weight"`
-	ShippingFee          float64             `json:"shipping_fee" bson:"shipping_fee"`
-	ProductFee           float64             `json:"product_fee" bson:"product_fee"`
-	TotalFee             float64             `json:"total_fee" bson:"total_fee"`
+	OrderId                 string              `json:"order_id" bson:"order_id"`
+	TrackingId              string              `json:"tracking_id" bson:"tracking_id"`
+	Status                  string              `json:"status" bson:"status"`
+	ShipperId               string              `json:"shipper_id" bson:"shipper_id"`
+	ShipperName             string              `json:"shipper_name" bson:"shipper_name"`
+	Product                 []ProductInfo       `json:"product" bson:"product"`
+	Voucher                 []VoucherInfo       `json:"voucher" bson:"voucher"`
+	PickFrom                infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
+	PickTo                  infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
+	SenderProvinceCode      int                 `json:"sender_province_code" bson:"sender_province_code"`
+	SenderDistrictCode      int                 `json:"sender_district_code" bson:"sender_district_code"`
+	SenderCommuneCode       int                 `json:"sender_commune_code" bson:"sender_commune_code"`
+	ReceiverProvinceCode    int                 `json:"receiver_province_code" bson:"receiver_province_code"`
+	ReceiverDistrictCode    int                 `json:"receiver_district_code" bson:"receiver_district_code"`
+	ReceiverCommuneCode     int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
+	CreatedDate             time.Time           `json:"created_date" bson:"created_date"`
+	UpdatedDate             time.Time           `json:"updated_date" bson:"updated_date"`
+	CreatedBy               string              `json:"created_by" bson:"created_by"`
+	DeliveryTime            time.Time           `json:"delivery_time" bson:"delivery_time"`
+	DeliveryInstruction     string              `json:"delivery_instruction" bson:"delivery_instruction"`
+	PaymentType             string              `json:"payment_type" bson:"payment_type"`
+	PaymentStatus           string              `json:"payment_status" bson:"payment_status"`
+	Weight                  float64             `json:"weight" bson:"weight"`
+	ShippingFee             float64             `json:"shipping_fee" bson:"shipping_fee"`
+	ProductFee              float64             `json:"product_fee" bson:"product_fee"`
+	BasicTotalFee           float64             `json:"basic_total_fee" bson:"basic_total_fee"`
+	EstimatedTotalFee       float64             `json:"estimated_total_fee" bson:"estimated_total_fee"`
+	VoucherOrderDiscount    float64             `json:"voucher_order_discount" bson:"voucher_order_discount"`
+	VoucherDeliveryDiscount float64             `json:"voucher_delivery_discount" bson:"voucher_delivery_discount"`
 }
 
 type ProductInfo struct {
@@ -82,6 +86,16 @@ type ProductInfo struct {
 	ExpiredDate   time.Time `json:"expired_date" bson:"expired_date"`
 }
 
+type VoucherInfo struct {
+	VoucherId        string    `json:"voucher_id" bson:"voucher_id"`
+	VoucherName      string    `json:"voucher_name" bson:"voucher_name"`
+	Discount         float64   `json:"discount" bson:"discount"`
+	MinOrderValue    float64   `json:"min_order_value" bson:"min_order_value"`
+	MaxDiscountValue float64   `json:"max_discount_value" bson:"max_discount_value"`
+	VoucherType      string    `json:"voucher_type" bson:"voucher_type"`
+	ExpiredDate      time.Time `json:"expired_date" bson:"expired_date"`
+}
+
 type ProductRes struct {
 	ProductId string `json:"product_id" bson:"product_id"`
 	PriceId   string `json:"price_id" bson:"price_id"`
@@ -90,33 +104,44 @@ type ProductRes struct {
 	Delivery  int    `json:"delivery" bson:"delivery"`
 }
 
+type VoucherRes struct {
+	VoucherId string   `json:"voucher_id" bson:"voucher_id"`
+	Inventory int      `json:"inventory" bson:"inventory"`
+	Used      int      `json:"used" bson:"used"`
+	UsedBy    []string `json:"used_by" bson:"used_by"`
+}
+
 type OrderRes struct {
-	Id                   primitive.ObjectID  `json:"_id" bson:"_id"`
-	OrderId              string              `json:"order_id" bson:"order_id"`
-	TrackingId           string              `json:"tracking_id" bson:"tracking_id"`
-	Status               string              `json:"status" bson:"status"`
-	ShipperId            string              `json:"shipper_id" bson:"shipper_id"`
-	ShipperName          string              `json:"shipper_name" bson:"shipper_name"`
-	Product              []ProductInfo       `json:"product" bson:"product"`
-	PickFrom             infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
-	PickTo               infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
-	SenderProvinceCode   int                 `json:"sender_province_code" bson:"sender_province_code"`
-	SenderDistrictCode   int                 `json:"sender_district_code" bson:"sender_district_code"`
-	SenderCommuneCode    int                 `json:"sender_commune_code" bson:"sender_commune_code"`
-	ReceiverProvinceCode int                 `json:"receiver_province_code" bson:"receiver_province_code"`
-	ReceiverDistrictCode int                 `json:"receiver_district_code" bson:"receiver_district_code"`
-	ReceiverCommuneCode  int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
-	CreatedDate          time.Time           `json:"created_date" bson:"created_date"`
-	UpdatedDate          time.Time           `json:"updated_date" bson:"updated_date"`
-	CreatedBy            string              `json:"created_by" bson:"created_by"`
-	DeliveryTime         time.Time           `json:"delivery_time" bson:"delivery_time"`
-	DeliveryInstruction  string              `json:"delivery_instruction" bson:"delivery_instruction"`
-	PaymentType          string              `json:"payment_type" bson:"payment_type"`
-	PaymentStatus        string              `json:"payment_status" bson:"payment_status"`
-	Weight               float64             `json:"weight" bson:"weight"`
-	ShippingFee          float64             `json:"shipping_fee" bson:"shipping_fee"`
-	ProductFee           float64             `json:"product_fee" bson:"product_fee"`
-	TotalFee             float64             `json:"total_fee" bson:"total_fee"`
+	Id                      primitive.ObjectID  `json:"_id" bson:"_id"`
+	OrderId                 string              `json:"order_id" bson:"order_id"`
+	TrackingId              string              `json:"tracking_id" bson:"tracking_id"`
+	Status                  string              `json:"status" bson:"status"`
+	ShipperId               string              `json:"shipper_id" bson:"shipper_id"`
+	ShipperName             string              `json:"shipper_name" bson:"shipper_name"`
+	Product                 []ProductInfo       `json:"product" bson:"product"`
+	Voucher                 []VoucherInfo       `json:"voucher" bson:"voucher"`
+	PickFrom                infoAddressOrderReq `json:"pick_from" bson:"pick_from"`
+	PickTo                  infoAddressOrderReq `json:"pick_to" bson:"pick_to"`
+	SenderProvinceCode      int                 `json:"sender_province_code" bson:"sender_province_code"`
+	SenderDistrictCode      int                 `json:"sender_district_code" bson:"sender_district_code"`
+	SenderCommuneCode       int                 `json:"sender_commune_code" bson:"sender_commune_code"`
+	ReceiverProvinceCode    int                 `json:"receiver_province_code" bson:"receiver_province_code"`
+	ReceiverDistrictCode    int                 `json:"receiver_district_code" bson:"receiver_district_code"`
+	ReceiverCommuneCode     int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
+	CreatedDate             time.Time           `json:"created_date" bson:"created_date"`
+	UpdatedDate             time.Time           `json:"updated_date" bson:"updated_date"`
+	CreatedBy               string              `json:"created_by" bson:"created_by"`
+	DeliveryTime            time.Time           `json:"delivery_time" bson:"delivery_time"`
+	DeliveryInstruction     string              `json:"delivery_instruction" bson:"delivery_instruction"`
+	PaymentType             string              `json:"payment_type" bson:"payment_type"`
+	PaymentStatus           string              `json:"payment_status" bson:"payment_status"`
+	Weight                  float64             `json:"weight" bson:"weight"`
+	ShippingFee             float64             `json:"shipping_fee" bson:"shipping_fee"`
+	ProductFee              float64             `json:"product_fee" bson:"product_fee"`
+	BasicTotalFee           float64             `json:"basic_total_fee" bson:"basic_total_fee"`
+	EstimatedTotalFee       float64             `json:"estimated_total_fee" bson:"estimated_total_fee"`
+	VoucherOrderDiscount    float64             `json:"voucher_order_discount" bson:"voucher_order_discount"`
+	VoucherDeliveryDiscount float64             `json:"voucher_delivery_discount" bson:"voucher_delivery_discount"`
 }
 
 type OrderToUpdate struct {
@@ -158,34 +183,105 @@ func (o *Orders) Create(ctx context.Context) (bool, string, error) {
 	return false, _id, nil
 }
 
-func getProductInventory(productId string, priceId string, ctx context.Context) (ProductRes, error) {
+func buildSet(list []string) map[string]struct{} {
+	set := make(map[string]struct{}, len(list))
+	for _, v := range list {
+		set[v] = struct{}{}
+	}
+	return set
+}
+
+func makeProductKey(productId, priceId string) string {
+	return productId + "::" + priceId
+}
+
+func batchGetProductInventory(ctx context.Context, products []ProductInfo) (map[string]ProductRes, error) {
 	db := database.GetDatabase()
 	collection := db.Collection("products_inventory")
 
-	result := collection.FindOne(ctx, bson.M{"product_id": productId, "price_id": priceId})
-	if result.Err() != nil {
-		slog.Error("Không tìm thấy kho sản phẩm", "product_id", productId, "price_id", priceId, "err", result.Err())
-		return ProductRes{}, result.Err()
+	// Chuẩn bị filter $or
+	var filters []bson.M
+	for _, p := range products {
+		filters = append(filters, bson.M{
+			"product_id": p.ProductId,
+			"price_id":   p.PriceId,
+		})
 	}
+	cursor, err := collection.Find(ctx, bson.M{"$or": filters})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
 
-	var product ProductRes
-	if err := result.Decode(&product); err != nil {
-		slog.Error("Lỗi giải mã khi tìm thấy kho sản phẩm", "product_id", productId, "price_id", priceId, "err", err)
-		return ProductRes{}, err
+	// Map theo productKey
+	result := make(map[string]ProductRes)
+	for cursor.Next(ctx) {
+		var prod ProductRes
+		if err := cursor.Decode(&prod); err != nil {
+			continue
+		}
+		key := makeProductKey(prod.ProductId, prod.PriceId)
+		result[key] = prod
 	}
-	slog.Info("Tìm thấy kho sản phẩm", "product_id", productId, "price_id", priceId, "result", product)
-	return product, nil
+	return result, nil
+}
+
+func batchGetVoucherInventory(ctx context.Context, vouchers []VoucherInfo) (map[string]VoucherRes, error) {
+	db := database.GetDatabase()
+	collection := db.Collection("vouchers")
+
+	var ids []string
+	seen := map[string]struct{}{}
+	for _, v := range vouchers {
+		if _, ok := seen[v.VoucherId]; !ok {
+			ids = append(ids, v.VoucherId)
+			seen[v.VoucherId] = struct{}{}
+		}
+	}
+	cursor, err := collection.Find(ctx, bson.M{"voucher_id": bson.M{"$in": ids}})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	result := make(map[string]VoucherRes)
+	for cursor.Next(ctx) {
+		var voucher VoucherRes
+		if err := cursor.Decode(&voucher); err != nil {
+			continue
+		}
+		result[voucher.VoucherId] = voucher
+	}
+	return result, nil
 }
 
 func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
-	var insufficientProducts []string
-	var expiredProducts []string
+	var (
+		insufficientProducts []string
+		expiredProducts      []string
+		insufficientVouchers []string
+		expiredVouchers      []string
+		alreadyUsedVouchers  []string
+	)
+
+	productMap, err := batchGetProductInventory(ctx, order.Product)
+	if err != nil {
+		slog.Error("Không thể batch get product inventory", "err", err)
+		return err
+	}
+
+	voucherMap, err := batchGetVoucherInventory(ctx, order.Voucher)
+	if err != nil {
+		slog.Error("Không thể batch get voucher inventory", "err", err)
+		return err
+	}
 
 	for i := range order.Product {
 		p := &order.Product[i]
-		result, err := getProductInventory(p.ProductId, p.PriceId, ctx)
-		if err != nil {
-			slog.Error("Lỗi khi lấy thông tin kho sản phẩm", "product_id", p.ProductId, "price_id", p.PriceId, "err", err)
+		key := makeProductKey(p.ProductId, p.PriceId)
+		result, ok := productMap[key]
+		if !ok {
+			slog.Error("Không tìm thấy kho sản phẩm", "key", key)
 			continue
 		}
 
@@ -194,21 +290,50 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 			continue
 		}
 
-		if !p.ExpiredDate.IsZero() && p.ExpiredDate.Before(GetCurrentTime()) {
+		if !p.ExpiredDate.IsZero() && p.ExpiredDate.Before(GetCurrentTime()) && p.Discount > 0 {
 			expiredProducts = append(expiredProducts, p.ProductName)
-			p.Discount = 0
-			p.Price = p.OriginalPrice
+			continue
 		}
 	}
-	if len(insufficientProducts) > 0 || len(expiredProducts) > 0 {
-		order.Status = "canceled"
+	for i := range order.Voucher {
+		v := &order.Voucher[i]
+		result, ok := voucherMap[v.VoucherId]
+		if !ok {
+			slog.Error("Không tìm thấy voucher", "voucher_id", v.VoucherId)
+			continue
+		}
 
+		if result.Inventory-result.Used < 1 {
+			insufficientVouchers = append(insufficientVouchers, v.VoucherName)
+			continue
+		}
+		if !v.ExpiredDate.IsZero() && v.ExpiredDate.Before(GetCurrentTime()) && v.Discount > 0 {
+			expiredVouchers = append(expiredVouchers, v.VoucherName)
+			continue
+		}
+		usedBySet := buildSet(result.UsedBy)
+		if _, ok := usedBySet[order.CreatedBy]; ok {
+			alreadyUsedVouchers = append(alreadyUsedVouchers, v.VoucherName)
+			continue
+		}
+	}
+	if len(insufficientProducts)+len(expiredProducts)+len(insufficientVouchers)+len(expiredVouchers)+len(alreadyUsedVouchers) > 0 {
+		order.Status = "canceled"
 		var reasons []string
 		if len(insufficientProducts) > 0 {
 			reasons = append(reasons, fmt.Sprintf("không đủ hàng: %s", stringJoin(insufficientProducts, ", ")))
 		}
 		if len(expiredProducts) > 0 {
 			reasons = append(reasons, fmt.Sprintf("hết hạn giảm giá: %s", stringJoin(expiredProducts, ", ")))
+		}
+		if len(insufficientVouchers) > 0 {
+			reasons = append(reasons, fmt.Sprintf("voucher hết số lượng: %s", stringJoin(insufficientVouchers, ", ")))
+		}
+		if len(expiredVouchers) > 0 {
+			reasons = append(reasons, fmt.Sprintf("voucher hết hạn: %s", stringJoin(expiredVouchers, ", ")))
+		}
+		if len(alreadyUsedVouchers) > 0 {
+			reasons = append(reasons, fmt.Sprintf("voucher đã dùng: %s", stringJoin(alreadyUsedVouchers, ", ")))
 		}
 
 		message := "Đơn hàng bị hủy do " + stringJoin(reasons, "; ")
@@ -302,6 +427,46 @@ func UpdateProductCount(ctx context.Context, products []ProductInfo, field strin
 	return nil
 }
 
+func UpdateVoucherCount(ctx context.Context, vouchers []VoucherInfo, createdBy string, modifier int) error {
+	db := database.GetDatabase()
+	voucherCol := db.Collection("vouchers")
+
+	for _, v := range vouchers {
+		filter := bson.M{
+			"voucher_id": v.VoucherId,
+		}
+
+		update := bson.M{
+			"$inc": bson.M{
+				"used": 1 * modifier,
+			},
+		}
+
+		// Nếu thêm lượt dùng, thêm người dùng vào used_by
+		if modifier > 0 {
+			update["$addToSet"] = bson.M{
+				"used_by": createdBy,
+			}
+		}
+
+		// Nếu rollback lượt dùng, gỡ người dùng khỏi used_by
+		if modifier < 0 {
+			update["$pull"] = bson.M{
+				"used_by": createdBy,
+			}
+		}
+
+		if _, err := voucherCol.UpdateOne(ctx, filter, update); err != nil {
+			slog.Error("Không thể cập nhật voucher", "voucher_id", v.VoucherId, "err", err)
+			return fmt.Errorf("lỗi cập nhật voucher %s: %w", v.VoucherId, err)
+		}
+
+		slog.Info("Đã cập nhật voucher", "voucher_id", v.VoucherId, "modifier", modifier, "user", createdBy)
+	}
+
+	return nil
+}
+
 func (order *Orders) DeleteOrderRedis(ctx context.Context) error {
 	err := database.DeleteOrder(ctx, order.OrderId)
 	if err != nil {
@@ -371,12 +536,12 @@ func RemoveItemCartByOrder(ctx context.Context, orders Orders) bool {
 
 func RemoveProductFromCart(ctx context.Context, userID string, productID string, priceID string) error {
 	db := database.GetDatabase()
-	collection := db.Collection("cart")
+	collection := db.Collection("carts")
 
 	var cartData bson.M
 	err := collection.FindOne(ctx, bson.M{"user_id": userID}).Decode(&cartData)
 	if err != nil {
-		return fmt.Errorf("cart not found: %w", err)
+		return fmt.Errorf("carts not found: %w", err)
 	}
 
 	products, ok := cartData["products"].(primitive.A)

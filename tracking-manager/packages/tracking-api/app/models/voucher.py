@@ -126,3 +126,28 @@ async def update_voucher(voucher_id: str, item: ItemVoucherDBInReq, email: str):
     except Exception as e:
         logger.error(f"Error updating voucher: {str(e)}")
         raise e
+
+async def restore_voucher(voucher_id: str, user_id: str):
+    try:
+        collection = database.db["vouchers"]
+
+        result = collection.update_one(
+            {
+                "voucher_id": voucher_id,
+            },
+            {
+                "$inc": {"used": -1},
+                "$pull": {"used_by": user_id}
+            }
+        )
+
+        if result.modified_count == 0:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Voucher not found or not used by this user"
+            )
+
+        logger.info(f"Voucher usage restored successfully for voucher_id: {voucher_id}, user_id: {user_id}")
+    except Exception as e:
+        logger.error(f"Error restoring voucher: {str(e)}")
+        raise e

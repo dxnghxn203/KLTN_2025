@@ -38,3 +38,13 @@ class ItemVoucherRes(BaseModel):
     max_discount_value: float = 0
     voucher_type: Optional[Union[str, None]] = None
     expired_date: datetime = get_current_time()
+    used_by: List[str] = []
+
+class ItemVoucherOrderRes(BaseModel):
+    voucher_id: Optional[Union[str, None]] = None
+    voucher_name: Optional[Union[str, None]] = None
+    discount: float = 0
+    min_order_value: float = 0
+    max_discount_value: float = 0
+    voucher_type: str = "order"
+    expired_date: datetime = get_current_time()

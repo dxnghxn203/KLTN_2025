@@ -62,6 +62,13 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 		}
 	}
 
+	if trackingReq.Status == "canceled" {
+		err = models.UpdateVoucherCount(ctx, orderRes.Voucher, orderRes.CreatedBy, -1)
+		if err != nil {
+			slog.Error("Lỗi cập nhật số lượng đã sử dụng voucher sau khi hủy đơn hàng", "err", err)
+		}
+	}
+
 	orderToUpdate := &models.OrderToUpdate{
 		OrderId:             orderRes.OrderId,
 		Status:              trackingReq.Status,
