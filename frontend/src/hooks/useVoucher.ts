@@ -1,7 +1,12 @@
-import { all } from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
-import { selectAllVoucher, selectAllVoucherUser } from "@/store/voucher/voucherSelector";
-import { fetchAddVoucherStart, fetchAllVouchersStart, fetchDeleteVoucherStart, fetchGetAllVoucherUserStart, fetchUpdateStatusStart } from '@/store';
+import {selectAllVoucher, selectAllVoucherUser} from "@/store/voucher/voucherSelector";
+import {
+    fetchAddVoucherStart,
+    fetchAllVouchersStart,
+    fetchDeleteVoucherStart,
+    fetchGetAllVoucherUserStart,
+    fetchUpdateStatusStart
+} from '@/store';
 
 
 export function useVoucher() {
@@ -9,7 +14,7 @@ export function useVoucher() {
     const allVouchers = useSelector(selectAllVoucher);
     const allVoucherUser = useSelector(selectAllVoucherUser);
 
-    const fetchAllVouchers = ( page: any, page_size: any,onSuccess: () => void, onFailure: () => void, ) => {
+    const fetchAllVouchers = (page: any, page_size: any, onSuccess: () => void, onFailure: () => void,) => {
         dispatch(fetchAllVouchersStart(
             {
                 onSuccess: onSuccess,
@@ -38,7 +43,10 @@ export function useVoucher() {
         ));
     }
 
-    const fetchUpdateStatusVoucher = (params: { voucher_id: string; status_voucher: boolean }, onSuccess: () => void, onFailure: () => void) => {
+    const fetchUpdateStatusVoucher = (params: {
+        voucher_id: string;
+        status_voucher: boolean
+    }, onSuccess: () => void, onFailure: () => void) => {
         dispatch(fetchUpdateStatusStart(
             {
                 onSuccess: onSuccess,
@@ -56,11 +64,8 @@ export function useVoucher() {
             }
         ));
     }
-   
-   
 
 
-    
     return {
         allVouchers,
         fetchAllVouchers,

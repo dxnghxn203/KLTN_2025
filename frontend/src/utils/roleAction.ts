@@ -18,9 +18,8 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchDeleteMainCategoryStart',
     'loginAdminStart',
     'fetchDeleteVoucherStart',
-
     'fetchAddVoucherStart',
-    'fetchGetAllVoucherStart',
+    'fetchAllVouchersStart'
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [
@@ -30,5 +29,4 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchApproveProductByPharmacistStart',
     'loginPharmacistStart',
     'fetchAcceptConversationStart'
-
 ]
