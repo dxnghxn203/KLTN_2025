@@ -13,6 +13,7 @@ from .time import router as time_router
 from .pharmacist import router as pharmacist_router
 from .chat_box import router as chat_box_router
 from .voucher import router as voucher_router
+from .brand import router as brand_router
 
 __all__ = [
     'cart_router',
@@ -29,4 +30,5 @@ __all__ = [
     'fee_router',
     'time_router',
     'voucher_router',
+    'brand_router'
 ]
