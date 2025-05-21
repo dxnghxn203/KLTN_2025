@@ -1,6 +1,7 @@
 import React, {useRef, useState, useEffect, useCallback} from "react";
 import {X, Send} from "lucide-react"; // Thêm Send icon
 import {ConfirmCloseModal} from "./confirmCloseModal";
+import DOMPurify from "dompurify";
 
 type Props = {
     setShowChatbot: (show: boolean) => void;
@@ -11,7 +12,13 @@ interface Message {
     text: string;
     sender: "user" | "ai";
     timestamp: Date;
+    isHtml?: boolean;
 }
+
+const isHtml = (text: string): boolean => {
+    const htmlRegex = /<\/?[a-z][\s\S]*>/i;
+    return htmlRegex.test(text);
+};
 
 const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -35,7 +42,7 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
             setIsLoadingSession(true);
             setErrorSession(null);
             try {
-                const response = await fetch('https://recommendation.medicaretech.io.vn/v1/conversation/start', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_RECOMMENDATION_API}/v1/conversation/start`, {
                     method: 'POST',
                     headers: {
                         'accept': 'application/json',
@@ -117,11 +124,15 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
             const result = await response.json();
 
             if (result.status_code === 200 && result.data && result.data.ai_answer) {
+                const answerText = result.data.ai_answer;
+                const containsHtml = isHtml(answerText);
+
                 const aiMessage: Message = {
                     id: `ai-${Date.now()}`,
-                    text: result.data.ai_answer,
+                    text: answerText,
                     sender: "ai",
-                    timestamp: new Date()
+                    timestamp: new Date(),
+                    isHtml: containsHtml // Đánh dấu nếu nội dung là HTML
                 };
                 setMessages(prevMessages => [...prevMessages, aiMessage]);
             } else {
@@ -142,6 +153,20 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
         }
     };
 
+    // Component để render nội dung tin nhắn (text hoặc HTML)
+    const MessageContent = ({message}: { message: Message }) => {
+        if (message.isHtml) {
+            return (
+                <div
+                    className="message-content"
+                    dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(message.text)
+                    }}
+                />
+            );
+        }
+        return <p className="text-sm">{message.text}</p>;
+    };
 
     return (
         <>
@@ -178,9 +203,9 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
                                         msg.sender === 'user'
                                             ? 'bg-blue-500 text-white rounded-br-none'
                                             : 'bg-gray-200 text-gray-800 rounded-bl-none'
-                                    }`}
+                                    } ${msg.isHtml ? 'html-content' : ''}`}
                                 >
-                                    <p className="text-sm">{msg.text}</p>
+                                    <MessageContent message={msg}/>
                                     <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-blue-200' : 'text-gray-500'} text-right`}>
                                         {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                                     </p>

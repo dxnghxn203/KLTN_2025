@@ -266,7 +266,7 @@ def generate_response(session_id: str, user_input: str) -> str:
             price_info_str = _format_price_info(ref_id, prices_list)
             inventory_status_str = ""
             if ref_id:
-                is_out_of_stock = check_out_of_stock(ref_id)
+                is_out_of_stock = check_out_of_stock(ref_id, price_info_str)
                 inventory_status_str = "Hết hàng" if is_out_of_stock else "Còn hàng"
 
             if "inventory_status" in question_details:
