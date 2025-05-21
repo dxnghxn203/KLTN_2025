@@ -26,16 +26,33 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                     "shipping_fee": 0,
                     "delivery_time": "",
                     "weight": 0,
+                    "voucher_order_discount": 0,
+                    "voucher_delivery_discount": 0,
                     "total_fee": 0,
                     "out_of_stock": out_of_stock,
-                    "out_of_date": out_of_date
+                    "out_of_date": out_of_date,
+                    "voucher_error": []
                 }
             )
+
+
+        if not item.voucher_order_id:
+            return response.SuccessResponse(
+                data=await order.check_shipping_fee(
+                    item.receiver_province_code,
+                    total_price,
+                    weight
+                )
+            )
+
+        voucher_list, voucher_error = await order.process_order_voucher(item.voucher_order_id, item.voucher_delivery_id)
+
         return response.SuccessResponse(
             data=await order.check_shipping_fee(
                 item.receiver_province_code,
                 total_price,
-                weight
+                weight,
+                voucher_list, voucher_error
             )
         )
     except response.JsonException as je:

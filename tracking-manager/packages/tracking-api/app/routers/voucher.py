@@ -29,6 +29,20 @@ async def create_voucher(item: ItemVoucherDBInReq, token: str = Depends(middlewa
             message="Internal server error"
         )
 
+@router.get("/vouchers/search", response_model=BaseResponse)
+async def get_voucher_by_id(voucher_id: str):
+    try:
+        result = await voucher.get_voucher_by_id(voucher_id)
+        return SuccessResponse(data=result)
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting voucher: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.get("/vouchers/all-vouchers-admin", response_model=BaseResponse)
 async def get_all_voucher_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
     try:
@@ -52,12 +66,7 @@ async def update_status_voucher(voucher_id: str, status_voucher: bool, token: st
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Quản trị viên không tồn tại"
             )
-        voucher_info = await voucher.get_voucher_by_id(voucher_id)
-        if not voucher_info:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Voucher không tồn tại"
-            )
+        voucher_info = await voucher.get_voucher_by_id(voucher_id, is_admin=True)
         return await voucher.update_status(voucher_id, status_voucher, admin_info.email)
     except response.JsonException as je:
         raise je

@@ -3,11 +3,12 @@ from datetime import datetime
 from starlette import status
 from app.core import database, logger, response
 from app.entities.voucher.request import ItemVoucherDBInReq, ItemVoucherDBReq
-from app.entities.voucher.response import ItemVoucherDBRes
+from app.entities.voucher.response import ItemVoucherDBRes, ItemVoucherRes
 from app.helpers.constant import generate_id
 from app.helpers.time_utils import get_current_time
 
 collection_name = "vouchers"
+collection_category = "categories"
 
 async def get_all_vouchers(page: int, page_size: int):
     collection = database.db[collection_name]
@@ -15,13 +16,28 @@ async def get_all_vouchers(page: int, page_size: int):
     voucher_list = collection.find().skip(skip_count).limit(page_size)
     return [ItemVoucherDBRes(**voucher) for voucher in voucher_list]
 
-async def get_voucher_by_id(voucher_id: str):
-    collection = database.db[collection_name]
-    voucher = collection.find_one({"voucher_id": voucher_id})
-    return ItemVoucherDBRes(**voucher)
+async def get_voucher_by_id(voucher_id: str, is_admin: bool = False):
+    try:
+        collection = database.db[collection_name]
+        voucher = collection.find_one({"voucher_id": voucher_id})
+        if not voucher:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Voucher không tồn tại"
+            )
+        if is_admin:
+            return ItemVoucherDBRes(**voucher)
+        else:
+            return ItemVoucherRes(**voucher)
+    except Exception as e:
+        logger.error(f"Error getting voucher: {str(e)}")
+        raise e
 
 async def create_voucher(item: ItemVoucherDBInReq, email: str):
     try:
+        for category in item.category_accepted:
+            category_info = database.db[collection_category].find_one({"category_id": category})
+
         item_data = ItemVoucherDBReq(
             **item.dict(),
             voucher_id=generate_id("VOUCHER"),

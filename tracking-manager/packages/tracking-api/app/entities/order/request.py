@@ -4,6 +4,8 @@ import json
 from pydantic import BaseModel, Field, model_validator
 
 from app.entities.product.request import ItemProductReq, ItemProductInReq
+from app.entities.voucher.request import ItemVoucherReq
+
 
 class AddressOrderReq(BaseModel):
     address: str = ""
@@ -33,6 +35,7 @@ class ItemOrderReq(BaseModel):
     shipper_id: str = ""
     shipper_name: str = ""
     product: List[ItemProductReq]
+    voucher: List[ItemVoucherReq]
     pick_from: InfoAddressOrderReq
     pick_to: InfoAddressOrderReq
     sender_province_code: int = 0
@@ -58,6 +61,8 @@ class ItemOrderInReq(BaseModel):
     receiver_commune_code: int
     delivery_instruction: str = ""
     payment_type: str = ""
+    voucher_order_id: str = ""
+    voucher_delivery_id: str = ""
 
 class OrderRequest(BaseModel):
     order_id: str = ""

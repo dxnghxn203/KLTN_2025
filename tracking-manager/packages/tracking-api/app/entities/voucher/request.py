@@ -19,6 +19,7 @@ class ItemVoucherDBReq(BaseModel):
     max_discount_value: float = 0
     voucher_type: str = "order"
     used_by: List[str] = []
+    expired_date: datetime = get_current_time()
 
 class ItemVoucherDBInReq(BaseModel):
     voucher_name: str = ""
@@ -28,3 +29,12 @@ class ItemVoucherDBInReq(BaseModel):
     min_order_value: float = 0
     max_discount_value: float = 0
     voucher_type: str = "order"
+    expired_date: datetime = get_current_time()
+
+class ItemVoucherReq(BaseModel):
+    voucher_id: str = ""
+    discount: float = 0
+    min_order_value: float = 0
+    max_discount_value: float = 0
+    voucher_type: str = "order"
+    expired_date: str = ""

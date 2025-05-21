@@ -20,6 +20,24 @@ async def get_categories():
             message="Internal server error"
         )
 
+@router.get("/category/child-category", response_model=response.BaseResponse)
+async def get_list_child_category():
+    try:
+        data = await category.get_list_child_category()
+        if not data:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Category not found"
+            )
+        return response.SuccessResponse(data=data)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error getting list child category: {str(e)}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
 @router.get("/category/{main_slug}", response_model=response.BaseResponse)
 async def get_category(main_slug: str):

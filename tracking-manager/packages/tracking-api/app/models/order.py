@@ -3,7 +3,7 @@ import json
 import os
 import io
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Union
 
 import httpx
 from bson import ObjectId
@@ -22,6 +22,7 @@ from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductInReq, ItemProductReq
 from app.entities.product.response import ItemProductRes
 from app.entities.user.response import ItemUserRes
+from app.entities.voucher.request import ItemVoucherReq
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
@@ -37,6 +38,7 @@ from app.models.product import restore_product_sell, check_all_product_discount_
     get_product_inventory, get_product_by_id
 from app.models.time import get_range_time
 from app.models.user import get_by_id
+from app.models.voucher import get_voucher_by_id
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -206,10 +208,59 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
 
     return product_items, total_price, weight, out_of_stock, out_of_date
 
+
+async def process_single_voucher(voucher_id: str, expected_type: str) -> Union[ItemVoucherReq, Dict[str, str]]:
+    voucher = await get_voucher_by_id(voucher_id)
+    if isinstance(voucher, response.JsonException):
+        return {voucher_id: voucher.message}
+    if voucher.voucher_type != expected_type:
+        return {voucher_id: "Voucher không hợp lệ"}
+    if voucher.expired_date < get_current_time():
+        return {voucher_id: "Voucher hết hạn"}
+
+    return ItemVoucherReq(
+        voucher_id=voucher.voucher_id,
+        discount=voucher.discount,
+        min_order_value=voucher.min_order_value,
+        max_discount_value=voucher.max_discount_value,
+        voucher_type=voucher.voucher_type,
+        expired_date=voucher.expired_date.isoformat()
+    )
+
+async def process_order_voucher(
+    voucher_order_id: str,
+    voucher_delivery_id: str
+) -> Tuple[List[ItemVoucherReq], List[Dict[str, str]]]:
+    try:
+        voucher_list = []
+        voucher_error = []
+
+        order_voucher = await process_single_voucher(voucher_order_id, "order")
+        if isinstance(order_voucher, dict):
+            for key, msg in order_voucher.items():
+                voucher_error.append({"voucher_id": key, "message": msg})
+        else:
+            voucher_list.append(order_voucher)
+
+        delivery_voucher = await process_single_voucher(voucher_delivery_id, "delivery")
+        if isinstance(delivery_voucher, dict):
+            for key, msg in delivery_voucher.items():
+                voucher_error.append({"voucher_id": key, "message": msg})
+        else:
+            voucher_list.append(delivery_voucher)
+
+        return voucher_list, voucher_error
+
+    except Exception as e:
+        logger.error(f"Failed [process_order_voucher]: {e}")
+        raise e
+
 async def check_shipping_fee(
         receiver_province_code: int,
         product_price: float,
-        weight: float
+        weight: float,
+        voucher: Optional[List[ItemVoucherReq]] = None,
+        voucher_error: Optional[List[Dict[str, str]]] = None
     ):
     try:
         route_code = await determine_route(
@@ -219,7 +270,7 @@ async def check_shipping_fee(
 
         delivery_time = await get_range_time(route_code)
 
-        if product_price > 100_000:
+        if product_price > 500_000:
             shipping_fee = 0
         else:
             fee_data = await search_es(index=FEE_INDEX, conditions={"route_code": route_code})
@@ -227,12 +278,33 @@ async def check_shipping_fee(
                 raise fee_data
 
             shipping_fee = calculate_shipping_fee(fee_data, weight)
+
+        order_discount_amount = 0
+        delivery_discount_amount = 0
+        if voucher:
+            for v in voucher:
+                if v.voucher_type == "order" and product_price >= v.min_order_value:
+                    discount = min(product_price * v.discount / 100, v.max_discount_value)
+                    order_discount_amount += discount
+                    product_price -= discount
+                elif v.voucher_type == "delivery" and shipping_fee >= v.min_order_value:
+                    discount = min(shipping_fee * v.discount / 100, v.max_discount_value)
+                    delivery_discount_amount += discount
+                    shipping_fee -= discount
+
+        total_fee = product_price + shipping_fee
+
         return {
             "product_fee": product_price,
             "shipping_fee": shipping_fee,
             "delivery_time": delivery_time,
             "weight": weight,
-            "total_fee": product_price + shipping_fee
+            "voucher_order_discount": order_discount_amount,
+            "voucher_delivery_discount": delivery_discount_amount,
+            "total_fee": total_fee,
+            "out_of_stock": [],
+            "out_of_date": [],
+            "voucher_error": voucher_error or []
         }
 
     except Exception as e:
