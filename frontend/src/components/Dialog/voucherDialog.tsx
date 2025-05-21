@@ -18,6 +18,21 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [selectedVoucherOrder, setSelectedVoucherOrder] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+  const [showAllOrder, setShowAllOrder] = useState(false);
+  const deliveryVouchers = allVoucherUser.filter(
+    (voucher: any) => voucher.voucher_type === "delivery"
+  );
+
+  const vouchersToShow = showAll
+    ? deliveryVouchers
+    : deliveryVouchers.slice(0, 3);
+  const orderVouchers = allVoucherUser.filter(
+    (voucher: any) => voucher.voucher_type === "order"
+  );
+  const orderVouchersToShow = showAllOrder
+    ? orderVouchers
+    : orderVouchers.slice(0, 3);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setVoucherCode(e.target.value);
@@ -26,7 +41,7 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
   console.log("allVouchersByUser", allVoucherUser);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white w-full max-w-3xl max-h-[90vh] rounded-lg flex flex-col items-center relative overflow-hidden px-8 py-6">
+      <div className="bg-white w-full max-w-lg max-h-[100vh] rounded-lg flex flex-col items-center relative overflow-hidden px-8 py-6">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-black"
@@ -60,14 +75,14 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
         </div>
 
         {/* Nội dung voucher scrollable */}
-        <div className="w-full max-w-5xl overflow-y-auto scrollbar-hide mt-4 px-1 space-y-10 flex-1">
+        <div className="w-full max-w-lg overflow-y-auto scrollbar-hide mt-4 px-1 space-y-10 flex flex-col">
           <div>
             <h2 className="text-lg font-bold text-gray-800">
-              Mã Miễn Phí Vận Chuyển
+              Mã Giảm giá Vận Chuyển
             </h2>
             <p className="text-sm text-gray-500 mb-4">Có thể chọn 1 Voucher</p>
 
-            {allVoucherUser.map(
+            {vouchersToShow.map(
               (voucher: any, index: number) =>
                 voucher.voucher_type === "delivery" && (
                   <label
@@ -76,7 +91,7 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                   >
                     {/* Left content: FREE SHIP + thông tin */}
                     <div className="flex">
-                      <div className="w-24 bg-[#26A999] text-white text-center font-bold py-6 rounded-l-xl p-4 rang-cua-left">
+                      <div className="relative rang-cua-left w-32 bg-[#26A999] text-white text-center font-bold p-4 rounded-l-xl">
                         FREE
                         <br />
                         SHIP
@@ -91,7 +106,8 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                           Giảm {voucher.discount.toLocaleString("vi-VN")} %
                         </p> */}
                         <p className="text-sm text-gray-500">
-                          {voucher.description}
+                          Đơn tối thiểu{" "}
+                          {voucher.min_order_value.toLocaleString("vi-VN")}đ
                         </p>
                         <div className="w-full h-2 bg-red-200 rounded mt-2 overflow-hidden">
                           <div
@@ -103,7 +119,9 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                             }}
                           ></div>
                         </div>
-
+                        <p className="text-xs text-gray-400 mt-2">
+                          Đã dùng {(voucher.used / voucher.inventory) * 100}%
+                        </p>
                         <p className="text-xs text-gray-400 mt-1">
                           Sắp hết hạn:{" "}
                           {new Date(voucher.expired_date).toLocaleDateString(
@@ -125,12 +143,22 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                   </label>
                 )
             )}
+            <div className="flex justify-center items-center">
+              {deliveryVouchers.length > 3 && (
+                <button
+                  className="text-blue-600 text-sm underline ml-2 mt-2 "
+                  onClick={() => setShowAll(!showAll)}
+                >
+                  {showAll ? "Ẩn bớt" : "Xem thêm"}
+                </button>
+              )}
+            </div>
           </div>
 
           <div>
             <h2 className="text-lg font-bold text-gray-800">Giảm Giá</h2>
             <p className="text-sm text-gray-500 mb-4">Có thể chọn 1 Voucher</p>
-            {allVoucherUser.map(
+            {orderVouchersToShow.map(
               (voucher: any, index: number) =>
                 voucher.voucher_type === "order" && (
                   <label
@@ -139,7 +167,7 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                   >
                     {/* Left content: FREE SHIP + thông tin */}
                     <div className="flex">
-                      <div className="w-24 bg-[#EA4B2A] text-white text-center font-bold py-6 rounded-l-xl p-4 rang-cua-left">
+                      <div className="relative rang-cua-left w-32 bg-[#EA4B2A] text-white text-center font-bold p-4 rounded-l-xl rang-cua-left">
                         ĐƠN
                         <br />
                         HÀNG
@@ -154,7 +182,8 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                           Giảm {voucher.discount.toLocaleString("vi-VN")} %
                         </p> */}
                         <p className="text-sm text-gray-500">
-                          {voucher.description}
+                          Đơn tối thiểu{" "}
+                          {voucher.min_order_value.toLocaleString("vi-VN")}đ
                         </p>
                         <div className="w-full h-2 bg-red-200 rounded mt-2 overflow-hidden">
                           <div
@@ -190,6 +219,16 @@ const VoucherDialog: React.FC<DeleteDialogProps> = ({
                   </label>
                 )
             )}
+            <div className="flex justify-center items-center">
+              {orderVouchers.length > 3 && (
+                <button
+                  className="text-blue-600 text-sm underline ml-2 mt-2"
+                  onClick={() => setShowAllOrder(!showAllOrder)}
+                >
+                  {showAllOrder ? "Ẩn bớt" : "Xem thêm"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

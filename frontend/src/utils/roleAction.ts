@@ -18,9 +18,9 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchDeleteMainCategoryStart',
     'loginAdminStart',
     'fetchDeleteVoucherStart',
-
     'fetchAddVoucherStart',
-    'fetchGetAllVoucherStart',
+    'fetchAllVoucherStart',
+    'fetchUpdateStatusStart',
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [
