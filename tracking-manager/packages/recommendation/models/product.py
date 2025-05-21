@@ -60,14 +60,38 @@ async def get_product_by_price_id(product_id: str, price_id: str):
     except Exception as e:
         return None
 
-def check_out_of_stock(product_id: str):
-    data = redis.get_product_transaction(product_id=product_id)
 
-    inventory = data.get("inventory", 0)
-    sell = data.get("sell", 0)
+async def get_product_inventory(product_id: str, price_id: str):
+    try:
+        inventory_collection = db["products_inventory"]
+        inventory_doc = inventory_collection.find_one({
+            "product_id": product_id,
+            "price_id": price_id
+        })
 
-    logger.info(f"Inventory: {inventory}, Sell: {sell}")
-    return inventory <= sell
+        if not inventory_doc:
+            return None
+
+        return inventory_doc
+
+    except Exception as e:
+        logger.error(f"Error getting product inventory: {str(e)}")
+        raise e
+
+def check_out_of_stock(product_id: str, price_id: str):
+    try:
+        inventory_data = get_product_inventory(product_id=product_id, price_id=price_id)
+
+        if not inventory_data:
+            return None
+
+        inventory = inventory_data.get("inventory", 0)
+        sell = inventory_data.get("sell", 0)
+
+        return inventory <= sell
+    except Exception as e:
+        logger.error(f"Error checking out of stock for product ID {product_id}: {e}")
+        return None
 
 
 def search_products_by_text(search_text: str, limit: int = 5) -> list[dict]:
@@ -97,6 +121,7 @@ def search_products_by_text(search_text: str, limit: int = 5) -> list[dict]:
             product_docs.append(product_helper(product))
         return product_docs
     except Exception as e:
+        logger.error(f"Error searching products by text '{search_text}': {e}")
         return []
 
 #recommendation

@@ -75,7 +75,7 @@ def _get_suggested_products_context(session_id: str) -> str:
         try:
             prod = json.loads(prod_json_str)
             suggestions_text_parts.append(
-                f"{i + 1}. Tên: {prod.get('name', 'N/A')} (Mã tham chiếu: {prod.get('id', 'N/A')})")
+                f"{i + 1}. Tên: {prod.get('name', 'N/A')}")
         except json.JSONDecodeError:
             app_logger.warn(f"Failed to parse product JSON from Redis: {prod_json_str}")
             continue
@@ -106,11 +106,12 @@ def _store_suggested_product(session_id: str, product_ref_id: str, product_name:
         app_logger.error(f"Redis error lpush/ltrim for key {key}: {e}")
 
 
-def _format_price_info(prices_list: list) -> str:
+def _format_price_info(ref_id: str, prices_list: list) -> str:
     if not prices_list:
         return "Hiện chưa có thông tin giá cho sản phẩm này."
     price_details_parts = []
     for price_entry in prices_list:
+        check = check_out_of_stock(ref_id, price_id=price_entry.get("price_id"))
         unit = price_entry.get("unit", "")
         amount_in_unit = price_entry.get("amount", 1)
         price_val = price_entry.get("price")
@@ -120,6 +121,8 @@ def _format_price_info(prices_list: list) -> str:
         if original_price and original_price != price_val and price_val is not None:
             original_price_str = f"{original_price:,} VND".replace(",", ".")
             entry_str += f" (giá gốc: {original_price_str})"
+        if check is not None:
+            entry_str += f" - {'Hết hàng' if check else 'Còn hàng'}"
         price_details_parts.append(entry_str)
     return "\n".join(price_details_parts)
 
@@ -218,16 +221,17 @@ def generate_response(session_id: str, user_input: str) -> str:
                 ref_id = p_item.get('product_id')
                 p_name = p_item.get('product_name', 'N/A')
                 prices_list = p_item.get('prices', [])
-                price_info_str = _format_price_info(prices_list)
-                inventory_status_str = "Tình trạng: "
-                if ref_id:
-                    is_out_of_stock = check_out_of_stock(ref_id)
-                    inventory_status_str += "Hết hàng" if is_out_of_stock else "Còn hàng"
-                else:
-                    inventory_status_str += "Không xác định"
+                price_info_str = _format_price_info(ref_id, prices_list)
+
+                # inventory_status_str = "Tình trạng: "
+                # if ref_id:
+                #     is_out_of_stock = check_out_of_stock(ref_id, price_id=)
+                #     inventory_status_str += "Hết hàng" if is_out_of_stock else "Còn hàng"
+                # else:
+                #     inventory_status_str += "Không xác định"
 
                 formatted_products.append(
-                    f"- Tên: {p_name}\n  Công dụng: {p_item.get('uses', 'N/A')}\n  Giá: {price_info_str}\n  {inventory_status_str}\n  (Mã tham chiếu: {ref_id})")
+                    f"- Tên: {p_name}\n  Công dụng: {p_item.get('uses', 'N/A')}\n  Giá: {price_info_str}\n  ")
                 if ref_id and not product_found_for_storing:
                     product_found_for_storing = {"id": ref_id, "name": p_name}
             final_context_for_response_prompt = "Dựa trên mô tả của bạn, đây là một số sản phẩm phù hợp:\n" + "\n\n".join(
@@ -259,7 +263,7 @@ def generate_response(session_id: str, user_input: str) -> str:
                         context_parts.append(f"- {label}: {value}")
 
             prices_list = p_item.get('prices', [])
-            price_info_str = _format_price_info(prices_list)
+            price_info_str = _format_price_info(ref_id, prices_list)
             inventory_status_str = ""
             if ref_id:
                 is_out_of_stock = check_out_of_stock(ref_id)
@@ -308,13 +312,10 @@ def generate_response(session_id: str, user_input: str) -> str:
         if product_details:
             p_name = product_details.get('product_name', target_product_ref_id)
             ref_id = product_details.get('product_id')
-            details_str_parts = [f"Thông tin chi tiết về sản phẩm '{p_name}' (Mã tham chiếu: {ref_id}):"]
+            details_str_parts = [f"Thông tin chi tiết về sản phẩm '{p_name}':"]
             prices_list = product_details.get('prices', [])
-            price_info_str = _format_price_info(prices_list)
+            price_info_str = _format_price_info(ref_id, prices_list)
             inventory_status_str = ""
-            if ref_id:
-                is_out_of_stock = check_out_of_stock(ref_id)
-                inventory_status_str = "Hết hàng" if is_out_of_stock else "Còn hàng"
 
             if "inventory_status" in question_details:
                 details_str_parts.append(
@@ -346,7 +347,7 @@ def generate_response(session_id: str, user_input: str) -> str:
             product_found_for_storing = {"id": ref_id, "name": p_name}
         else:
             final_context_for_response_prompt = (
-                f"Xin lỗi, tôi không có đủ thông tin chi tiết về sản phẩm có mã tham chiếu '{target_product_ref_id}' "
+                f"Xin lỗi, tôi không có đủ thông tin chi tiết về sản phẩm"
                 f"để trả lời câu hỏi '{question_details if question_details else ''}'. Có thể sản phẩm này không còn hoặc mã không đúng.")
 
     elif intent == "clarification_needed":
@@ -370,6 +371,7 @@ def generate_response(session_id: str, user_input: str) -> str:
         "Khi cung cấp giá hoặc tình trạng hàng, hãy liệt kê rõ ràng. Ví dụ: 'Sản phẩm X giá 100.000 VND và hiện còn hàng.' hoặc 'Sản phẩm Y giá 200.000 VND và hiện đã hết hàng.'\n"  # Cập nhật prompt
         "Thông tin hỗ trợ cho câu trả lời của bạn (nếu có): {context_for_response_generation}\n"
         "Sản phẩm bạn (AI) đã gợi ý hoặc đang thảo luận gần đây (để bạn nhớ ngữ cảnh): {latest_suggested_products_context}"
+        "Trả về dạng html với các thẻ <p>, <ul>, <li> cho câu trả lời. "
     )
     response_prompt_template = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template(response_system_prompt_template_str),
