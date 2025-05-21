@@ -1,4 +1,5 @@
 import VoucherDialog from "@/components/Dialog/voucherDialog";
+import { useVoucher } from "@/hooks/useVoucher";
 import React, { useState } from "react";
 
 interface OrderSummaryProps {
@@ -19,6 +20,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   checkout,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { fetchGetAllVoucherUser, allVoucherUser } = useVoucher();
+  React.useEffect(() => {
+    fetchGetAllVoucherUser(
+      () => {},
+      () => {}
+    );
+  }, []);
 
   return (
     <div className="flex flex-col ml-5 w-[33%] max-md:ml-0 max-md:w-full">
@@ -152,7 +160,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           Medicare
         </div>
       </div>
-      {isDialogOpen && <VoucherDialog onClose={() => setIsDialogOpen(false)} />}
+      {isDialogOpen && (
+        <VoucherDialog
+          onClose={() => setIsDialogOpen(false)}
+          allVoucherUser={allVoucherUser}
+        />
+      )}
     </div>
   );
 };

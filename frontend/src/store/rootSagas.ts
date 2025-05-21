@@ -8,6 +8,7 @@ import { categorySaga } from './category';
 import { userSaga } from './user';
 import { reviewSaga } from './review';
 import { chatSaga } from './chat';
+import { voucherSaga } from './voucher';
 export default function* rootSaga() {
     yield all([fork(authSaga)]);
     yield all([fork(cartSaga)]);
@@ -18,4 +19,5 @@ export default function* rootSaga() {
     yield all([fork(userSaga)]);
     yield all([fork(reviewSaga)]);
     yield all([fork(chatSaga)]);
+    yield all([fork(voucherSaga)]);
 }

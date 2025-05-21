@@ -12,5 +12,6 @@ const routerAdmin = {
     FORGOT_PASSWORD: '/quen-mat-khau',
     REGISTER_ADMIN :'/dang-ky-admin',
     DISCOUNT: '/quan-ly-giam-gia',
+    VOUCHER: '/quan-ly-voucher',
     VERIFY_EMAIL: (email: string) => `/dang-ky-admin/xac-thuc-${email}`,
 }

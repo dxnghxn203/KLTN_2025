@@ -121,6 +121,19 @@
   border: 1px solid #f9fafb; 
 
 }
+/* Hiệu ứng răng cưa bên trái */
+.rang-cua-left::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 8px;
+  background-image: radial-gradient(circle, white 3px, transparent 3px);
+  background-repeat: repeat-y;
+  background-size: 8px 16px;
+}
+
 
 
 

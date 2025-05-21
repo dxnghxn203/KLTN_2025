@@ -1,6 +1,10 @@
 import { FiPieChart, FiShoppingBag } from "react-icons/fi";
 import { BsBox } from "react-icons/bs";
-import { TbCategory, TbShoppingBagDiscount } from "react-icons/tb";
+import {
+  TbBrandBooking,
+  TbCategory,
+  TbShoppingBagDiscount,
+} from "react-icons/tb";
 import { FaRegUser } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,6 +20,8 @@ import { MdLockOutline } from "react-icons/md";
 import { LuLockKeyhole } from "react-icons/lu";
 import { SlInfo } from "react-icons/sl";
 import { ImInfo } from "react-icons/im";
+import { RiDiscountPercentLine } from "react-icons/ri";
+import { GrArticle } from "react-icons/gr";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -58,6 +64,24 @@ const menuHomeItems = [
     label: "Chiến dịch giảm giá",
     path: "/quan-ly-giam-gia",
   },
+  {
+    id: "Voucher",
+    icon: <RiDiscountPercentLine />,
+    label: "Voucher",
+    path: "/quan-ly-voucher",
+  },
+  {
+    id: "Brand",
+    icon: <TbBrandBooking />,
+    label: "Thương hiệu",
+    path: "/quan-ly-thuong-hieu",
+  },
+  {
+    id: "Article",
+    icon: <GrArticle />,
+    label: "Bài viết",
+    path: "/quan-ly-bai-viet",
+  },
 ];
 const menuSettingsItems = [
   {
@@ -99,9 +123,8 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
           )}
         />
       </div>
-
       {/* Menu */}
-      <div className="px-2 flex flex-col w-full">
+      <div className="px-2 flex flex-col w-full overflow-y-auto h-full scrollbar-hide">
         <p
           className={clsx(
             "text-xs font-bold text-black mb-2",
@@ -110,7 +133,6 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
         >
           {isOpen ? "HOME" : "..."}
         </p>
-
         <nav className="space-y-1 w-full flex flex-col">
           {menuHomeItems.map((item) => {
             const isActive = pathname.startsWith(item.path);
@@ -141,7 +163,6 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
             );
           })}
         </nav>
-
         <p
           className={clsx(
             "text-xs font-bold text-black my-2",

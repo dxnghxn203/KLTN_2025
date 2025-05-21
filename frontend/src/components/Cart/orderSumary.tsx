@@ -1,6 +1,7 @@
 import VoucherDialog from "@/components/Dialog/voucherDialog";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useVoucher } from "@/hooks/useVoucher";
 
 interface OrderSummaryProps {
   totalAmount: number;
@@ -18,6 +19,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   checkout,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { fetchGetAllVoucherUser, allVoucherUser } = useVoucher();
+  useEffect(() => {
+    fetchGetAllVoucherUser(
+      () => {},
+      () => {}
+    );
+  }, []);
 
   return (
     <div className="flex flex-col ml-5 w-[33%] max-md:ml-0 max-md:w-full">
@@ -26,7 +34,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           className="flex gap-5 justify-between self-stretch px-4 py-3.5 text-sm text-[#0053E2] bg-indigo-50 rounded-xl max-md:mr-0.5 max-md:ml-2 cursor-pointer"
           onClick={() => setIsDialogOpen(true)}
         >
-          <div className="self-start">Áp dụng ưu đãi để được giảm giá</div>
+          <div className="self-start">Áp dụng voucher để được giảm giá</div>
           <img
             loading="lazy"
             src="https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/ea114104ad3ef0791d002897f7f4483b6477a0c967df6d8b11926796e1b46cf7?apiKey=578eba90d74e42a9a5e59d68f5f9b1b7&"
@@ -98,7 +106,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
           Chính sách xử lý dữ liệu cá nhân của Nhà thuốc Medicare
         </div>
       </div>
-      {isDialogOpen && <VoucherDialog onClose={() => setIsDialogOpen(false)} />}
+      {isDialogOpen && (
+        <VoucherDialog
+          onClose={() => setIsDialogOpen(false)}
+          allVoucherUser={allVoucherUser}
+        />
+      )}
     </div>
   );
 };
