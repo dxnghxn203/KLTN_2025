@@ -146,14 +146,17 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
 
     for product in products:
         # Lấy thông tin sản phẩm và đơn giá theo price_id
-        product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
-        if isinstance(product_info, response.JsonException):
+        try:
+            product_info = await get_product_by_id(product_id=product.product_id, price_id=product.price_id)
+        except response.JsonException as e:
             out_of_stock.append({"product_id": product.product_id})
             continue
 
+
         # Lấy thông tin tồn kho đúng đơn vị (price_id)
-        inventory_data = await get_product_inventory(product_id=product.product_id, price_id=product.price_id)
-        if isinstance(inventory_data, response.JsonException):
+        try:
+            inventory_data = await get_product_inventory(product_id=product.product_id, price_id=product.price_id)
+        except response.JsonException as e:
             out_of_stock.append({"product_id": product.product_id})
             continue
 
@@ -210,12 +213,13 @@ async def process_order_products(products: List[ItemProductInReq]) -> Tuple[
 
 
 async def process_single_voucher(voucher_id: str, expected_type: str) -> Union[ItemVoucherReq, Dict[str, str]]:
-    voucher = await get_voucher_by_id(voucher_id)
-    if isinstance(voucher, response.JsonException):
-        return {voucher_id: voucher.message}
+    try:
+        voucher = await get_voucher_by_id(voucher_id)
+    except response.JsonException as je:
+        return {voucher_id: je.message}
     if voucher.voucher_type != expected_type:
         return {voucher_id: "Voucher không hợp lệ"}
-    if voucher.expired_date < get_current_time():
+    elif voucher.expired_date < get_current_time():
         return {voucher_id: "Voucher hết hạn"}
 
     return ItemVoucherReq(
@@ -235,19 +239,20 @@ async def process_order_voucher(
         voucher_list = []
         voucher_error = []
 
-        order_voucher = await process_single_voucher(voucher_order_id, "order")
-        if isinstance(order_voucher, dict):
-            for key, msg in order_voucher.items():
-                voucher_error.append({"voucher_id": key, "message": msg})
-        else:
-            voucher_list.append(order_voucher)
-
-        delivery_voucher = await process_single_voucher(voucher_delivery_id, "delivery")
-        if isinstance(delivery_voucher, dict):
-            for key, msg in delivery_voucher.items():
-                voucher_error.append({"voucher_id": key, "message": msg})
-        else:
-            voucher_list.append(delivery_voucher)
+        if voucher_order_id:
+            order_voucher = await process_single_voucher(voucher_order_id, "order")
+            if isinstance(order_voucher, dict):
+                for key, msg in order_voucher.items():
+                    voucher_error.append({"voucher_id": key, "message": msg})
+            else:
+                voucher_list.append(order_voucher)
+        if voucher_delivery_id:
+            delivery_voucher = await process_single_voucher(voucher_delivery_id, "delivery")
+            if isinstance(delivery_voucher, dict):
+                for key, msg in delivery_voucher.items():
+                    voucher_error.append({"voucher_id": key, "message": msg})
+            else:
+                voucher_list.append(delivery_voucher)
 
         return voucher_list, voucher_error
 
@@ -286,11 +291,9 @@ async def check_shipping_fee(
                 if v.voucher_type == "order" and product_price >= v.min_order_value:
                     discount = min(product_price * v.discount / 100, v.max_discount_value)
                     order_discount_amount += discount
-                    product_price -= discount
                 elif v.voucher_type == "delivery" and shipping_fee >= v.min_order_value:
                     discount = min(shipping_fee * v.discount / 100, v.max_discount_value)
                     delivery_discount_amount += discount
-                    shipping_fee -= discount
 
         total_fee = product_price + shipping_fee
 

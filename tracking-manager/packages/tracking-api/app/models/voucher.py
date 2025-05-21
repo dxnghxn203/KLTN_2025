@@ -15,6 +15,40 @@ async def get_all_vouchers(page: int, page_size: int):
     voucher_list = collection.find().skip(skip_count).limit(page_size)
     return [ItemVoucherDBRes(**voucher) for voucher in voucher_list]
 
+async def get_all_vouchers_for_users():
+    collection = database.db[collection_name]
+
+    voucher_list = collection.aggregate([
+        {
+            "$match": {
+                "active": True
+            }
+        },
+        {
+            "$addFields": {
+                "effective_discount": {
+                    "$min": [
+                        {
+                            "$multiply": [
+                                "$min_order_value",
+                                { "$divide": ["$discount", 100] }
+                            ]
+                        },
+                        "$max_discount_value"
+                    ]
+                }
+            }
+        },
+        {
+            "$sort": {
+                "effective_discount": -1
+            }
+        }
+    ])
+
+    return [ItemVoucherRes(**voucher) for voucher in voucher_list]
+
+
 async def get_voucher_by_id(voucher_id: str, is_admin: bool = False):
     try:
         collection = database.db[collection_name]
@@ -72,4 +106,23 @@ async def delete_voucher(voucher_id: str):
         return response.SuccessResponse(message="Xóa voucher thành công")
     except Exception as e:
         logger.error(f"Error deleting voucher: {str(e)}")
+        raise e
+
+async def update_voucher(voucher_id: str, item: ItemVoucherDBInReq, email: str):
+    try:
+        voucher_info = await get_voucher_by_id(voucher_id, is_admin=True)
+        if not voucher_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Voucher không tồn tại"
+            )
+
+        collection = database.db[collection_name]
+        collection.update_one(
+            {"voucher_id": voucher_id},
+            {"$set": item_data.dict()}
+        )
+        return response.SuccessResponse(message="Cập nhật voucher thành công")
+    except Exception as e:
+        logger.error(f"Error updating voucher: {str(e)}")
         raise e

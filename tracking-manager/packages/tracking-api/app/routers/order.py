@@ -35,16 +35,6 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                 }
             )
 
-
-        if not item.voucher_order_id:
-            return response.SuccessResponse(
-                data=await order.check_shipping_fee(
-                    item.receiver_province_code,
-                    total_price,
-                    weight
-                )
-            )
-
         voucher_list, voucher_error = await order.process_order_voucher(item.voucher_order_id, item.voucher_delivery_id)
 
         return response.SuccessResponse(
