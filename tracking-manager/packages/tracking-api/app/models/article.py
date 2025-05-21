@@ -19,7 +19,7 @@ async def create_article(article_data: ItemArticleRequestCreate, image):
 
         n_article = ItemArticle(
             article_id=article_id,
-            **article_data.dict(exclude={"title", "content", "category", "tags", "active"}),
+            **article_data.dict(),
             image_url=image_url)
         article = ARTICLE_COLLECTION.insert_one(n_article.dict())
         return article.inserted_id
