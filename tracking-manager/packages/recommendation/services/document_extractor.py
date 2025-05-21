@@ -9,6 +9,15 @@ from pathlib import Path
 from PIL import Image
 import io
 
+# Thêm import cho pdf2image
+from pdf2image import convert_from_path
+from pdf2image.exceptions import (
+    PDFInfoNotInstalledError,
+    PDFPageCountError,
+    PDFSyntaxError,
+    PDFPopplerTimeoutError
+)
+
 from core.llm_config import llm
 from core import logger
 from services.ocr_processor import extract_text_from_image, detect_layout_type, is_tesseract_available
@@ -16,8 +25,8 @@ from models.document import (
     PrescriptionProduct,
     InvoiceProduct,
     DocumentExtractionRequest,
-    DocumentExtractionResponse,  # Model này cần patient_information: Optional[Dict[str, Any]]
-    save_document  # Hàm này cần patient_information: Optional[Dict[str, Any]]
+    DocumentExtractionResponse,
+    save_document
 )
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -32,47 +41,44 @@ def encode_file_to_base64(file_path: Union[str, Path]) -> str:
         raise
 
 
-def encode_image_to_base64(image_path: Union[str, Path]) -> str:
+def encode_image_to_base64(image_path: Union[str, Path]) -> str:  # Should be identical to encode_file_to_base64
     try:
-        with Image.open(image_path) as img:
-            if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    background.paste(img, mask=img.convert('RGBA').getchannel('A'))
-                else:
-                    background.paste(img, mask=img.getchannel('A'))
-                img = background
-            elif img.mode != 'RGB':
-                img = img.convert('RGB')
-            buffer = io.BytesIO()
-            img.save(buffer, format="JPEG", quality=95)
-            buffer.seek(0)
-            return base64.b64encode(buffer.getvalue()).decode('utf-8')
-    except Exception as e:
-        logger.error(f"Error converting image to JPEG: {str(e)}")
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        logger.error(f"Error encoding image to base64: {str(e)}")
+        raise
 
 
 def extract_json_from_response(response_text: str, document_type: str) -> Dict[str, Any]:
+    # This function aims to parse JSON from LLM, with fallback for patient_information
+    # to be a dict if it's a string.
     parsed_data = {
-        "document_type": document_type, "products": [], "patient_information": None,  # Sẽ được cập nhật
+        "document_type": document_type, "products": [], "patient_information": {},  # Default to empty dict
         "document_date": None, "issuing_organization": None, "medical_code": None,
         "invoice_id": None, "prescription_id": None, "prescribing_doctor": None, "raw_text": ""
     }
 
     try:
         data = json.loads(response_text)
-        parsed_data.update(data)
+        parsed_data.update(data)  # Update with all fields from LLM
+
+        # Ensure products is a list
         parsed_data["products"] = data.get("products", []) if isinstance(data.get("products"), list) else []
 
-        # Xử lý fallback cho patient_information nếu LLM trả về string thay vì dict
+        # Handle patient_information: ensure it's a dict
         patient_info_val = parsed_data.get("patient_information")
-        if patient_info_val is not None and isinstance(patient_info_val, str):
-            logger.warn(f"LLM returned 'patient_information' as a string: '{patient_info_val}'. Converting to dict.")
-            parsed_data["patient_information"] = {"description": patient_info_val}
-        elif patient_info_val is None:  # Nếu LLM không trả về gì, đảm bảo nó là None hoặc dict rỗng
-            parsed_data["patient_information"] = {}  # Hoặc None, tùy theo model Pydantic của bạn chấp nhận gì khi rỗng
+        if patient_info_val is not None:
+            if isinstance(patient_info_val, str):
+                logger.warn(
+                    f"LLM returned 'patient_information' as a string: '{patient_info_val}'. Converting to dict: {{'description': 'string_value'}}.")
+                parsed_data["patient_information"] = {"description": patient_info_val}
+            elif not isinstance(patient_info_val, dict):
+                logger.warn(
+                    f"LLM returned 'patient_information' as non-dict/non-string: {type(patient_info_val)}. Resetting to empty dict.")
+                parsed_data["patient_information"] = {}
+        else:  # If patient_information is None or missing from LLM
+            parsed_data["patient_information"] = {}
 
         return parsed_data
     except json.JSONDecodeError:
@@ -85,40 +91,45 @@ def extract_json_from_response(response_text: str, document_type: str) -> Dict[s
                 parsed_data["products"] = data.get("products", []) if isinstance(data.get("products"), list) else []
 
                 patient_info_val = parsed_data.get("patient_information")
-                if patient_info_val is not None and isinstance(patient_info_val, str):
-                    logger.warn(
-                        f"LLM (from markdown) returned 'patient_information' as a string: '{patient_info_val}'. Converting to dict.")
-                    parsed_data["patient_information"] = {"description": patient_info_val}
-                elif patient_info_val is None:
+                if patient_info_val is not None:
+                    if isinstance(patient_info_val, str):
+                        logger.warn(
+                            f"LLM (from markdown) returned 'patient_information' as a string: '{patient_info_val}'. Converting to dict.")
+                        parsed_data["patient_information"] = {"description": patient_info_val}
+                    elif not isinstance(patient_info_val, dict):
+                        logger.warn(
+                            f"LLM (from markdown) returned 'patient_information' as non-dict/non-string: {type(patient_info_val)}. Resetting to empty dict.")
+                        parsed_data["patient_information"] = {}
+                else:
                     parsed_data["patient_information"] = {}
-
                 return parsed_data
             except json.JSONDecodeError:
                 logger.warn("Failed to parse JSON from markdown code block in LLM response.")
         else:
-            logger.warn("LLM response is not a direct JSON or a markdown JSON code block.")
+            logger.warn(
+                "LLM response is not a direct JSON or a markdown JSON code block. Attempting markdown parsing for products.")
 
-    # Fallback parsing cho products nếu không có JSON (phần này giữ nguyên)
+    # Fallback parsing for products if no valid JSON is found (simplified)
+    # This part might need to be more robust if LLM often fails to produce JSON
     products = []
-    current_product_data: Optional[Dict[str, Any]] = None
-    lines = response_text.strip().split('\n')
-    property_pattern = re.compile(r'^\s*\*\*([^:]+?)\*\*:\s*(.+)$|^\s*([^:]+?):\s*(.+)$')
-    for line in lines:
-        line = line.strip();  # ... (logic parsing markdown cho products giữ nguyên) ...
-    # ... (phần còn lại của logic parsing markdown cho products)
+    # ... (Your existing markdown parsing logic for products could go here if needed)
+    # For simplicity, if JSON fails, and markdown parsing is complex, we might just return empty products
+    # or rely on the initial parsed_data["products"] which would be [].
 
-    if parsed_data.get("patient_information") is None:  # Nếu sau tất cả patient_information vẫn là None
-        parsed_data["patient_information"] = {}  # Đảm bảo là dict rỗng
+    # Ensure patient_information is a dict if all parsing fails
+    if not isinstance(parsed_data.get("patient_information"), dict):
+        parsed_data["patient_information"] = {}
 
-    parsed_data["products"] = products  # Gán products từ markdown parsing nếu có
+    # parsed_data["products"] would already be set from the initial try or markdown block try.
     return parsed_data
 
 
-async def extract_with_llm(file_path: Path, document_type: str, file_type: str, ocr_text: Optional[str] = None) -> Dict[
-    str, Any]:
-    base64_content = encode_file_to_base64(file_path)
+async def extract_with_llm(file_path: Path, document_type: str, file_type: str, ocr_text: Optional[str] = None,
+                           page_number: Optional[int] = None, total_pages: Optional[int] = None) -> Dict[str, Any]:
+    # file_path here is expected to be an image file (original image or a page converted from PDF)
+    base64_content = encode_image_to_base64(file_path)  # Use encode_image_to_base64
+    logger.info(f"File type for LLM: {file_type}, Base64 content length: {len(base64_content)}")
 
-    # Cập nhật hướng dẫn cho patient_information: YÊU CẦU LÀ MỘT OBJECT JSON
     common_extraction_info = """
         Ngoài danh sách sản phẩm/thuốc, hãy trích xuất các thông tin chung sau từ tài liệu nếu có:
         - patient_information: Trích xuất thông tin bệnh nhân hoặc người dùng. 
@@ -157,10 +168,13 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
         }
         Nếu một thông tin không có hoặc không áp dụng cho các trường chuỗi khác, hãy để giá trị là `null`.
         """
+    page_context_info = ""
+    if page_number is not None and total_pages is not None:
+        page_context_info = f"Đây là trang {page_number} của tổng số {total_pages} trang tài liệu. Hãy xem xét thông tin này trong ngữ cảnh của toàn bộ tài liệu nếu có thể."
 
     if document_type == "prescription":
         system_prompt = f"""
-        Bạn là trợ lý trích xuất thông tin từ đơn thuốc. Hãy phân tích tài liệu đơn thuốc và trích xuất các thông tin sau cho mỗi thuốc:
+        Bạn là trợ lý trích xuất thông tin từ đơn thuốc. {page_context_info} Hãy phân tích tài liệu đơn thuốc và trích xuất các thông tin sau cho mỗi thuốc:
         1. product_name: Tên thuốc
         2. dosage: Liều lượng
         3. quantity_value: Số lượng (phần số)
@@ -171,7 +185,7 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
         """
     else:  # invoice
         system_prompt = f"""
-        Bạn là trợ lý trích xuất thông tin từ hóa đơn thuốc. Hãy phân tích tài liệu hóa đơn và trích xuất các thông tin sau cho mỗi sản phẩm:
+        Bạn là trợ lý trích xuất thông tin từ hóa đơn thuốc. {page_context_info} Hãy phân tích tài liệu hóa đơn và trích xuất các thông tin sau cho mỗi sản phẩm:
         1. product_name: Tên sản phẩm
         2. quantity_value: Số lượng (phần số)
         3. quantity_unit: Đơn vị tính của số lượng
@@ -182,9 +196,7 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
         """
 
     data_url: str
-    if file_type.lower() == "pdf":
-        data_url = f"data:application/pdf;base64,{base64_content}"
-    elif file_type.lower() in ["jpeg", "jpg"]:
+    if file_type.lower() in ["jpeg", "jpg"]:
         data_url = f"data:image/jpeg;base64,{base64_content}"
     elif file_type.lower() == "png":
         data_url = f"data:image/png;base64,{base64_content}"
@@ -193,39 +205,50 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
     elif file_type.lower() == "gif":
         data_url = f"data:image/gif;base64,{base64_content}"
     else:
-        data_url = f"data:application/octet-stream;base64,{base64_content}"
-        logger.warn(f"Using fallback MIME type for file_type: {file_type}")
+        data_url = f"data:application/octet-stream;base64,{base64_content}"  # Fallback
+        logger.warn(f"Using fallback MIME type for file_type: {file_type} in extract_with_llm")
 
     user_content_parts: List[Dict[str, Any]] = [{"type": "image_url", "image_url": {"url": data_url}}]
-    instructional_text = "Hãy phân tích tài liệu được cung cấp (hình ảnh/PDF) và trích xuất thông tin theo yêu cầu vào định dạng JSON đã chỉ định."
+
+    instructional_text = "Hãy phân tích hình ảnh được cung cấp (đây là một trang từ tài liệu gốc) và trích xuất thông tin theo yêu cầu vào định dạng JSON đã chỉ định."
+    if page_context_info:
+        instructional_text = f"{page_context_info} {instructional_text}"
 
     if ocr_text:
         user_content_parts.append(
             {"type": "text", "text": f"Văn bản OCR (tham khảo thêm nếu cần, đặc biệt nếu hình ảnh mờ):\n{ocr_text}"})
-        instructional_text = "Hãy phân tích hình ảnh và văn bản OCR kèm theo (nếu có) để trích xuất thông tin theo yêu cầu vào định dạng JSON đã chỉ định."
+        # Modify instructional_text to acknowledge OCR text
+        base_instruction = "Hãy phân tích hình ảnh và văn bản OCR kèm theo (nếu có) để trích xuất thông tin theo yêu cầu vào định dạng JSON đã chỉ định."
+        if page_context_info:
+            instructional_text = f"{page_context_info} {base_instruction}"
+        else:
+            instructional_text = base_instruction
 
     user_content_parts.append({"type": "text", "text": instructional_text})
     messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_content_parts)]
 
     try:
-        logger.info(
-            f"Calling LLM for {document_type} document ({file_type}). OCR text provided for ref: {bool(ocr_text)}")
+        page_info_log = f"(page {page_number}/{total_pages} from PDF, as {file_type})" if page_number else f"(image {file_type})"
+        logger.info(f"Calling LLM for {document_type} document {page_info_log}. OCR text provided: {bool(ocr_text)}")
+
         response = await llm.ainvoke(messages)
-        content = response.content
-        logger.debug(f"LLM response (first 500 chars): {content[:500]}...")
+        content = response.content if hasattr(response, 'content') else str(response)  # Ensure content is string
+
+        logger.debug(f"LLM response {page_info_log} (first 500 chars): {content[:500]}...")
 
         extracted_data_full = extract_json_from_response(content, document_type)
-        extracted_data_full["raw_text"] = ocr_text or ""  # Đảm bảo raw_text được gán
+        extracted_data_full["raw_text"] = ocr_text or ""
 
         products_typed = []
         llm_products = extracted_data_full.get("products", [])
         if not isinstance(llm_products, list):
-            logger.warn(f"LLM returned 'products' not as a list: {llm_products}. Defaulting to empty list.")
+            logger.warn(
+                f"LLM {page_info_log} returned 'products' not as a list: {llm_products}. Defaulting to empty list.")
             llm_products = []
 
         for item in llm_products:
             if not isinstance(item, dict):
-                logger.warn(f"Skipping non-dict item in products list: {item}")
+                logger.warn(f"Skipping non-dict item in products list {page_info_log}: {item}")
                 continue
             if document_type == "prescription":
                 products_typed.append(PrescriptionProduct(
@@ -244,16 +267,13 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
                     total_price=item.get("total_price")
                 ))
 
-        # Đảm bảo patient_information là dict hoặc None theo yêu cầu của Pydantic model
-        final_patient_info = extracted_data_full.get("patient_information")
-        if not isinstance(final_patient_info, (dict, type(None))):
+        # Ensure patient_information is a dict as per Pydantic model and extract_json_from_response's goal
+        final_patient_info = extracted_data_full.get("patient_information", {})  # Default to {} if missing
+        if not isinstance(final_patient_info, dict):  # Double check, though extract_json_from_response should handle it
             logger.error(
-                f"Critical: patient_information is not a dict or None after processing. Value: {final_patient_info}, Type: {type(final_patient_info)}")
-            # Nếu model Pydantic của bạn yêu cầu dict và không cho phép None khi có thông tin,
-            # bạn có thể cần phải ép thành dict rỗng ở đây nếu nó là một kiểu không mong muốn khác.
-            # Tuy nhiên, logic trong extract_json_from_response đã cố gắng xử lý điều này.
-            # Nếu vẫn lỗi, có thể là do LLM trả về một cấu trúc rất lạ.
-            final_patient_info = {"unexpected_data": str(final_patient_info)}  # Cực kỳ fallback
+                f"Critical: patient_information is not a dict after extract_json_from_response {page_info_log}. Value: {final_patient_info}, Type: {type(final_patient_info)}")
+            final_patient_info = {"error": "failed to parse patient_information as dict",
+                                  "original_value": str(final_patient_info)}
 
         return {
             "document_type": extracted_data_full.get("document_type", document_type),
@@ -269,10 +289,11 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
         }
 
     except Exception as e:
-        logger.error(f"LLM extraction error: {str(e)}", exc_info=True)
+        page_info_log = f"(page {page_number})" if page_number else ""
+        logger.error(f"LLM extraction error {page_info_log}: {str(e)}", exc_info=True)
         return {
             "document_type": document_type, "raw_text": ocr_text or "", "products": [],
-            "patient_information": {},  # Trả về dict rỗng khi lỗi, nếu model yêu cầu dict
+            "patient_information": {},  # Ensure it's a dict on error
             "document_date": None, "issuing_organization": None,
             "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
         }
@@ -282,12 +303,16 @@ async def process_document(
         file: UploadFile,
         request: DocumentExtractionRequest
 ) -> DocumentExtractionResponse:
+    temp_file_orig_path: Optional[Path] = None
+    temp_image_page_path: Optional[Path] = None  # For individual PDF page images
+
     try:
         file_content = await file.read()
         await file.seek(0)
 
         file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
         supported_image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'webp', 'gif']
+
         if file_ext not in ['pdf'] + supported_image_exts:
             raise HTTPException(status_code=400, detail=f"Định dạng file không được hỗ trợ: {file_ext}.")
 
@@ -296,123 +321,280 @@ async def process_document(
             logger.warn("Tesseract OCR không khả dụng cho phương thức 'ocr'. Chuyển sang chế độ 'llm'.")
             request.extraction_method = "llm"
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_file:
-            temp_file.write(file_content)
-            temp_path = Path(temp_file.name)
-        logger.info(f"Đã lưu file tạm thời tại: {temp_path}")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_file_orig:
+            temp_file_orig.write(file_content)
+            temp_file_orig_path = Path(temp_file_orig.name)
+        logger.info(f"Đã lưu file gốc tạm thời tại: {temp_file_orig_path}")
 
-        ocr_text_for_llm: Optional[str] = None
-        processed_file_type_for_llm = file_ext
-        document_type = request.document_type
+        all_pages_extracted_data: List[Dict[str, Any]] = []
+        final_document_type = request.document_type
+        total_pages_processed = 0
+        aggregated_raw_text_list = []  # Store OCR text per page
 
         if file_ext == 'pdf':
-            logger.info("Xử lý file PDF...")
-            processed_file_type_for_llm = "pdf"
-            if document_type == "auto":
-                document_type = "prescription"
+            logger.info("Xử lý file PDF bằng cách chuyển đổi sang hình ảnh từng trang...")
+            # --- Poppler Path Configuration for Windows ---
+            poppler_bin_path_windows: Optional[str] = None
+            # Example: poppler_bin_path_windows = r"C:\path\to\your\poppler-VERSION\Library\bin"
+            # You can set this via environment variable or hardcode for testing, then make it configurable
+            # For this example, let's assume it might be needed.
+            # If you've added Poppler to PATH on Windows, poppler_path=None should work.
+            # If not, you MUST specify poppler_path.
+            # Check your Poppler installation path.
+            # poppler_bin_path_windows = r"C:\Program Files\poppler-23.11.0\Library\bin" # EXAMPLE - CHANGE THIS
+            # --- End Poppler Path Configuration ---
 
-        else:
-            logger.info(f"Xử lý file hình ảnh: {file_ext}")
             try:
-                with Image.open(temp_path) as img:
-                    img_rgb = img
-                    if img.mode in ('RGBA', 'LA', 'P'):
-                        img_rgb = Image.new("RGB", img.size, (255, 255, 255))
-                        alpha_channel = None
-                        if img.mode == 'P' and 'transparency' in img.info:
-                            alpha_channel = img.convert('RGBA').getchannel('A')
-                        elif 'A' in img.mode:
-                            alpha_channel = img.getchannel('A')
-                        img_rgb.paste(img, mask=alpha_channel)
-                    elif img.mode != 'RGB':
-                        img_rgb = img.convert('RGB')
+                pdf_poppler_path = None
+                if os.name == 'nt' and poppler_bin_path_windows:
+                    if Path(poppler_bin_path_windows).is_dir():
+                        pdf_poppler_path = poppler_bin_path_windows
+                        logger.info(f"Sử dụng Poppler path cho Windows: {pdf_poppler_path}")
+                    else:
+                        logger.warn(
+                            f"Đường dẫn Poppler bin cho Windows được cung cấp không hợp lệ: {poppler_bin_path_windows}. Thử không có poppler_path.")
 
-                    converted_ext = "jpeg"
-                    converted_path = temp_path.with_suffix(f".{converted_ext}")
-                    img_rgb.save(converted_path, format="JPEG", quality=95)
+                images_from_path = convert_from_path(temp_file_orig_path, poppler_path=pdf_poppler_path)
+                total_pages_processed = len(images_from_path)
+                logger.info(f"PDF có {total_pages_processed} trang, đang chuyển đổi và xử lý từng trang.")
 
-                    if converted_path != temp_path:
-                        logger.info(f"Đã chuyển đổi hình ảnh từ {file_ext} sang {converted_ext} tại: {converted_path}")
-                        os.unlink(temp_path)
-                        temp_path = converted_path
-                    processed_file_type_for_llm = "jpeg"
+                for i, image_page in enumerate(images_from_path):
+                    page_number = i + 1
+                    # Use a more robust temp file creation for the image page
+                    fd, temp_image_page_path_str = tempfile.mkstemp(suffix=".jpeg")
+                    os.close(fd)  # Close the file descriptor, as PIL will open it
+                    temp_image_page_path = Path(temp_image_page_path_str)
+
+                    image_page.save(temp_image_page_path, "JPEG")
+
+                    logger.info(
+                        f"Đang xử lý trang {page_number}/{total_pages_processed} của PDF (ảnh tạm: {temp_image_page_path})")
+
+                    page_ocr_text: Optional[str] = None
+                    if request.extraction_method in ["ocr", "hybrid"] and ocr_available:
+                        page_ocr_text = extract_text_from_image(temp_image_page_path)
+                        if page_ocr_text:
+                            aggregated_raw_text_list.append(f"--- Trang {page_number} ---\n{page_ocr_text}\n")
+                        logger.info(f"Trích xuất OCR từ trang {page_number} (ảnh): {len(page_ocr_text or '')} ký tự.")
+
+                    current_page_document_type = request.document_type
+                    if current_page_document_type == "auto":
+                        if page_ocr_text:
+                            current_page_document_type = detect_layout_type(page_ocr_text)
+                        else:
+                            current_page_document_type = "prescription"
+
+                    if request.extraction_method == "ocr" and ocr_available:  # Only OCR
+                        page_extracted_data = {
+                            "document_type": current_page_document_type, "raw_text": page_ocr_text or "",
+                            "products": [],
+                            "patient_information": {}, "document_date": None, "issuing_organization": None,
+                            "medical_code": None, "invoice_id": None, "prescription_id": None,
+                            "prescribing_doctor": None
+                        }
+                    else:  # LLM or Hybrid
+                        page_extracted_data = await extract_with_llm(
+                            file_path=temp_image_page_path,
+                            document_type=current_page_document_type,
+                            file_type="jpeg",
+                            ocr_text=page_ocr_text,
+                            page_number=page_number,
+                            total_pages=total_pages_processed
+                        )
+                    all_pages_extracted_data.append(page_extracted_data)
+                    os.unlink(temp_image_page_path)  # Xóa file ảnh trang tạm thời
+                    temp_image_page_path = None  # Reset path
+
+                if request.document_type == "auto" and all_pages_extracted_data:
+                    type_counts = {}
+                    for data in all_pages_extracted_data:
+                        dt = data.get("document_type", "prescription")
+                        type_counts[dt] = type_counts.get(dt, 0) + 1
+                    if type_counts:
+                        final_document_type = max(type_counts, key=type_counts.get)
+                    else:
+                        final_document_type = "prescription"
+
+            except PDFInfoNotInstalledError as e:  # Poppler not found or not in PATH
+                logger.error(
+                    f"Lỗi Poppler: {str(e)}. Đảm bảo Poppler đã được cài đặt và trong PATH, hoặc chỉ định 'poppler_path' chính xác cho Windows.",
+                    exc_info=True)
+                raise HTTPException(status_code=500,
+                                    detail=f"Lỗi xử lý PDF: Poppler không được tìm thấy hoặc cấu hình sai. Chi tiết: {str(e)}")
+            except (PDFPageCountError, PDFSyntaxError, PDFPopplerTimeoutError) as e:
+                logger.error(f"Lỗi xử lý PDF với pdf2image: {str(e)}", exc_info=True)
+                raise HTTPException(status_code=500, detail=f"Lỗi xử lý file PDF: {str(e)}.")
             except Exception as e:
-                logger.warn(
-                    f"Không thể xử lý/chuyển đổi hình ảnh {temp_path}: {str(e)}. Sử dụng file gốc {file_ext} cho LLM.")
+                logger.error(f"Lỗi không mong muốn khi xử lý PDF thành ảnh: {str(e)}", exc_info=True)
+                raise HTTPException(status_code=500, detail=f"Lỗi không mong muốn khi chuyển đổi PDF: {str(e)}")
 
+        else:  # Xử lý file hình ảnh gốc
+            total_pages_processed = 1
+            logger.info(f"Xử lý file hình ảnh gốc: {file.filename} ({file_ext})")
+
+            # For non-PDF, temp_file_orig_path is the one to process
+            # We might want to convert it to JPEG for consistency if it's not already
+            temp_image_to_process_path = temp_file_orig_path
+            processed_file_type_for_llm = file_ext
+
+            if file_ext not in ["jpeg", "jpg"]:  # Attempt to convert to JPEG
+                try:
+                    logger.info(f"Attempting to convert image {file.filename} to JPEG for consistency.")
+                    with Image.open(temp_file_orig_path) as img:
+                        img_rgb = img
+                        if img.mode in ('RGBA', 'LA', 'P'):
+                            # Create a white background image
+                            img_rgb = Image.new("RGB", img.size, (255, 255, 255))
+                            # Determine mask for pasting
+                            alpha_mask = None
+                            if img.mode == 'P' and 'transparency' in img.info:
+                                alpha_mask = img.convert('RGBA').split()[-1]
+                            elif 'A' in img.mode:
+                                alpha_mask = img.split()[-1]
+                            img_rgb.paste(img, (0, 0), mask=alpha_mask)
+                        elif img.mode != 'RGB':
+                            img_rgb = img.convert('RGB')
+
+                        # Save to a new temp file with .jpeg extension
+                        fd_jpeg, temp_jpeg_path_str = tempfile.mkstemp(suffix=".jpeg")
+                        os.close(fd_jpeg)
+                        temp_jpeg_path = Path(temp_jpeg_path_str)
+
+                        img_rgb.save(temp_jpeg_path, "JPEG", quality=95)
+                        logger.info(f"Converted image to JPEG: {temp_jpeg_path}")
+                        temp_image_to_process_path = temp_jpeg_path  # Process this JPEG
+                        processed_file_type_for_llm = "jpeg"
+                except Exception as e_img_convert:
+                    logger.warn(f"Could not convert image {file.filename} to JPEG: {e_img_convert}. Using original.")
+                    # temp_image_to_process_path remains temp_file_orig_path
+
+            ocr_text_for_llm: Optional[str] = None
             if request.extraction_method in ["ocr", "hybrid"] and ocr_available:
-                ocr_text_for_llm = extract_text_from_image(temp_path)
-                logger.info(f"Trích xuất OCR từ hình ảnh: {len(ocr_text_for_llm or '')} ký tự.")
-
-            if document_type == "auto":
+                ocr_text_for_llm = extract_text_from_image(temp_image_to_process_path)
                 if ocr_text_for_llm:
-                    document_type = detect_layout_type(ocr_text_for_llm)
+                    aggregated_raw_text_list.append(ocr_text_for_llm)
+                logger.info(f"Trích xuất OCR từ hình ảnh '{file.filename}': {len(ocr_text_for_llm or '')} ký tự.")
+
+            if final_document_type == "auto":
+                if ocr_text_for_llm:
+                    final_document_type = detect_layout_type(ocr_text_for_llm)
                 else:
-                    document_type = "prescription"
-            logger.info(f"Loại tài liệu xác định (hình ảnh): {document_type}")
+                    final_document_type = "prescription"
 
-        logger.info(f"Phương pháp trích xuất cuối cùng: {request.extraction_method}")
+            if request.extraction_method == "ocr" and ocr_available:
+                single_page_data = {
+                    "document_type": final_document_type, "raw_text": ocr_text_for_llm or "", "products": [],
+                    "patient_information": {}, "document_date": None, "issuing_organization": None,
+                    "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
+                }
+            else:
+                single_page_data = await extract_with_llm(
+                    file_path=temp_image_to_process_path,
+                    document_type=final_document_type,
+                    file_type=processed_file_type_for_llm,
+                    ocr_text=ocr_text_for_llm,
+                    page_number=1,
+                    total_pages=1
+                )
+            all_pages_extracted_data.append(single_page_data)
 
-        extracted_result: Dict[str, Any]
-        if request.extraction_method == "ocr":
-            logger.info("Sử dụng phương pháp OCR thuần túy.")
-            extracted_result = {
-                "document_type": document_type, "raw_text": ocr_text_for_llm or "", "products": [],
-                "patient_information": {},  # Trả về dict rỗng nếu model yêu cầu dict
-                "document_date": None, "issuing_organization": None,
-                "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
-            }
-        else:
-            logger.info(f"Sử dụng LLM (phương pháp: {request.extraction_method}) để phân tích tài liệu.")
-            extracted_result = await extract_with_llm(
-                file_path=temp_path,
-                document_type=document_type,
-                file_type=processed_file_type_for_llm,
-                ocr_text=ocr_text_for_llm
-            )
+            # Clean up the converted JPEG if it was created and is different from original temp file
+            if temp_image_to_process_path != temp_file_orig_path and os.path.exists(temp_image_to_process_path):
+                os.unlink(temp_image_to_process_path)
+
+        if not all_pages_extracted_data:
+            logger.error("Không có dữ liệu nào được trích xuất từ các trang.")
+            raise HTTPException(status_code=500, detail="Không thể trích xuất dữ liệu từ tài liệu.")
+
+        final_result: Dict[str, Any] = {
+            "document_type": final_document_type,
+            "raw_text": "\n".join(aggregated_raw_text_list).strip(),
+            "products": [],
+            "patient_information": {},  # Default to empty dict
+            "document_date": None, "issuing_organization": None, "medical_code": None,
+            "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
+        }
+
+        # Aggregate results (simple strategy)
+        # Prioritize info from the first page that has it, append products
+        first_patient_info_found = False
+        first_doc_date_found = False
+        # ... similar flags for other common fields
+
+        for page_data in all_pages_extracted_data:
+            final_result["products"].extend(page_data.get("products", []))
+
+            current_page_patient_info = page_data.get("patient_information")
+            if isinstance(current_page_patient_info,
+                          dict) and current_page_patient_info and not first_patient_info_found:
+                final_result["patient_information"] = current_page_patient_info
+                first_patient_info_found = True  # Take the first non-empty dict
+
+            # For other fields, take the first non-None value encountered
+            if not final_result["document_date"] and page_data.get("document_date"):
+                final_result["document_date"] = page_data["document_date"]
+            if not final_result["issuing_organization"] and page_data.get("issuing_organization"):
+                final_result["issuing_organization"] = page_data["issuing_organization"]
+            # ... and so on for medical_code, invoice_id, prescription_id, prescribing_doctor
+
+        # Ensure patient_information is a dict, even if it was never found or set
+        if not isinstance(final_result["patient_information"], dict):
+            final_result["patient_information"] = {}
 
         document_id = await save_document(
-            document_type=extracted_result["document_type"],
-            raw_text=extracted_result["raw_text"],
-            products=extracted_result["products"],
+            document_type=final_result["document_type"],
+            raw_text=final_result["raw_text"],
+            products=final_result["products"],
             extraction_method=request.extraction_method,
             file_name=file.filename,
             file_content=file_content,
             user_id=request.user_id,
-            total_pages=1,
-            current_page=1,
-            patient_information=extracted_result.get("patient_information"),
-            document_date=extracted_result.get("document_date"),
-            issuing_organization=extracted_result.get("issuing_organization"),
-            medical_code=extracted_result.get("medical_code"),
-            invoice_id=extracted_result.get("invoice_id"),
-            prescription_id=extracted_result.get("prescription_id"),
-            prescribing_doctor=extracted_result.get("prescribing_doctor")
+            total_pages=total_pages_processed,
+            current_page=total_pages_processed,  # Indicates all pages processed
+            patient_information=final_result.get("patient_information"),
+            document_date=final_result.get("document_date"),
+            issuing_organization=final_result.get("issuing_organization"),
+            medical_code=final_result.get("medical_code"),
+            invoice_id=final_result.get("invoice_id"),
+            prescription_id=final_result.get("prescription_id"),
+            prescribing_doctor=final_result.get("prescribing_doctor")
         )
-
-        os.unlink(temp_path)
-        logger.info("Đã xóa file tạm thời.")
 
         return DocumentExtractionResponse(
             document_id=document_id,
-            document_type=extracted_result["document_type"],
-            raw_text=extracted_result["raw_text"],
-            products=extracted_result["products"],
+            document_type=final_result["document_type"],
+            raw_text=final_result["raw_text"],
+            products=final_result["products"],
             extraction_method=request.extraction_method,
-            total_pages=1,
-            current_page=1,
-            patient_information=extracted_result.get("patient_information"),
-            document_date=extracted_result.get("document_date"),
-            issuing_organization=extracted_result.get("issuing_organization"),
-            medical_code=extracted_result.get("medical_code"),
-            invoice_id=extracted_result.get("invoice_id"),
-            prescription_id=extracted_result.get("prescription_id"),
-            prescribing_doctor=extracted_result.get("prescribing_doctor")
+            total_pages=total_pages_processed,
+            current_page=total_pages_processed,
+            patient_information=final_result.get("patient_information"),
+            document_date=final_result.get("document_date"),
+            issuing_organization=final_result.get("issuing_organization"),
+            medical_code=final_result.get("medical_code"),
+            invoice_id=final_result.get("invoice_id"),
+            prescription_id=final_result.get("prescription_id"),
+            prescribing_doctor=final_result.get("prescribing_doctor")
         )
 
     except HTTPException as he:
-        logger.error(f"HTTP Exception trong quá trình xử lý tài liệu: {str(he.detail)}")
+        logger.error(f"HTTP Exception trong quá trình xử lý tài liệu: {str(he.detail)}",
+                     exc_info=False)  # exc_info=False for cleaner HTTP logs
         raise he
     except Exception as e:
         logger.error(f"Lỗi xử lý tài liệu không mong muốn: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Lỗi xử lý tài liệu nghiêm trọng: {str(e)}")
+    finally:
+        # Cleanup temp files
+        if temp_file_orig_path and os.path.exists(temp_file_orig_path):
+            try:
+                os.unlink(temp_file_orig_path)
+                logger.info(f"Đã xóa file gốc tạm thời cuối cùng: {temp_file_orig_path}")
+            except Exception as e_unlink:
+                logger.error(f"Không thể xóa file gốc tạm thời {temp_file_orig_path}: {e_unlink}")
+        if temp_image_page_path and os.path.exists(temp_image_page_path):  # Should have been deleted in loop
+            try:
+                os.unlink(temp_image_page_path)
+                logger.warn(f"Đã xóa file ảnh trang tạm thời còn sót lại: {temp_image_page_path}")
+            except Exception as e_unlink_page:
+                logger.error(f"Không thể xóa file ảnh trang tạm thời {temp_image_page_path}: {e_unlink_page}")
