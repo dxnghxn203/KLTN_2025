@@ -37,7 +37,8 @@ origins = [
     "http://localhost:3000",
     "https://kltn-2025.vercel.app",
     "https://payment.medicaretech.io.vn",
-    "https://shop.medicaretech.io.vn"
+    "https://shop.medicaretech.io.vn",
+    "https://recommendation.medicaretech.io.vn",
 ]
 
 app.add_middleware(
