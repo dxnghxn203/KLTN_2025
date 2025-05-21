@@ -132,20 +132,23 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
 
     common_extraction_info = """
         Ngoài danh sách sản phẩm/thuốc, hãy trích xuất các thông tin chung sau từ tài liệu nếu có:
-        - patient_information: Trích xuất thông tin bệnh nhân hoặc người dùng. 
+        - patient_information: Trích xuất thông tin về người liên quan chính trong tài liệu (ví dụ: bệnh nhân nếu là đơn thuốc, khách hàng/người mua nếu là hóa đơn). 
             * QUAN TRỌNG: Trường này BẮT BUỘC PHẢI LÀ MỘT ĐỐI TƯỢNG JSON (OBJECT).
             * Ví dụ về cấu trúc mong muốn cho `patient_information`:
               {
-                "name": "Nguyễn Thị C",
-                "age": "52 tuổi", 
-                "gender": "Nữ",
-                "address": "Số 10, Phố ABC, Quận Hoàn Kiếm, Hà Nội",
-                "phone": "0912345678",
-                "diagnosis": "Đau dạ dày", 
-                "notes": "Có tiền sử bệnh tim mạch. Khám định kỳ." 
+                "name": "Nguyễn Văn A (Khách hàng)", // Hoặc "Trần Thị B (Bệnh nhân)"
+                "identifier": "Mã KH: 12345 / Số CMND: 001089xxxxxx", // Mã khách hàng, mã bệnh nhân, hoặc giấy tờ tùy thân nếu có
+                "age": "35 tuổi", // Nếu có và phù hợp
+                "gender": "Nam", // Nếu có và phù hợp
+                "address": "Số 10, Đường X, Phường Y, Quận Z, TP. HCM",
+                "phone": "090xxxxxxx",
+                "email": "email@example.com", // Nếu có
+                "diagnosis_or_purpose": "Mua hàng tiêu dùng", // Hoặc "Viêm họng cấp" (chẩn đoán nếu là đơn thuốc)
+                "notes": "Khách hàng VIP. Giao hàng nhanh." // Hoặc "Tiền sử dị ứng Penicillin."
               }
-            * Nếu một số thông tin con (như 'phone', 'diagnosis', 'notes') không có, hãy để giá trị là `null` hoặc bỏ qua khóa đó bên trong đối tượng `patient_information`.
-            * Nếu không có bất kỳ thông tin bệnh nhân nào có thể trích xuất, hãy trả về một ĐỐI TƯỢNG RỖNG: `{}` cho `patient_information`.
+            * Hãy cố gắng điền các trường con bên trong `patient_information` một cách hợp lý dựa trên loại tài liệu.
+            * Nếu một số thông tin con không có hoặc không phù hợp, hãy để giá trị là `null` hoặc bỏ qua khóa đó.
+            * Nếu không có bất kỳ thông tin nào về người liên quan có thể trích xuất, hãy trả về một ĐỐI TƯỢNG RỖNG: `{}` cho `patient_information`.
             * TUYỆT ĐỐI KHÔNG trả về `patient_information` dưới dạng một chuỗi văn bản thuần túy.
         - document_date: Ngày tháng của tài liệu (ví dụ: "2023-10-26"). Luôn là một chuỗi.
         - issuing_organization: Tên tổ chức phát hành. Luôn là một chuỗi.
@@ -335,14 +338,6 @@ async def process_document(
             logger.info("Xử lý file PDF bằng cách chuyển đổi sang hình ảnh từng trang...")
             # --- Poppler Path Configuration for Windows ---
             poppler_bin_path_windows: Optional[str] = None
-            # Example: poppler_bin_path_windows = r"C:\path\to\your\poppler-VERSION\Library\bin"
-            # You can set this via environment variable or hardcode for testing, then make it configurable
-            # For this example, let's assume it might be needed.
-            # If you've added Poppler to PATH on Windows, poppler_path=None should work.
-            # If not, you MUST specify poppler_path.
-            # Check your Poppler installation path.
-            # poppler_bin_path_windows = r"C:\Program Files\poppler-23.11.0\Library\bin" # EXAMPLE - CHANGE THIS
-            # --- End Poppler Path Configuration ---
 
             try:
                 pdf_poppler_path = None
@@ -535,7 +530,6 @@ async def process_document(
                 final_result["document_date"] = page_data["document_date"]
             if not final_result["issuing_organization"] and page_data.get("issuing_organization"):
                 final_result["issuing_organization"] = page_data["issuing_organization"]
-            # ... and so on for medical_code, invoice_id, prescription_id, prescribing_doctor
 
         # Ensure patient_information is a dict, even if it was never found or set
         if not isinstance(final_result["patient_information"], dict):
