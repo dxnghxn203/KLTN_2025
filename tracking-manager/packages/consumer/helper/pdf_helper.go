@@ -39,27 +39,29 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 	currentTime := now.Format("15:04:05")
 
 	var itemsHTML strings.Builder
-	totalFeeBeforeDiscount := 0.0
+	productFeeBeforeDiscount := 0.0
 
 	for _, item := range order.Product {
-		totalFeeBeforeDiscount += item.OriginalPrice * float64(item.Quantity)
+		productFeeBeforeDiscount += item.OriginalPrice * float64(item.Quantity)
 		itemsHTML.WriteString(fmt.Sprintf(`
 					<tr>
 						<td>%s</td>
 						<td style="text-align: center;">%d</td>
-						<td style="text-align: center;">%.0f</td>
+						<td style="text-align: center;">%s</td>
+						<td style="text-align: center;">%0f</td>
 						<td style="text-align: center;">%.0f%%</td>
 						<td style="text-align: center;">%.0f</td>
 					</tr>`,
 			item.ProductName,
 			item.Quantity,
+			item.Unit,
 			item.OriginalPrice,
 			item.Discount,
 			float64(item.Quantity)*item.Price,
 		))
 	}
 
-	voucherDiscount := totalFeeBeforeDiscount - order.TotalFee
+	productDiscount := productFeeBeforeDiscount - order.ProductFee
 	shippingFeeDisplay := "Miễn phí"
 	if order.ShippingFee > 0 {
 		shippingFeeDisplay = fmt.Sprintf("%.0f", order.ShippingFee)
@@ -83,6 +85,7 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
           <tr>
             <th>Tên sản phẩm</th>
             <th>SL</th>
+			<th>Đơn vị</th>
             <th>Đơn giá</th>
             <th>Giảm giá</th>
             <th>Thành tiền</th>
@@ -90,15 +93,19 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
           %s
         </table>
 		<br>
-		<p style="text-align: right;"><strong>Tổng tiền:</strong> %.0f</p>
-		<p style="text-align: right;"><strong>Voucher:</strong> %.0f</p>
+		<p style="text-align: right;"><strong>Giá sản phẩm:</strong> %.0f</p>
 		<p style="text-align: right;"><strong>Phí vận chuyển:</strong> %s</p>
+		<p style="text-align: right;"><strong>Tổng tiền:</strong> %.0f</p>
+		<p style="text-align: right;"><strong>Giảm giá sản phẩm:</strong> %.0f</p>
+		<p style="text-align: right;"><strong>Voucher giảm giá đơn hàng:</strong> %.0f</p>
+		<p style="text-align: right;"><strong>Voucher Giảm giá phí vận chuyển:</strong> %.0f</p>
 		<p style="text-align: right;"><strong>Tiền phải trả:</strong> %.0f</p>
 	  </body>
 	</html>`,
 		currentDate, currentTime, order.OrderId, order.PickTo.Name,
 		itemsHTML.String(),
-		totalFeeBeforeDiscount, voucherDiscount, shippingFeeDisplay, order.TotalFee,
+		productFeeBeforeDiscount, shippingFeeDisplay, order.BasicTotalFee+productDiscount,
+		productDiscount, order.VoucherOrderDiscount, order.VoucherDeliveryDiscount, order.EstimatedTotalFee,
 	)
 
 	wkhtmltopdfPath, err := getWkhtmltopdfPath()

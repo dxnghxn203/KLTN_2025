@@ -27,21 +27,23 @@ def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
         current_time = now.strftime("%H:%M:%S")
 
         items_html = ""
-        total_fee_before_discount = 0
+        product_fee_before_discount = 0
         for item in order.product:
-            total_fee_before_discount += item.original_price * item.quantity
+            product_fee_before_discount += item.original_price * item.quantity
 
             items_html += f"""
                 <tr>
                     <td>{item.product_name}</td>
                     <td style="text-align: center;">{item.quantity}</td>
+                    <td style="text-align: center;">{item.unit}</td>
+                    <td style="text-align: center;">{item.price}</td>
                     <td style="text-align: center;">{item.original_price:,.0f}</td>
                     <td style="text-align: center;">{item.discount:.0f}%</td>
                     <td style="text-align: center;">{item.quantity * item.price:,.0f}</td>
                 </tr>
                 """
 
-        voucher_discount = total_fee_before_discount - order.total_fee
+        product_discount = product_fee_before_discount - order.product_fee
         shipping_fee_display = "Miễn phí" if order.shipping_fee == 0 else f"{order.shipping_fee:,.0f}"
 
         html_content = f"""
@@ -62,6 +64,7 @@ def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
               <tr>
                 <th>Tên sản phẩm</th>
                 <th>SL</th>
+                <th>Đơn vị</th>
                 <th>Đơn giá</th>
                 <th>Giảm giá</th>
                 <th>Thành tiền</th>
@@ -69,10 +72,13 @@ def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
               {items_html}
             </table>
             <br>
-            <p style="text-align: right;"><strong>Tổng tiền:</strong> {total_fee_before_discount:,.0f}</p>
-            <p style="text-align: right;"><strong>Voucher:</strong> {voucher_discount:,.0f}</p>
+            <p style="text-align: right;"><strong>Giá sản phẩm:</strong> {product_fee_before_discount:,.0f}</p>
             <p style="text-align: right;"><strong>Phí vận chuyển:</strong> {shipping_fee_display}</p>
-            <p style="text-align: right;"><strong>Tiền phải trả:</strong> {order.total_fee:,.0f}</p>
+            <p style="text-align: right;"><strong>Tổng tiền:</strong> {order.basic_total_fee+product_discount:,.0f}</p>
+            <p style="text-align: right;"><strong>Giảm giá sản phẩm:</strong> {product_discount:,.0f}</p>
+            <p style="text-align: right;"><strong>Voucher giảm giá đơn hàng:</strong> {order.voucher_order_discount:,.0f}</p>
+            <p style="text-align: right;"><strong>Voucher giảm giá phí vận chuyển:</strong> {order.voucher_delivery_discount:,.0f}</p> 
+            <p style="text-align: right;"><strong>Tiền phải trả:</strong> {order.estimated_total_fee:,.0f}</p>
           </body>
         </html>
         """

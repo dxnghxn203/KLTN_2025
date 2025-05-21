@@ -44,6 +44,11 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 			slog.Error("Lỗi cập nhật số lượng đã bán sau khi tạo đơn hàng", "err", err)
 		}
 
+		err = models.UpdateVoucherCount(ctx, orderRaw.Voucher, orderRaw.CreatedBy, 1)
+		if err != nil {
+			slog.Error("Lỗi cập nhật số lượng đã sử dụng voucher sau khi tạo đơn hàng", "err", err)
+		}
+
 		file, err := helper.ExportInvoiceToPDF(orderRaw)
 		if err != nil {
 			slog.Error("Lỗi xuất hóa đơn", "err", err)
@@ -55,7 +60,7 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 			slog.Error("Lỗi gửi email hóa đơn", "err", err)
 		}
 		is_remove := models.RemoveItemCartByOrder(ctx, orderRaw)
-		if is_remove == false {
+		if !is_remove {
 			slog.Error("Lỗi xóa sản phẩm trong giỏ hàng", "err", err)
 		}
 	} else {

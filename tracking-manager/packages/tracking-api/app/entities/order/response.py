@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
 from app.entities.product.response import ItemProductRes
+from app.entities.voucher.response import ItemVoucherOrderRes
+
 
 class AddressOrderRes(BaseModel):
     address: Optional[Union[str, None]] = None
@@ -25,6 +27,7 @@ class ItemOrderRes(BaseModel):
     shipper_id: Optional[Union[str, None]] = None
     shipper_name: Optional[Union[str, None]] = None
     product: List[Optional[Union[ItemProductRes, None]]] = None
+    voucher: List[Optional[Union[ItemVoucherOrderRes, None]]] = None
     pick_from: Optional[Union[InfoAddressOrderRes, None]] = None
     pick_to: Optional[Union[InfoAddressOrderRes, None]] = None
     sender_province_code: int = 0
@@ -39,9 +42,12 @@ class ItemOrderRes(BaseModel):
     payment_type: Optional[Union[str, None]] = None
     payment_status: Optional[Union[str, None]] = None
     weight: float = 0
-    total_fee: float = 0
+    basic_total_fee: float = 0
+    estimated_total_fee: float = 0
     shipping_fee: float = 0
     product_fee: float = 0
+    voucher_order_discount: float = 0
+    voucher_delivery_discount: float = 0
     created_date: Optional[Union[datetime, None]] = None
     updated_date: Optional[Union[datetime, None]] = None
 

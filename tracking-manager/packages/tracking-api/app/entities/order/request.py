@@ -51,7 +51,10 @@ class ItemOrderReq(BaseModel):
     weight: float = 0
     shipping_fee: float = 0
     product_fee: float = 0
-    total_fee: float = 0
+    basic_total_fee: float = 0
+    estimated_total_fee: float = 0
+    voucher_order_discount: float = 0
+    voucher_delivery_discount: float = 0
 
 class ItemOrderInReq(BaseModel):
     product: List[ItemProductInReq]

@@ -28,7 +28,8 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                     "weight": 0,
                     "voucher_order_discount": 0,
                     "voucher_delivery_discount": 0,
-                    "total_fee": 0,
+                    "basic_total_fee": 0,
+                    "estimated_total_fee": 0,
                     "out_of_stock": out_of_stock,
                     "out_of_date": out_of_date,
                     "voucher_error": []

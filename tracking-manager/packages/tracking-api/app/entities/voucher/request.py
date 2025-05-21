@@ -33,6 +33,7 @@ class ItemVoucherDBInReq(BaseModel):
 
 class ItemVoucherReq(BaseModel):
     voucher_id: str = ""
+    voucher_name: str = ""
     discount: float = 0
     min_order_value: float = 0
     max_discount_value: float = 0
