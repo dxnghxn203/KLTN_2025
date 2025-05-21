@@ -108,7 +108,7 @@ def detect_layout_type(text: str) -> str:
     # Danh sách từ khóa đặc trưng cho hóa đơn
     invoice_keywords = [
         "hóa đơn", "thanh toán", "tổng tiền", "thành tiền", "đơn giá",
-        "số lượng", "chiết khấu", "vat", "thuế", "nhà thuốc"
+        "số lượng", "chiết khấu", "vat", "thuế", "nhà thuốc", "khách hàng"
     ]
 
     # Đếm số từ khóa khớp cho mỗi loại
