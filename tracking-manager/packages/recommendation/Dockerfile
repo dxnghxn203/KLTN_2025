@@ -1,7 +1,5 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
 
-ENV DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     tesseract-ocr-vie \
@@ -10,12 +8,14 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt /app/requirements.txt
+COPY ./requirements.txt /requirements.txt
 
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r /requirements.txt
 
-WORKDIR /app
+ENV ROOT /app/
 
-COPY . /app/
+COPY ./ $ROOT
+
+WORKDIR $ROOT
 
 EXPOSE 80
