@@ -30,13 +30,28 @@ async def create_brand(brand_data: ItemBrandRequestCreate, logo):
 async def get_brand_by_id(brand_id):
     try:
         brand =  BRAND_COLLECTION.find_one({"brand_id": brand_id})
+        brand['_id'] = str(brand['_id'])
         return brand
+    except Exception as e:
+        return None
+
+async def get_all_brands_by_admin():
+    try:
+        brands =  BRAND_COLLECTION.find({}).to_list(length=None)
+        if not brands:
+            return None
+        list_brand = []
+        for brand in brands:
+            item = brand
+            item['_id'] = str(brand['_id'])
+            list_brand.append(item)
+        return list_brand
     except Exception as e:
         return None
 
 async def get_all_brands():
     try:
-        brands =  BRAND_COLLECTION.find({}).to_list(length=None)
+        brands =  BRAND_COLLECTION.find({"active": True}).to_list(length=None)
         if not brands:
             return None
         list_brand = []
