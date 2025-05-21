@@ -8,7 +8,6 @@ from app.helpers.constant import generate_id
 from app.helpers.time_utils import get_current_time
 
 collection_name = "vouchers"
-collection_category = "categories"
 
 async def get_all_vouchers(page: int, page_size: int):
     collection = database.db[collection_name]
@@ -35,9 +34,6 @@ async def get_voucher_by_id(voucher_id: str, is_admin: bool = False):
 
 async def create_voucher(item: ItemVoucherDBInReq, email: str):
     try:
-        for category in item.category_accepted:
-            category_info = database.db[collection_category].find_one({"category_id": category})
-
         item_data = ItemVoucherDBReq(
             **item.dict(),
             voucher_id=generate_id("VOUCHER"),
