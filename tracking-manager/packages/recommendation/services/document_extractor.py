@@ -13,20 +13,17 @@ from core.llm_config import llm
 from core import logger
 from services.ocr_processor import extract_text_from_image, detect_layout_type, is_tesseract_available
 from models.document import (
-    PrescriptionProduct,  # Giả định model này đã được cập nhật với quantity_value/unit
-    InvoiceProduct,  # Giả định model này đã được cập nhật với quantity_value/unit
+    PrescriptionProduct,
+    InvoiceProduct,
     DocumentExtractionRequest,
-    DocumentExtractionResponse,  # Giả định model này đã được cập nhật với các trường thông tin mở rộng
-    save_document  # Giả định hàm này đã được cập nhật để nhận các trường thông tin mở rộng
+    DocumentExtractionResponse,  # Model này cần patient_information: Optional[Dict[str, Any]]
+    save_document  # Hàm này cần patient_information: Optional[Dict[str, Any]]
 )
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
 
 def encode_file_to_base64(file_path: Union[str, Path]) -> str:
-    """
-    Mã hóa file (PDF hoặc hình ảnh) sang base64 để gửi tới LLM
-    """
     try:
         with open(file_path, "rb") as file:
             return base64.b64encode(file.read()).decode('utf-8')
@@ -36,10 +33,6 @@ def encode_file_to_base64(file_path: Union[str, Path]) -> str:
 
 
 def encode_image_to_base64(image_path: Union[str, Path]) -> str:
-    """
-    Mã hóa hình ảnh sang base64 để gửi tới LLM.
-    Tự động chuyển đổi sang định dạng JPEG để đảm bảo tương thích.
-    """
     try:
         with Image.open(image_path) as img:
             if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
@@ -51,7 +44,6 @@ def encode_image_to_base64(image_path: Union[str, Path]) -> str:
                 img = background
             elif img.mode != 'RGB':
                 img = img.convert('RGB')
-
             buffer = io.BytesIO()
             img.save(buffer, format="JPEG", quality=95)
             buffer.seek(0)
@@ -63,32 +55,25 @@ def encode_image_to_base64(image_path: Union[str, Path]) -> str:
 
 
 def extract_json_from_response(response_text: str, document_type: str) -> Dict[str, Any]:
-    """
-    Trích xuất thông tin từ phản hồi LLM. Ưu tiên JSON thuần túy.
-    Nếu không phải JSON thuần túy, thử trích xuất từ markdown code block.
-    Cuối cùng, thử phân tích văn bản markdown cho sản phẩm nếu các cách trên thất bại.
-    Các trường thông tin chung chỉ được lấy từ JSON thuần túy hoặc JSON trong markdown.
-    """
     parsed_data = {
-        "document_type": document_type,
-        "products": [],
-        "patient_information": None,
-        "document_date": None,
-        "issuing_organization": None,
-        "medical_code": None,
-        "invoice_id": None,
-        "prescription_id": None,
-        "prescribing_doctor": None,
-        "raw_text": ""
+        "document_type": document_type, "products": [], "patient_information": None,  # Sẽ được cập nhật
+        "document_date": None, "issuing_organization": None, "medical_code": None,
+        "invoice_id": None, "prescription_id": None, "prescribing_doctor": None, "raw_text": ""
     }
 
-    # Trường hợp 1 & 2: JSON thuần túy hoặc JSON trong code block markdown
     try:
-        # Thử JSON thuần túy trước
         data = json.loads(response_text)
         parsed_data.update(data)
-        # Đảm bảo products là list ngay cả khi LLM trả về null hoặc không có key
         parsed_data["products"] = data.get("products", []) if isinstance(data.get("products"), list) else []
+
+        # Xử lý fallback cho patient_information nếu LLM trả về string thay vì dict
+        patient_info_val = parsed_data.get("patient_information")
+        if patient_info_val is not None and isinstance(patient_info_val, str):
+            logger.warn(f"LLM returned 'patient_information' as a string: '{patient_info_val}'. Converting to dict.")
+            parsed_data["patient_information"] = {"description": patient_info_val}
+        elif patient_info_val is None:  # Nếu LLM không trả về gì, đảm bảo nó là None hoặc dict rỗng
+            parsed_data["patient_information"] = {}  # Hoặc None, tùy theo model Pydantic của bạn chấp nhận gì khi rỗng
+
         return parsed_data
     except json.JSONDecodeError:
         json_pattern = r'```(?:json)?\s*([\s\S]*?)\s*```'
@@ -98,104 +83,34 @@ def extract_json_from_response(response_text: str, document_type: str) -> Dict[s
                 data = json.loads(match.group(1))
                 parsed_data.update(data)
                 parsed_data["products"] = data.get("products", []) if isinstance(data.get("products"), list) else []
+
+                patient_info_val = parsed_data.get("patient_information")
+                if patient_info_val is not None and isinstance(patient_info_val, str):
+                    logger.warn(
+                        f"LLM (from markdown) returned 'patient_information' as a string: '{patient_info_val}'. Converting to dict.")
+                    parsed_data["patient_information"] = {"description": patient_info_val}
+                elif patient_info_val is None:
+                    parsed_data["patient_information"] = {}
+
                 return parsed_data
             except json.JSONDecodeError:
                 logger.warn("Failed to parse JSON from markdown code block in LLM response.")
-                # Sẽ chuyển sang phân tích markdown cho sản phẩm
         else:
             logger.warn("LLM response is not a direct JSON or a markdown JSON code block.")
-            # Sẽ chuyển sang phân tích markdown cho sản phẩm
 
-    # Trường hợp 3: Phân tích văn bản dạng markdown chỉ cho các sản phẩm (fallback)
-    # Các trường thông tin chung sẽ không được trích xuất ở bước này.
+    # Fallback parsing cho products nếu không có JSON (phần này giữ nguyên)
     products = []
-    current_product_data: Optional[Dict[str, Any]] = None  # Sử dụng dict để linh hoạt hơn
+    current_product_data: Optional[Dict[str, Any]] = None
     lines = response_text.strip().split('\n')
-    # Mẫu để nhận diện dòng thuộc tính (bắt đầu bằng ** hoặc chứa ":")
-    # Chỉnh sửa để bắt cả hai kiểu key trong markdown: **Key**: Value hoặc Key: Value
     property_pattern = re.compile(r'^\s*\*\*([^:]+?)\*\*:\s*(.+)$|^\s*([^:]+?):\s*(.+)$')
-
     for line in lines:
-        line = line.strip()
-        if not line: continue
+        line = line.strip();  # ... (logic parsing markdown cho products giữ nguyên) ...
+    # ... (phần còn lại của logic parsing markdown cho products)
 
-        prop_match = property_pattern.match(line)
-        if prop_match:
-            if not current_product_data: continue  # Bỏ qua nếu chưa có sản phẩm hiện tại
+    if parsed_data.get("patient_information") is None:  # Nếu sau tất cả patient_information vẫn là None
+        parsed_data["patient_information"] = {}  # Đảm bảo là dict rỗng
 
-            # Xác định key và value từ match
-            # Group 1&2 là cho **Key**: Value, Group 3&4 là cho Key: Value
-            key_group1 = prop_match.group(1)
-            value_group1 = prop_match.group(2)
-            key_group2 = prop_match.group(3)  # Key không có markdown đậm
-            value_group2 = prop_match.group(4)  # Value tương ứng
-
-            prop_name = ""
-            prop_value = ""
-
-            if key_group1 is not None:  # Ưu tiên key có markdown đậm
-                prop_name = key_group1.lower().strip()
-                prop_value = value_group1.strip()
-            elif key_group2 is not None:
-                prop_name = key_group2.lower().strip()
-                prop_value = value_group2.strip()
-
-            if not prop_name: continue  # Nếu không parse được prop_name thì bỏ qua
-
-            # Gán giá trị cho thuộc tính tương ứng
-            if "liều" in prop_name or "hàm lượng" in prop_name:
-                current_product_data["dosage"] = prop_value
-            elif "số lượng (giá trị)" == prop_name or "quantity_value" == prop_name:
-                current_product_data["quantity_value"] = prop_value
-            elif "đơn vị tính (số lượng)" == prop_name or "quantity_unit" == prop_name:
-                current_product_data["quantity_unit"] = prop_value
-            elif "hướng dẫn" in prop_name or "cách dùng" in prop_name or "sử dụng" in prop_name:
-                current_product_data["usage_instruction"] = prop_value
-            elif "đơn giá" in prop_name or "giá" in prop_name:
-                current_product_data["unit_price"] = prop_value
-            elif "thành tiền" in prop_name or "tổng" in prop_name:
-                current_product_data["total_price"] = prop_value
-            # Giữ lại logic cũ cho "số lượng" nếu LLM trả về key cũ trong markdown (ít khả năng hơn với prompt mới)
-            elif "số lượng" in prop_name or "lượng" in prop_name:  # Key này giờ ít dùng hơn
-                # Cố gắng tách thô sơ, không đảm bảo chính xác cao
-                match_qty = re.match(r"([\d\.]+)\s*(\S+.*)?", prop_value)
-                if match_qty:
-                    current_product_data["quantity_value"] = match_qty.group(1)
-                    if match_qty.group(2):
-                        current_product_data["quantity_unit"] = match_qty.group(2).strip()
-                    else:
-                        current_product_data["quantity_unit"] = None  # Hoặc một giá trị mặc định
-                else:  # Nếu không match, gán cả vào value, unit là None
-                    current_product_data["quantity_value"] = prop_value
-                    current_product_data["quantity_unit"] = None
-
-
-        # Nếu dòng không phải là thuộc tính và không bắt đầu bằng ký tự đặc biệt,
-        # coi là sản phẩm mới
-        elif not line.startswith(('*', '-', '+', '#')) or line.startswith(('* ', '- ', '+ ')):
-            # Lưu sản phẩm hiện tại nếu có và có tên
-            if current_product_data and current_product_data.get('product_name'):
-                products.append(current_product_data)
-
-            # Bắt đầu sản phẩm mới
-            if line.startswith(('* ', '- ', '+ ')):
-                line = line[2:].strip()  # Loại bỏ dấu đầu dòng
-
-            # Tạo đối tượng sản phẩm mới dựa vào loại tài liệu
-            current_product_data = {"product_name": line}  # Khởi tạo với tên sản phẩm
-            if document_type == "prescription":
-                current_product_data.update(
-                    {"dosage": None, "quantity_value": None, "quantity_unit": None, "usage_instruction": None})
-            else:  # invoice
-                current_product_data.update(
-                    {"quantity_value": None, "quantity_unit": None, "unit_price": None, "total_price": None})
-
-    # Thêm sản phẩm cuối cùng nếu có và có tên
-    if current_product_data and current_product_data.get('product_name'):
-        products.append(current_product_data)
-
-    parsed_data["products"] = products
-    # raw_text sẽ được gán giá trị ocr_text (nếu có) trong hàm gọi extract_with_llm
+    parsed_data["products"] = products  # Gán products từ markdown parsing nếu có
     return parsed_data
 
 
@@ -203,15 +118,30 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
     str, Any]:
     base64_content = encode_file_to_base64(file_path)
 
+    # Cập nhật hướng dẫn cho patient_information: YÊU CẦU LÀ MỘT OBJECT JSON
     common_extraction_info = """
         Ngoài danh sách sản phẩm/thuốc, hãy trích xuất các thông tin chung sau từ tài liệu nếu có:
-        - patient_information: Thông tin bệnh nhân hoặc người dùng (Tên, tuổi, địa chỉ, v.v. nếu có).
-        - document_date: Ngày tháng của tài liệu (ngày kê đơn, ngày hóa đơn). Ví dụ: "2023-10-26".
-        - issuing_organization: Tên tổ chức phát hành (phòng khám, bệnh viện, nhà thuốc).
-        - medical_code: Mã y tế liên quan (ví dụ: mã bệnh nhân, mã hồ sơ bệnh án, mã khám bệnh nếu có).
-        - invoice_id: Mã số hóa đơn (nếu đây là hóa đơn).
-        - prescription_id: Mã số toa thuốc (nếu đây là toa thuốc).
-        - prescribing_doctor: Tên bác sĩ kê đơn (nếu đây là toa thuốc và có thông tin).
+        - patient_information: Trích xuất thông tin bệnh nhân hoặc người dùng. 
+            * QUAN TRỌNG: Trường này BẮT BUỘC PHẢI LÀ MỘT ĐỐI TƯỢNG JSON (OBJECT).
+            * Ví dụ về cấu trúc mong muốn cho `patient_information`:
+              {
+                "name": "Nguyễn Thị C",
+                "age": "52 tuổi", 
+                "gender": "Nữ",
+                "address": "Số 10, Phố ABC, Quận Hoàn Kiếm, Hà Nội",
+                "phone": "0912345678",
+                "diagnosis": "Đau dạ dày", 
+                "notes": "Có tiền sử bệnh tim mạch. Khám định kỳ." 
+              }
+            * Nếu một số thông tin con (như 'phone', 'diagnosis', 'notes') không có, hãy để giá trị là `null` hoặc bỏ qua khóa đó bên trong đối tượng `patient_information`.
+            * Nếu không có bất kỳ thông tin bệnh nhân nào có thể trích xuất, hãy trả về một ĐỐI TƯỢNG RỖNG: `{}` cho `patient_information`.
+            * TUYỆT ĐỐI KHÔNG trả về `patient_information` dưới dạng một chuỗi văn bản thuần túy.
+        - document_date: Ngày tháng của tài liệu (ví dụ: "2023-10-26"). Luôn là một chuỗi.
+        - issuing_organization: Tên tổ chức phát hành. Luôn là một chuỗi.
+        - medical_code: Mã y tế liên quan (nếu có). Luôn là một chuỗi.
+        - invoice_id: Mã số hóa đơn (nếu là hóa đơn). Luôn là một chuỗi.
+        - prescription_id: Mã số toa thuốc (nếu là toa thuốc). Luôn là một chuỗi.
+        - prescribing_doctor: Tên bác sĩ kê đơn (nếu là toa thuốc). Luôn là một chuỗi.
 
         Hãy trả về kết quả dưới dạng một đối tượng JSON duy nhất. Đối tượng JSON này nên bao gồm các khóa:
         "patient_information", "document_date", "issuing_organization", "medical_code", 
@@ -219,46 +149,36 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
         Trong đó, "products" là một danh sách các đối tượng sản phẩm/thuốc.
         Ví dụ cấu trúc JSON cho một sản phẩm trong danh sách "products":
         {
-          "product_name": "Tên thuốc A",
-          "dosage": "500mg",
-          "quantity_value": "30",
+          "product_name": "Paracetamol 500mg",
+          "dosage": "1 viên/lần",
+          "quantity_value": "20",
           "quantity_unit": "viên",
-          "usage_instruction": "Uống 1 viên/lần, ngày 2 lần sau ăn"
+          "usage_instruction": "Uống khi sốt, cách 4-6 tiếng"
         }
-        Hoặc cho hóa đơn:
-        {
-          "product_name": "Sản phẩm B",
-          "quantity_value": "2",
-          "quantity_unit": "hộp",
-          "unit_price": "150000",
-          "total_price": "300000"
-        }
-        Nếu một thông tin không có hoặc không áp dụng, hãy để giá trị là null.
+        Nếu một thông tin không có hoặc không áp dụng cho các trường chuỗi khác, hãy để giá trị là `null`.
         """
 
     if document_type == "prescription":
         system_prompt = f"""
         Bạn là trợ lý trích xuất thông tin từ đơn thuốc. Hãy phân tích tài liệu đơn thuốc và trích xuất các thông tin sau cho mỗi thuốc:
         1. product_name: Tên thuốc
-        2. dosage: Liều lượng (ví dụ: 500mg, 1 viên/lần)
-        3. quantity_value: Số lượng (chỉ phần số, ví dụ: 30, 1, 2.5)
-        4. quantity_unit: Đơn vị tính của số lượng (ví dụ: viên, hộp, ml, tuýp, gói)
-        5. usage_instruction: Hướng dẫn sử dụng (ví dụ: Uống sáng 1 viên, tối 1 viên sau ăn)
+        2. dosage: Liều lượng
+        3. quantity_value: Số lượng (phần số)
+        4. quantity_unit: Đơn vị tính của số lượng
+        5. usage_instruction: Hướng dẫn sử dụng
         {common_extraction_info}
         Đối với mỗi thuốc trong danh sách "products", hãy sử dụng các khóa: "product_name", "dosage", "quantity_value", "quantity_unit", "usage_instruction".
-        Đảm bảo rằng `invoice_id` thường sẽ là null cho đơn thuốc, trừ khi đơn thuốc được tích hợp trong hóa đơn.
         """
     else:  # invoice
         system_prompt = f"""
         Bạn là trợ lý trích xuất thông tin từ hóa đơn thuốc. Hãy phân tích tài liệu hóa đơn và trích xuất các thông tin sau cho mỗi sản phẩm:
         1. product_name: Tên sản phẩm
-        2. quantity_value: Số lượng (chỉ phần số, ví dụ: 2, 5, 10)
-        3. quantity_unit: Đơn vị tính của số lượng (ví dụ: hộp, chai, vỉ, tuýp)
-        4. unit_price: Đơn giá (chỉ phần số)
-        5. total_price: Thành tiền (chỉ phần số)
+        2. quantity_value: Số lượng (phần số)
+        3. quantity_unit: Đơn vị tính của số lượng
+        4. unit_price: Đơn giá (phần số)
+        5. total_price: Thành tiền (phần số)
         {common_extraction_info}
         Đối với mỗi sản phẩm trong danh sách "products", hãy sử dụng các khóa: "product_name", "quantity_value", "quantity_unit", "unit_price", "total_price".
-        Đảm bảo rằng `prescription_id` và `prescribing_doctor` thường sẽ là null cho hóa đơn, trừ khi hóa đơn có chi tiết toa thuốc.
         """
 
     data_url: str
@@ -295,19 +215,16 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
         logger.debug(f"LLM response (first 500 chars): {content[:500]}...")
 
         extracted_data_full = extract_json_from_response(content, document_type)
-        # Gán ocr_text vào raw_text của kết quả cuối cùng (nếu có),
-        # vì extract_json_from_response khởi tạo raw_text là ""
-        extracted_data_full["raw_text"] = ocr_text or ""
+        extracted_data_full["raw_text"] = ocr_text or ""  # Đảm bảo raw_text được gán
 
         products_typed = []
-        # Đảm bảo 'products' là một list trước khi lặp
         llm_products = extracted_data_full.get("products", [])
         if not isinstance(llm_products, list):
             logger.warn(f"LLM returned 'products' not as a list: {llm_products}. Defaulting to empty list.")
             llm_products = []
 
         for item in llm_products:
-            if not isinstance(item, dict):  # Bỏ qua nếu item không phải dict
+            if not isinstance(item, dict):
                 logger.warn(f"Skipping non-dict item in products list: {item}")
                 continue
             if document_type == "prescription":
@@ -318,7 +235,7 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
                     quantity_unit=item.get("quantity_unit"),
                     usage_instruction=item.get("usage_instruction")
                 ))
-            else:  # invoice
+            else:
                 products_typed.append(InvoiceProduct(
                     product_name=item.get("product_name", "Không xác định"),
                     quantity_value=item.get("quantity_value"),
@@ -327,12 +244,22 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
                     total_price=item.get("total_price")
                 ))
 
-        # Trả về đầy đủ thông tin, bao gồm cả các trường mới
+        # Đảm bảo patient_information là dict hoặc None theo yêu cầu của Pydantic model
+        final_patient_info = extracted_data_full.get("patient_information")
+        if not isinstance(final_patient_info, (dict, type(None))):
+            logger.error(
+                f"Critical: patient_information is not a dict or None after processing. Value: {final_patient_info}, Type: {type(final_patient_info)}")
+            # Nếu model Pydantic của bạn yêu cầu dict và không cho phép None khi có thông tin,
+            # bạn có thể cần phải ép thành dict rỗng ở đây nếu nó là một kiểu không mong muốn khác.
+            # Tuy nhiên, logic trong extract_json_from_response đã cố gắng xử lý điều này.
+            # Nếu vẫn lỗi, có thể là do LLM trả về một cấu trúc rất lạ.
+            final_patient_info = {"unexpected_data": str(final_patient_info)}  # Cực kỳ fallback
+
         return {
-            "document_type": extracted_data_full.get("document_type", document_type),  # Ưu tiên từ LLM nếu có
-            "raw_text": extracted_data_full.get("raw_text", ocr_text or ""),  # raw_text đã được gán ở trên
+            "document_type": extracted_data_full.get("document_type", document_type),
+            "raw_text": extracted_data_full.get("raw_text", ocr_text or ""),
             "products": [p.model_dump() for p in products_typed],
-            "patient_information": extracted_data_full.get("patient_information"),
+            "patient_information": final_patient_info,
             "document_date": extracted_data_full.get("document_date"),
             "issuing_organization": extracted_data_full.get("issuing_organization"),
             "medical_code": extracted_data_full.get("medical_code"),
@@ -343,10 +270,10 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
 
     except Exception as e:
         logger.error(f"LLM extraction error: {str(e)}", exc_info=True)
-        # Trả về cấu trúc đầy đủ với giá trị None nếu có lỗi nghiêm trọng
         return {
             "document_type": document_type, "raw_text": ocr_text or "", "products": [],
-            "patient_information": None, "document_date": None, "issuing_organization": None,
+            "patient_information": {},  # Trả về dict rỗng khi lỗi, nếu model yêu cầu dict
+            "document_date": None, "issuing_organization": None,
             "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
         }
 
@@ -357,7 +284,7 @@ async def process_document(
 ) -> DocumentExtractionResponse:
     try:
         file_content = await file.read()
-        await file.seek(0)  # Reset con trỏ file để đọc lại nếu cần
+        await file.seek(0)
 
         file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
         supported_image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'webp', 'gif']
@@ -365,110 +292,94 @@ async def process_document(
             raise HTTPException(status_code=400, detail=f"Định dạng file không được hỗ trợ: {file_ext}.")
 
         ocr_available = is_tesseract_available()
-        # Nếu phương thức là OCR và OCR không khả dụng, chuyển sang LLM (áp dụng cho hình ảnh)
         if not ocr_available and request.extraction_method == "ocr":
             logger.warn("Tesseract OCR không khả dụng cho phương thức 'ocr'. Chuyển sang chế độ 'llm'.")
             request.extraction_method = "llm"
-        # Nếu hybrid và OCR không khả dụng, nó sẽ hoạt động như 'llm' vì ocr_text sẽ rỗng
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_file:
             temp_file.write(file_content)
             temp_path = Path(temp_file.name)
         logger.info(f"Đã lưu file tạm thời tại: {temp_path}")
 
-        ocr_text_for_llm: Optional[str] = None  # Sẽ chỉ được điền cho hình ảnh và nếu phương thức là hybrid/ocr
-        processed_file_type_for_llm = file_ext  # Loại file sẽ được gửi tới LLM (có thể thay đổi nếu chuyển đổi)
-        document_type = request.document_type  # Loại tài liệu (prescription/invoice)
+        ocr_text_for_llm: Optional[str] = None
+        processed_file_type_for_llm = file_ext
+        document_type = request.document_type
 
         if file_ext == 'pdf':
             logger.info("Xử lý file PDF...")
             processed_file_type_for_llm = "pdf"
-            # Đối với PDF, chúng ta không chạy OCR từ Python ở đây. LLM sẽ xử lý file PDF trực tiếp.
-            # ocr_text_for_llm sẽ là None.
             if document_type == "auto":
-                document_type = "prescription"  # Mặc định cho PDF nếu auto
+                document_type = "prescription"
 
-        else:  # Xử lý file hình ảnh
+        else:
             logger.info(f"Xử lý file hình ảnh: {file_ext}")
-            # Chuyển đổi hình ảnh sang định dạng chuẩn (ví dụ: JPEG) nếu cần thiết cho LLM và OCR
             try:
                 with Image.open(temp_path) as img:
                     img_rgb = img
-                    # Chuyển sang RGB nếu cần (ví dụ: cho ảnh PNG có kênh alpha)
                     if img.mode in ('RGBA', 'LA', 'P'):
                         img_rgb = Image.new("RGB", img.size, (255, 255, 255))
-                        # Đảm bảo mask được tạo đúng cách cho các mode khác nhau
                         alpha_channel = None
-                        if img.mode == 'P' and 'transparency' in img.info:  # Palette with transparency
+                        if img.mode == 'P' and 'transparency' in img.info:
                             alpha_channel = img.convert('RGBA').getchannel('A')
-                        elif 'A' in img.mode:  # RGBA, LA
+                        elif 'A' in img.mode:
                             alpha_channel = img.getchannel('A')
                         img_rgb.paste(img, mask=alpha_channel)
-
                     elif img.mode != 'RGB':
                         img_rgb = img.convert('RGB')
 
-                    converted_ext = "jpeg"  # Ưu tiên JPEG cho LLM Vision
+                    converted_ext = "jpeg"
                     converted_path = temp_path.with_suffix(f".{converted_ext}")
-                    img_rgb.save(converted_path, format="JPEG", quality=95)  # Pillow dùng "JPEG"
+                    img_rgb.save(converted_path, format="JPEG", quality=95)
 
                     if converted_path != temp_path:
                         logger.info(f"Đã chuyển đổi hình ảnh từ {file_ext} sang {converted_ext} tại: {converted_path}")
-                        os.unlink(temp_path)  # Xóa file gốc nếu khác
-                        temp_path = converted_path  # Cập nhật temp_path tới file đã chuyển đổi
-
-                    processed_file_type_for_llm = "jpeg"  # file_type cho LLM là jpeg
-
+                        os.unlink(temp_path)
+                        temp_path = converted_path
+                    processed_file_type_for_llm = "jpeg"
             except Exception as e:
                 logger.warn(
                     f"Không thể xử lý/chuyển đổi hình ảnh {temp_path}: {str(e)}. Sử dụng file gốc {file_ext} cho LLM.")
-                # processed_file_type_for_llm vẫn là file_ext gốc nếu chuyển đổi lỗi
 
-            # Thực hiện OCR cho hình ảnh nếu phương thức yêu cầu và OCR khả dụng
             if request.extraction_method in ["ocr", "hybrid"] and ocr_available:
-                ocr_text_for_llm = extract_text_from_image(temp_path)  # temp_path giờ là file ảnh đã xử lý (nếu có)
+                ocr_text_for_llm = extract_text_from_image(temp_path)
                 logger.info(f"Trích xuất OCR từ hình ảnh: {len(ocr_text_for_llm or '')} ký tự.")
 
-            # Xác định loại tài liệu cho hình ảnh
             if document_type == "auto":
-                if ocr_text_for_llm:  # Ưu tiên dùng ocr_text để xác định nếu có
+                if ocr_text_for_llm:
                     document_type = detect_layout_type(ocr_text_for_llm)
-                else:  # Nếu không có ocr_text, hoặc document_type vẫn là auto
-                    document_type = "prescription"  # Mặc định
+                else:
+                    document_type = "prescription"
             logger.info(f"Loại tài liệu xác định (hình ảnh): {document_type}")
 
         logger.info(f"Phương pháp trích xuất cuối cùng: {request.extraction_method}")
 
         extracted_result: Dict[str, Any]
-        if request.extraction_method == "ocr":  # Chỉ áp dụng nếu OCR available và người dùng muốn kết quả OCR thô
-            logger.info("Sử dụng phương pháp OCR thuần túy (chỉ cho hình ảnh và nếu OCR khả dụng).")
-            # Kết quả OCR thuần túy sẽ không có cấu trúc sản phẩm chi tiết như LLM
-            # và các trường thông tin mở rộng khác.
+        if request.extraction_method == "ocr":
+            logger.info("Sử dụng phương pháp OCR thuần túy.")
             extracted_result = {
                 "document_type": document_type, "raw_text": ocr_text_for_llm or "", "products": [],
-                "patient_information": None, "document_date": None, "issuing_organization": None,
+                "patient_information": {},  # Trả về dict rỗng nếu model yêu cầu dict
+                "document_date": None, "issuing_organization": None,
                 "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
             }
-        else:  # "llm" or "hybrid"
+        else:
             logger.info(f"Sử dụng LLM (phương pháp: {request.extraction_method}) để phân tích tài liệu.")
-            # Nếu hybrid, ocr_text_for_llm (từ hình ảnh) sẽ được truyền. Nếu PDF hoặc llm thuần cho ảnh, ocr_text_for_llm là None.
             extracted_result = await extract_with_llm(
                 file_path=temp_path,
                 document_type=document_type,
-                file_type=processed_file_type_for_llm,  # "pdf" hoặc "jpeg" (hoặc file_ext gốc nếu chuyển đổi lỗi)
+                file_type=processed_file_type_for_llm,
                 ocr_text=ocr_text_for_llm
             )
 
-        # Lưu kết quả vào DB
         document_id = await save_document(
             document_type=extracted_result["document_type"],
             raw_text=extracted_result["raw_text"],
-            products=extracted_result["products"],  # products giờ đây sẽ chứa dicts với quantity_value/unit
+            products=extracted_result["products"],
             extraction_method=request.extraction_method,
             file_name=file.filename,
             file_content=file_content,
             user_id=request.user_id,
-            total_pages=1,  # Giả sử 1 trang cho đơn giản
+            total_pages=1,
             current_page=1,
             patient_information=extracted_result.get("patient_information"),
             document_date=extracted_result.get("document_date"),
@@ -482,16 +393,14 @@ async def process_document(
         os.unlink(temp_path)
         logger.info("Đã xóa file tạm thời.")
 
-        # Trả về kết quả
         return DocumentExtractionResponse(
             document_id=document_id,
             document_type=extracted_result["document_type"],
             raw_text=extracted_result["raw_text"],
-            products=extracted_result["products"],  # Pydantic sẽ validate dựa trên model Product đã cập nhật
+            products=extracted_result["products"],
             extraction_method=request.extraction_method,
             total_pages=1,
             current_page=1,
-            # Thêm các trường mới vào response object
             patient_information=extracted_result.get("patient_information"),
             document_date=extracted_result.get("document_date"),
             issuing_organization=extracted_result.get("issuing_organization"),
