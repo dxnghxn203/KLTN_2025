@@ -2,16 +2,20 @@ pipeline {
     agent any
 
     environment {
+        // Cấu hình Registry
         REGISTRY_URL = '159.65.7.99:5000'
         IMAGE_NAME = 'tracking-api'
         IMAGE_TAG = "${REGISTRY_URL}/${IMAGE_NAME}:${BUILD_NUMBER}"
 
+        // Đường dẫn đến mã nguồn
         APP_PATH = 'tracking-manager/packages/tracking-api'
         DOCKERFILE_PATH = "${APP_PATH}/Dockerfile"
 
+        // Thông tin Git repository
         GIT_REPO = 'https://github.com/dxnghxn203/KLTN_2025.git'
-        GIT_BRANCH = 'demo-deploy'
+        GIT_BRANCH = 'main'
 
+        // Cấu hình Vault
         VAULT_ADDR = 'http://localhost:8200'
     }
 
@@ -20,8 +24,10 @@ pipeline {
             steps {
                 echo "Lấy mã nguồn từ ${GIT_REPO}, nhánh: ${GIT_BRANCH}"
 
+                // Xóa workspace cũ
                 cleanWs()
 
+                // Checkout code
                 checkout([
                     $class: 'GitSCM',
                     branches: [[name: "*/${GIT_BRANCH}"]],
@@ -38,6 +44,7 @@ pipeline {
                 echo "Đang lấy biến môi trường từ Vault tại ${VAULT_ADDR}"
 
                 script {
+                    // Sử dụng plugin Vault Jenkins
                     withVault([
                         configuration: [
                             vaultUrl: VAULT_ADDR,
@@ -61,6 +68,7 @@ pipeline {
                                     [vaultKey: 'JWT_PRIVATE_KEY', envVar: 'vault_JWT_PRIVATE_KEY'],
                                     [vaultKey: 'JWT_PUBLIC_KEY', envVar: 'vault_JWT_PUBLIC_KEY'],
                                     [vaultKey: 'MONGO_HOST', envVar: 'vault_MONGO_HOST'],
+                                    [vaultKey: 'TIMEZONE_OFFSET_HOURS', envVar: 'vault_TIMEZONE_OFFSET_HOURS'],
                                     [vaultKey: 'PAYMENT_API_URL', envVar: 'vault_PAYMENT_API_URL'],
                                     [vaultKey: 'RECOMMENDATION_API_URL', envVar: 'vault_RECOMMENDATION_API_URL'],
                                     [vaultKey: 'RABBITMQ_HOST', envVar: 'vault_RABBITMQ_HOST'],
@@ -78,6 +86,7 @@ pipeline {
                             ]
                         ]
                     ]) {
+                        // Tạo file .env từ các biến Vault - phải dùng dấu ngoặc kép ở ngoài
                         sh """
                             # Tạo thư mục nếu chưa tồn tại
                             mkdir -p ${APP_PATH}
@@ -99,6 +108,7 @@ pipeline {
                             echo "JWT_PRIVATE_KEY=\${vault_JWT_PRIVATE_KEY}" >> ${APP_PATH}/.env
                             echo "JWT_PUBLIC_KEY=\${vault_JWT_PUBLIC_KEY}" >> ${APP_PATH}/.env
                             echo "MONGO_HOST=\${vault_MONGO_HOST}" >> ${APP_PATH}/.env
+                            echo "TIMEZONE_OFFSET_HOURS=\${vault_TIMEZONE_OFFSET_HOURS}" >> ${APP_PATH}/.env
                             echo "PAYMENT_API_URL=\${vault_PAYMENT_API_URL}" >> ${APP_PATH}/.env
                             echo "RECOMMENDATION_API_URL=\${vault_RECOMMENDATION_API_URL}" >> ${APP_PATH}/.env
                             echo "RABBITMQ_HOST=\${vault_RABBITMQ_HOST}" >> ${APP_PATH}/.env
@@ -120,11 +130,14 @@ pipeline {
                             grep -v '^#' ${APP_PATH}/.env | cut -d= -f1
                         """
 
+                        // Kiểm tra xem có biến nào được lấy không
                         def envCount = sh(script: "grep -v '^#' ${APP_PATH}/.env | wc -l", returnStdout: true).trim()
 
                         if (envCount == "0") {
                             echo "CẢNH BÁO: Không lấy được biến nào từ Vault. Tạo file .env mẫu để tiếp tục..."
 
+                            // Tạo file .env mẫu nếu không lấy được từ Vault
+                            // Thay vì dùng heredoc (<<), sử dụng nhiều lệnh echo riêng biệt
                             sh """
                                 # Tạo file .env mẫu
                                 echo "# Generated .env file (SAMPLE) - \$(date)" > ${APP_PATH}/.env
@@ -141,6 +154,7 @@ pipeline {
                                 echo "JWT_PRIVATE_KEY=privatekey" >> ${APP_PATH}/.env
                                 echo "JWT_PUBLIC_KEY=publickey" >> ${APP_PATH}/.env
                                 echo "MONGO_HOST=mongodb" >> ${APP_PATH}/.env
+                                echo "TIMEZONE_OFFSET_HOURS=7" >> ${APP_PATH}/.env
                                 echo "PAYMENT_API_URL=https://api.payment.com" >> ${APP_PATH}/.env
                                 echo "RECOMMENDATION_API_URL=https://api.recommendation.com" >> ${APP_PATH}/.env
                                 echo "RABBITMQ_HOST=rabbitmq" >> ${APP_PATH}/.env
@@ -168,6 +182,7 @@ pipeline {
                 echo "Đang build Docker image: ${IMAGE_TAG}"
 
                 script {
+                    // Cấp quyền truy cập Docker socket cho Jenkins
                     sh "sudo chmod 666 /var/run/docker.sock || true"
 
                     sh """
@@ -212,11 +227,13 @@ pipeline {
                 script {
                     def containerName = "${IMAGE_NAME}-app"
 
+                    // Tạo file env-file tạm thời
                     sh """
                         # Tạo file env-file tạm thời
                         cp ${APP_PATH}/.env ./docker-env-file
                     """
 
+                    // Kiểm tra và dừng container cũ
                     sh """
                         # Đảm bảo quyền truy cập Docker
                         sudo chmod 666 /var/run/docker.sock || true
@@ -228,6 +245,7 @@ pipeline {
                         fi
                     """
 
+                    // Triển khai container bằng Docker CLI
                     sh """
                         # Chạy container với các biến môi trường
                         docker run -d \
@@ -244,6 +262,7 @@ pipeline {
                         echo "Container đã được triển khai thành công!"
                     """
 
+                    // Xóa file env tạm thời
                     sh "rm -f ./docker-env-file"
                 }
             }
@@ -253,6 +272,7 @@ pipeline {
     post {
         success {
             script {
+                // Tạo thông báo thành công với thông tin build
                 echo """
                 ===========================================
                 ✅ Triển khai thành công!
@@ -270,11 +290,14 @@ pipeline {
             echo """
             ===========================================
             ❌ Triển khai thất bại!
+
+            Vui lòng kiểm tra logs để biết thêm chi tiết.
             ===========================================
             """
         }
 
         always {
+            // Dọn dẹp workspace - đặc biệt là xóa file .env
             sh "rm -f ${APP_PATH}/.env || true"
             sh "rm -f ./docker-env-file || true"
         }
