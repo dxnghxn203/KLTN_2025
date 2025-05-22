@@ -271,17 +271,50 @@ pipeline {
                 - Thời gian: \$(date)
                 ===========================================
                 """
-            }
-        }
+            withCredentials([
+                                string(credentialsId: 'telegram-bot-token', variable: 'BOT_TOKEN'),
+                                string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
+                            ]) {
+                                sh '''
+                                    curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+                                    -d chat_id=${CHAT_ID} \
+                                    -d text="✅ DEPLOY THÀNH CÔNG! 🎉
 
-        failure {
-            echo """
-            ===========================================
-            ❌ Triển khai thất bại!
+                            🚀 Ứng dụng: ''' + "${IMAGE_NAME}" + '''
+                            📦 Image: ''' + "${IMAGE_TAG}" + '''
+                            🔢 Build: #''' + "${BUILD_NUMBER}" + '''
+                            👨‍💻 Người deploy: dxnghxn203
+                            ⏰ Thời gian: $(date)"
+                                '''
+                            }
 
-            ===========================================
-            """
-        }
+                        }
+                    }
+
+                    failure {
+                        echo """
+                        ===========================================
+                        ❌ Triển khai thất bại!
+                        ===========================================
+                        """
+                        withCredentials([
+                            string(credentialsId: 'telegram-bot-token', variable: 'BOT_TOKEN'),
+                            string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
+                        ]) {
+                            sh '''
+                                curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+                                -d chat_id=${CHAT_ID} \
+                                -d text="❌ DEPLOY THẤT BẠI! 🚫
+
+                        🚀 Ứng dụng: ''' + "${IMAGE_NAME}" + '''
+                        🔢 Build: #''' + "${BUILD_NUMBER}" + '''
+                        👨‍💻 Người deploy: dxnghxn203
+                        ⏰ Thời gian: $(date)
+
+                        🔍 Xem chi tiết lỗi tại: ''' + "${BUILD_URL}" + '''console"
+                            '''
+                        }
+                    }
 
         always {
             sh "rm -f ${APP_PATH}/.env || true"
