@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/providers/toastProvider";
 import { useVoucher } from "@/hooks/useVoucher";
 import DeleteProductDialog from "../Dialog/confirmDeleteProductDialog";
+import { FaRegTrashAlt } from "react-icons/fa";
 interface TableVoucherProps {
   allVouchers: any[];
 }
@@ -111,15 +112,21 @@ const TableVoucher = ({ allVouchers }: TableVoucherProps) => {
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full table-auto border-collapse">
-            <thead className="text-left text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
+            <thead className="text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
               <tr className="uppercase text-sm">
-                <th className="p-4 text-center">Mã Voucher</th>
-                <th className="py-4 ">Loại Voucher</th>
-                <th className="py-4 text-center">Mô tả</th>
-                <th className="py-4 text-center">Giảm giá</th>
-                <th className="py-4 text-center">Giá trị Voucher</th>
-                <th className="py-4 text-center">Trạng thái</th>
-                <th className="py-4 px-4 text-center"></th>
+                <th className="p-4 text-center whitespace-nowrap">
+                  Mã Voucher
+                </th>
+                <th className="p-4 text-left whitespace-nowrap">
+                  Loại Voucher
+                </th>
+                <th className="p-4 text-center w-[250px]">Mô tả</th>
+                <th className="p-4 text-center whitespace-nowrap">Giảm giá</th>
+                <th className="p-4 text-center whitespace-nowrap">Giá trị</th>
+                <th className="p-4 text-center whitespace-nowrap">
+                  Trạng thái
+                </th>
+                <th className="p-4 text-center whitespace-nowrap"></th>
               </tr>
             </thead>
 
@@ -134,62 +141,72 @@ const TableVoucher = ({ allVouchers }: TableVoucherProps) => {
                         : ""
                     }`}
                   >
-                    <td className="py-4 px-4 text-center">
-                      {voucher.voucher_id}
-                    </td>
-                    <td className="py-4 text-left leading-5">
-                      <div className="font-medium">{voucher.voucher_type}</div>
-                    </td>
-                    <td className="py-4 text-center items-center justify-center">
-                      <div className="mt-1">{voucher.description}</div>
-                    </td>
-                    <td className="py-4 text-center  items-center justify-center">
-                      <div className="mt-1">{voucher.discount}</div>
-                    </td>
-                    <td className="py-4 text-center items-center justify-center">
-                      <div className="mt-1">
-                        <span className="text-red-500 font-medium">
-                          {voucher.min_order_value.toLocaleString("vi-VN")}
-                        </span>
-                        {" <= Giá trị <= "}
-                        <span className="text-green-600 font-medium">
-                          {voucher.max_discount_value.toLocaleString("vi-VN")}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-2 whitespace-nowrap text-center justify-center">
-                      <button
-                        onClick={() => handleToggleStatus(voucher)}
-                        className={`w-14 h-8 flex items-center p-1 rounded-full transition-colors duration-300 ${
-                          voucher.active
-                            ? "bg-blue-600 justify-end"
-                            : "bg-gray-400 justify-start"
-                        }`}
+                    <td className="p-4 text-center">{voucher.voucher_id}</td>
+                    <td className="p-4 text-center">
+                      <span
+                        className={`
+                      px-3 py-1 rounded-full text-sm font-medium
+                      ${
+                        voucher.voucher_type === "order"
+                          ? "bg-orange-100 text-orange-600"
+                          : voucher.voucher_type === "delivery"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-gray-400"
+                      }
+                    `}
                       >
-                        <div className="w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300" />
-                      </button>
+                        {voucher.voucher_type}
+                      </span>
                     </td>
 
-                    <td className="py-4 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-4">
+                    <td className="p-4 text-center max-w-[250px]">
+                      <div
+                        className="line-clamp-3 text-ellipsis overflow-hidden"
+                        title={voucher.description}
+                      >
+                        {voucher.description}
+                      </div>
+                    </td>
+
+                    <td className="p-4 text-center">{voucher.discount}%</td>
+                    <td className="p-4 text-center">
+                      <span className="text-red-500 font-medium">
+                        {voucher.min_order_value.toLocaleString("vi-VN")}đ
+                      </span>{" "}
+                      →{" "}
+                      <span className="text-green-600 font-medium">
+                        {voucher.max_discount_value.toLocaleString("vi-VN")}đ
+                      </span>
+                    </td>
+
+                    <td className="p-4 ">
+                      <div className="flex justify-center items-center">
                         <button
-                          className="text-blue-800 font-medium flex items-center space-x-2 "
-                          //   onClick={() => {
-                          //     setIsOpenUpdateProduct(true);
-                          //     setSelectedProduct(product);
-                          //   }}
+                          onClick={() => handleToggleStatus(voucher)}
+                          className={`w-14 h-8 flex items-center p-1 rounded-full transition-colors duration-300 ${
+                            voucher.active
+                              ? "bg-blue-600 justify-end"
+                              : "bg-gray-400 justify-start"
+                          }`}
                         >
+                          <div className="w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center space-x-4">
+                        <button className="text-blue-800 font-medium flex items-center">
                           <MdModeEdit className="text-blue-800 mr-1" />
                           Sửa
                         </button>
                         <button
-                          className="text-red-700 font-medium flex items-center space-x-2 "
+                          className="text-red-700 font-medium flex items-center"
                           onClick={() => {
                             setIsOpenDialog(true);
                             setSelectedProduct(voucher);
                           }}
                         >
-                          <ImBin className="text-red-700 mr-1" />
+                          <FaRegTrashAlt className="text-red-700 mr-1" />
                           Xóa
                         </button>
                       </div>
@@ -198,7 +215,7 @@ const TableVoucher = ({ allVouchers }: TableVoucherProps) => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={8} className="p-4 text-center text-gray-500">
+                  <td colSpan={7} className="p-4 text-center text-gray-500">
                     Không có voucher nào
                   </td>
                 </tr>

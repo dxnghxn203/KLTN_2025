@@ -1,7 +1,7 @@
 import { all } from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
 import { selectAllBrand } from '@/store/brand/brandSelector';
-import { fetchGetAllBrandAdminStart } from '@/store';
+import { fetchAddBrandAdminStart, fetchDeleteBrandAdminStart, fetchGetAllBrandAdminStart, fetchUpdateBrandAdminStart, fetchUpdateLogoBrandAdminStart } from '@/store';
 
 
 export function useBrand() {
@@ -17,6 +17,52 @@ export function useBrand() {
         ));
     };
 
+    const fetchAddBrandAdmin = ( formData: any, onSuccess: () => void, onFailure: () => void, ) => {
+        dispatch(fetchAddBrandAdminStart(
+            {
+                formData: formData,
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+              
+            }
+        ));
+    }
+
+    const fetchDeleteBrandAdmin = ( brand_id: any, onSuccess: () => void, onFailure: () => void, ) => {
+        dispatch(fetchDeleteBrandAdminStart(
+            {
+                brand_id: brand_id,
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+              
+            }
+        ));
+    }
+
+    const fetchUpdateBrandAdmin = ( data: any, onSuccess: () => void, onFailure: () => void, ) => {
+        dispatch(fetchUpdateBrandAdminStart(
+            {
+                ...data,
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+              
+            }
+        ));
+    }
+
+    const fetchUpdateLogoBrandAdmin = ( formData: any, brand_id: any, onSuccess: () => void, onFailure: () => void, ) => {
+        dispatch(fetchUpdateLogoBrandAdminStart(
+            {
+                formData: formData,
+                brand_id: brand_id,
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+              
+            }
+        ));
+    }
+
+
    
    
 
@@ -25,6 +71,11 @@ export function useBrand() {
     return {
         getAllBrandsAdmin,
         fetchAllBrandsAdmin,
+
+        fetchAddBrandAdmin,
+        fetchDeleteBrandAdmin,
+        fetchUpdateBrandAdmin,
+        fetchUpdateLogoBrandAdmin,
        
     };
 }

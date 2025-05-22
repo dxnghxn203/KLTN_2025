@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useToast } from "@/providers/toastProvider";
 import TableBrand from "./tableBrand";
 import { useBrand } from "@/hooks/useBrand";
+import AddBrandDialog from "../Dialog/addBrandDialog";
 
 const BrandManagement = () => {
   const [isOpenDialog, setIsOpenDialog] = useState(false);
@@ -38,12 +39,17 @@ const BrandManagement = () => {
             className="flex gap-2 px-2 py-2 rounded-lg text-sm flex items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
             onClick={() => setIsOpenDialog(true)}
           >
-            + Thêm voucher
+            + Thêm thương hiệu
           </div>
         </div>
         <TableBrand allBrandAdmin={getAllBrandsAdmin} />
       </div>
-      {/* <AddBrandDialog isOpen={isOpenDialog} setIsOpen={setIsOpenDialog} /> */}
+      <AddBrandDialog
+        isOpen={isOpenDialog}
+        setIsOpen={setIsOpenDialog}
+        allBrandAdmin={getAllBrandsAdmin}
+        mode="add"
+      />
     </div>
   );
 };

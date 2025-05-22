@@ -12,6 +12,7 @@ export const ADMIN_ROUTES = [
     '/quan-ly-giam-gia',
     '/quan-ly-voucher',
     'quan-ly-bai-viet',
+    '/quan-ly-thuong-hieu',
 ] as const;
 
 export const isVerifyEmailRoute = (path: string): boolean => {

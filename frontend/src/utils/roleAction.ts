@@ -21,7 +21,11 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchAddVoucherStart',
     'fetchAllVoucherStart',
     'fetchUpdateStatusStart',
-    'fetchGetAllBrandAdminStart'
+    'fetchGetAllBrandAdminStart',
+    'fetchAddBrandAdminStart',
+    'fetchDeleteBrandAdminStart',
+    'fetchUpdateBrandAdminStart',
+    'fetchUpdateLogoBrandAdminStart'
 
 ]
 
