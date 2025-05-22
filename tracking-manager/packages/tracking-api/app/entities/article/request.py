@@ -1,4 +1,8 @@
+from datetime import datetime
+
 from pydantic import BaseModel
+
+from app.helpers.time_utils import get_current_time
 
 
 class ItemArticle(BaseModel):
@@ -8,6 +12,9 @@ class ItemArticle(BaseModel):
     image_url: str = None
     category: str = None
     tags: list[str] = None
+    created_by: str = None
+    created_date: datetime = get_current_time()
+    updated_date: datetime = get_current_time()
     active: bool = True
 
 class ItemArticleRequestCreate(BaseModel):
@@ -15,6 +22,7 @@ class ItemArticleRequestCreate(BaseModel):
     content: str = None
     category: str = None
     tags: list[str] = None
+    created_by: str = None
     active: bool = True
 
 class ItemArticleRequestUpdate(BaseModel):
@@ -22,5 +30,7 @@ class ItemArticleRequestUpdate(BaseModel):
     title: str = None
     content: str = None
     category: str = None
+    created_by: str = None
     tags: list[str] = None
+    updated_date: datetime = get_current_time()
     active: bool = True

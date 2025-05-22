@@ -78,7 +78,7 @@ async def update_article_image_api(
         return response.BaseResponse()
     except Exception as e:
         return response.BaseResponse(status_code=500, message="Internal server error")
-@router.delete("/articles/delete", response_model=response.BaseResponse)
+@router.delete("/articles/delete/{article_id}", response_model=response.BaseResponse)
 async def delete_article_api(
         article_id: str,
         token: str = Depends(middleware.verify_token_admin)):
