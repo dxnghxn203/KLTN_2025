@@ -31,25 +31,29 @@ const reducer = combineReducers({
 });
 
 const rootReducer = (state: any, action: any) => {
-    if (action.type === "authen/fetchLogoutStart") {
-        return reducer(undefined, action);
-    }
-
-    let token = null;
-
-    const actionType = action.type.split('/')[1];
-
-    if ((ROLE_ACTIONS_ADMIN as string[]).includes(actionType as string)) {
-        token = getTokenAdmin()
-    } else if ((ROLE_ACTIONS_PHARMACIST as string[]).includes(actionType as string)) {
-        token = getTokenPharmacist()
-    } else {
-        token = getToken();
-    }
-
-    if (token) {
-        setClientToken(token);
-    }
+    // if (action.type === "authen/fetchLogoutStart") {
+    //     return reducer(undefined, action);
+    // }
+    //
+    // let token = null;
+    //
+    // const typeParts = typeof action.type === 'string' ? action.type.split('/') : [];
+    // const actionType = typeParts[1] || '';
+    // console.log("actionType", actionType);
+    // if ((ROLE_ACTIONS_ADMIN).includes(actionType)) {
+    //     token = getTokenAdmin()
+    //     console.log("1", token);
+    // } else if ((ROLE_ACTIONS_PHARMACIST).includes(actionType)) {
+    //     token = getTokenPharmacist()
+    //     console.log("2", token);
+    // } else {
+    //     token = getToken();
+    //     console.log("3", token);
+    // }
+    //
+    // if (token) {
+    //     setClientToken(token);
+    // }
 
     return reducer(state, action);
 };

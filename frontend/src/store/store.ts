@@ -4,17 +4,18 @@ import {
     type Action,
     type ThunkAction,
 } from "@reduxjs/toolkit";
-import { legacy_createStore as createStore } from "redux";
+import {legacy_createStore as createStore} from "redux";
 import {
     useDispatch as useReduxDispatch,
     useSelector as useReduxSelector,
     type TypedUseSelectorHook,
 } from "react-redux";
-import { persistReducer, persistStore } from "redux-persist";
+import {persistReducer, persistStore} from "redux-persist";
 import createSagaMiddleware from "redux-saga";
 import storage from 'redux-persist/lib/storage';
 import rootSaga from "./rootSagas";
 import rootReducer from "./rootReducer";
+import {tokenMiddleware} from "@/store/tokenMiddleware";
 
 const persistConfig = {
     key: "kltn.2025",
@@ -26,13 +27,13 @@ const sagaMiddleware = createSagaMiddleware();
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 const reduxStore = createStore(
     persistedReducer,
-    applyMiddleware(sagaMiddleware)
+    applyMiddleware(sagaMiddleware, tokenMiddleware)
 );
 const persistor = persistStore(reduxStore);
 
 sagaMiddleware.run(rootSaga);
 
-export { persistor, reduxStore };
+export {persistor, reduxStore};
 /* Types */
 export type ReduxStore = typeof reduxStore;
 export type ReduxState = ReturnType<typeof reduxStore.getState>;

@@ -19,7 +19,7 @@ async def create_brand(brand_data: ItemBrandRequestCreate, logo):
 
         n_brand = ItemBrand(
             brand_id=brand_id,
-            **brand_data.dict(exclude={"name", "description", "category", "active"}),
+            **brand_data.dict(),
             logo=logo_url)
         brand =  BRAND_COLLECTION.insert_one(n_brand.dict())
         return brand.inserted_id

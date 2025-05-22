@@ -1,5 +1,5 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
-import * as voucherService from '@/services/voucherService'; 
+import * as voucherService from '@/services/voucherService';
 
 
 import {
@@ -21,11 +21,8 @@ import {
 
     fetchGetAllVoucherUserFailure,
     fetchGetAllVoucherUserStart,
-
     fetchGetAllVoucherUserSuccess,
 } from '@/store';
-
-import {getToken, setSession} from '@/utils/cookie';
 
 function* handleGetAllVouchers(action: any): Generator<any, void, any> {
     const {payload} = action;
@@ -54,7 +51,7 @@ function* handleGetAllVouchers(action: any): Generator<any, void, any> {
     }
 }
 
-function * handleAddVoucher(action: any): Generator<any, void, any> {
+function* handleAddVoucher(action: any): Generator<any, void, any> {
     const {payload} = action;
     const {
         voucher_name,
@@ -97,7 +94,7 @@ function * handleAddVoucher(action: any): Generator<any, void, any> {
     }
 }
 
-function * handleDeleteVoucher(action: any): Generator<any, void, any> {
+function* handleDeleteVoucher(action: any): Generator<any, void, any> {
     const {payload} = action;
     const {
         voucher_id,
@@ -123,10 +120,10 @@ function * handleDeleteVoucher(action: any): Generator<any, void, any> {
     }
 }
 
-function * handleUpdateStatus(action: any): Generator<any, void, any> {
+function* handleUpdateStatus(action: any): Generator<any, void, any> {
     const {payload} = action;
     const {
-     
+
         onSuccess = () => {
         },
         onFailure = () => {
@@ -134,7 +131,7 @@ function * handleUpdateStatus(action: any): Generator<any, void, any> {
     } = payload;
 
     try {
-        const response = yield call(voucherService.updateStatusVoucher, payload );
+        const response = yield call(voucherService.updateStatusVoucher, payload);
         if (response.status_code === 200) {
             onSuccess(response.data)
             yield put(fetchUpdateStatusSuccess(response.data));
@@ -149,7 +146,7 @@ function * handleUpdateStatus(action: any): Generator<any, void, any> {
     }
 }
 
-function * handleGetAllVoucherUser(action: any): Generator<any, void, any> {
+function* handleGetAllVoucherUser(action: any): Generator<any, void, any> {
     const {payload} = action;
     const {
         onSuccess = () => {
@@ -180,5 +177,5 @@ export function* voucherSaga() {
     yield takeLatest(fetchDeleteVoucherStart, handleDeleteVoucher);
     yield takeLatest(fetchUpdateStatusStart, handleUpdateStatus);
     yield takeLatest(fetchGetAllVoucherUserStart, handleGetAllVoucherUser);
-   
+
 }
