@@ -21,6 +21,8 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchAddVoucherStart',
     'fetchAllVoucherStart',
     'fetchUpdateStatusStart',
+    'fetchGetAllBrandAdminStart'
+
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [

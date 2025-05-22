@@ -1,0 +1,1 @@
+export const selectAllBrand = (state: any) => state.brand.getAllBrandsAdmin;

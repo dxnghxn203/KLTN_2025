@@ -9,6 +9,7 @@ import userReducer from "./user/userSlice";
 import reviewReducer from "./review/reviewSlice";
 import chatReducer from "./chat/chatSlice";
 import voucherReducer from "./voucher/voucherSlice";
+import brandReducer from "./brand/brandSlice";
 import {getToken, getTokenAdmin, getTokenPharmacist} from '@/utils/cookie';
 import {setClientToken} from '@/utils/configs/axiosClient';
 import {ROLE_ACTIONS_ADMIN, ROLE_ACTIONS_PHARMACIST} from "@/utils/roleAction";
@@ -26,6 +27,7 @@ const reducer = combineReducers({
     review: reviewReducer,
     chat: chatReducer,
     voucher: voucherReducer,
+    brand: brandReducer,
 });
 
 const rootReducer = (state: any, action: any) => {

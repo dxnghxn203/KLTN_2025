@@ -13,5 +13,7 @@ const routerAdmin = {
     REGISTER_ADMIN :'/dang-ky-admin',
     DISCOUNT: '/quan-ly-giam-gia',
     VOUCHER: '/quan-ly-voucher',
+    ARTICLES: '/quan-ly-bai-viet',
+    BRANDS: '/quan-ly-thuong-hieu',
     VERIFY_EMAIL: (email: string) => `/dang-ky-admin/xac-thuc-${email}`,
 }
