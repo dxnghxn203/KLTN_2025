@@ -6,21 +6,19 @@ from app.helpers.constant import generate_id
 
 ARTICLE_COLLECTION = db['articles']
 ID_ARTICLE_DEFAULT = "AR"
+ARICLE_FOLDER = "articles"
 
 async def create_article(article_data: ItemArticleRequestCreate, image= None):
     try:
         article_id = generate_id(ID_ARTICLE_DEFAULT)
-        # image_url = None
-        # if image:
-        #     try:
-        #         image_url = upload_file(image, article_id)
-        #     except Exception as e:
-        #         return None
-        #
+        image_url = ""
+        if image:
+            image_url = upload_file(image, ARICLE_FOLDER)
+
         n_article = ItemArticle(
             article_id=article_id,
             **article_data.dict(),
-            # image_url=image_url
+            image_thumbnail=image_url
         )
         article = ARTICLE_COLLECTION.insert_one(n_article.dict())
         return article.inserted_id
@@ -82,10 +80,7 @@ async def update_article_image(article_id: str, image):
     try:
         image_url = None
         if image:
-            try:
-                image_url = upload_file(image, article_id)
-            except Exception as e:
-                return None
+            image_url = upload_file(image, ARICLE_FOLDER)
         updated_article = ARTICLE_COLLECTION.update_one({"article_id": article_id}, {
             "$set": {
                "image_url": image_url

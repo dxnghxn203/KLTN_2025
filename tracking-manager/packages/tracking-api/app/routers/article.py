@@ -43,12 +43,11 @@ async def get_article_by_id_api(article_id: str):
 
 @router.post("/articles/add", response_model=response.BaseResponse)
 async def create_article_api(
-        article_data: ItemArticleRequestCreate = Form(...),
-        # image: Optional[UploadFile] = File(None),
-token: str = Depends(middleware.verify_token_admin)):
+        article_data: ItemArticleRequestCreate = BodyDepends(ItemArticleRequestCreate),
+        image: Optional[UploadFile] = File(None),
+        token: str = Depends(middleware.verify_token_admin)):
     try:
-        # article_id = await create_article(article_data, image)
-        article_id = await create_article(article_data)
+        article_id = await create_article(article_data, image)
         if not article_id:
             return response.BaseResponse(status_code=500, message="Failed to create article")
         return response.BaseResponse()
@@ -67,18 +66,18 @@ token: str = Depends(middleware.verify_token_admin)):
     except Exception as e:
         return response.BaseResponse(status_code=500, message="Internal server error")
 
-# @router.put("/articles/update-image", response_model=response.BaseResponse)
-# async def update_article_image_api(
-#         article_id: str,
-#         image: UploadFile = File(...),
-#         token: str = Depends(middleware.verify_token_admin)):
-#     try:
-#         updated = await update_article_image(article_id, image)
-#         if not updated:
-#             return response.BaseResponse(status_code=500, message="Failed to update article image")
-#         return response.BaseResponse()
-#     except Exception as e:
-#         return response.BaseResponse(status_code=500, message="Internal server error")
+@router.put("/articles/update-image", response_model=response.BaseResponse)
+async def update_article_image_api(
+        article_id: str,
+        image: UploadFile = File(...),
+        token: str = Depends(middleware.verify_token_admin)):
+    try:
+        updated = await update_article_image(article_id, image)
+        if not updated:
+            return response.BaseResponse(status_code=500, message="Failed to update article image")
+        return response.BaseResponse()
+    except Exception as e:
+        return response.BaseResponse(status_code=500, message="Internal server error")
 
 @router.delete("/articles/delete/{article_id}", response_model=response.BaseResponse)
 async def delete_article_api(
