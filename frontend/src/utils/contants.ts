@@ -15,5 +15,6 @@ const routerAdmin = {
     VOUCHER: '/quan-ly-voucher',
     ARTICLES: '/quan-ly-bai-viet',
     BRANDS: '/quan-ly-thuong-hieu',
+    ARTICLE: '/quan-ly-bai-viet',
     VERIFY_EMAIL: (email: string) => `/dang-ky-admin/xac-thuc-${email}`,
 }

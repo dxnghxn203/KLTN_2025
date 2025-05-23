@@ -47,8 +47,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
             <Image
               src={subCategories?.sub_image_url}
               alt="Category Icon"
-              width={65}
-              height={65}
+              width={80}
+              height={80}
               className="cursor-pointer"
             />
           </div>

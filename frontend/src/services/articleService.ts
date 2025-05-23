@@ -1,8 +1,8 @@
 import axiosClient from "@/utils/configs/axiosClient";
 
-export const getAllBrandsAdmin = async () => {
+export const getAllArticlesAdmin = async () => {
     try {
-        return await axiosClient.get(`v1/brands/get-brands-admin`);
+        return await axiosClient.get(`v1/articles/get-articles-admin`);
     } catch (error: any) {
         return {
             status: false,
@@ -11,10 +11,10 @@ export const getAllBrandsAdmin = async () => {
     }
 }
 
-export const addBrandAdmin = async (data: any) : Promise<any> => {
-    console.log("addBrandAdmin", data);
+export const addArticleAdmin = async (data: any) : Promise<any> => {
+    console.log("addArticleAdmin", data);
     try {
-            const params = `/v1/brands/add`;
+            const params = `/v1/articles/add`;
             const response: any = await axiosClient.post(params, data);
             return {
                 status_code: response.status_code,
@@ -26,9 +26,9 @@ export const addBrandAdmin = async (data: any) : Promise<any> => {
         }
 }
 
-export const deleteBrandAdmin = async (brand_id: string) => {
+export const deleteArticleAdmin = async (article_id: string) => {
     try {
-        const params = `/v1/brands/delete/${brand_id}`;
+        const params = `/v1/articles/delete/${article_id}`;
         const response: any = await axiosClient.delete(params);
         return {
             status_code: response.status_code,
@@ -40,9 +40,9 @@ export const deleteBrandAdmin = async (brand_id: string) => {
     }
 }
 
-export const updateBrandAdmin = async (data: any) => {
+export const updateArticleAdmin = async (data: any) => {
     try {
-        const params = `/v1/brands/update`;
+        const params = `/v1/articles/update`;
         const response: any = await axiosClient.put(params, data);
         return {
             status_code: response.status_code,
@@ -53,9 +53,9 @@ export const updateBrandAdmin = async (data: any) => {
         throw error;
     }
 }
-export const updateBrandLogoAdmin = async (data: any, brand_id: any) => {
+export const updateArticleLogoAdmin = async (data: any, article_id: any) => {
     try {
-        const params = `/v1/brands/update-logo?brand_id=${brand_id}`;
+        const params = `/v1/articles/update-image?article_id=${article_id}`;
         const response: any = await axiosClient.put(params, data);
         return {
             status_code: response.status_code,
@@ -67,21 +67,23 @@ export const updateBrandLogoAdmin = async (data: any, brand_id: any) => {
     }
 }
 
-export const getAllBrandsUser = async () => {
+export const getArticleById = async (article_id: string) => {
     try {
-        return await axiosClient.get(`v1/brands/get-brands`);
-    } catch (error: any) {
+        const params = `/v1/articles/${article_id}`;
+        const response: any = await axiosClient.get(params);
         return {
-            status: false,
-            message: 'Lỗi lấy danh sách voucher',
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data,
         };
+    } catch (error: any) {
+        throw error;
     }
 }
 
-export const getAllBrandsById = async (brand_id: string) => {
-    console.log("brand_id", brand_id);
+export const getAllArticlesUser = async () => {
     try {
-        return await axiosClient.get(`v1/brands/${brand_id}`);
+        return await axiosClient.get(`v1/articles/get-articles`);
     } catch (error: any) {
         return {
             status: false,

@@ -5,6 +5,8 @@ import { getAllBrands } from "@/services/productService";
 
 const initialState: any = {
     getAllBrandsAdmin: [],
+    getAllBrandsUser: [],
+    getAllBrandsById: [],
    
     loading: false,
     error: null,
@@ -82,6 +84,34 @@ export const brandSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+
+        // fetch get all brand user
+        fetchGetAllBrandUserStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchGetAllBrandUserSuccess: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.getAllBrandsUser = action.payload;
+        },
+        fetchGetAllBrandUserFailure: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        // fetch get all brand by id
+        fetchGetAllBrandByIdStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchGetAllBrandByIdSuccess: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.getAllBrandsById = action.payload;
+        },
+        fetchGetAllBrandByIdFailure: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
         
     },
 });
@@ -107,6 +137,13 @@ export const {
     fetchUpdateLogoBrandAdminSuccess,
     fetchUpdateLogoBrandAdminFailure,
    
+    fetchGetAllBrandUserStart,
+    fetchGetAllBrandUserSuccess,
+    fetchGetAllBrandUserFailure,
+
+    fetchGetAllBrandByIdStart,
+    fetchGetAllBrandByIdSuccess,
+    fetchGetAllBrandByIdFailure,
     
 } = brandSlice.actions;
 

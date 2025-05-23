@@ -1,12 +1,15 @@
 import { all } from 'axios';
 import {useDispatch, useSelector} from 'react-redux';
-import { selectAllBrand } from '@/store/brand/brandSelector';
-import { fetchAddBrandAdminStart, fetchDeleteBrandAdminStart, fetchGetAllBrandAdminStart, fetchUpdateBrandAdminStart, fetchUpdateLogoBrandAdminStart } from '@/store';
+import { selectAllBrand, selectAllBrandUser, selectBrandById } from '@/store/brand/brandSelector';
+import { fetchAddBrandAdminStart, fetchDeleteBrandAdminStart, fetchGetAllBrandAdminStart, fetchGetAllBrandByIdStart, fetchGetAllBrandUserStart, fetchUpdateBrandAdminStart, fetchUpdateLogoBrandAdminStart } from '@/store';
 
 
 export function useBrand() {
     const dispatch = useDispatch();
     const getAllBrandsAdmin = useSelector(selectAllBrand);
+    const getAllBrandsUser = useSelector(selectAllBrandUser);
+    const getBrandById = useSelector(selectBrandById);
+
     const fetchAllBrandsAdmin = (onSuccess: () => void, onFailure: () => void, ) => {
         dispatch(fetchGetAllBrandAdminStart(
             {
@@ -61,6 +64,26 @@ export function useBrand() {
             }
         ));
     }
+    const fetchGetAllBrandUser = (onSuccess: () => void, onFailure: () => void, ) => {
+        dispatch(fetchGetAllBrandUserStart(
+            {
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+              
+            }
+        ));
+    };
+
+    const fetchGetBrandById = ( brand_id: any, onSuccess: () => void, onFailure: () => void, ) => {
+        dispatch(fetchGetAllBrandByIdStart(
+            {
+                brand_id: brand_id,
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+              
+            }
+        ));
+    };
 
 
    
@@ -76,6 +99,10 @@ export function useBrand() {
         fetchDeleteBrandAdmin,
         fetchUpdateBrandAdmin,
         fetchUpdateLogoBrandAdmin,
+        getAllBrandsUser,
+        fetchGetAllBrandUser,
+        getBrandById,
+        fetchGetBrandById,
        
     };
 }

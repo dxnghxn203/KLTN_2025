@@ -86,11 +86,6 @@ export default function AddBrandDialog({
     }));
   };
 
-  //   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     const file = e.target.files?.[0] || null;
-  //     setLogoFile(file);
-  //   };
-
   const resetForm = () => {
     setBrandData({
       name: "",

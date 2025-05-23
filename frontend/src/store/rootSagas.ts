@@ -10,6 +10,7 @@ import { reviewSaga } from './review';
 import { chatSaga } from './chat';
 import { voucherSaga } from './voucher';
 import { brandSaga } from './brand/brandSaga';
+import { articleSaga } from './article/articleSaga';
 export default function* rootSaga() {
     yield all([fork(authSaga)]);
     yield all([fork(cartSaga)]);
@@ -22,5 +23,6 @@ export default function* rootSaga() {
     yield all([fork(chatSaga)]);
     yield all([fork(voucherSaga)]);
     yield all([fork(brandSaga)]);
+    yield all([fork(articleSaga)]);
 
 }

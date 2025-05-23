@@ -39,7 +39,12 @@ export default function MenuHeader() {
 
         {/* Góc sức khỏe */}
         <li className="relative group">
-          <div className="cursor-pointer hover:text-blue-500">Góc sức khỏe</div>
+          <div
+            className="cursor-pointer hover:text-blue-500"
+            onClick={() => router.push("/bai-viet")}
+          >
+            Góc sức khỏe
+          </div>
           <div className="absolute left-0 top-full mt-0 bg-white border border-gray-200 shadow-lg rounded-lg hidden group-hover:block z-10 w-[180px]">
             <ul className="text-sm text-gray-700 py-2">
               <li className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
