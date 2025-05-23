@@ -9,7 +9,7 @@ class ItemArticle(BaseModel):
     article_id: str
     title: str = None
     content: str = None
-    image_url: str = None
+    # image_url: str = None
     category: str = None
     tags: list[str] = None
     created_by: str = None
