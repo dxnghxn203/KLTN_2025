@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, UploadFile, File, Form
 from pyfa_converter_v2 import BodyDepends
 
 from app.core import response
@@ -45,7 +45,7 @@ async def get_article_by_id_api(article_id: str):
 async def create_article_api(
         article_data: ItemArticleRequestCreate = BodyDepends(ItemArticleRequestCreate),
         image: Optional[UploadFile] = File(None),
-token: str = Depends(middleware.verify_token_admin)):
+        token: str = Depends(middleware.verify_token_admin)):
     try:
         article_id = await create_article(article_data, image)
         if not article_id:
@@ -78,7 +78,8 @@ async def update_article_image_api(
         return response.BaseResponse()
     except Exception as e:
         return response.BaseResponse(status_code=500, message="Internal server error")
-@router.delete("/articles/delete", response_model=response.BaseResponse)
+
+@router.delete("/articles/delete/{article_id}", response_model=response.BaseResponse)
 async def delete_article_api(
         article_id: str,
         token: str = Depends(middleware.verify_token_admin)):
