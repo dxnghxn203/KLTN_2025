@@ -38,4 +38,3 @@ class ItemArticleRequestUpdate(BaseModel):
     updated_date: datetime = get_current_time()
     active: bool = True
     slug: str = None
-    image_thumbnail: str = None
