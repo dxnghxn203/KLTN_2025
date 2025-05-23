@@ -16,6 +16,8 @@ class ItemArticle(BaseModel):
     created_date: datetime = get_current_time()
     updated_date: datetime = get_current_time()
     active: bool = True
+    slug: str = None
+    image_thumbnail: str = None
 
 class ItemArticleRequestCreate(BaseModel):
     title: str
@@ -23,7 +25,8 @@ class ItemArticleRequestCreate(BaseModel):
     category: str = None
     tags: list[str] = None
     created_by: str = None
-    active: bool = True
+    slug: str = None
+    image_thumbnail: str = None
 
 class ItemArticleRequestUpdate(BaseModel):
     article_id: str
@@ -34,3 +37,5 @@ class ItemArticleRequestUpdate(BaseModel):
     tags: list[str] = None
     updated_date: datetime = get_current_time()
     active: bool = True
+    slug: str = None
+    image_thumbnail: str = None
