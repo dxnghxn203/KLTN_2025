@@ -793,7 +793,23 @@ async def get_order_overview_statistics():
     try:
         collection = database.db[collection_name]
 
+        now = datetime.now()
+        start_of_month = datetime(now.year, now.month, 1)
+        if now.month == 12:
+            next_month = datetime(now.year + 1, 1, 1)
+        else:
+            next_month = datetime(now.year, now.month + 1, 1)
+
+
         pipeline = [
+            {
+                "$match": {
+                    "created_date": {
+                        "$gte": start_of_month,
+                        "$lt": next_month
+                    }
+                }
+            },
             {
                 "$facet": {
                     "total_orders": [{"$count": "count"}],
