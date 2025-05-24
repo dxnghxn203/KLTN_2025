@@ -7,6 +7,7 @@ interface OrderState {
     statistics365Days: any[];
     allRequestOrder: any[];
     allRequestOrderApprove: any[];
+    overviewStatisticsOrder: any;
     loading: boolean;
     error: string | null;
 }
@@ -18,6 +19,7 @@ const initialState: OrderState = {
     statistics365Days: [],
     allRequestOrder: [],
     allRequestOrderApprove: [],
+    overviewStatisticsOrder: null,
     loading: false,
     error: null,
 };
@@ -199,7 +201,24 @@ export const orderSlice = createSlice({
             state.error = null;
         },
         
-        
+        // fetch get overview statistics order
+        fetchGetOverviewStatisticsOrderStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetOverviewStatisticsOrderStart')
+            state.loading = true;
+        },
+        fetchGetOverviewStatisticsOrderSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetOverviewStatisticsOrderSuccess')
+            state.overviewStatisticsOrder = action.payload;
+            state.loading = false;
+            state.error = null;
+           
+        },
+
+        fetchGetOverviewStatisticsOrderFailed(state) {
+            console.log('fetchGetOverviewStatisticsOrderFailed')
+            state.loading = false;
+            state.error = null;
+        },
 
 
     },
@@ -260,7 +279,11 @@ export const {
     
     fetchApproveRequestOrderFailed,
     fetchApproveRequestOrderStart,  
-    fetchApproveRequestOrderSuccess
+    fetchApproveRequestOrderSuccess,
+
+    fetchGetOverviewStatisticsOrderFailed,
+    fetchGetOverviewStatisticsOrderStart,
+    fetchGetOverviewStatisticsOrderSuccess
 
 } = orderSlice.actions;
 

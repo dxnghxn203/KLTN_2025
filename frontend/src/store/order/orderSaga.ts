@@ -56,6 +56,10 @@ import {
     fetchApproveRequestOrderStart,
     fetchApproveRequestOrderSuccess,
 
+    fetchGetOverviewStatisticsOrderStart,
+    fetchGetOverviewStatisticsOrderSuccess,
+    fetchGetOverviewStatisticsOrderFailed
+
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -526,7 +530,28 @@ function* fetchApproveRequestOrder (action: any): Generator<any, void, any> {
     }
 }
 
-
+function* fetchGetOverviewStatisticsOrder (action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            }, 
+        } = payload;  
+        const rs = yield call(orderService.getOverviewStatisticsOrder);
+        if (rs.status_code === 200) {
+            yield put(fetchGetOverviewStatisticsOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetOverviewStatisticsOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetOverviewStatisticsOrderFailed());
+    }
+}
 
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
@@ -543,4 +568,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetRequestOrderStart.type, fetchGetRequestOrder);
     yield takeLatest(fetchGetApproveRequestOrderStart.type, fetchGetApproveRequestOrder);
     yield takeLatest(fetchApproveRequestOrderStart.type, fetchApproveRequestOrder);
+    yield takeLatest(fetchGetOverviewStatisticsOrderStart.type, fetchGetOverviewStatisticsOrder);
 }

@@ -354,3 +354,18 @@ export const approveRequestOrder = async (data: any) => {
     }
 }
 
+export const getOverviewStatisticsOrder = async () => {
+    try {
+        const response: any = await axiosClient.get("/v1/order/overview-statistics");
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi lấy thống kê tổng quát',
+        }
+    }
+}

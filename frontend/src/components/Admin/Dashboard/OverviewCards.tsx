@@ -32,41 +32,67 @@ import CategoryRevenueChart from "./CategoryRevenueChart";
 import OrderChartByWeek from "./OrderCharyByWeekk";
 // import { OrderChartByWeek } from "./OrderCharyByWeekk";
 
-const now = new Date();
-const currentMonth = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
 
-const cards = [
-  {
-    title: "Tổng doanh thu đơn hàng",
-    value: "$12,500",
-    subtitle: currentMonth,
-    icon: <FaCircleDollarToSlot />,
-    change: "+2%",
-  },
-  {
-    title: "Tổng khách hàng đã đặt hàng",
-    value: "1,200",
-    subtitle: currentMonth,
-    icon: <IoPeople />,
-    change: "-0.2%",
-  },
-  {
-    title: "Tổng sản phẩm đã bán",
-    value: "2,549",
-    subtitle: currentMonth,
-    icon: <FaProductHunt />,
-    change: "+6%",
-  },
-  {
-    title: "Tổng đơn hàng đã tạo",
-    value: "2,549",
-    subtitle: currentMonth,
-    icon: <FaCartShopping />,
-    change: "+6%",
-  },
-];
+type OverviewCard = {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.JSX.Element;
+  change: string;
+};
 
 export default function OverviewCards() {
+
+  const { fetchGetOverviewSatisticsOrder, overviewStatisticsOrder } = useOrder();
+  const [cards, setCards] = useState<OverviewCard[]>([]);
+
+  const now = new Date();
+  const currentMonth = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+
+  const updateCardsFromOverviewData = (data: any) => {
+    const { total_orders, total_revenue, total_customers, total_products_sold } = data || {};
+    setCards([
+      {
+        title: "Tổng doanh thu đơn hàng",
+        value: total_revenue ? `${total_revenue.toLocaleString()}Đ` : "0Đ",
+        subtitle: currentMonth,
+        icon: <FaCircleDollarToSlot />,
+        change: "+2%",
+      },
+      {
+        title: "Tổng khách hàng đã đặt hàng",
+        value: total_customers?.toString() || "0",
+        subtitle: currentMonth,
+        icon: <IoPeople />,
+        change: "-0.2%",
+      },
+      {
+        title: "Tổng sản phẩm đã bán",
+        value: total_products_sold?.toString() || "0",
+        subtitle: currentMonth,
+        icon: <FaProductHunt />,
+        change: "+6%",
+      },
+      {
+        title: "Tổng đơn hàng đã tạo",
+        value: total_orders?.toString() || "0",
+        subtitle: currentMonth,
+        icon: <FaCartShopping />,
+        change: "+6%",
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    fetchGetOverviewSatisticsOrder(
+      () => {
+        console.log("overviewStatisticsOrder", overviewStatisticsOrder);
+        updateCardsFromOverviewData(overviewStatisticsOrder);
+      },
+      () => {}
+    );
+  }, []);
+
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedCard = cards[selectedIndex];
 

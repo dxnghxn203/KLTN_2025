@@ -1,4 +1,11 @@
-import { fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart, fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart, fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart, fetchApproveRequestOrderStart } from "@/store/order";
+import { 
+    fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart,
+    fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, 
+    fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, 
+    fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart, 
+    fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart, 
+    fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart 
+} from "@/store/order";
 import { on } from "events";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +18,7 @@ export function useOrder() {
     const statistics365Days = useSelector((state: any) => state.order.statistics365Days);
     const allRequestOrder = useSelector((state: any) => state.order.allRequestOrder);
     const allRequestOrderApprove = useSelector((state: any) => state.order.allRequestOrderApprove);
+    const overviewStatisticsOrder = useSelector((state: any) => state.order.overviewStatisticsOrder);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
@@ -124,11 +132,13 @@ export function useOrder() {
         }));
     }
 
-
-
-
-    
-
+    const fetchGetOverviewSatisticsOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetOverviewStatisticsOrderStart({
+                
+                onSuccess: onSuccess,
+                onFailed: onFailed
+        }));
+    }
 
     return {
         allOrder,
@@ -156,6 +166,9 @@ export function useOrder() {
         fetchGetApproveRequestOrder,
         allRequestOrderApprove,
         fetchApproveRequestOrder,
+
+        fetchGetOverviewSatisticsOrder,
+        overviewStatisticsOrder
     }
 }
 
