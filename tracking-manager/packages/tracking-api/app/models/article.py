@@ -83,7 +83,7 @@ async def update_article_image(article_id: str, image):
             image_url = upload_file(image, ARICLE_FOLDER)
         updated_article = ARTICLE_COLLECTION.update_one({"article_id": article_id}, {
             "$set": {
-               "image_url": image_url
+               "image_thumbnail": image_url
             }
         })
         return updated_article.modified_count > 0
