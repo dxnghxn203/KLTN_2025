@@ -789,3 +789,65 @@ async def reset_dev_system():
         "inventory_updated": inventory_result.modified_count
     }
 
+async def get_order_overview_statistics():
+    try:
+        collection = database.db[collection_name]
+
+        pipeline = [
+            {
+                "$facet": {
+                    "total_orders": [{"$count": "count"}],
+                    "total_revenue": [
+                        {
+                            "$group": {
+                                "_id": None,
+                                "total": {"$sum": "$product_fee"}
+                            }
+                        }
+                    ],
+                    "total_customers": [
+                        {
+                            "$group": {
+                                "_id": "$created_by"
+                            }
+                        },
+                        {
+                            "$count": "count"
+                        }
+                    ],
+                    "total_products_sold": [
+                        {
+                            "$unwind": "$product"
+                        },
+                        {
+                            "$group": {
+                                "_id": None,
+                                "total": {"$sum": "$product.quantity"}
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+
+        result = collection.aggregate(pipeline).to_list(length=1)
+        if not result:
+            return {
+                "total_orders": 0,
+                "total_revenue": 0,
+                "total_customers": 0,
+                "total_products_sold": 0
+            }
+
+        data = result[0]
+
+        return {
+            "total_orders": data["total_orders"][0]["count"] if data["total_orders"] else 0,
+            "total_revenue": data["total_revenue"][0]["total"] if data["total_revenue"] else 0,
+            "total_customers": data["total_customers"][0]["count"] if data["total_customers"] else 0,
+            "total_products_sold": data["total_products_sold"][0]["total"] if data["total_products_sold"] else 0
+        }
+
+    except Exception as e:
+        logger.error(f"Failed [get_order_statistics]: {e}")
+        raise e

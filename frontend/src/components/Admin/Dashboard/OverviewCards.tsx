@@ -32,32 +32,35 @@ import CategoryRevenueChart from "./CategoryRevenueChart";
 import OrderChartByWeek from "./OrderCharyByWeekk";
 // import { OrderChartByWeek } from "./OrderCharyByWeekk";
 
+const now = new Date();
+const currentMonth = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+
 const cards = [
   {
-    title: "Tổng doanh thu",
+    title: "Tổng doanh thu đơn hàng",
     value: "$12,500",
-    subtitle: "Kể từ tuần trước",
+    subtitle: currentMonth,
     icon: <FaCircleDollarToSlot />,
     change: "+2%",
   },
   {
-    title: "Tổng khách hàng",
+    title: "Tổng khách hàng đã đặt hàng",
     value: "1,200",
-    subtitle: "Kể từ tuần trước",
+    subtitle: currentMonth,
     icon: <IoPeople />,
     change: "-0.2%",
   },
   {
-    title: "Tổng sản phẩm",
+    title: "Tổng sản phẩm đã bán",
     value: "2,549",
-    subtitle: "Kể từ tuần trước",
+    subtitle: currentMonth,
     icon: <FaProductHunt />,
     change: "+6%",
   },
   {
-    title: "Tổng đơn hàng",
+    title: "Tổng đơn hàng đã tạo",
     value: "2,549",
-    subtitle: "Kể từ tuần trước",
+    subtitle: currentMonth,
     icon: <FaCartShopping />,
     change: "+6%",
   },
