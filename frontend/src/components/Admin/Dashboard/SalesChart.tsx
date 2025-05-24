@@ -39,8 +39,25 @@ export default function SalesChart() {
   const handleNextMonth = () => {
     const date = new Date(currentMonth + "-01");
     date.setMonth(date.getMonth() + 1);
+
+    const today = new Date();
+    const nextMonth = new Date(date);
+
+    if (
+      nextMonth.getFullYear() > today.getFullYear() ||
+      (nextMonth.getFullYear() === today.getFullYear() &&
+        nextMonth.getMonth() > today.getMonth())
+    )
+      return;
+
     const formatted = date.toISOString().slice(0, 7);
     setCurrentMonth(formatted);
+  };
+
+  const isCurrentMonth = () => {
+    const [year, month] = currentMonth.split("-").map(Number);
+    const today = new Date();
+    return year === today.getFullYear() && month === today.getMonth() + 1;
   };
 
   const salesData = monthlySalesData[currentMonth] || [];
@@ -70,6 +87,7 @@ export default function SalesChart() {
           </button>
           <button
             onClick={handleNextMonth}
+            disabled={isCurrentMonth()}
             className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
           >
             <MdNavigateNext />
