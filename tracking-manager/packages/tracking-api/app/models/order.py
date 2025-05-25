@@ -284,6 +284,37 @@ async def check_shipping_fee(
         voucher_error: Optional[List[Dict[str, str]]] = None
     ):
     try:
+        if receiver_province_code == 0:
+            now = get_current_time()
+            shipping_fee = 0
+            order_discount_amount = 0
+            delivery_discount_amount = 0
+
+            if voucher:
+                for v in voucher:
+                    if v.voucher_type == "order" and product_price >= v.min_order_value:
+                        discount = min(product_price * v.discount / 100, v.max_discount_value)
+                        order_discount_amount += discount
+                    elif v.voucher_type == "delivery":
+                        # Vì shipping_fee = 0 => không giảm
+                        continue
+
+            total_fee = product_price
+
+            return {
+                "product_fee": product_price,
+                "shipping_fee": 0,
+                "delivery_time": now,
+                "weight": weight,
+                "voucher_order_discount": order_discount_amount,
+                "voucher_delivery_discount": delivery_discount_amount,
+                "basic_total_fee": total_fee,
+                "estimated_total_fee": total_fee - order_discount_amount - delivery_discount_amount,
+                "out_of_stock": [],
+                "out_of_date": [],
+                "voucher_error": voucher_error or []
+            }
+
         route_code = await determine_route(
                 sender_code=SENDER_PROVINCE_CODE,
                 receiver_code=receiver_province_code

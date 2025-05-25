@@ -40,7 +40,7 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
 
         return response.SuccessResponse(
             data=await order.check_shipping_fee(
-                item.receiver_province_code,
+                item.receiver_province_code or 0,
                 total_price,
                 weight,
                 voucher_list, voucher_error
