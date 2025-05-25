@@ -4,6 +4,7 @@ import os
 import io
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Tuple, Dict, Union
+from calendar import monthrange
 
 import httpx
 from bson import ObjectId
@@ -897,4 +898,41 @@ async def get_order_overview_statistics():
 
     except Exception as e:
         logger.error(f"Failed [get_order_statistics]: {e}")
+        raise e
+
+async def get_monthly_revenue(year: int):
+    try:
+        collection = database.db[collection_name]
+        monthly_revenue = []
+
+        for month in range(1, 13):
+            start_date = datetime(year, month, 1)
+            end_day = monthrange(year, month)[1]
+            end_date = datetime(year, month, end_day, 23, 59, 59)
+
+            pipeline = [
+                {
+                    "$match": {
+                        "created_date": {
+                            "$gte": start_date,
+                            "$lte": end_date
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": None,
+                        "total": {"$sum": "$product_fee"}
+                    }
+                }
+            ]
+
+            result = collection.aggregate(pipeline).to_list(length=1)
+            revenue = result[0]["total"] if result else 0
+            monthly_revenue.append(revenue)
+
+        return monthly_revenue
+
+    except Exception as e:
+        logger.error(f"Failed [get_monthly_revenue]: {e}")
         raise e

@@ -329,3 +329,19 @@ async def get_overview_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.get("/order/monthly-revenue-statistics", response_model=response.BaseResponse)
+async def get_monthly_revenue(
+        year: int,
+        # token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        result =await order.get_monthly_revenue(year)
+        return response.SuccessResponse(
+            data=result
+        )
+    except Exception as e:
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
