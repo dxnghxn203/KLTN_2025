@@ -13,19 +13,23 @@ export default function MainCategoryPage() {
   const params = useParams() as {
     mainCategory: string | string[];
   };
+
   const { mainCategory, fetchMainCategory } = useCategory();
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    setLoading(true);
-    fetchMainCategory(
-      params.mainCategory,
-      () => {
-        setLoading(false);
-      },
-      () => {
-        setLoading(false);
-      }
-    );
+    const fetchData = async () => {
+      setLoading(true);
+      await fetchMainCategory(
+        params.mainCategory,
+        () => {
+          setLoading(false);
+        },
+        () => {
+          setLoading(false);
+        }
+      );
+    };
+    fetchData();
   }, []);
 
   return (

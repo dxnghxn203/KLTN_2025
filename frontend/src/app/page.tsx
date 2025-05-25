@@ -15,7 +15,7 @@ export default function Home() {
         <main className="flex flex-col space-y-8">
           <ProductCatalog />
           <SanDealHeader />
-          <VoucherList />
+          {/* <VoucherList /> */}
           <div className="self-start text-2xl font-extrabold text-black">
             Sản phẩm bán chạy
           </div>

@@ -10,7 +10,10 @@ import { IoChevronDownOutline } from "react-icons/io5";
 import Image from "next/image";
 import { ImBin } from "react-icons/im";
 import textlogo from "@/images/medicare.png";
-import logoyellow from "@/images/MM.png";
+import logoyellow from "@/images/MMM.jpg";
+import logo from "@/images/5.png";
+import text from "@/images/6.png";
+
 import LocationDelivery from "./locationDelivery";
 import MenuHeader from "./menuHeader";
 import LocationDialog from "@/components/Dialog/locationDialog"; // Import from correct path
@@ -23,7 +26,7 @@ import { useProduct } from "@/hooks/useProduct";
 import { X } from "lucide-react";
 import { GoHistory } from "react-icons/go";
 import Loading from "@/app/loading";
-import { RiSearchLine } from "react-icons/ri";
+import { RiSearch2Line, RiSearchLine } from "react-icons/ri";
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -233,24 +236,24 @@ export default function Header() {
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full z-[50] bg-[#0053E2]">
+      <div className="fixed top-0 left-0 w-full z-[50] bg-blue-700">
         <header className="w-full px-4 md:px-8 transition-all duration-300">
           <div className="relative flex items-center justify-between h-[72px] sm:h-[72px] px-4">
-            <div className="flex items-center gap-4 min-w-[160px]">
+            <div className="flex items-center gap-1 min-w-[160px]">
               <Link href="/">
                 <div className="flex items-center cursor-pointer">
                   <Image
-                    src={logoyellow}
+                    src={logo}
                     alt=""
-                    width={32}
-                    height={32}
-                    className="object-contain aspect-square sm:w-[32px] sm:h-[32px] md:w-[40px] md:h-[40px]"
+                    width={50}
+                    height={50}
+                    className="object-contain aspect-square sm:w-[32px] sm:h-[32px] md:w-[50px] md:h-[50px]"
                   />
                   <Image
-                    src={textlogo}
+                    src={text}
                     alt=""
-                    width={80}
-                    height={80}
+                    width={100}
+                    height={100}
                     priority
                     className="top-1 ml-2 hidden sm:block"
                   />
@@ -259,7 +262,7 @@ export default function Header() {
             </div>
 
             <div className="flex-grow max-w-[580px]" ref={searchRef}>
-              <div className="flex items-center bg-white rounded-full px-4 py-2 h-[48px]">
+              <div className="flex items-center bg-white rounded-lg px-4 py-2 ">
                 <input
                   type="text"
                   value={search}
@@ -284,14 +287,14 @@ export default function Header() {
                       }
                     }
                   }}
-                  className="w-full outline-none text-sm placeholder:text-black/40"
+                  className="w-full outline-none text-sm placeholder:text-gray-500"
                 />
                 <button
                   type="button"
                   className="flex items-center justify-center shrink-0 transition"
                   onClick={handleSearch}
                 >
-                  <RiSearchLine className="text-[#0053E2] text-2xl" />
+                  <RiSearch2Line className="text-[#0053E2] text-2xl" />
                 </button>
               </div>
 

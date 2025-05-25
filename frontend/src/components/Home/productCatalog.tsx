@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+// Images
 import categories1 from "@/images/ct.jpg";
 import categories2 from "@/images/2.jpg";
 import categories3 from "@/images/3.jpg";
@@ -11,25 +12,37 @@ import categories5 from "@/images/5.jpg";
 import categories6 from "@/images/6.jpg";
 import categories7 from "@/images/7.jpg";
 import categories8 from "@/images/categories8.png";
-
 import slider1 from "@/images/83.png";
 import slider2 from "@/images/slider2.png";
 import slider3 from "@/images/slider3.webp";
-import slider from "@/images/slider.png";
+import slider4 from "@/images/slider.png";
 import tracuuthuoc from "@/images/tracuuthuoc.png";
 import duocmypham from "@/images/duocmypham.png";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
-const images = [slider2, slider3, slider, duocmypham];
+const images = [slider1, slider2, slider3, slider4, duocmypham];
 
 const ProductCatalog: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000);
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const goToPrev = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
 
   const categories = [
     {
@@ -89,10 +102,14 @@ const ProductCatalog: React.FC = () => {
       path: "/phong-do-ben-lau",
     },
   ];
+  const canGoNext = currentIndex < images.length - 1;
+  const canGoPrev = currentIndex > 0;
 
   return (
     <div className="pt-14">
-      <div className="flex flex-col lg:flex-row gap-4 max-w-screen-2xl mx-auto">
+      {/* Slider */}
+
+      <div className="flex flex-col lg:flex-row gap-4 max-w-screen-2xl mx-auto group">
         <div className="relative w-full overflow-hidden rounded-xl">
           <div
             className="flex transition-transform duration-700 ease-in-out"
@@ -102,60 +119,44 @@ const ProductCatalog: React.FC = () => {
               <div key={index} className="min-w-full">
                 <Image
                   src={image}
-                  alt={`Slide ${index + 1}`}
-                  className="w-full h-full object-cover rounded-xl"
+                  alt={`Slide ${index}`}
+                  className="w-full h-[300px] object-cover rounded-xl"
                 />
               </div>
             ))}
           </div>
 
-          <button
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md hover:opacity-100 opacity-75"
-            onClick={() =>
-              setCurrentIndex((prev) =>
-                prev === 0 ? images.length - 1 : prev - 1
-              )
-            }
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+          {canGoPrev && (
+            <button
+              onClick={goToPrev}
+              className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 hidden group-hover:flex items-center justify-center rounded-full shadow-md bg-black/20 text-white hover:scale-110 transition"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <button
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/70 p-2 rounded-full shadow-md hover:opacity-100 opacity-75"
-            onClick={() =>
-              setCurrentIndex((prev) => (prev + 1) % images.length)
-            }
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+              <FaChevronLeft size={18} />
+            </button>
+          )}
+          {canGoNext && (
+            <button
+              onClick={goToNext}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 hidden group-hover:flex items-center justify-center rounded-full shadow-md bg-black/20 text-white hover:scale-110 transition"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 5l7 7-7 7"
+              <FaChevronRight size={18} />
+            </button>
+          )}
+
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => goToSlide(idx)}
+                className={`w-2 h-2 rounded-full ${
+                  currentIndex === idx ? "bg-blue-600" : "bg-gray-300"
+                }`}
               />
-            </svg>
-          </button>
+            ))}
+          </div>
         </div>
 
-        {/* Small images */}
+        {/* Small right images */}
         <div className="hidden lg:flex flex-col w-[450px] gap-4">
           <Image
             src={tracuuthuoc}
@@ -163,8 +164,8 @@ const ProductCatalog: React.FC = () => {
             className="w-full h-1/2 object-cover rounded-xl"
           />
           <Image
-            src={slider3}
-            alt="Slider nhỏ"
+            src={duocmypham}
+            alt="Dược mỹ phẩm"
             className="w-full h-1/2 object-cover rounded-xl"
           />
         </div>
@@ -180,7 +181,6 @@ const ProductCatalog: React.FC = () => {
             {categories.map((category, index) => (
               <Link key={index} href={category.path} passHref>
                 <div
-                  key={index}
                   className={`flex grow gap-5 justify-between items-start pt-4 pl-3.5 w-full text-black ${category.bgColor} rounded-xl max-md:mt-8 hover:shadow-md transition-all duration-200`}
                 >
                   <div className="flex flex-col self-start">
@@ -196,7 +196,7 @@ const ProductCatalog: React.FC = () => {
                     alt={category.title}
                     width={88}
                     height={88}
-                    className="object-contain shrink-0 self-end mt-6 aspect-square w-111px h-111px rounded-br-xl"
+                    className="object-contain shrink-0 self-end mt-6 aspect-square rounded-br-xl"
                   />
                 </div>
               </Link>
