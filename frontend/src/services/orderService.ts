@@ -369,3 +369,20 @@ export const getOverviewStatisticsOrder = async () => {
         }
     }
 }
+
+export const getMonthlyRevenueStatisticsOrder = async (year: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/monthly-revenue-statistics?year=${year}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error monthly revenue", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy doanh thu theo tháng',
+        }
+    }
+}

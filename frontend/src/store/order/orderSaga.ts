@@ -58,7 +58,11 @@ import {
 
     fetchGetOverviewStatisticsOrderStart,
     fetchGetOverviewStatisticsOrderSuccess,
-    fetchGetOverviewStatisticsOrderFailed
+    fetchGetOverviewStatisticsOrderFailed,
+
+    fetchGetMonthlyRevenueStatisticsOrderStart,
+    fetchGetMonthlyRevenueStatisticsOrderSuccess,
+    fetchGetMonthlyRevenueStatisticsOrderFailed
 
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
@@ -553,6 +557,30 @@ function* fetchGetOverviewStatisticsOrder (action: any): Generator<any, void, an
     }
 }
 
+function* fetchGetMonthlyRevenueStatisticsOrder (action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            year,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            }, 
+        } = payload;  
+        const rs = yield call(orderService.getMonthlyRevenueStatisticsOrder, year);
+        if (rs.status_code === 200) {
+            yield put(fetchGetMonthlyRevenueStatisticsOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetMonthlyRevenueStatisticsOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetMonthlyRevenueStatisticsOrderFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -569,4 +597,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetApproveRequestOrderStart.type, fetchGetApproveRequestOrder);
     yield takeLatest(fetchApproveRequestOrderStart.type, fetchApproveRequestOrder);
     yield takeLatest(fetchGetOverviewStatisticsOrderStart.type, fetchGetOverviewStatisticsOrder);
+    yield takeLatest(fetchGetMonthlyRevenueStatisticsOrderStart.type, fetchGetMonthlyRevenueStatisticsOrder);
 }

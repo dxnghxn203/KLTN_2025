@@ -4,7 +4,8 @@ import {
     fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, 
     fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart, 
     fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart, 
-    fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart 
+    fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart, 
+    fetchGetMonthlyRevenueStatisticsOrderStart
 } from "@/store/order";
 import { on } from "events";
 import { useEffect, useState } from "react";
@@ -140,6 +141,14 @@ export function useOrder() {
         }));
     }
 
+    const fetchGetMonthlyRevenueStatisticsOrder = async (year: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetMonthlyRevenueStatisticsOrderStart({
+                year: year,
+                onSuccess: onSuccess,
+                onFailed: onFailed
+        }));
+    }
+
     return {
         allOrder,
         checkOrder,
@@ -168,7 +177,9 @@ export function useOrder() {
         fetchApproveRequestOrder,
 
         fetchGetOverviewSatisticsOrder,
-        overviewStatisticsOrder
+        overviewStatisticsOrder,
+
+        fetchGetMonthlyRevenueStatisticsOrder
     }
 }
 

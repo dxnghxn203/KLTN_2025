@@ -1,93 +1,65 @@
-import React, { useState } from "react";
+import { useOrder } from "@/hooks/useOrder";
+import React, { useEffect, useMemo, useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 
-const monthlySalesData: Record<string, { day: string; value: number }[]> = {
-  "2025-04": [
-    { day: "01", value: 8000 },
-    { day: "02", value: 12500 },
-    { day: "03", value: 7500 },
-    { day: "04", value: 7700 },
-    { day: "05", value: 11000 },
-    { day: "06", value: 15000 },
-    { day: "07", value: 18657 },
-    { day: "08", value: 14000 },
-    { day: "09", value: 12000 },
-    { day: "10", value: 9000 },
-    { day: "11", value: 13000 },
-    { day: "12", value: 25000 },
-    // ...
-  ],
-  "2025-05": [
-    { day: "01", value: 8000 },
-    { day: "02", value: 12500 },
-    { day: "03", value: 7500 },
-  ],
-};
+const monthLabels = ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"];
 
 export default function SalesChart() {
-  const maxValue = 25000;
-  const step = 5000;
+  const { fetchGetMonthlyRevenueStatisticsOrder } = useOrder();
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [salesData, setSalesData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  
+  useEffect(() => {
+    fetchGetMonthlyRevenueStatisticsOrder(
+      currentYear,
+      (data) => {
+        setSalesData(data || []);
+      },
+      () => {
+        setSalesData([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+      }
+    );
+
+  }, [currentYear]);
+
   const chartHeight = 256;
-  const [currentMonth, setCurrentMonth] = useState("2025-04");
-  const handlePrevMonth = () => {
-    const date = new Date(currentMonth + "-01");
-    date.setMonth(date.getMonth() - 1);
-    const formatted = date.toISOString().slice(0, 7);
-    setCurrentMonth(formatted);
+
+  const { maxValue, step, yLabels } = useMemo(() => {
+    const max = Math.max(...salesData, 1_000_000);
+    const roundedMaxValue = Math.ceil(max / 1_000_000) * 1_000_000;
+    const step = Math.ceil(roundedMaxValue / 5);
+
+    const labels = [];
+    for (let i = roundedMaxValue; i >= 0; i -= step) {
+      labels.push(i);
+    }
+
+    return { maxValue: roundedMaxValue, step, yLabels: labels };
+  }, [salesData]);
+
+  const handlePrevYear = () => setCurrentYear((y) => y - 1);
+  const handleNextYear = () => {
+    if (currentYear < new Date().getFullYear()) setCurrentYear((y) => y + 1);
   };
-
-  const handleNextMonth = () => {
-    const date = new Date(currentMonth + "-01");
-    date.setMonth(date.getMonth() + 1);
-
-    const today = new Date();
-    const nextMonth = new Date(date);
-
-    if (
-      nextMonth.getFullYear() > today.getFullYear() ||
-      (nextMonth.getFullYear() === today.getFullYear() &&
-        nextMonth.getMonth() > today.getMonth())
-    )
-      return;
-
-    const formatted = date.toISOString().slice(0, 7);
-    setCurrentMonth(formatted);
-  };
-
-  const isCurrentMonth = () => {
-    const [year, month] = currentMonth.split("-").map(Number);
-    const today = new Date();
-    return year === today.getFullYear() && month === today.getMonth() + 1;
-  };
-
-  const salesData = monthlySalesData[currentMonth] || [];
-
-  const yLabels = [];
-  for (let i = maxValue; i >= 0; i -= step) {
-    yLabels.push(i);
-  }
 
   return (
     <div className="mx-auto rounded-2xl shadow p-6 bg-white">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Phân tích doanh thu</h2>
+        <h2 className="text-xl font-bold text-gray-800">Phân tích doanh thu theo năm</h2>
         <div className="flex items-center gap-2">
           <button className="px-3 py-1 border rounded-full text-sm text-gray-600 hover:bg-gray-100">
-            {new Date(currentMonth).toLocaleDateString("vi-VN", {
-              month: "long",
-              year: "numeric",
-            })}
+            Năm {currentYear}
           </button>
           <button
-            onClick={handlePrevMonth}
+            onClick={handlePrevYear}
             className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
           >
             <MdNavigateBefore />
           </button>
           <button
-            onClick={handleNextMonth}
-            disabled={isCurrentMonth()}
+            onClick={handleNextYear}
+            disabled={currentYear >= new Date().getFullYear()}
             className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
           >
             <MdNavigateNext />
@@ -115,8 +87,8 @@ export default function SalesChart() {
 
         {/* Cột dữ liệu */}
         <div className="relative flex items-end bottom-0 gap-12 w-full">
-          {salesData.map((item, idx) => {
-            const height = (item.value / maxValue) * chartHeight;
+          {salesData.map((value, idx) => {
+            const height = (value / maxValue) * chartHeight;
             return (
               <div
                 key={idx}
@@ -124,7 +96,7 @@ export default function SalesChart() {
               >
                 {/* Tooltip */}
                 <div className="absolute -top-10 hidden group-hover:block bg-white border border-gray-300 text-xs px-2 py-1 rounded shadow z-10">
-                  <div>${item.value.toLocaleString()}</div>
+                  <div>{value.toLocaleString()}₫</div>
                 </div>
 
                 <div className="w-12 h-64 bg-gray-100 rounded-full relative overflow-hidden">
@@ -137,7 +109,7 @@ export default function SalesChart() {
                 {/* Cột */}
 
                 {/* Nhãn trục X */}
-                <span className="text-xs text-gray-600 mt-1">{item.day}</span>
+                <span className="text-xs text-gray-600 mt-1">{monthLabels[idx]}</span>
               </div>
             );
           })}
