@@ -4,7 +4,8 @@ import os
 import io
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Tuple, Dict, Union
-
+from calendar import monthrange
+from bson.son import SON
 import httpx
 from bson import ObjectId
 from bson.errors import InvalidId
@@ -78,7 +79,7 @@ async def get_completed_orders_last_365_days():
     try:
         collection = database.db[collection_name]
         one_year_ago = get_current_time() - timedelta(days=365)
-        completed_orders = collection.count_documents({"status": "completed", "created_date": {"$gte": one_year_ago}})
+        completed_orders = collection.count_documents({"status": "delivery_success", "created_date": {"$gte": one_year_ago}})
         return completed_orders
     except Exception as e:
         logger.error(f"Failed [get_completed_orders_last_365_days]: {e}")
@@ -284,6 +285,37 @@ async def check_shipping_fee(
         voucher_error: Optional[List[Dict[str, str]]] = None
     ):
     try:
+        if receiver_province_code == 0:
+            now = get_current_time()
+            shipping_fee = 0
+            order_discount_amount = 0
+            delivery_discount_amount = 0
+
+            if voucher:
+                for v in voucher:
+                    if v.voucher_type == "order" and product_price >= v.min_order_value:
+                        discount = min(product_price * v.discount / 100, v.max_discount_value)
+                        order_discount_amount += discount
+                    elif v.voucher_type == "delivery":
+                        # Vì shipping_fee = 0 => không giảm
+                        continue
+
+            total_fee = product_price
+
+            return {
+                "product_fee": product_price,
+                "shipping_fee": 0,
+                "delivery_time": now,
+                "weight": weight,
+                "voucher_order_discount": order_discount_amount,
+                "voucher_delivery_discount": delivery_discount_amount,
+                "basic_total_fee": total_fee,
+                "estimated_total_fee": total_fee - order_discount_amount - delivery_discount_amount,
+                "out_of_stock": [],
+                "out_of_date": [],
+                "voucher_error": voucher_error or []
+            }
+
         route_code = await determine_route(
                 sender_code=SENDER_PROVINCE_CODE,
                 receiver_code=receiver_province_code
@@ -814,6 +846,7 @@ async def get_order_overview_statistics():
                 "$facet": {
                     "total_orders": [{"$count": "count"}],
                     "total_revenue": [
+                        {"$match": {"status": "delivery_success"}},
                         {
                             "$group": {
                                 "_id": None,
@@ -823,18 +856,13 @@ async def get_order_overview_statistics():
                     ],
                     "total_customers": [
                         {
-                            "$group": {
-                                "_id": "$created_by"
-                            }
+                            "$group": {"_id": "$created_by"}
                         },
-                        {
-                            "$count": "count"
-                        }
+                        {"$count": "count"}
                     ],
                     "total_products_sold": [
-                        {
-                            "$unwind": "$product"
-                        },
+                        {"$match": {"status": {"$nin": ["canceled", "returned"]}}},
+                        {"$unwind": "$product"},
                         {
                             "$group": {
                                 "_id": None,
@@ -866,4 +894,215 @@ async def get_order_overview_statistics():
 
     except Exception as e:
         logger.error(f"Failed [get_order_statistics]: {e}")
+        raise e
+
+async def get_monthly_revenue(year: int):
+    try:
+        collection = database.db[collection_name]
+        monthly_revenue = []
+
+        for month in range(1, 13):
+            start_date = datetime(year, month, 1)
+            end_day = monthrange(year, month)[1]
+            end_date = datetime(year, month, end_day, 23, 59, 59)
+
+            pipeline = [
+                {
+                    "$match": {
+                        "created_date": {
+                            "$gte": start_date,
+                            "$lte": end_date
+                        },
+                        "status": "delivery_success"
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": None,
+                        "total": {"$sum": "$product_fee"}
+                    }
+                }
+            ]
+
+            result = collection.aggregate(pipeline).to_list(length=1)
+            revenue = result[0]["total"] if result else 0
+            monthly_revenue.append(revenue)
+
+        return monthly_revenue
+
+    except Exception as e:
+        logger.error(f"Failed [get_monthly_revenue]: {e}")
+        raise e
+
+async def get_category_monthly_revenue(month: int, year: int):
+    try:
+        collection = database.db[collection_name]
+
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+        else:
+            end_date = datetime(year, month + 1, 1)
+
+        pipeline = [
+            {
+                "$match": {
+                    "created_date": {
+                        "$gte": start_date,
+                        "$lt": end_date
+                    },
+                    "status": "delivery_success"
+                }
+            },
+            {"$unwind": "$product"},
+            {
+                "$lookup": {
+                    "from": "products",
+                    "localField": "product.product_id",
+                    "foreignField": "product_id",
+                    "as": "product_info"
+                }
+            },
+            {"$unwind": "$product_info"},
+            {
+                "$addFields": {
+                    "matched_price": {
+                        "$first": {
+                            "$filter": {
+                                "input": "$product_info.prices",
+                                "as": "item",
+                                "cond": {
+                                    "$eq": ["$$item.price_id", "$product.price_id"]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "revenue": {
+                        "$multiply": ["$matched_price.price", "$product.quantity"]
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "category_group": {
+                        "$switch": {
+                            "branches": [
+                                {
+                                    "case": {"$eq": ["$product_info.category.main_category_id", "MAIN9X41742425621"]},
+                                    "then": "thuc_pham_chuc_nang"
+                                },
+                                {
+                                    "case": {
+                                        "$and": [
+                                            {"$eq": ["$product_info.category.main_category_id", "MAINI5T1742429250"]},
+                                            {"$eq": ["$product_info.prescription_required", True]}
+                                        ]
+                                    },
+                                    "then": "thuoc_ke_don"
+                                },
+                                {
+                                    "case": {
+                                        "$and": [
+                                            {"$eq": ["$product_info.category.main_category_id", "MAINI5T1742429250"]},
+                                            {"$eq": ["$product_info.prescription_required", False]}
+                                        ]
+                                    },
+                                    "then": "thuoc_khong_ke_don"
+                                },
+                                {
+                                    "case": {"$eq": ["$product_info.category.main_category_id", "MAINSGU1742431170"]},
+                                    "then": "thiet_bi_y_te"
+                                }
+                            ],
+                            "default": "khac"
+                        }
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$category_group",
+                    "total_revenue": {"$sum": "$revenue"}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "category": "$_id",
+                    "total_revenue": 1
+                }
+            }
+        ]
+
+        data = collection.aggregate(pipeline).to_list(length=None)
+
+        default_categories = {
+            "thuc_pham_chuc_nang": 0,
+            "thuoc_ke_don": 0,
+            "thuoc_khong_ke_don": 0,
+            "thiet_bi_y_te": 0,
+            "khac": 0
+        }
+
+        for row in data:
+            default_categories[row["category"]] = row["total_revenue"]
+
+        result = [{"category": key, "total_revenue": value} for key, value in default_categories.items()]
+        return result
+
+    except Exception as e:
+        logger.error(f"Failed [get_category_monthly_revenue]: {e}")
+        raise e
+
+async def get_payment_type_monthly_revenue(month: int, year: int):
+    try:
+        collection = database.db[collection_name]
+
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+        else:
+            end_date = datetime(year, month + 1, 1)
+
+        pipeline = [
+            {
+                "$match": {
+                    "created_date": {
+                        "$gte": start_date,
+                        "$lt": end_date
+                    },
+                    "status": "delivery_success",
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$payment_type",
+                    "total_revenue": {"$sum": "$product_fee"}
+                }
+            },
+        ]
+
+        result = collection.aggregate(pipeline).to_list(length=None)
+
+        revenue_cod = 0
+        revenue_bank = 0
+
+        for item in result:
+            if item["_id"] == "COD":
+                revenue_cod = item["total_revenue"]
+            elif item["_id"] == "BANK":
+                revenue_bank = item["total_revenue"]
+
+        return {
+            "revenue_cod": revenue_cod,
+            "revenue_bank": revenue_bank,
+            "revenue_all": revenue_cod + revenue_bank
+        }
+
+    except Exception as e:
+        logger.error(f"Failed [get_category_monthly_revenue]: {e}")
         raise e

@@ -58,10 +58,10 @@ class ItemOrderReq(BaseModel):
 
 class ItemOrderInReq(BaseModel):
     product: List[ItemProductInReq]
-    pick_to: InfoAddressOrderReq
-    receiver_province_code: int
-    receiver_district_code: int
-    receiver_commune_code: int
+    pick_to: Optional[InfoAddressOrderReq] = None
+    receiver_province_code: int = 0
+    receiver_district_code: int = 0
+    receiver_commune_code: int = 0
     delivery_instruction: str = ""
     payment_type: str = ""
     voucher_order_id: str = ""

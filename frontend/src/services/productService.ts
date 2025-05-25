@@ -13,7 +13,7 @@ export const getProductBySlug = async (slug: string) => {
 
 export const getDealForYou = async (params: any) => {
     try {
-        const response: any = await axiosClient.get(`${process.env.NEXT_PUBLIC_RECOMMENDATION_API}/v1/deals/?top_n=${params.top_n}`);
+        const response: any = await axiosClient.get(`/v1/products/best-deal?top_n=${params.top_n}`);
         return response;
     } catch (error: any) {
         return {

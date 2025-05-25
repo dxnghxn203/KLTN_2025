@@ -45,6 +45,8 @@ export default function OverviewCards() {
 
   const { fetchGetOverviewSatisticsOrder, overviewStatisticsOrder } = useOrder();
   const [cards, setCards] = useState<OverviewCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const now = new Date();
   const currentMonth = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
@@ -84,17 +86,29 @@ export default function OverviewCards() {
   };
 
   useEffect(() => {
+    setIsLoading(true);
     fetchGetOverviewSatisticsOrder(
       () => {
-        console.log("overviewStatisticsOrder", overviewStatisticsOrder);
         updateCardsFromOverviewData(overviewStatisticsOrder);
+        setIsLoading(false);
       },
-      () => {}
+      () => {
+        setIsLoading(false);
+      }
     );
   }, []);
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedCard = cards[selectedIndex];
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6 animate-pulse">
+        {[1, 2, 3, 4].map((_, i) => (
+          <div key={i} className="h-40 bg-gray-200 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <>
