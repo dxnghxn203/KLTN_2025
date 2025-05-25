@@ -595,17 +595,17 @@ function* fetchGetCategoryMonthlyRevenueStatisticsOrder (action: any): Generator
             onFailed = (message: any) => {
             }, 
         } = payload;  
-        const rs = yield call(orderService.getMonthlyRevenueStatisticsOrder, year);
+        const rs = yield call(orderService.getCategoryMonthlyRevenueStatisticsOrder, month, year);
         if (rs.status_code === 200) {
-            yield put(fetchGetMonthlyRevenueStatisticsOrderSuccess(rs.data));
+            yield put(fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess(rs.data));
             onSuccess(rs.data);
             return;
         }
         onFailed(rs.message);
-        yield put(fetchGetMonthlyRevenueStatisticsOrderFailed());
+        yield put(fetchGetCategoryMonthlyRevenueStatisticsOrderFailed());
     } catch (error) {
         console.log(error);
-        yield put(fetchGetMonthlyRevenueStatisticsOrderFailed());
+        yield put(fetchGetCategoryMonthlyRevenueStatisticsOrderFailed());
     }
 }
 
@@ -626,4 +626,5 @@ export function* orderSaga() {
     yield takeLatest(fetchApproveRequestOrderStart.type, fetchApproveRequestOrder);
     yield takeLatest(fetchGetOverviewStatisticsOrderStart.type, fetchGetOverviewStatisticsOrder);
     yield takeLatest(fetchGetMonthlyRevenueStatisticsOrderStart.type, fetchGetMonthlyRevenueStatisticsOrder);
+    yield takeLatest(fetchGetCategoryMonthlyRevenueStatisticsOrderStart.type, fetchGetCategoryMonthlyRevenueStatisticsOrder);
 }
