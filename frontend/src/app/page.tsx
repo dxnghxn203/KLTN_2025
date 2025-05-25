@@ -31,7 +31,7 @@ export default function Home() {
           <ProductDealsList />
         </main>
         <IntroMedicare />
-        <HealthCorner />
+        {/* <HealthCorner /> */}
       </div>
       {/* Popup Chatbot */}
     </>
