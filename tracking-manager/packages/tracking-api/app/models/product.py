@@ -562,8 +562,6 @@ async def get_product_by_id(product_id: str, price_id: str, is_admin: bool = Fal
             if price.get("price_id") == price_id
         ]
 
-        logger.info(f"Product: {product}")
-
         return ItemProductDBRes(**product)
     except Exception as e:
         logger.error(f"Error getting product by id: {str(e)}")

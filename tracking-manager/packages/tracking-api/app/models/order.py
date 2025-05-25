@@ -1025,8 +1025,7 @@ async def get_category_monthly_revenue(month: int, year: int):
             },
             {
                 "$group": {
-                    "_id": "$category_group",
-                    "total_revenue": {"$sum": "$revenue"}
+                    "$category_group": {"$sum": "$revenue"}
                 }
             },
             {

@@ -386,3 +386,20 @@ export const getMonthlyRevenueStatisticsOrder = async (year: number) => {
         }
     }
 }
+
+export const getCategoryMonthlyRevenueStatisticsOrder = async (month: number, year: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/category-monthly-revenue-statistics?month=${month}&year=${year}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error category monthly revenue", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy doanh thu theo tháng',
+        }
+    }
+}

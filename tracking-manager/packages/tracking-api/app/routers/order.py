@@ -49,7 +49,7 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error(f"Error checking order {e}")
+        logger.error(f"Error checking shipping fee {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
