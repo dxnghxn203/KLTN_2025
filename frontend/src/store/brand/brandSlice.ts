@@ -7,7 +7,7 @@ const initialState: any = {
     getAllBrandsAdmin: [],
     getAllBrandsUser: [],
     getAllBrandsById: [],
-   
+
     loading: false,
     error: null,
 };

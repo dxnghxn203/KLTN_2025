@@ -19,6 +19,7 @@ export const toolbarOptions = [
   [{ size: [] }],
   ["bold", "italic", "underline", "strike", "blockquote"],
   [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+  [{ align: [] }],
   ["link", "image", "video"],
   ["clean"], // remove formatting button
 ];

@@ -1,56 +1,53 @@
-import DinhDuongNews from "@/components/Article/nutrition";
+"use client";
+import DinhDuongNews from "@/components/Article/CategoryNews";
+import { useArticle } from "@/hooks/useArticle";
 import mainImage from "@/images/22.webp";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { SlUmbrella } from "react-icons/sl";
+import DOMPurify from "dompurify";
+import CategoryList from "@/components/Article/categoryList";
+type Article = {
+  id: string;
+  title: string;
+  image_thumbnail?: string;
+  content?: string;
+  category?: string;
+  slug: string;
+
+  // Add other properties as needed
+};
+
 const ArticleMain = () => {
-  const articles = [
-    {
-      title:
-        "FPT Long Châu lên tiếng về thông tin sai lệch liên quan sản phẩm Happy Mom",
-      excerpt:
-        "FPT Long Châu chính thức phản hồi về thông tin sai lệch liên quan đến sản phẩm Happy Mom...",
-      image: "/images/happy-mom.jpg",
-      date: "15/04/2025",
-      slug: "cach-tra-cuu-thong-tin-dang-ky-thuoc",
-    },
-    {
-      title:
-        "Giải pháp điều trị mỡ máu tiên tiến hàng đầu thế giới đã có mặt tại Việt Nam",
-      excerpt:
-        "FPT Long Châu giới thiệu giải pháp điều trị mỡ máu thế hệ mới...",
-      image: "/images/mo-mau.jpg",
-      date: "10/04/2025",
-    },
-    {
-      title: "Tọa đàm chuyên môn với chuyên gia dinh dưỡng hàng đầu",
-      excerpt:
-        "Sự kiện tọa đàm giúp nâng cao hiểu biết về dinh dưỡng cho cộng đồng...",
-      image: "/images/toa-dam.jpg",
-      date: "05/04/2025",
-    },
-    {
-      title: "Tọa đàm chuyên môn với chuyên gia dinh dưỡng hàng đầu",
-      excerpt:
-        "Sự kiện tọa đàm giúp nâng cao hiểu biết về dinh dưỡng cho cộng đồng...",
-      image: "/images/toa-dam.jpg",
-      date: "05/04/2025",
-    },
-    {
-      title: "Tọa đàm chuyên môn với chuyên gia dinh dưỡng hàng đầu",
-      excerpt:
-        "Sự kiện tọa đàm giúp nâng cao hiểu biết về dinh dưỡng cho cộng đồng...",
-      image: "/images/toa-dam.jpg",
-      date: "05/04/2025",
-    },
-    {
-      title: "Tọa đàm chuyên môn với chuyên gia dinh dưỡng hàng đầu",
-      excerpt:
-        "Sự kiện tọa đàm giúp nâng cao hiểu biết về dinh dưỡng cho cộng đồng...",
-      image: "/images/toa-dam.jpg",
-      date: "05/04/2025",
-    },
-  ];
+  const [mainArticle, setMainArticle] = useState<Article | null>(null);
+  const [subArticles, setSubArticles] = useState<Article[]>([]);
+  const {
+    getAllArticlesUser,
+    getArticleById,
+    fetchGetAllArticleUser,
+    fetchGetArticleById,
+  } = useArticle();
+  useEffect(() => {
+    fetchGetAllArticleUser(
+      () => {
+        // const allArticles = getAllArticlesUser(); // gọi data sau khi fetch
+        if (getAllArticlesUser && getAllArticlesUser.length > 0) {
+          const randomIndex = Math.floor(
+            Math.random() * getAllArticlesUser.length
+          );
+          const selectedMain = getAllArticlesUser[randomIndex];
+          const restArticles = getAllArticlesUser.filter(
+            (_: any, i: any) => i !== randomIndex
+          );
+          setMainArticle(selectedMain);
+          setSubArticles(restArticles);
+        }
+      },
+      () => {}
+    );
+  }, []);
+  if (!mainArticle) return null;
 
   return (
     <div className="container mx-auto px-4 py-8 pt-[135px] px-5 ">
@@ -64,52 +61,79 @@ const ArticleMain = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 ">
         {/* Bài viết chính */}
         <Link
-          href={`/goc-suc-khoe/truyen-thong/${articles[0].slug}`}
-          className="col-span-1 lg:col-span-3"
+          href={`/bai-viet/${mainArticle.slug}`}
+          className="col-span-1 lg:col-span-3 cursor-pointer"
         >
           <div className="col-span-2 overflow-hidden">
             <Image
-              src={mainImage}
-              alt={articles[0].title}
-              className="w-full object-cover"
+              src={mainArticle.image_thumbnail || mainImage}
+              alt={mainArticle.title}
+              width={800}
+              height={450}
+              className="w-full object-cover rounded-lg"
             />
             <div className="p-4">
               <div className="p-2 my-2 text-xs rounded-full bg-gray-100 text-gray-700 font-medium w-fit">
-                Truyền thông
+                {mainArticle.category}
               </div>
               <h2 className="text-2xl font-semibold mb-2">
-                {articles[0].title}
+                <div
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(mainArticle.title || ""),
+                  }}
+                />
               </h2>
-              <p className="text-gray-600">{articles[0].excerpt}</p>
+              <p className="text-gray-600 line-clamp-2">
+                <div
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(mainArticle.content || ""),
+                  }}
+                />
+              </p>
             </div>
           </div>
         </Link>
 
         {/* Các bài viết phụ */}
         <div className="lg:col-span-2 space-y-4">
-          {articles.slice(0, 6).map((article, index) => (
-            <div key={index} className="flex space-x-4">
-              <div className="flex items-center justify-center">
-                <Image
-                  src={mainImage}
-                  alt={article.title}
-                  width={250}
-                  height={250}
-                  className="object-cover rounded-lg"
-                />
-              </div>
-
-              <div className="">
-                <div className="text-xs py-1 px-2 rounded-full bg-gray-100 text-gray-700 font-medium w-fit mb-1">
-                  Truyền thông
+          {subArticles.slice(0, 5).map((article, index) => (
+            <Link
+              key={index}
+              href={`/bai-viet/${article.slug}`}
+              className="flex space-x-4 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
+            >
+              <div className="flex space-x-4">
+                <div className="w-[150px] h-[100px] overflow-hidden rounded-lg flex-shrink-0">
+                  <Image
+                    src={article.image_thumbnail || mainImage}
+                    alt={article.title}
+                    width={150}
+                    height={100}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
                 </div>
-                <h2 className="text-sm font-semibold">{article.title}</h2>
+
+                <div>
+                  <div className="text-xs py-1 px-2 rounded-full bg-gray-100 text-gray-700 font-medium w-fit mb-1">
+                    {article.category || "Chưa có danh mục"}
+                  </div>
+                  <h2 className="text-sm font-semibold">
+                    <div
+                      className="prose max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(article.title || ""),
+                      }}
+                    />
+                  </h2>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
-      <DinhDuongNews />
+      <CategoryList getAllArticles={getAllArticlesUser} />
     </div>
   );
 };

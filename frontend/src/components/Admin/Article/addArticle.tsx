@@ -87,6 +87,7 @@ const AddArticle = () => {
           slug: "",
         });
         setTags([{ tag_name: "" }]);
+        setImage(null);
       },
       () => {
         toast.showToast("Thêm bài viết thất bại", "error");
