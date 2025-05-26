@@ -171,3 +171,38 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 
 	return outBuf.Bytes(), nil
 }
+
+func TestWkhtmltopdfFontSupport() error {
+	const sampleHTML = `
+		<html>
+			<head>
+				<meta charset="UTF-8">
+				<style>
+					body {
+						font-family: "Noto Sans", "DejaVu Sans", "Liberation Sans", Arial, sans-serif;
+						font-size: 12px;
+					}
+				</style>
+			</head>
+			<body>
+				<p>HÓA ĐƠN BÁN LẺ – Số 1 Võ Văn Ngân, phường Linh Chiểu, Thủ Đức, TP Hồ Chí Minh</p>
+			</body>
+		</html>`
+
+	wkhtmltopdfPath, err := GetWkhtmltopdfPath()
+	if err != nil {
+		return fmt.Errorf("không tìm thấy wkhtmltopdf: %v", err)
+	}
+
+	cmd := exec.Command(wkhtmltopdfPath, "--encoding", "UTF-8", "-", "-")
+	cmd.Stdin = strings.NewReader(sampleHTML)
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	_, err = cmd.Output()
+	if err != nil {
+		return fmt.Errorf("wkhtmltopdf lỗi: %v – stderr: %s", err, stderr.String())
+	}
+	return nil
+}

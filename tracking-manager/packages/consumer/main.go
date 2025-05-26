@@ -1,6 +1,7 @@
 package main
 
 import (
+	"consumer/helper"
 	"consumer/pkg/database"
 	"consumer/queue"
 	"context"
@@ -73,6 +74,13 @@ func startHTTPServer() {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "OK")
 	})
+
+	error_msg := helper.TestWkhtmltopdfFontSupport()
+	if error_msg != nil {
+		log.Error("Lỗi kiểm tra hỗ trợ font của wkhtmltopdf:", error_msg)
+	} else {
+		log.Info("Kiểm tra hỗ trợ font của wkhtmltopdf thành công.")
+	}
 
 	port := "10000"
 
