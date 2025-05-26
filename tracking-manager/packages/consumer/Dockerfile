@@ -1,22 +1,8 @@
 FROM golang:1.22-alpine AS builder
 
-
 RUN echo "Installing system dependencies..." && \
-    apk update && apk add --no-cache \
-    bash \
-    make \
-    gcc \
-    musl-dev \
-    ca-certificates \
-    tzdata \
-    curl \
-    xz
-
-RUN curl -L -o /tmp/wkhtmltox.tar.xz https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox-0.12.6-1.alpine3.17_amd64.tar.xz && \
-    tar -xJf /tmp/wkhtmltox.tar.xz -C /tmp && \
-    cp /tmp/wkhtmltox/bin/wkhtmltopdf /usr/local/bin/ && \
-    chmod +x /usr/local/bin/wkhtmltopdf && \
-    wkhtmltopdf --version
+    apk update && \
+    apk add --no-cache bash make gcc musl-dev
 
 WORKDIR /app
 
@@ -35,7 +21,12 @@ WORKDIR /app
 
 COPY --from=builder /app/main /app/main
 COPY --from=builder /app/.env /app/.env
-COPY --from=builder /usr/local/bin/wkhtmltopdf /usr/local/bin/wkhtmltopdf
+
+COPY --from=builder /app/wkhtmltopdf /app/wkhtmltopdf
+
+ENV PATH="/app/wkhtmltopdf/bin/wkhtmltopdf"
+
+RUN /app/wkhtmltopdf/bin/wkhtmltopdf --version
 
 EXPOSE 10000
 
