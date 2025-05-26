@@ -10,23 +10,27 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-
 RUN go build -o main .
 
-FROM alpine:latest
+# Final image with wkhtmltopdf
+FROM ubuntu:22.04
 
-RUN apk add --no-cache bash ca-certificates tzdata
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y \
+        wkhtmltopdf \
+        ca-certificates \
+        tzdata \
+        bash && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY --from=builder /app/main /app/main
 COPY --from=builder /app/.env /app/.env
-
-COPY --from=builder /app/wkhtmltopdf /app/wkhtmltopdf
-
-ENV PATH="/app/wkhtmltopdf/bin:${PATH}"
-
-RUN /app/wkhtmltopdf/bin/wkhtmltopdf --version
 
 EXPOSE 10000
 
