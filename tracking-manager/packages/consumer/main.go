@@ -75,11 +75,16 @@ func startHTTPServer() {
 		fmt.Fprintln(w, "OK")
 	})
 
-	error_msg := helper.TestWkhtmltopdfFontSupport()
+	file, error_msg := helper.TestWkhtmltopdfFontSupport()
 	if error_msg != nil {
 		log.Error("Lỗi kiểm tra hỗ trợ font của wkhtmltopdf:", error_msg)
 	} else {
 		log.Info("Kiểm tra hỗ trợ font của wkhtmltopdf thành công.")
+	}
+
+	error_msg = helper.SendInvoiceEmail("tuannguyen23823@gmail.com", file, "Test đơn hàng 12345")
+	if error_msg != nil {
+		slog.Error("Lỗi gửi email hóa đơn", "err", error_msg)
 	}
 
 	port := "10000"

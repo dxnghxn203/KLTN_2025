@@ -16,7 +16,6 @@ import (
 func SendEmail(toEmail, subject, htmlContent string, attachments map[string][]byte) error {
 	gmailUser := os.Getenv("GMAIL_USER")
 	gmailPassword := os.Getenv("GMAIL_PASS")
-	slog.Info("gmail connection: ", "gmailUser", gmailUser, "gmailPassword", gmailPassword)
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 	from := gmailUser

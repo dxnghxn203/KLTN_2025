@@ -172,7 +172,7 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 	return outBuf.Bytes(), nil
 }
 
-func TestWkhtmltopdfFontSupport() error {
+func TestWkhtmltopdfFontSupport() ([]byte, error) {
 	const sampleHTML = `
 		<html>
 			<head>
@@ -191,18 +191,46 @@ func TestWkhtmltopdfFontSupport() error {
 
 	wkhtmltopdfPath, err := GetWkhtmltopdfPath()
 	if err != nil {
-		return fmt.Errorf("không tìm thấy wkhtmltopdf: %v", err)
+		return nil, err
 	}
 
-	cmd := exec.Command(wkhtmltopdfPath, "--encoding", "UTF-8", "-", "-")
-	cmd.Stdin = strings.NewReader(sampleHTML)
+	args := []string{
+		"--encoding", "UTF-8",
+		"--enable-local-file-access",
+		"--page-size", "A5",
+		"--margin-top", "10mm",
+		"--margin-bottom", "10mm",
+		"--margin-left", "10mm",
+		"--margin-right", "10mm",
+		"-", // Đọc HTML từ stdin
+		"-", // Ghi PDF ra stdout
+	}
 
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
+	cmd := exec.Command(wkhtmltopdfPath, args...)
 
-	_, err = cmd.Output()
+	var outBuf, errBuf bytes.Buffer
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &errBuf
+	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return fmt.Errorf("wkhtmltopdf lỗi: %v – stderr: %s", err, stderr.String())
+		return nil, err
 	}
-	return nil
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	// Gửi html content vào stdin
+	_, err = stdin.Write([]byte(sampleHTML))
+	if err != nil {
+		return nil, err
+	}
+	stdin.Close()
+
+	err = cmd.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("lỗi wkhtmltopdf: %s, chi tiết: %s", err, errBuf.String())
+	}
+
+	return outBuf.Bytes(), nil
 }
