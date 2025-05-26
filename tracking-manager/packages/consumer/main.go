@@ -79,7 +79,12 @@ func startHTTPServer() {
 
 	fmt.Println("INFO: HTTP server đang chạy trên cổng " + port)
 	log.Info("HTTP server đang chạy trên cổng " + port)
-	log.Info(helper.GetWkhtmltopdfPath())
+	path, error_msg := helper.GetWkhtmltopdfPath()
+	if error_msg != nil {
+		log.Warn("Không tìm thấy wkhtmltopdf:", error_msg)
+	} else {
+		log.Info("Đường dẫn wkhtmltopdf:", path)
+	}
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
