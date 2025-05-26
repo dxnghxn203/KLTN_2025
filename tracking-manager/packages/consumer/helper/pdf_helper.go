@@ -194,6 +194,19 @@ func TestWkhtmltopdfFontSupport() ([]byte, error) {
 		return nil, err
 	}
 
+	tmpHTMLFile, err := os.CreateTemp("", "invoice-*.html")
+	if err != nil {
+		return nil, fmt.Errorf("không thể tạo file HTML tạm: %v", err)
+	}
+	defer os.Remove(tmpHTMLFile.Name()) // Xóa sau khi xong
+
+	// Ghi HTML vào file
+	_, err = tmpHTMLFile.Write([]byte(sampleHTML))
+	if err != nil {
+		return nil, fmt.Errorf("lỗi khi ghi HTML vào file: %v", err)
+	}
+	tmpHTMLFile.Close()
+
 	args := []string{
 		"--encoding", "UTF-8",
 		"--enable-local-file-access",
@@ -202,8 +215,8 @@ func TestWkhtmltopdfFontSupport() ([]byte, error) {
 		"--margin-bottom", "10mm",
 		"--margin-left", "10mm",
 		"--margin-right", "10mm",
-		"-", // Đọc HTML từ stdin
-		"-", // Ghi PDF ra stdout
+		tmpHTMLFile.Name(), // input file
+		"-",                // Ghi PDF ra stdout
 	}
 
 	cmd := exec.Command(wkhtmltopdfPath, args...)
@@ -211,25 +224,10 @@ func TestWkhtmltopdfFontSupport() ([]byte, error) {
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
 	cmd.Stderr = &errBuf
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, err
-	}
 
-	if err := cmd.Start(); err != nil {
-		return nil, err
-	}
-
-	// Gửi html content vào stdin
-	_, err = stdin.Write([]byte(sampleHTML))
+	err = cmd.Run()
 	if err != nil {
-		return nil, err
-	}
-	stdin.Close()
-
-	err = cmd.Wait()
-	if err != nil {
-		return nil, fmt.Errorf("lỗi wkhtmltopdf: %s, chi tiết: %s", err, errBuf.String())
+		return nil, fmt.Errorf("wkhtmltopdf lỗi: %s, stderr: %s", err, errBuf.String())
 	}
 
 	return outBuf.Bytes(), nil
