@@ -2,8 +2,13 @@ FROM golang:1.22-alpine AS builder
 
 
 RUN echo "Installing system dependencies..." && \
-    apk update && \
-    apk add --no-cache bash make gcc musl-dev
+    bash \
+    make \
+    gcc \
+    musl-dev \
+    ca-certificates \
+    tzdata \
+    curl
 
 RUN curl -L -o /tmp/wkhtmltox.tar.xz https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox-0.12.6-1.alpine3.17_amd64.tar.xz && \
     tar -xJf /tmp/wkhtmltox.tar.xz -C /tmp && \
