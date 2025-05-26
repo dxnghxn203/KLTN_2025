@@ -1028,13 +1028,6 @@ async def get_category_monthly_revenue(month: int, year: int):
                     "_id": "$category_group",
                     "total_revenue": {"$sum": "$revenue"}
                 }
-            },
-            {
-                "$project": {
-                    "_id": 0,
-                    "category": "$_id",
-                    "total_revenue": 1
-                }
             }
         ]
 
@@ -1049,9 +1042,9 @@ async def get_category_monthly_revenue(month: int, year: int):
         }
 
         for row in data:
-            default_categories[row["category"]] = row["total_revenue"]
+            default_categories[row["_id"]] = row["total_revenue"]
 
-        result = [{"category": key, "total_revenue": value} for key, value in default_categories.items()]
+        return default_categories
         return result
 
     except Exception as e:

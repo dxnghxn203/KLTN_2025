@@ -8,7 +8,6 @@ interface OrderState {
     allRequestOrder: any[];
     allRequestOrderApprove: any[];
     overviewStatisticsOrder: any;
-    monthlyRevenueStatisticsOrder: any[];
     loading: boolean;
     error: string | null;
 }
@@ -21,7 +20,6 @@ const initialState: OrderState = {
     allRequestOrder: [],
     allRequestOrderApprove: [],
     overviewStatisticsOrder: null,
-    monthlyRevenueStatisticsOrder: [],
     loading: false,
     error: null,
 };
@@ -245,9 +243,25 @@ export const orderSlice = createSlice({
             state.error = null;
 
         },
-
         fetchGetMonthlyRevenueStatisticsOrderFailed(state) {
             console.log('fetchGetMonthlyRevenueStatisticsOrderFailed')
+            state.loading = false;
+            state.error = null;
+        },
+
+        // fetch get category monthly revenue statistics order
+        fetchGetCategoryMonthlyRevenueStatisticsOrderStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetCategoryMonthlyRevenueStatisticsOrderStart')
+            state.loading = true;
+        },
+        fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess')
+            state.loading = false;
+            state.error = null;
+
+        },
+        fetchGetCategoryMonthlyRevenueStatisticsOrderFailed(state) {
+            console.log('fetchGetCategoryMonthlyRevenueStatisticsOrderFailed')
             state.loading = false;
             state.error = null;
         },
@@ -322,6 +336,11 @@ export const {
     fetchCheckVoucherStart,
     fetchCheckVoucherSuccess,
     fetchCheckVoucherFailed,
+
+    fetchGetCategoryMonthlyRevenueStatisticsOrderFailed,
+    fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
+    fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess
+
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

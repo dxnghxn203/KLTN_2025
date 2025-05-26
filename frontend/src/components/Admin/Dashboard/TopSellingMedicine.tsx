@@ -1,7 +1,7 @@
 // components/TopSellingMedicine.jsx
 import React, { useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
-import image from "@/images/00032942_b_complex_vitamin_royal_care_60v_7411_61c0_large_e286cafde3.webp";
+import image from "@/images/2.jpg";
 
 const monthlyMedicineData: Record<
   string,

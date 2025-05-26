@@ -18,10 +18,13 @@ async def get_all_vouchers(page: int, page_size: int):
 async def get_all_vouchers_for_users():
     collection = database.db[collection_name]
 
+    now = get_current_time()
+
     voucher_list = collection.aggregate([
         {
             "$match": {
-                "active": True
+                "active": True,
+                "expired_date": {"$gte": now}
             }
         },
         {

@@ -68,6 +68,9 @@ import {
     fetchCheckVoucherSuccess,
     fetchCheckVoucherFailed,
 
+    fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
+    fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess,
+    fetchGetCategoryMonthlyRevenueStatisticsOrderFailed
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -296,7 +299,7 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
         let error = {
             ...rs,
             isOutOfStock: rs.status_code === 400
-            
+
         }
         if (rs.status_code === 400) {
             const outOfStockIds = rs.data.out_of_stock;
@@ -669,6 +672,31 @@ function* fetchGetMonthlyRevenueStatisticsOrder(action: any): Generator<any, voi
     }
 }
 
+function* fetchGetCategoryMonthlyRevenueStatisticsOrder(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            month,
+            year,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+        const rs = yield call(orderService.getCategoryMonthlyRevenueStatisticsOrder, month, year);
+        if (rs.status_code === 200) {
+            yield put(fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetCategoryMonthlyRevenueStatisticsOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetCategoryMonthlyRevenueStatisticsOrderFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -686,4 +714,5 @@ export function* orderSaga() {
     yield takeLatest(fetchApproveRequestOrderStart.type, fetchApproveRequestOrder);
     yield takeLatest(fetchGetOverviewStatisticsOrderStart.type, fetchGetOverviewStatisticsOrder);
     yield takeLatest(fetchGetMonthlyRevenueStatisticsOrderStart.type, fetchGetMonthlyRevenueStatisticsOrder);
+    yield takeLatest(fetchGetCategoryMonthlyRevenueStatisticsOrderStart.type, fetchGetCategoryMonthlyRevenueStatisticsOrder);
 }

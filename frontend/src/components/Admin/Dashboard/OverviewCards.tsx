@@ -26,7 +26,6 @@ import MonthlySalesChart from "./MonthlySalesChart";
 import { useOrder } from "@/hooks/useOrder";
 import { MdMoreHoriz } from "react-icons/md";
 import { useProduct } from "@/hooks/useProduct";
-import Image from "next/image";
 import OutOfStock from "./OutOfStock";
 import CategoryRevenueChart from "./CategoryRevenueChart";
 import OrderChartByWeek from "./OrderCharyByWeekk";
