@@ -24,7 +24,7 @@ COPY --from=builder /app/.env /app/.env
 
 COPY --from=builder /app/wkhtmltopdf /app/wkhtmltopdf
 
-ENV PATH="/app/wkhtmltopdf/bin/wkhtmltopdf"
+ENV PATH="/app/wkhtmltopdf/bin:${PATH}"
 
 RUN /app/wkhtmltopdf/bin/wkhtmltopdf --version
 
