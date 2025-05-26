@@ -14,8 +14,16 @@ from app.models.order import request_collection_name
 router = APIRouter()
 
 @router.post("/order/check_shipping_fee", response_model=response.BaseResponse)
-async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
+async def check_shipping_fee(item: ItemOrderInReq, session: str= None, token: str = Depends(middleware.verify_token_optional)):
     try:
+        user_id = session
+        is_session_user = True
+
+        if token:
+            user_info = await user.get_current(token)
+            user_id = user_info.id
+            is_session_user = False
+
         _, total_price, weight, out_of_stock, out_of_date = await order.process_order_products(item.product)
         if out_of_stock or out_of_date:
             return response.BaseResponse(
@@ -36,7 +44,7 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None):
                 }
             )
 
-        voucher_list, voucher_error = await order.process_order_voucher(item.voucher_order_id, item.voucher_delivery_id)
+        voucher_list, voucher_error = await order.process_order_voucher(item.voucher_order_id, item.voucher_delivery_id, user_id)
 
         return response.SuccessResponse(
             data=await order.check_shipping_fee(
