@@ -1,8 +1,6 @@
 FROM golang:1.22 AS builder
 
-RUN echo "Installing system dependencies..." && \
-    apk update && \
-    apk add --no-cache bash make gcc musl-dev
+RUN apt-get update && apt-get install -y bash make gcc
 
 WORKDIR /app
 
@@ -15,7 +13,6 @@ RUN go build -o main .
 # Final image with wkhtmltopdf
 FROM ubuntu:22.04
 
-# Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
