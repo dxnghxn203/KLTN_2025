@@ -159,8 +159,8 @@ func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 	htmlContent := `
         <html>
         <body>
-            <h3>Cảm ơn bạn đã mua hàng tại Medicare!</h3>
-            <p>Hóa đơn mua hàng của bạn được đính kèm trong email này.</p>
+            <h3>Thank you for shopping at Medicare!</h3>
+            <p>Your purchase invoice is attached to this email.</p>
         </body>
         </html>`
 

@@ -518,9 +518,28 @@ async def add_order(item: OrderRequest):
 
         order_dict = json.loads(order_data)
         logger.info(order_dict)
+
         order_json = json.dumps(order_dict, ensure_ascii=False)
 
         rabbitmq.send_message(get_create_order_queue(), order_json)
+
+        order_item = ItemOrderReq(**order_dict)
+
+        user_name = "Khách lẻ"
+        try:
+            user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_item.created_by)))
+            user_name = user_info.user_name
+        except (InvalidId, TypeError):
+            logger.error(f"User not found: {order.created_by}")
+
+        pdf_bytes = export_invoice_to_pdf(order_item, user_name)
+        if not pdf_bytes:
+            raise response.JsonException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Không thể tạo file PDF"
+            )
+
+        send_invoice_email(order_item.pick_to.email, pdf_bytes, order_item.order_id)
 
         return item.order_id
     except Exception as e:

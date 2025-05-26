@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"consumer/helper"
 	"consumer/models"
 	"consumer/statics"
 	"context"
@@ -54,16 +53,16 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 			slog.Error("Lỗi cập nhật số lượng đã sử dụng voucher sau khi tạo đơn hàng", "err", err)
 		}
 
-		file, err := helper.ExportInvoiceToPDF(orderRaw)
-		if err != nil {
-			slog.Error("Lỗi xuất hóa đơn", "err", err)
-			return false, err
-		}
+		// file, err := helper.ExportInvoiceToPDF(orderRaw)
+		// if err != nil {
+		// 	slog.Error("Lỗi xuất hóa đơn", "err", err)
+		// 	return false, err
+		// }
 
-		err = helper.SendInvoiceEmail(orderRaw.PickTo.Email, file, orderRaw.OrderId)
-		if err != nil {
-			slog.Error("Lỗi gửi email hóa đơn", "err", err)
-		}
+		// err = helper.SendInvoiceEmail(orderRaw.PickTo.Email, file, orderRaw.OrderId)
+		// if err != nil {
+		// 	slog.Error("Lỗi gửi email hóa đơn", "err", err)
+		// }
 		is_remove := models.RemoveItemCartByOrder(ctx, orderRaw)
 		if !is_remove {
 			slog.Error("Lỗi xóa sản phẩm trong giỏ hàng", "err", err)
