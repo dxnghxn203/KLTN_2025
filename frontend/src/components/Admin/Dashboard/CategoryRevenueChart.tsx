@@ -1,32 +1,45 @@
-import React, { useState } from "react";
+import { useOrder } from "@/hooks/useOrder";
+import React, { useEffect, useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const data: Record<string, { name: string; value: number }[]> = {
-  "2025-04": [
-    { name: "Thuốc kê đơn", value: 35000000 },
-    { name: "Thuốc không kê đơn", value: 22000000 },
-    { name: "Thực phẩm chức năng", value: 18000000 },
-    { name: "Dụng cụ y tế", value: 7000000 },
-  ],
-  "2025-05": [
-    { name: "Thuốc kê đơn", value: 35000000 },
-    { name: "Thuốc không kê đơn", value: 22000000 },
-    { name: "Thực phẩm chức năng", value: 18000000 },
-  ],
-};
-
 const COLORS = [
-  "#8884d8",
-  "#82ca9d",
-  "#ffc658",
-  "#ff8042",
-  "#00C49F",
-  "#FFBB28",
+  "#EF4444", // Red-500
+  "#3B82F6", // Blue-500
+  "#10B981", // Green-500
+  "#F59E0B", // Amber-500
+  "#8B5CF6", // Violet-500
+  "#EC4899", // Pink-500
+  "#F97316", // Orange-500
+  "#14B8A6", // Teal-500
 ];
 
 export default function CategoryRevenueChart() {
-  const [currentMonth, setCurrentMonth] = useState("2025-04");
+  const today = new Date();
+  const currentMonthStr = today.toISOString().slice(0, 7);
+  const [currentMonth, setCurrentMonth] = useState(currentMonthStr);
+  const [salesData, setSalesData] = useState<{ name: string; value: number }[]>(
+    []
+  );
+  const { fetchGetCategoryMonthlyRevenueStatisticsOrder } = useOrder();
+
+  useEffect(() => {
+    const [year, month] = currentMonth.split("-");
+    fetchGetCategoryMonthlyRevenueStatisticsOrder(
+      parseInt(month),
+      parseInt(year),
+      (data) => {
+        const formattedData = (data || []).map((item: any) => ({
+          name: item.category_name,
+          value: item.revenue,
+        }));
+        setSalesData(formattedData);
+      },
+      () => {
+        setSalesData([]);
+      }
+    );
+  }, [currentMonth]);
 
   const handlePrevMonth = () => {
     const date = new Date(currentMonth + "-01");
@@ -37,10 +50,13 @@ export default function CategoryRevenueChart() {
   const handleNextMonth = () => {
     const date = new Date(currentMonth + "-01");
     date.setMonth(date.getMonth() + 1);
-    setCurrentMonth(date.toISOString().slice(0, 7));
+    const nextMonthStr = date.toISOString().slice(0, 7);
+
+    if (nextMonthStr <= currentMonthStr) {
+      setCurrentMonth(nextMonthStr);
+    }
   };
 
-  const salesData = data[currentMonth] || [];
   const total = salesData.reduce((sum, item) => sum + item.value, 0);
 
   return (
@@ -64,7 +80,12 @@ export default function CategoryRevenueChart() {
           </button>
           <button
             onClick={handleNextMonth}
-            className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
+            disabled={currentMonth >= currentMonthStr}
+            className={`text-xl p-1 border rounded-full ${
+              currentMonth >= currentMonthStr
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
             <MdNavigateNext />
           </button>
@@ -75,7 +96,7 @@ export default function CategoryRevenueChart() {
         {/* Danh sách danh mục */}
         <div className="w-1/2 space-y-3 pr-4">
           {salesData.map((item, index) => {
-            const percent = ((item.value / total) * 100).toFixed(0);
+            const percent = total ? ((item.value / total) * 100).toFixed(0) : 0;
             return (
               <div key={item.name} className="flex items-center gap-2 text-sm">
                 <div

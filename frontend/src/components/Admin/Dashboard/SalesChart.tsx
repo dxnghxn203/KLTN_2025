@@ -6,7 +6,8 @@ const monthLabels = ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th
 
 export default function SalesChart() {
   const { fetchGetMonthlyRevenueStatisticsOrder } = useOrder();
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const initCurrentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState(initCurrentYear);
   const [salesData, setSalesData] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
   
   useEffect(() => {
@@ -59,8 +60,12 @@ export default function SalesChart() {
           </button>
           <button
             onClick={handleNextYear}
-            disabled={currentYear >= new Date().getFullYear()}
-            className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
+            disabled={currentYear >= initCurrentYear}
+            className={`text-xl p-1 border rounded-full ${
+              currentYear >= initCurrentYear
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
             <MdNavigateNext />
           </button>
@@ -78,7 +83,7 @@ export default function SalesChart() {
               style={{ top: idx === 0 ? 0 : undefined }}
             >
               <span className="text-xs text-gray-500 absolute -left-2 translate-x-[-100%]">
-                ${label.toLocaleString()}
+                {label.toLocaleString()}đ
               </span>
               <div className="absolute left-0 w-full border-t border-dashed border-gray-300"></div>
             </div>

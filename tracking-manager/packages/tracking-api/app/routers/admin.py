@@ -202,3 +202,40 @@ async def change_password(item: ItemAdminChangePassReq, token: str = Depends(mid
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.get("/admin/user-role-statistics", response_model=BaseResponse)
+async def get_user_role_statistics(
+        # token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        result = await admin.get_user_role_statistics()
+        return SuccessResponse(
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error get user role statistics: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/admin/top-revenue-customer-statistics", response_model=BaseResponse)
+async def get_top_revenue_customer_statistics(
+        top_n: int = 5,
+        # token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        result = await admin.get_top_customers_by_revenue(top_n)
+        return SuccessResponse(
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error get top revenue customer statistics: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )

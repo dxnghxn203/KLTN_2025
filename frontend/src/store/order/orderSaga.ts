@@ -70,7 +70,11 @@ import {
 
     fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
     fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess,
-    fetchGetCategoryMonthlyRevenueStatisticsOrderFailed
+    fetchGetCategoryMonthlyRevenueStatisticsOrderFailed,
+
+    fetchGetTypeMonthlyRevenueStatisticsOrderStart,
+    fetchGetTypeMonthlyRevenueStatisticsOrderSuccess,
+    fetchGetTypeMonthlyRevenueStatisticsOrderFailed
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -697,6 +701,31 @@ function* fetchGetCategoryMonthlyRevenueStatisticsOrder(action: any): Generator<
     }
 }
 
+function* fetchGetTypeMonthlyRevenueStatisticsOrder(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            month,
+            year,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+        const rs = yield call(orderService.getTypeMonthlyRevenueStatisticsOrder, month, year);
+        if (rs.status_code === 200) {
+            yield put(fetchGetTypeMonthlyRevenueStatisticsOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetTypeMonthlyRevenueStatisticsOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetTypeMonthlyRevenueStatisticsOrderFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -715,4 +744,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetOverviewStatisticsOrderStart.type, fetchGetOverviewStatisticsOrder);
     yield takeLatest(fetchGetMonthlyRevenueStatisticsOrderStart.type, fetchGetMonthlyRevenueStatisticsOrder);
     yield takeLatest(fetchGetCategoryMonthlyRevenueStatisticsOrderStart.type, fetchGetCategoryMonthlyRevenueStatisticsOrder);
+    yield takeLatest(fetchGetTypeMonthlyRevenueStatisticsOrderStart.type, fetchGetTypeMonthlyRevenueStatisticsOrder);
 }

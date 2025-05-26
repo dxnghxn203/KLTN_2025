@@ -12,6 +12,9 @@ from app.middleware import middleware
 from app.middleware.middleware import decode_jwt, generate_password
 
 collection_name = "admin"
+collection_user = "users"
+collection_pharmacist = "pharmacists"
+collection_order = "orders"
 
 async def get_by_email(email: str):
     collection = database.db[collection_name]
@@ -117,3 +120,84 @@ async def update_admin_password(email: str, new_password: str):
     except Exception as e:
         logger.error(f"[update_admin_password] Lỗi: {str(e)}")
         raise e
+
+async def get_user_role_statistics():
+    try:
+
+        user_count = database.db[collection_user].count_documents({})
+        pharmacist_count = database.db[collection_pharmacist].count_documents({})
+        admin_count = database.db[collection_name].count_documents({})
+
+        return {
+            "user": user_count,
+            "pharmacist": pharmacist_count,
+            "admin": admin_count
+        }
+
+    except Exception as e:
+        logger.error(f"Failed [get_user_role_statistics]: {e}")
+        raise e
+
+async def get_top_customers_by_revenue(top_n: int = 5):
+    try:
+        order_collection = database.db[collection_order]
+        user_collection = database.db[collection_user]
+
+        pipeline = [
+            {
+                "$match": {
+                    "status": "delivery_success"
+                }
+            },
+            {
+                "$addFields": {
+                    "created_by_obj": {"$toObjectId": "$created_by"}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$created_by_obj",
+                    "total_revenue": {"$sum": "$product_fee"},
+                    "order_count": {"$sum": 1}
+                }
+            },
+            {
+                "$sort": {"total_revenue": -1}
+            },
+            {
+                "$limit": top_n
+            },
+            {
+                "$lookup": {
+                    "from": collection_user,
+                    "localField": "_id",
+                    "foreignField": "_id",
+                    "as": "user"
+                }
+            },
+            {
+                "$unwind": "$user"
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "user_id": "$_id",
+                    "user_name": "$user.user_name",
+                    "email": "$user.email",
+                    "phone_number": "$user.phone_number",
+                    "total_revenue": 1,
+                    "order_count": 1
+                }
+            }
+        ]
+
+        results = order_collection.aggregate(pipeline).to_list(length=top_n)
+        for result in results:
+            result["user_id"] = str(result["user_id"])
+
+        return results
+
+    except Exception as e:
+        logger.error(f"Failed [get_top_customers_by_revenue]: {e}")
+        raise e
+
