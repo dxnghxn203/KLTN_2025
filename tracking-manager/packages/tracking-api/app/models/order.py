@@ -825,20 +825,16 @@ async def get_order_overview_statistics():
     try:
         collection = database.db[collection_name]
 
-        now = datetime.now()
-        start_of_month = datetime(now.year, now.month, 1)
-        if now.month == 12:
-            next_month = datetime(now.year + 1, 1, 1)
-        else:
-            next_month = datetime(now.year, now.month + 1, 1)
-
+        now = get_current_time()
+        start_of_day = datetime(now.year, now.month, now.day)
+        end_of_day = start_of_day + timedelta(days=1)
 
         pipeline = [
             {
                 "$match": {
                     "created_date": {
-                        "$gte": start_of_month,
-                        "$lt": next_month
+                        "$gte": start_of_day,
+                        "$lt": end_of_day
                     }
                 }
             },
@@ -993,7 +989,7 @@ async def get_category_monthly_revenue(month: int, year: int):
                             "branches": [
                                 {
                                     "case": {"$eq": ["$product_info.category.main_category_id", "MAIN9X41742425621"]},
-                                    "then": "thuc_pham_chuc_nang"
+                                    "then": {"id": "thuc_pham_chuc_nang", "name": "Thực phẩm chức năng"}
                                 },
                                 {
                                     "case": {
@@ -1002,7 +998,7 @@ async def get_category_monthly_revenue(month: int, year: int):
                                             {"$eq": ["$product_info.prescription_required", True]}
                                         ]
                                     },
-                                    "then": "thuoc_ke_don"
+                                    "then": {"id": "thuoc_ke_don", "name": "Thuốc kê đơn"}
                                 },
                                 {
                                     "case": {
@@ -1011,14 +1007,14 @@ async def get_category_monthly_revenue(month: int, year: int):
                                             {"$eq": ["$product_info.prescription_required", False]}
                                         ]
                                     },
-                                    "then": "thuoc_khong_ke_don"
+                                    "then": {"id": "thuoc_khong_ke_don", "name": "Thuốc không kê đơn"}
                                 },
                                 {
                                     "case": {"$eq": ["$product_info.category.main_category_id", "MAINSGU1742431170"]},
-                                    "then": "thiet_bi_y_te"
+                                    "then": {"id": "thiet_bi_y_te", "name": "Thiết bị y tế"}
                                 }
                             ],
-                            "default": "khac"
+                            "default": {"id": "khac", "name": "Khác"}
                         }
                     }
                 }
@@ -1026,25 +1022,38 @@ async def get_category_monthly_revenue(month: int, year: int):
             {
                 "$group": {
                     "_id": "$category_group",
-                    "total_revenue": {"$sum": "$revenue"}
+                    "revenue": {"$sum": "$revenue"}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "category_id": "$_id.id",
+                    "category_name": "$_id.name",
+                    "revenue": 1
                 }
             }
         ]
 
         data = collection.aggregate(pipeline).to_list(length=None)
-
         default_categories = {
-            "thuc_pham_chuc_nang": 0,
-            "thuoc_ke_don": 0,
-            "thuoc_khong_ke_don": 0,
-            "thiet_bi_y_te": 0,
-            "khac": 0
+            "thuc_pham_chuc_nang": "Thực phẩm chức năng",
+            "thuoc_ke_don": "Thuốc kê đơn",
+            "thuoc_khong_ke_don": "Thuốc không kê đơn",
+            "thiet_bi_y_te": "Thiết bị y tế",
+            "khac": "Khác"
         }
 
-        for row in data:
-            default_categories[row["_id"]] = row["total_revenue"]
+        result = []
+        data_map = {d["category_id"]: d for d in data}
 
-        return default_categories
+        for cat_id, cat_name in default_categories.items():
+            result.append({
+                "category_id": cat_id,
+                "category_name": cat_name,
+                "revenue": data_map.get(cat_id, {}).get("revenue", 0)
+            })
+
         return result
 
     except Exception as e:
