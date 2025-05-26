@@ -38,6 +38,11 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 		return res, err
 	}
 
+	res, _, err = trackingRaw.Create(ctx)
+	if err != nil {
+		return res, err
+	}
+
 	if _id != "" && orderRaw.Status != "canceled" {
 		err = models.UpdateProductCount(ctx, orderRaw.Product, "sell", 1)
 		if err != nil {
@@ -73,10 +78,6 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 		slog.Error("Failed to delete order from redis", "id", _id, "err", err)
 	}
 
-	res, _, err = trackingRaw.Create(ctx)
-	if err != nil {
-		return res, err
-	}
 	return true, nil
 }
 

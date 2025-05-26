@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func getWkhtmltopdfPath() (string, error) {
+func GetWkhtmltopdfPath() (string, error) {
 	if runtime.GOOS == "windows" {
 		exePath, err := os.Getwd()
 		if err != nil {
@@ -108,7 +108,7 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 		productDiscount, order.VoucherOrderDiscount, order.VoucherDeliveryDiscount, order.EstimatedTotalFee,
 	)
 
-	wkhtmltopdfPath, err := getWkhtmltopdfPath()
+	wkhtmltopdfPath, err := GetWkhtmltopdfPath()
 	if err != nil {
 		return nil, err
 	}

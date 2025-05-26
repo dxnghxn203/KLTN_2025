@@ -1,6 +1,7 @@
 package main
 
 import (
+	"consumer/helper"
 	"consumer/pkg/database"
 	"consumer/queue"
 	"context"
@@ -78,6 +79,7 @@ func startHTTPServer() {
 
 	fmt.Println("INFO: HTTP server đang chạy trên cổng " + port)
 	log.Info("HTTP server đang chạy trên cổng " + port)
+	log.Info(helper.GetWkhtmltopdfPath())
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {

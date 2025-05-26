@@ -1,5 +1,13 @@
 FROM golang:1.22-alpine AS builder
 
+RUN apt-get update && \
+    apt-get install -y \
+        wkhtmltopdf \
+        xfonts-75dpi \
+        xfonts-base && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN echo "Installing system dependencies..." && \
     apk update && \
     apk add --no-cache bash make gcc musl-dev
