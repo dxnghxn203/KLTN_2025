@@ -68,8 +68,26 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 	}
 
 	htmlContent := fmt.Sprintf(`
-    <html>
-      <body>
+	<html>
+		<head>
+			<meta charset="UTF-8">
+			<style>
+			body {
+				font-family: "DejaVu Sans", "Liberation Sans", "Noto Sans", sans-serif;
+				font-size: 12px;
+			}
+			table {
+				border-collapse: collapse;
+				width: 100%%;
+			}
+			th, td {
+				border: 1px solid #000;
+				padding: 4px;
+				text-align: left;
+			}
+			</style>
+		</head>
+      	<body>
         <h2>HÓA ĐƠN BÁN LẺ</h2>
         <p><strong>Nhà thuốc:</strong> NHÀ THUỐC MEDICARE</p>
         <p><strong>Địa chỉ:</strong> Số 1 Võ Văn Ngân, phường Linh Chiểu, Thủ Đức, TP Hồ Chí Minh</p>
