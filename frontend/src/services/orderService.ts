@@ -1,13 +1,28 @@
 import axiosClient from "@/utils/configs/axiosClient";
 import medicine from "@/images/medicinee.png";
 
+export const checkVoucher = async (data: any) => {
+    try {
+        const response: any = await axiosClient.post('/v1/order/check_shipping_fee', data);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi lấy phí vận chuyển',
+        }
+    }
+}
 export const getAllOrder = async (slug: string) => {
     try {
         return {
             status: 200,
             message: "success",
             data: [
-                { 
+                {
                     id: "OD0001",
                     tracking_id: "TRACK0001",
                     order_id: "DH0001",
@@ -33,7 +48,7 @@ export const getAllOrder = async (slug: string) => {
                             img: medicine,
                         },
                         {
-                            id: "SP0002",               
+                            id: "SP0002",
                             name: "Allerphast 180 mg",
                             price: 100000,
                             quantity: 1,
@@ -63,7 +78,7 @@ export const getAllOrder = async (slug: string) => {
                         }
                     },
                     products: [
-                        
+
                         {
                             id: "SP0002",
                             name: "Allerphast 180 mg",
@@ -122,7 +137,7 @@ export const getAllOrder = async (slug: string) => {
 }
 
 
-export const checkOrder = async ( data: any, session: any): Promise<any> => {
+export const checkOrder = async (data: any, session: any): Promise<any> => {
     try {
         const url = session ? `/v1/order/check?session=${session}` : '/v1/order/check';
         const response: any = await axiosClient.post(url, data);
@@ -139,7 +154,7 @@ export const checkOrder = async ( data: any, session: any): Promise<any> => {
     }
 }
 
-export const createOrder = async ( data: any): Promise<any> => {
+export const createOrder = async (data: any): Promise<any> => {
     try {
         const response = await axiosClient.post('/v1/order/add', data);
         return {
@@ -156,8 +171,8 @@ export const createOrder = async ( data: any): Promise<any> => {
 }
 
 export const getAllOrderAdmin = async (params: any) => {
-    try{
-        const response: any= await axiosClient.get('/v1/order/all-orders-admin', { params });
+    try {
+        const response: any = await axiosClient.get('/v1/order/all-orders-admin', {params});
         return {
             status_code: response?.status_code,
             message: response?.message,
@@ -173,8 +188,8 @@ export const getAllOrderAdmin = async (params: any) => {
 }
 
 export const getOrderByUserId = async () => {
-    try{
-        const response: any= await axiosClient.get('/v1/order/order');
+    try {
+        const response: any = await axiosClient.get('/v1/order/order');
         return response;
     } catch (error) {
         return {
@@ -281,15 +296,15 @@ export const userRequestPrescription = async (data: any) => {
         console.log(data, "service")
         data.forEach((value: any, key: any) => {
             console.log(`${key}:`, value);
-          });
+        });
         const response: any = await axiosClient.post('/v1/order/request-prescription', data);
         return {
             status_code: response?.status_code,
             message: response?.message,
             data: response.data
         };
-        
-    } catch (error :any) {
+
+    } catch (error: any) {
         // console.log(error)
         // if (error.response) {
         //     // console.error("Backend error response:", error.response.data);
@@ -302,7 +317,7 @@ export const userRequestPrescription = async (data: any) => {
             data: null
         }
     }
-        
+
 }
 
 export const getRequestOrder = async () => {
@@ -340,7 +355,7 @@ export const getApproveRequestOrder = async () => {
 export const approveRequestOrder = async (data: any) => {
     try {
         const response: any = await axiosClient.post("/v1/order/approve", data);
-       console.log("service", data)
+        console.log("service", data)
         return {
             status_code: response?.status_code,
             message: response?.message,

@@ -112,16 +112,12 @@ const SimilarProductsList = ({
     };
 
     // Current date and user information as requested
-    const currentDateTime = "2025-05-18 06:39:10";
-    const currentUser = "dxnghxn203";
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black bg-opacity-50">
             <div className="bg-white rounded-xl w-full max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
                 <div className="flex items-center justify-between p-3 border-b">
                     <h2 className="text-lg font-semibold">Sản phẩm tương tự</h2>
                     <div className="flex items-center gap-3">
-                        <span className="text-xs text-gray-500">{currentDateTime} | {currentUser}</span>
                         <button
                             onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 transition-colors"

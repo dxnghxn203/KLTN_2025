@@ -18,7 +18,6 @@ export default function Cart() {
     const {cart, getProductFromCart} = useCart();
     const [loadingGetCart, setLoadingGetCart] = useState(false);
 
-    // Reference to ShoppingCart component to access its methods
     const shoppingCartRef = useRef<any>(null);
 
     const fetchingCart = () => {
@@ -51,15 +50,13 @@ export default function Cart() {
     const [isOutOfStock, setIsOutOfStock] = useState(false);
     const [productsOutOfStock, setProductsOutOfStock] = useState<any>([])
     const [isLoadingCheckFee, setIsLoadingCheckFee] = useState(false);
+    const [vouchers, setVouchers] = useState<any>({});
+    const [voucherError, setVoucherError] = useState<any>(null);
 
-    // Function to trigger showing similar products through the ShoppingCart component
     const handleShowSimilarProducts = (product: any) => {
-        // Close the OutOfStock dialog
         setIsOutOfStock(false);
 
-        // Use a small timeout to ensure proper render sequence
         setTimeout(() => {
-            // Access the ShoppingCart's method to show similar products
             if (shoppingCartRef.current && shoppingCartRef.current.handleShowSimilarProducts) {
                 shoppingCartRef.current.handleShowSimilarProducts(product);
             }
@@ -84,6 +81,7 @@ export default function Cart() {
 
     const [shippingFee, setShippingFee] = useState<any>({});
 
+    console.log("Vouchers:", voucherError);
     const checkShippingFeeUI = () => {
         if (!validateData()) {
             return;
@@ -95,10 +93,13 @@ export default function Cart() {
                 orderData: {
                     product: productForCheckOut,
                     ...data,
+                    voucherOrderId: vouchers?.selectedVoucher?.voucher_id || null,
+                    voucherDeliveryId: vouchers?.selectedVoucherOrder?.voucher_id || null,
                 },
             },
             (data: any) => {
                 setIsLoadingCheckFee(false)
+                setVoucherError(null)
                 if (data) {
                     setShippingFee(data);
                 }
@@ -107,6 +108,7 @@ export default function Cart() {
                 setIsLoadingCheckFee(false)
                 setIsOutOfStock(error.isOutOfStock)
                 setProductsOutOfStock(error?.data)
+                setVoucherError(error?.data?.voucher_error)
                 closeQR()
                 toast.showToast("Lỗi khi kiểm tra phí vận chuyển", error.message);
             }
@@ -164,9 +166,9 @@ export default function Cart() {
             const {quantity = 0, price = 0, original_price = 0, unit_price} = product;
             const calculated_unit_price = unit_price !== undefined ? unit_price : original_price;
             if (quantity > 0 && calculated_unit_price >= 0 && price >= 0) {
-                total_original_price += calculated_unit_price * quantity; // Original price before discount
-                total_price += price * quantity;                         // Price after discount
-                total_discount += (calculated_unit_price - price) * quantity; // Discount amount
+                total_original_price += calculated_unit_price * quantity;
+                total_price += price * quantity;
+                total_discount += (calculated_unit_price - price) * quantity;
             }
         });
         return {
@@ -184,9 +186,6 @@ export default function Cart() {
         setImageQR(null);
     };
 
-    // Current date and user information
-    const currentDateTime = "2025-05-17 17:30:06";
-    const currentUser = "dxnghxn203";
 
     return (
         <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
@@ -234,6 +233,8 @@ export default function Cart() {
                                                 setIsCheckout={setIsCheckout}
                                                 setProductForCheckOut={setProductForCheckOut}
                                                 setPriceOrder={setPriceOrder}
+                                                setVouchers={setVouchers}
+
                                             />
                                         ) : (
                                             <CartEmpty/>
@@ -253,7 +254,6 @@ export default function Cart() {
                 </>
             )}
 
-            {/* OutOfStock component */}
             {isOutOfStock && (
                 <OutOfStock
                     products={productsOutOfStock}
@@ -268,7 +268,13 @@ export default function Cart() {
                     onShowSimilarProducts={handleShowSimilarProducts}
                 />
             )}
-
+            {
+                voucherError && (
+                    <div className="text-red-500 text-sm px-5">
+                        {voucherError || "Có lỗi xảy ra với mã giảm giá của bạn. Vui lòng kiểm tra lại."}
+                    </div>
+                )
+            }
             {isLoadingCheckFee && <LoaingCenter/>}
         </div>
     );

@@ -62,10 +62,99 @@ import {
 
     fetchGetMonthlyRevenueStatisticsOrderStart,
     fetchGetMonthlyRevenueStatisticsOrderSuccess,
-    fetchGetMonthlyRevenueStatisticsOrderFailed
+    fetchGetMonthlyRevenueStatisticsOrderFailed,
+
+    fetchCheckVoucherStart,
+    fetchCheckVoucherSuccess,
+    fetchCheckVoucherFailed,
 
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
+
+//check voucher
+function* fetchCheckVoucher(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
+            orderData
+        } = payload;
+
+        const session = getSession();
+        const addressInfo = orderData.addressInfo;
+        const ordererInfo = orderData.ordererInfo;
+        const products = () => {
+            return orderData.product.map((item: any) => ({
+                product_id: item.product_id,
+                price_id: item.price_id,
+                quantity: item.quantity,
+            }))
+        }
+
+        const apiPayload = {
+            product: products(),
+            pick_from: {
+                "name": "medicare",
+                "phone_number": "string",
+                "email": "string",
+                "address": {
+                    "address": "string",
+                    "ward": "string",
+                    "district": "string",
+                    "province": "string"
+                }
+            },
+            pick_to: {
+                "name": ordererInfo.fullName || "",
+                "phone_number": ordererInfo.phone || "",
+                "email": ordererInfo.email || "",
+                "address": {
+                    "address": addressInfo.address || "",
+                    "ward": addressInfo.ward || "",
+                    "district": addressInfo.district || "",
+                    "province": addressInfo.city || ""
+                }
+            },
+            "sender_province_code": 79,
+            "sender_district_code": 765,
+            "sender_commune_code": 26914,
+            "receiver_province_code": addressInfo.cityCode || 0,
+            "receiver_district_code": addressInfo.districtCode || 0,
+            "receiver_commune_code": addressInfo.wardCode || 0,
+            "delivery_instruction": orderData?.note || "",
+            "payment_type": orderData.paymentMethod,
+        };
+
+        const rs = yield call(orderService.checkVoucher, apiPayload);
+        if (rs.status_code === 200) {
+            yield put(fetchCheckOrderSuccess(rs.data));
+            if (rs?.data?.qr_code && rs?.data?.qr_code !== "") {
+                onSuccess({
+                    "isQR": true,
+                    "message": rs.message,
+                    "qr_code": rs.data.qr_code,
+                    "order_id": rs.data.order_id,
+                });
+                return;
+            }
+            onSuccess({
+                "isQR": false,
+                "message": rs.message,
+                "order_id": rs.data.order_id,
+            });
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchCheckVoucherSuccess(""));
+        onFailed("test");
+    } catch (error) {
+        console.log(error);
+        yield put(fetchCheckVoucherFailed("Failed to fetch order"));
+    }
+}
 
 // get tracking code
 function* fetchGetTrackingCode(action: any): Generator<any, void, any> {
@@ -193,6 +282,8 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
             "receiver_commune_code": addressInfo.wardCode || 0,
             "delivery_instruction": orderData?.note || "",
             "payment_type": orderData.paymentMethod,
+            "voucher_order_id": orderData?.voucherOrderId || "",
+            "voucher_delivery_id": orderData?.voucherDeliveryId || "",
         };
         const rs = yield call(orderService.checkShippingFee, apiPayload);
         if (rs.status_code === 200) {
@@ -205,10 +296,10 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
         let error = {
             ...rs,
             isOutOfStock: rs.status_code === 400
+            
         }
         if (rs.status_code === 400) {
             const outOfStockIds = rs.data.out_of_stock;
-            console.log(outOfStockIds)
             const {outOfStockProducts, availableProducts} = categorizeProducts(
                 orderData.product,
                 outOfStockIds
@@ -251,7 +342,6 @@ function* fetchCallWebhook(action: any): Generator<any, void, any> {
 }
 
 // Call webhook
-// Fetch all order
 function* fetchGetAllOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
@@ -286,10 +376,7 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
             return orderData.product.map((item: any) => ({
                 product_id: item.product_id,
                 price_id: item.price_id,
-                // product_name: item.products_name,
-                // unit: item.unit,
                 quantity: item.quantity,
-                // price: item.price.price
             }))
         }
 
@@ -325,10 +412,11 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
             "receiver_commune_code": addressInfo.wardCode || 0,
             "delivery_instruction": orderData?.note || "",
             "payment_type": orderData.paymentMethod,
+            "voucher_order_id": orderData?.voucherOrderId || "",
+            "voucher_delivery_id": orderData?.voucherDeliveryId || "",
         };
 
         const rs = yield call(orderService.checkOrder, apiPayload, session);
-        console.log("eeeee", rs.data)
         if (rs.status_code === 200) {
             yield put(fetchCheckOrderSuccess(rs.data));
             if (rs?.data?.qr_code && rs?.data?.qr_code !== "") {
@@ -434,7 +522,7 @@ function* fetchGetStatistics365Days(action: any): Generator<any, void, any> {
     }
 }
 
-function* fetchUserRequestPrescription (action: any): Generator<any, void, any> {
+function* fetchUserRequestPrescription(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
@@ -442,11 +530,11 @@ function* fetchUserRequestPrescription (action: any): Generator<any, void, any> 
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
-            }, 
-        } = payload;  
+            },
+        } = payload;
         console.log("formData", formData)
         const rs = yield call(orderService.userRequestPrescription, formData);
-        
+
         if (rs.status_code === 200) {
             yield put(fetchRequestPrescriptionSuccess(rs.data));
             onSuccess(rs.data);
@@ -460,15 +548,15 @@ function* fetchUserRequestPrescription (action: any): Generator<any, void, any> 
     }
 }
 
-function* fetchGetRequestOrder (action: any): Generator<any, void, any> {
+function* fetchGetRequestOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
-            }, 
-        } = payload;  
+            },
+        } = payload;
         const rs = yield call(orderService.getRequestOrder);
         if (rs.status_code === 200) {
             yield put(fetchGetRequestOrderSuccess(rs.data));
@@ -483,15 +571,15 @@ function* fetchGetRequestOrder (action: any): Generator<any, void, any> {
     }
 }
 
-function* fetchGetApproveRequestOrder (action: any): Generator<any, void, any> {
+function* fetchGetApproveRequestOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
-            }, 
-        } = payload;  
+            },
+        } = payload;
         const rs = yield call(orderService.getApproveRequestOrder);
         if (rs.status_code === 200) {
             yield put(fetchGetApproveRequestOrderSuccess(rs.data));
@@ -506,7 +594,7 @@ function* fetchGetApproveRequestOrder (action: any): Generator<any, void, any> {
     }
 }
 
-function* fetchApproveRequestOrder (action: any): Generator<any, void, any> {
+function* fetchApproveRequestOrder(action: any): Generator<any, void, any> {
     try {
         // console.log("action", action);
         const {payload} = action;
@@ -517,8 +605,8 @@ function* fetchApproveRequestOrder (action: any): Generator<any, void, any> {
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
-            }, 
-        } = payload;  
+            },
+        } = payload;
         const rs = yield call(orderService.approveRequestOrder, body || bodyReject);
         console.log("sagaa", body || bodyReject)
         if (rs.status_code === 200) {
@@ -534,15 +622,15 @@ function* fetchApproveRequestOrder (action: any): Generator<any, void, any> {
     }
 }
 
-function* fetchGetOverviewStatisticsOrder (action: any): Generator<any, void, any> {
+function* fetchGetOverviewStatisticsOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
-            }, 
-        } = payload;  
+            },
+        } = payload;
         const rs = yield call(orderService.getOverviewStatisticsOrder);
         if (rs.status_code === 200) {
             yield put(fetchGetOverviewStatisticsOrderSuccess(rs.data));
@@ -557,7 +645,7 @@ function* fetchGetOverviewStatisticsOrder (action: any): Generator<any, void, an
     }
 }
 
-function* fetchGetMonthlyRevenueStatisticsOrder (action: any): Generator<any, void, any> {
+function* fetchGetMonthlyRevenueStatisticsOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
@@ -565,8 +653,8 @@ function* fetchGetMonthlyRevenueStatisticsOrder (action: any): Generator<any, vo
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
-            }, 
-        } = payload;  
+            },
+        } = payload;
         const rs = yield call(orderService.getMonthlyRevenueStatisticsOrder, year);
         if (rs.status_code === 200) {
             yield put(fetchGetMonthlyRevenueStatisticsOrderSuccess(rs.data));

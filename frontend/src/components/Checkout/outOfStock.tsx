@@ -18,9 +18,7 @@ const OutOfStock = ({
 }) => {
     const {outOfStockProducts, availableProducts} = products;
 
-    // Current date and user info - fixed values as requested
-    const currentDate = "2025-05-17 17:18:24";
-    const currentUser = "dxnghxn203";
+    // Current date and user info - fixed values as requeste
 
     // Tính số tiền tương ứng với số lượng sản phẩm
     const calculateTotalPrice = (price: number, quantity: number) => {
@@ -133,9 +131,7 @@ const OutOfStock = ({
                         SẢN PHẨM KHÔNG ĐỦ HÀNG
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="text-xs text-gray-500">
-                            {currentDate} | {currentUser}
-                        </div>
+
                         <button
                             onClick={() => closeDialog(false)}
                             className="text-gray-400 hover:text-gray-700 transition-colors"

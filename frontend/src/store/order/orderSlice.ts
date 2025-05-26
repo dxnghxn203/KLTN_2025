@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 interface OrderState {
     orders: any[];
@@ -51,6 +51,18 @@ export const orderSlice = createSlice({
             state.error = null;
         },
         fetchCheckOrderFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        //check voucher
+        fetchCheckVoucherStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchCheckVoucherSuccess(state, action: PayloadAction<any>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchCheckVoucherFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
         },
@@ -111,11 +123,11 @@ export const orderSlice = createSlice({
             state.loading = true;
         },
         fetchGetTrackingCodeSuccess(state, action: PayloadAction<any>) {
-            state.loading = false; 
+            state.loading = false;
         },
         fetchGetTrackingCodeFailed(state) {
             state.loading = false;
-        }, 
+        },
 
         // download invoice
         fetchDownloadInvoiceStart(state, action: PayloadAction<any>) {
@@ -124,7 +136,7 @@ export const orderSlice = createSlice({
         },
         fetchDownloadInvoiceSuccess(state, action: PayloadAction<any>) {
             console.log('fetchDownloadInvoiceSuccess')
-            state.loading = false; 
+            state.loading = false;
         },
         fetchDownloadInvoiceFailed(state) {
             console.log('fetchDownloadInvoiceFailed')
@@ -139,7 +151,7 @@ export const orderSlice = createSlice({
         fetchGetStatistics365DaysSuccess(state, action: PayloadAction<any>) {
             console.log('fetchGetStatistics365DaysSuccess')
             state.statistics365Days = action.payload
-            state.loading = false; 
+            state.loading = false;
         },
         fetchGetStatistics365DaysFailed(state) {
             console.log('fetchGetStatistics365DaysFailed')
@@ -147,7 +159,7 @@ export const orderSlice = createSlice({
         },
         // fetch request prescription
         fetchRequestPrescriptionStart(state, action: PayloadAction<any>) {
-            
+
             state.loading = true;
         },
         fetchRequestPrescriptionSuccess(state, action: PayloadAction<any>) {
@@ -156,7 +168,7 @@ export const orderSlice = createSlice({
         fetchRequestPrescriptionFailed(state) {
             state.loading = false;
         },
-         // fetch get request-order
+        // fetch get request-order
         fetchGetRequestOrderStart(state, action: PayloadAction<any>) {
             // console.log('fetchGetRequestOrderStart')
             state.loading = true;
@@ -180,7 +192,7 @@ export const orderSlice = createSlice({
             state.allRequestOrderApprove = action.payload;
             state.loading = false;
             state.error = null;
-           
+
         },
         fetchGetApproveRequestOrderFailed(state) {
             console.log('fetchGetApproveRequestOrderFailed')
@@ -202,7 +214,7 @@ export const orderSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
-        
+
         // fetch get overview statistics order
         fetchGetOverviewStatisticsOrderStart(state, action: PayloadAction<any>) {
             console.log('fetchGetOverviewStatisticsOrderStart')
@@ -213,7 +225,7 @@ export const orderSlice = createSlice({
             state.overviewStatisticsOrder = action.payload;
             state.loading = false;
             state.error = null;
-           
+
         },
 
         fetchGetOverviewStatisticsOrderFailed(state) {
@@ -231,7 +243,7 @@ export const orderSlice = createSlice({
             console.log('fetchGetMonthlyRevenueStatisticsOrderSuccess')
             state.loading = false;
             state.error = null;
-           
+
         },
 
         fetchGetMonthlyRevenueStatisticsOrderFailed(state) {
@@ -270,7 +282,7 @@ export const {
     fetchCancelOrderStart,
     fetchCancelOrderSuccess,
     fetchCancelOrderFailed,
-    
+
     fetchGetTrackingCodeStart,
     fetchGetTrackingCodeSuccess,
     fetchGetTrackingCodeFailed,
@@ -294,9 +306,9 @@ export const {
     fetchGetApproveRequestOrderFailed,
     fetchGetApproveRequestOrderStart,
     fetchGetApproveRequestOrderSuccess,
-    
+
     fetchApproveRequestOrderFailed,
-    fetchApproveRequestOrderStart,  
+    fetchApproveRequestOrderStart,
     fetchApproveRequestOrderSuccess,
 
     fetchGetOverviewStatisticsOrderFailed,
@@ -305,7 +317,11 @@ export const {
 
     fetchGetMonthlyRevenueStatisticsOrderFailed,
     fetchGetMonthlyRevenueStatisticsOrderStart,
-    fetchGetMonthlyRevenueStatisticsOrderSuccess
+    fetchGetMonthlyRevenueStatisticsOrderSuccess,
+
+    fetchCheckVoucherStart,
+    fetchCheckVoucherSuccess,
+    fetchCheckVoucherFailed,
 } = orderSlice.actions;
 
 export default orderSlice.reducer;

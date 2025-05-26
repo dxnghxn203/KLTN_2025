@@ -12,12 +12,12 @@ import {getPriceFromProduct} from "@/utils/price";
 import {getAvailableProduct} from "@/services/productService";
 import clsx from "clsx";
 
-// Change to forwardRef to expose methods to parent
 const ShoppingCart = forwardRef(({
                                      cart,
                                      setIsCheckout,
                                      setProductForCheckOut,
                                      setPriceOrder,
+                                     setVouchers
                                  }: any, ref) => {
     const [selectedProducts, setSelectedProducts] = useState<
         { product_id: string; price_id: string }[]
@@ -26,13 +26,14 @@ const ShoppingCart = forwardRef(({
     const [isSimilarProductsOpen, setIsSimilarProductsOpen] = useState(false);
     const [currentProductForSimilar, setCurrentProductForSimilar] = useState<any>(null);
     const [openDropdowns, setOpenDropdowns] = useState<{ [key: string]: boolean }>({});
-    // Add state for available quantities
     const [availableQuantities, setAvailableQuantities] = useState<{ [key: string]: number | null }>({});
     const [loadingQuantities, setLoadingQuantities] = useState<{ [key: string]: boolean }>({});
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(
         null
     );
+    const [vouchersCart, setVouchersCart] = useState<any>({});
+
     const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
     const [inputQuantities, setInputQuantities] = useState<{
         [key: string]: number;
@@ -44,7 +45,6 @@ const ShoppingCart = forwardRef(({
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
     const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-    // Expose methods to parent component
     useImperativeHandle(ref, () => ({
         handleShowSimilarProducts: (product: any) => {
             setCurrentProductForSimilar(product);
@@ -52,7 +52,6 @@ const ShoppingCart = forwardRef(({
         }
     }));
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             Object.entries(dropdownRefs.current).forEach(([key, ref]) => {
@@ -68,7 +67,6 @@ const ShoppingCart = forwardRef(({
         };
     }, []);
 
-    // Fetch available quantities when cart changes
     useEffect(() => {
         if (cart && cart.length > 0) {
             cart.forEach((item: any) => {
@@ -77,10 +75,14 @@ const ShoppingCart = forwardRef(({
         }
     }, [cart]);
 
+    const changeSelectVouhcher = (voucher: any) => {
+        setVouchersCart(voucher);
+        setVouchers(voucher);
+    }
+
     const fetchAvailableQuantity = async (productId: string, priceId: string) => {
         const key = `${productId}-${priceId}`;
 
-        // Skip if already loading or if we already have the data
         if (loadingQuantities[key]) return;
 
         setLoadingQuantities(prev => ({...prev, [key]: true}));
@@ -242,7 +244,6 @@ const ShoppingCart = forwardRef(({
         setSelectedPriceId(null);
     };
 
-    // Function to handle showing similar products
     const handleShowSimilarProducts = (product: any) => {
         setCurrentProductForSimilar(product);
         setIsSimilarProductsOpen(true);
@@ -273,7 +274,6 @@ const ShoppingCart = forwardRef(({
         quantity: any,
         old_unit: string
     ) => {
-        // When changing unit, fetch the available quantity for the new unit
         fetchAvailableQuantity(id, newUnit);
 
         addProductTocart(
@@ -304,16 +304,8 @@ const ShoppingCart = forwardRef(({
         setIsCheckout(true);
         setProductForCheckOut(getProductForCheckOut());
     };
-    // Tính số tiền tương ứng với số lượng sản phẩm
     const calculateTotalPrice = (price: number, quantity: number) => {
         return price * quantity;
-    };
-    // tổng tiền giá gốc
-    const calculateTotalOriginalPrice = (
-        original_price: number,
-        quantity: number
-    ) => {
-        return original_price * quantity;
     };
 
     const toggleDropdown = (productId: string) => {
@@ -395,7 +387,6 @@ const ShoppingCart = forwardRef(({
                     </button>
                 </div>
 
-                {/* Custom Unit Dropdown with Available Quantity */}
                 <div className="w-[12%] text-center relative flex flex-col"
                      ref={(el) => {
                          dropdownRefs.current[dropdownKey] = el;
@@ -412,7 +403,6 @@ const ShoppingCart = forwardRef(({
                         </svg>
                     </div>
 
-                    {/* Available quantity display */}
                     {isLoadingQuantity ? (
                         <div className="text-xs text-gray-500 mt-1">Đang tải...</div>
                     ) : availableQuantity !== null && availableQuantity !== undefined ? (
@@ -423,7 +413,6 @@ const ShoppingCart = forwardRef(({
                         </div>
                     ) : null}
 
-                    {/* Dropdown menu */}
                     {openDropdowns[dropdownKey] && (
                         <div
                             className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto top-9">
@@ -587,6 +576,8 @@ const ShoppingCart = forwardRef(({
                     totalDiscount={calculateCartTotals?.total_discount || 0}
                     totalSave={calculateCartTotals?.total_discount || 0}
                     checkout={checkout}
+                    vouchers={vouchersCart}
+                    setVouchers={changeSelectVouhcher}
                 />
 
                 {isDeleteDialogOpen && selectedProductId !== null && (
@@ -612,7 +603,6 @@ const ShoppingCart = forwardRef(({
                 )}
             </div>
 
-            {/* Similar Products Modal */}
             {isSimilarProductsOpen && currentProductForSimilar && (
                 <SimilarProductsList
                     product={currentProductForSimilar}
@@ -638,7 +628,6 @@ const ShoppingCart = forwardRef(({
     );
 });
 
-// Add display name for React DevTools
 ShoppingCart.displayName = "ShoppingCart";
 
 export default ShoppingCart;

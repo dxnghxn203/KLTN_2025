@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 interface CategoryState {
     categories: any[];
@@ -6,7 +6,7 @@ interface CategoryState {
     categoryAdmin: any[];
     mainCategories: any[];
     subCategories: any[];
-    childCategories:any[];
+    childCategories: any[];
     loading: boolean;
     error: string | null;
 }
@@ -16,7 +16,7 @@ const initialState: CategoryState = {
     categoryAdmin: [],
     mainCategories: [],
     subCategories: [],
-    childCategories:[],
+    childCategories: [],
     products: [],
     loading: false,
     error: null,
@@ -41,7 +41,7 @@ export const categorySlice = createSlice({
             state.error = action.payload;
         },
         fetchGetMainCategoryStart(state, action) {
-            state.loading = true;  
+            state.loading = true;
         },
         fetchGetMainCategorySuccess(state, action: PayloadAction<any[]>) {
             // console.log("Fetching categories successful, data:", action.payload);
@@ -52,7 +52,7 @@ export const categorySlice = createSlice({
         fetchGetMainCategoryFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
-        } ,
+        },
         fetchGetSubCategoryStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
@@ -84,7 +84,7 @@ export const categorySlice = createSlice({
         fetchGetProductByMainSlugStart(state, action: PayloadAction<string>) {
             state.loading = true;
         },
-        fetchGetProductByMainSlugSuccess(state, action: PayloadAction<any[]>) { 
+        fetchGetProductByMainSlugSuccess(state, action: PayloadAction<any[]>) {
             state.products = action.payload;
             state.loading = false;
             state.error = null;
@@ -262,6 +262,17 @@ export const categorySlice = createSlice({
             console.log("Fetching categories failed, data:", action.payload);
             state.loading = false;
         },
+        fetchGetAllCategoryForMenuStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchGetAllCategoryForMenuSuccess(state, action: PayloadAction<any[]>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchGetAllCategoryForMenuFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -333,6 +344,11 @@ export const {
     fetchDeleteMainCategoryStart,
     fetchDeleteMainCategorySuccess,
     fetchDeleteMainCategoryFailed,
+
+    fetchGetAllCategoryForMenuStart,
+    fetchGetAllCategoryForMenuSuccess,
+    fetchGetAllCategoryForMenuFailed
+
 } = categorySlice.actions;
 
 export default categorySlice.reducer;
