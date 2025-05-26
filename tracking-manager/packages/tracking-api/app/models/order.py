@@ -992,6 +992,10 @@ async def get_category_monthly_revenue(month: int, year: int):
                                     "then": {"id": "thuc_pham_chuc_nang", "name": "Thực phẩm chức năng"}
                                 },
                                 {
+                                    "case": {"$eq": ["$product_info.category.main_category_id", "MAINWQL1742427875"]},
+                                    "then": {"id": "duoc_my_pham", "name": "Dược mỹ phẩm"}
+                                },
+                                {
                                     "case": {
                                         "$and": [
                                             {"$eq": ["$product_info.category.main_category_id", "MAINI5T1742429250"]},
@@ -1010,8 +1014,16 @@ async def get_category_monthly_revenue(month: int, year: int):
                                     "then": {"id": "thuoc_khong_ke_don", "name": "Thuốc không kê đơn"}
                                 },
                                 {
+                                    "case": {"$eq": ["$product_info.category.main_category_id", "MAINYXM1742430328"]},
+                                    "then": {"id": "cham_soc_ca_nhan", "name": "Chăm sóc cá nhân"}
+                                },
+                                {
                                     "case": {"$eq": ["$product_info.category.main_category_id", "MAINSGU1742431170"]},
                                     "then": {"id": "thiet_bi_y_te", "name": "Thiết bị y tế"}
+                                },
+                                {
+                                    "case": {"$eq": ["$product_info.category.main_category_id", "MAINC9H1742431707"]},
+                                    "then": {"id": "me_va_be", "name": "Mẹ và bé"}
                                 }
                             ],
                             "default": {"id": "khac", "name": "Khác"}
@@ -1038,9 +1050,12 @@ async def get_category_monthly_revenue(month: int, year: int):
         data = collection.aggregate(pipeline).to_list(length=None)
         default_categories = {
             "thuc_pham_chuc_nang": "Thực phẩm chức năng",
+            "duoc_my_pham": "Dức mỹ phẩm",
             "thuoc_ke_don": "Thuốc kê đơn",
             "thuoc_khong_ke_don": "Thuốc không kê đơn",
+            "cham_soc_ca_nhan": "Chăm sốc cá nhân",
             "thiet_bi_y_te": "Thiết bị y tế",
+            "me_va_be": "Mẹ và bé",
             "khac": "Khác"
         }
 
