@@ -84,8 +84,45 @@ import {
     fetchProductDiscountFailed,
     fetchProductDiscountStart,
     fetchProductDiscountSuccess,
-} from './productSlice';
+
+    fetchImageToProductStart,
+    fetchImageToProductSuccess,
+    fetchImageToProductFailed,
+} from '@/store';
 import {getSession, getToken, setSession} from '@/utils/cookie';
+
+// Fetch image to product
+function* fetchImageToProduct(action: any): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        files,
+        onSuccess = () => {
+        },
+        onFailed = () => {
+        }
+    } = payload;
+    try {
+        const formData = new FormData();
+
+        files.forEach((file: string | Blob) => {
+            formData.append('files', file);
+        });
+
+        formData.append('extraction_method', 'hybrid');
+
+        const product = yield call(productService.imageToProduct, formData);
+        if (product.status_code === 200) {
+            onSuccess();
+            yield put(fetchImageToProductSuccess(product.data));
+            return;
+        }
+        onFailed();
+        yield put(fetchImageToProductFailed("Failed to upload images to product"));
+    } catch (error) {
+        onSuccess()
+        yield put(fetchImageToProductFailed("Failed to upload images to product"));
+    }
+}
 
 // Fetch product Featured
 function* fetchProductFeatured(action: any): Generator<any, void, any> {
@@ -708,6 +745,5 @@ export function* productSaga() {
     yield takeLatest(fetchGetAllImportFileAddProductStart.type, fetchGetAllImportFileAddProduct);
     yield takeLatest(fetchDeleteImportProductStart.type, handleDeleteImportFileAddProduct);
     yield takeLatest(fetchProductDiscountStart.type, fetchProductDiscount);
-
-
+    yield takeLatest(fetchImageToProductStart.type, fetchImageToProduct);
 }

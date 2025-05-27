@@ -11,6 +11,23 @@ export const getProductBySlug = async (slug: string) => {
 
 }
 
+export const imageToProduct = async (params: any) => {
+    try {
+        const response: any = await axiosClient.post(`${process.env.NEXT_PUBLIC_RECOMMENDATION_API}/v1/extract-drugs`, params);
+        return {
+            status_code: response.status_code,
+            message: response.message,
+            data: response.data
+        }
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
 export const getDealForYou = async (params: any) => {
     try {
         const response: any = await axiosClient.get(`/v1/products/best-deal?top_n=${params.top_n}`);

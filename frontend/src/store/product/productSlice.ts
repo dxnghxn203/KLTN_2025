@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 interface ProductState {
     products: any[];
@@ -16,6 +16,7 @@ interface ProductState {
     productDiscount: any[];
     loading: boolean;
     error: string | null;
+    imageToProduct: any[];
 }
 
 const initialState: ProductState = {
@@ -34,6 +35,7 @@ const initialState: ProductState = {
     productDiscount: [],
     loading: false,
     error: null,
+    imageToProduct: []
 };
 
 export const productSlice = createSlice({
@@ -101,7 +103,7 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
-        fetchAllProductRelatedFailed(state, action: PayloadAction<string>) {    
+        fetchAllProductRelatedFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
         },
@@ -119,7 +121,7 @@ export const productSlice = createSlice({
             state.loading = false;
         },
         // Fetch all product getProductFeatured
-        fetchAllProductGetProductFeaturedStart(state, action:PayloadAction< any>) {
+        fetchAllProductGetProductFeaturedStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
         fetchAllProductGetProductFeaturedSuccess(state, action: PayloadAction<any[]>) {
@@ -174,17 +176,14 @@ export const productSlice = createSlice({
 
         // approve product by pharmacist
         fetchApproveProductByPharmacistStart(state, action: PayloadAction<any>) {
-            console.log("fetchApproveProductByPharmacistStart", action.payload);
             state.loading = true;
         },
         fetchApproveProductByPharmacistSuccess(state, action: PayloadAction<any[]>) {
-          
-            console.log("fetchApproveProductByPharmacistSuccess", action.payload);
+
             state.loading = false;
             state.error = null;
         },
         fetchApproveProductByPharmacistFailed(state, action: PayloadAction<string>) {
-            console.log("fetchApproveProductByPharmacistFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
@@ -250,19 +249,14 @@ export const productSlice = createSlice({
         },
         // fetch search product 
         fetchSearchProductStart(state, action: PayloadAction<any>) {
-            console.log("fetchSearchProductStart", action.payload);
             state.loading = true;
         },
         fetchSearchProductSuccess(state, action: PayloadAction<any[]>) {
-            console.log("fetchSearchProductSuccess", action.payload);
             state.searchResult = action.payload;
-            console.log("payload", action.payload);
-            // console.log("state.searchResult", state.searchResult);
             state.loading = false;
             state.error = null;
         },
         fetchSearchProductFailed(state, action: PayloadAction<string>) {
-            console.log("fetchSearchProductFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
@@ -274,93 +268,84 @@ export const productSlice = createSlice({
 
         // fetch all brand
         fetchAllBrandStart(state, action: PayloadAction<any>) {
-            console.log("fetchAllBrandStart", action.payload);
             state.loading = true;
         },
         fetchAllBrandSuccess(state, action: PayloadAction<any[]>) {
-            console.log("fetchAllBrandSuccess", action.payload);
             state.allBrand = action.payload;
             state.loading = false;
             state.error = null;
         },
         fetchAllBrandFailed(state, action: PayloadAction<string>) {
-            console.log("fetchAllBrandFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
         // fetch import file add product
         fetchImportFileAddProductStart(state, action: PayloadAction<any>) {
 
-            console.log("fetchImportFileAddProductStart", action.payload);
             state.loading = true;
         },
         fetchImportFileAddProductSuccess(state, action: PayloadAction<any[]>) {
-            console.log("fetchImportFileAddProductSuccess", action.payload);
             state.loading = false;
             state.error = null;
         },
         fetchImportFileAddProductFailed(state, action: PayloadAction<string>) {
-            console.log("fetchImportFileAddProductFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
         // fetch get all import file
         fetchGetAllImportFileAddProductStart(state, action: PayloadAction<any>) {
-            console.log("fetchGetAllImportFileAddProductStart", action.payload);
             state.loading = true;
         },
         fetchGetAllImportFileAddProductSuccess(state, action: PayloadAction<any[]>) {
             state.fileImport = action.payload;
-            console.log("fetchGetAllImportFileAddProductSuccess", action.payload);
             state.loading = false;
             state.error = null;
         },
         fetchGetAllImportFileAddProductFailed(state, action: PayloadAction<string>) {
-            console.log("fetchGetAllImportFileAddProductFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
         // delete import product
         fetchDeleteImportProductStart(state, action: PayloadAction<any>) {
-            
-            console.log("fetchDeleteImportProductStart", action.payload);
+
             state.loading = true;
         },
         fetchDeleteImportProductSuccess(state, action: PayloadAction<any[]>) {
-            console.log("fetchDeleteImportProductSuccess", action.payload);
             state.loading = false;
             state.error = null;
         },
         fetchDeleteImportProductFailed(state, action: PayloadAction<string>) {
-            console.log("fetchDeleteImportProductFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         }
 
-        , 
+        ,
         // fetch product discount 
         fetchProductDiscountStart(state, action: PayloadAction<any>) {
-            console.log("fetchProductDiscountStart", action.payload);
             state.loading = true;
         },
         fetchProductDiscountSuccess(state, action: PayloadAction<any[]>) {
-            console.log("fetchProductDiscountSuccess", action.payload);
             state.productDiscount = action.payload;
             state.loading = false;
             state.error = null;
         },
         fetchProductDiscountFailed(state, action: PayloadAction<string>) {
-            console.log("fetchProductDiscountFailed", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
 
-
-
-        
-        
-
-
+        fetchImageToProductStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchImageToProductSuccess(state, action: PayloadAction<any[]>) {
+            state.imageToProduct = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchImageToProductFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -380,7 +365,7 @@ export const {
     fetchAllProductTopSellingStart,
     fetchAllProductTopSellingSuccess,
     fetchAllProductTopSellingFailed,
-    
+
     fetchAllProductRelatedStart,
     fetchAllProductRelatedSuccess,
     fetchAllProductRelatedFailed,
@@ -454,8 +439,10 @@ export const {
     fetchProductDiscountStart,
     fetchProductDiscountSuccess,
 
+    fetchImageToProductStart,
+    fetchImageToProductSuccess,
+    fetchImageToProductFailed,
 
-    
 } = productSlice.actions;
 
 export default productSlice.reducer;
