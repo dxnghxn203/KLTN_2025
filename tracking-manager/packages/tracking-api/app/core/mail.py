@@ -61,6 +61,7 @@ def send_email(
         try:
             sg = SendGridAPIClient(SENDGRID_API_KEY)
             response = sg.send(message)
+            logger.info(f"Email sent with status code: {response.status_code}")
             logger.info(f"Email sent to {to_email}")
             return True
         except Exception as e:
