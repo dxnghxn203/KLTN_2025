@@ -2,15 +2,17 @@ import unittest
 
 import os
 
+from sendgrid import SendGridAPIClient, Mail
+
 
 class MyTestCase(unittest.IsolatedAsyncioTestCase):
     async def test(self):
         SENDGRID_API_KEY = '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'
 
         message = Mail(
-            from_email='hendong34@gmail.com',
-            to_emails='hendong34@gmail.com',
-            subject='Test SendGrid với Python',
+            from_email='21110435@student.hcmute.edu.vn',
+            to_emails='dxnghxn203@gmail.com',
+            subject='Test SendGrid sdwdsd Python',
             html_content='<strong>Xin chào, đây là email test gửi qua SendGrid API!</strong>'
         )
 
@@ -22,6 +24,8 @@ class MyTestCase(unittest.IsolatedAsyncioTestCase):
             print(f"Headers: {response.headers}")
         except Exception as e:
             print(f"Error sending email: {e}")
+
+
         self.assertTrue(True)
 
 if __name__ == '__main__':
