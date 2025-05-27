@@ -51,6 +51,7 @@ async def create_pharmacist(item: ItemPharmacistRegisReq):
             "role_id": "pharmacist",
             "active": True,
             "auth_provider": "email",
+            "login_history": []
         })
 
         insert_result = collection.insert_one(item_dict)
@@ -74,6 +75,15 @@ async def create_pharmacist(item: ItemPharmacistRegisReq):
     except Exception as e:
         logger.error(f"Failed [create_pharmacist] :{e}")
         raise e
+
+async def update_pharmacist_login_history(user_id: str):
+    try:
+        collection = database.db[collection_name]
+        result = collection.update_one({"_id": ObjectId(user_id)}, {"$push": {"login_history": get_current_time()}})
+        if result.modified_count == 0:
+            logger.error(f"[update_pharmacist_login_history] Admin not found: {user_id}")
+    except Exception as e:
+        logger.error(f"Error updating pharmacist login history: {str(e)}")
 
 async def update_pharmacist_verification(email: str):
     collection = database.db[collection_name]
@@ -144,4 +154,68 @@ async def update_status(pharmacist_id: str, status: bool):
         return response.SuccessResponse(message=f"Cập nhật trạng thái pharmacist thành {status}")
     except Exception as e:
         logger.error(f"Error updating pharmacist status: {str(e)}")
+        raise e
+
+async def get_pharmacist_monthly_login_statistics(year: int):
+    try:
+        collection = database.db[collection_name]
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year + 1, 1, 1)
+
+        pipeline = [
+            {
+                "$match": {
+                    "login_history": {
+                        "$elemMatch": {
+                            "$gte": start_date,
+                            "$lt": end_date
+                        }
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "login_history": {
+                        "$filter": {
+                            "input": "$login_history",
+                            "as": "login",
+                            "cond": {
+                                "$and": [
+                                    {"$gte": ["$$login", start_date]},
+                                    {"$lt": ["$$login", end_date]}
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "$unwind": "$login_history"
+            },
+            {
+                "$group": {
+                    "_id": {"month": {"$month": "$login_history"}},
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "month": "$_id.month",
+                    "count": 1
+                }
+            }
+        ]
+
+        results = collection.aggregate(pipeline).to_list(length=12)
+
+        counts = [0] * 12
+
+        for item in results:
+            counts[item["month"] - 1] = item["count"]
+
+        return counts
+
+    except Exception as e:
+        logger.error(f"Failed to get login stats for pharmacist in year {year}: {e}")
         raise e
