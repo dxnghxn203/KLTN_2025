@@ -265,6 +265,23 @@ export const orderSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
+
+        // fetch get type monthly revenue statistics order
+        fetchGetTypeMonthlyRevenueStatisticsOrderStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetTypeMonthlyRevenueStatisticsOrderStart')
+            state.loading = true;
+        },
+        fetchGetTypeMonthlyRevenueStatisticsOrderSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetTypeMonthlyRevenueStatisticsOrderSuccess')
+            state.loading = false;
+            state.error = null;
+
+        },
+        fetchGetTypeMonthlyRevenueStatisticsOrderFailed(state) {
+            console.log('fetchGetTypeMonthlyRevenueStatisticsOrderFailed')
+            state.loading = false;
+            state.error = null;
+        },
     },
 });
 
@@ -339,7 +356,11 @@ export const {
 
     fetchGetCategoryMonthlyRevenueStatisticsOrderFailed,
     fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
-    fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess
+    fetchGetCategoryMonthlyRevenueStatisticsOrderSuccess,
+
+    fetchGetTypeMonthlyRevenueStatisticsOrderFailed,
+    fetchGetTypeMonthlyRevenueStatisticsOrderStart,
+    fetchGetTypeMonthlyRevenueStatisticsOrderSuccess,
 
 } = orderSlice.actions;
 

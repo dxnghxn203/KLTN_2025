@@ -414,7 +414,24 @@ export const getCategoryMonthlyRevenueStatisticsOrder = async (month: number, ye
         console.log("error category monthly revenue", error)
         return {
             status_code: false,
-            message: 'Lỗi lấy doanh thu theo tháng',
+            message: 'Lỗi lấy doanh thu danh mục theo tháng',
+        }
+    }
+}
+
+export const getTypeMonthlyRevenueStatisticsOrder = async (month: number, year: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/type-monthly-revenue-statistics?month=${month}&year=${year}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error category monthly revenue", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy doanh thu thanh toán theo tháng',
         }
     }
 }

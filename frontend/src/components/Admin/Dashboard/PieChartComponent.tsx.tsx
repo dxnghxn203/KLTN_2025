@@ -47,6 +47,7 @@ const PieChartComponent: React.FC<Props> = ({ total }) => {
                 dominantBaseline="central"
                 fontSize={12}
                 fontWeight={600}
+                className="focus:outline-none"
               >
                 {`${data[index].name} (${(percent * 100).toFixed(0)}%)`}
               </text>

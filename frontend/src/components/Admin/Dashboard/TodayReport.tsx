@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useOrder } from "@/hooks/useOrder";
+import React, { useEffect, useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 
 // Dữ liệu chú thích
@@ -8,44 +9,79 @@ const data = [
   { label: "Ngân hàng", color: "#3B82F6" }, // xanh dương
 ];
 
-const totalEarning = 5098.0;
-const chartData: Record<
-  string,
-  { value: number; radius: number; strokeWidth: number; color: string }[]
-> = {
-  "2025-04": [
-    { radius: 70, strokeWidth: 10, color: "#F87171", value: 90 },
-    { radius: 58, strokeWidth: 10, color: "#FACC15", value: 75 },
-    { radius: 46, strokeWidth: 10, color: "#3B82F6", value: 60 },
-    // ...
-  ],
-  "2025-05": [
-    { radius: 70, strokeWidth: 10, color: "#F87171", value: 90 },
-    { radius: 58, strokeWidth: 10, color: "#FACC15", value: 75 },
-  ],
-};
-
 export default function TodayReport() {
-  const [currentMonth, setCurrentMonth] = useState("2025-04");
+  const today = new Date();
+  const currentMonthStr = today.toISOString().slice(0, 7);
+  const [currentMonth, setCurrentMonth] = useState(currentMonthStr);
+  const [chartData, setChartData] = useState<
+   { value: number; radius: number; color: string }[]
+  >([]);
+  const [totalEarning, setTotalEarning] = useState(0);
+  const { fetchGetTypeMonthlyRevenueStatisticsOrder } = useOrder();
+  useEffect(() => {
+    const [year, month] = currentMonth.split("-").map(Number);
+
+    fetchGetTypeMonthlyRevenueStatisticsOrder(
+      month,
+      year,
+      (res) => {
+        const { revenue_cod = 0, revenue_bank = 0, revenue_all = 0 } = res || {};
+
+        const codPercent = revenue_all ? (revenue_cod / revenue_all) * 100 : 0;
+        const bankPercent = revenue_all ? (revenue_bank / revenue_all) * 100 : 0;
+        const totalPercent = revenue_all ? 100 : 0;
+
+        setChartData([
+          {
+            radius: 70,
+            color: "#F87171",
+            value: totalPercent
+          },
+          {
+            radius: 58,
+            color: "#FACC15",
+            value: codPercent,
+          },
+          {
+            radius: 46,
+            color: "#3B82F6",
+            value: bankPercent,
+          },
+        ]);
+        setTotalEarning(revenue_all);
+      },
+      () => {
+        setChartData([]);
+        setTotalEarning(0);
+      }
+    );
+  }, [currentMonth]);
   const handlePrevMonth = () => {
     const date = new Date(currentMonth + "-01");
     date.setMonth(date.getMonth() - 1);
-    const formatted = date.toISOString().slice(0, 7);
-    setCurrentMonth(formatted);
+    setCurrentMonth(date.toISOString().slice(0, 7));
   };
 
   const handleNextMonth = () => {
     const date = new Date(currentMonth + "-01");
     date.setMonth(date.getMonth() + 1);
-    const formatted = date.toISOString().slice(0, 7);
-    setCurrentMonth(formatted);
-  };
+    const nextMonthStr = date.toISOString().slice(0, 7);
 
-  const salesData = chartData[currentMonth] || [];
+    if (nextMonthStr <= currentMonthStr) {
+      setCurrentMonth(nextMonthStr);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow gap-6 p-6 h-full">
       <div className="flex items-center gap-2 justify-end">
+        
+        <button
+          onClick={handlePrevMonth}
+          className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
+        >
+          <MdNavigateBefore />
+        </button>
         <button className="px-3 py-1 border rounded-full text-sm text-gray-600 hover:bg-gray-100">
           {new Date(currentMonth).toLocaleDateString("vi-VN", {
             month: "long",
@@ -53,21 +89,20 @@ export default function TodayReport() {
           })}
         </button>
         <button
-          onClick={handlePrevMonth}
-          className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
-        >
-          <MdNavigateBefore />
-        </button>
-        <button
           onClick={handleNextMonth}
-          className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
+            disabled={currentMonth >= currentMonthStr}
+            className={`text-xl p-1 border rounded-full ${
+              currentMonth >= currentMonthStr
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
         >
           <MdNavigateNext />
         </button>
       </div>
-      <div className="h-full justify-center flex items-center gap-4 h-full">
+      <div className="h-full justify-center flex items-center gap-4">
         <div className="relative w-48 h-48">
-          {salesData.map(({ radius, strokeWidth, color, value }, i) => {
+          {chartData.map(({ radius, color, value }, i) => {
             const circumference = 2 * Math.PI * radius;
             const strokeDashoffset =
               circumference - (value / 100) * circumference;
@@ -85,7 +120,7 @@ export default function TodayReport() {
                   cy="80"
                   r={radius}
                   stroke="#E5E7EB"
-                  strokeWidth={strokeWidth}
+                  strokeWidth={10}
                   fill="none"
                 />
                 <circle
@@ -93,7 +128,7 @@ export default function TodayReport() {
                   cy="80"
                   r={radius}
                   stroke={color}
-                  strokeWidth={strokeWidth}
+                  strokeWidth={10}
                   fill="none"
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}

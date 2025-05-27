@@ -48,7 +48,7 @@ export default function OverviewCards() {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const now = new Date();
-  const currentMonth = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+  const currentDate = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
 
   const updateCardsFromOverviewData = (data: any) => {
     const { total_orders, total_revenue, total_customers, total_products_sold } = data || {};
@@ -56,28 +56,28 @@ export default function OverviewCards() {
       {
         title: "Tổng doanh thu đơn hàng",
         value: total_revenue ? `${total_revenue.toLocaleString()}Đ` : "0Đ",
-        subtitle: currentMonth,
+        subtitle: currentDate,
         icon: <FaCircleDollarToSlot />,
         change: "+2%",
       },
       {
         title: "Tổng khách hàng đã đặt hàng",
         value: total_customers?.toString() || "0",
-        subtitle: currentMonth,
+        subtitle: currentDate,
         icon: <IoPeople />,
         change: "-0.2%",
       },
       {
         title: "Tổng sản phẩm đã bán",
         value: total_products_sold?.toString() || "0",
-        subtitle: currentMonth,
+        subtitle: currentDate,
         icon: <FaProductHunt />,
         change: "+6%",
       },
       {
         title: "Tổng đơn hàng đã tạo",
         value: total_orders?.toString() || "0",
-        subtitle: currentMonth,
+        subtitle: currentDate,
         icon: <FaCartShopping />,
         change: "+6%",
       },
@@ -184,28 +184,28 @@ export default function OverviewCards() {
         </div>
       )}
       {selectedCard === cards[1] && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 bg-[#f8fbfc] min-h-screen my-4 h-full">
-          <div className="bg-white rounded-2xl p-4 shadow flex flex-col items-center justify-center">
-            <h2 className="text-lg font-semibold mb-4">Tổng người dùng</h2>
-            <PieChartComponent total={500} />
-          </div>
+  <div className="bg-[#f8fbfc] min-h-screen my-4 p-4 space-y-4">
 
-          <div className="flex flex-col h-full space-y-4">
-            <div className="bg-white rounded-2xl p-4 shadow h-full">
-              <h2 className="text-sm font-semibold mb-2">Tỉ lệ duy trì</h2>
-              <LineChartComponent color="red" />
-            </div>
-            <div className="bg-white rounded-2xl p-4 shadow h-full">
-              <h2 className="text-sm font-semibold mb-2">Khách hàng mua lại</h2>
-              <LineChartComponent color="green" />
-            </div>
-          </div>
+    {/* Hàng 1: Biểu đồ đường 1 */}
+    <div className="bg-white rounded-2xl p-4 shadow">
+      <h2 className="text-sm font-semibold mb-2">Tỉ lệ duy trì đăng ký tài khoản</h2>
+      <LineChartComponent />
+    </div>
 
-          <div className="bg-white rounded-2xl p-4 shadow">
-            <TopCustomers />
-          </div>
-        </div>
-      )}
+    {/* Hàng 2: PieChart + TopCustomers chia đôi ngang */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="bg-white rounded-2xl p-4 shadow flex flex-col items-center justify-center">
+        <h2 className="text-lg font-semibold mb-4">Tổng người dùng</h2>
+        <PieChartComponent total={500} />
+      </div>
+      <div className="bg-white rounded-2xl p-4 shadow">
+        <TopCustomers />
+      </div>
+    </div>
+
+  </div>
+)}
+
       {selectedCard === cards[2] && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
