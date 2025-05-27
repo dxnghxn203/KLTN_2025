@@ -9,6 +9,7 @@ interface UserSliceState {
     allPharmacist: any[];
     allAdmin: any[];
     token: any;
+    countUserRole: any;
 }
 
 const initialState: UserSliceState = {
@@ -18,6 +19,7 @@ const initialState: UserSliceState = {
     allPharmacist: [],
     allAdmin: [],
     token: null,
+    countUserRole: null
 };
 
 export const userSlice = createSlice({
@@ -187,16 +189,7 @@ export const userSlice = createSlice({
         fetchUpdateStatusPharmacistFailure: (state) => {
             state.loading = false;
         },
-        // update status admin
-        fetchUpdateStatusAdminStart: (state, action) => {
-            state.loading = true;
-        },
-        fetchUpdateStatusAdminSuccess: (state) => {
-            state.loading = false;
-        },
-        fetchUpdateStatusAdminFailure: (state) => {
-            state.loading = false;
-        },
+
         // insert pharmacist 
         fetchInsertPharmacistStart: (state, action) => {
             console.log("fetchInsertPharmacistStart", action.payload)
@@ -245,9 +238,29 @@ export const userSlice = createSlice({
             state.loading = false;
         },
 
+        // fetch get monthly login statistics
+        fetchGetMonthlyLoginStatisticsStart: (state, action) => {
+            
+            state.loading = true;
+        },
+        fetchGetMonthlyLoginStatisticsSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchGetMonthlyLoginStatisticsFailure: (state) => {
+            state.loading = false;
+        },
 
-        
-
+        // fetch get count user role statistics
+        fetchGetCountUserRoleStatisticsStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchGetCountUserRoleStatisticsSuccess: (state, action: PayloadAction<any>) => {
+            state.countUserRole = action.payload;
+            state.loading = false;
+        },
+        fetchGetCountUserRoleStatisticsFailure: (state) => {
+            state.loading = false;
+        },
     },
 });
 
@@ -308,10 +321,6 @@ export const {
     fetchUpdateStatusPharmacistStart,
     fetchUpdateStatusPharmacistSuccess,
 
-    fetchUpdateStatusAdminFailure,
-    fetchUpdateStatusAdminStart,
-    fetchUpdateStatusAdminSuccess,
-
     fetchInsertPharmacistStart,
     fetchInsertPharmacistSuccess,
     fetchInsertPharmacistFailure,
@@ -326,7 +335,15 @@ export const {
 
     fetchVerifyOtpAdminFailure,
     fetchVerifyOtpAdminStart,
-    fetchVerifyOtpAdminSuccess
+    fetchVerifyOtpAdminSuccess,
+
+    fetchGetMonthlyLoginStatisticsStart,
+    fetchGetMonthlyLoginStatisticsSuccess,
+    fetchGetMonthlyLoginStatisticsFailure,
+
+    fetchGetCountUserRoleStatisticsStart,
+    fetchGetCountUserRoleStatisticsSuccess,
+    fetchGetCountUserRoleStatisticsFailure
 
 } = userSlice.actions;
 

@@ -7,4 +7,4 @@ export const selectAllUserAdmin = (state: any) => state.user.allUserAdmin;
 export const selectUser = (state: any) => state.user;
 export const selectAllPharmacist = (state: any) => state.user.allPharmacist;
 export const selectAllAdmin = (state: any) => state.user.allAdmin;
-    
+export const selectCountUserRole = (state: any) => state.user.countUserRole;

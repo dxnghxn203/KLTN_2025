@@ -52,10 +52,6 @@ import {
     fetchGetAllAdminStart,
     fetchGetAllAdminSuccess,
 
-    fetchUpdateStatusAdminFailure,
-    fetchUpdateStatusAdminStart,
-    fetchUpdateStatusAdminSuccess,
-
     fetchUpdateStatusPharmacistFailure,
     fetchUpdateStatusPharmacistStart,
     fetchUpdateStatusPharmacistSuccess,
@@ -74,10 +70,17 @@ import {
 
     fetchVerifyOtpAdminFailure,
     fetchVerifyOtpAdminStart,
-    fetchVerifyOtpAdminSuccess
+    fetchVerifyOtpAdminSuccess,
+
+    fetchGetMonthlyLoginStatisticsStart,
+    fetchGetMonthlyLoginStatisticsSuccess,
+    fetchGetMonthlyLoginStatisticsFailure,
+    fetchGetCountUserRoleStatisticsSuccess,
+    fetchGetCountUserRoleStatisticsFailure,
+    fetchGetCountUserRoleStatisticsStart
 
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist, getAllPharmacist, getAllAdmin, updateStatusAdmin, updateStatusPharmacist, insertPharmacist, registerAdmin, sendOTPAdmin, verifyOTPAdmin } from "@/services/userService";
+import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist, getAllPharmacist, getAllAdmin, updateStatusAdmin, updateStatusPharmacist, insertPharmacist, registerAdmin, sendOTPAdmin, verifyOTPAdmin, getMonthlyLoginStatistics, getCountUserRoleStatistics } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -368,25 +371,6 @@ function* userGetAllAdminWorkerSaga(action: any): Generator<any, void, any> {
     }
 }
 
-// function* updateStatusAdminWorkerSaga(action: any): Generator<any, void, any> {
-//     const { payload } = action;
-//     const {
-//         onSuccess =()=> {},
-//         onFailure =()=> {},
-//     } = payload;
-//     try {
-//         const response = yield call(updateStatusAdmin, payload);
-//         if (response.status_code === 200) {
-//             yield put(fetchUpdateStatusAdminSuccess(response.data));
-//             onSuccess(response.message);
-//         } else {
-//             yield put(fetchUpdateStatusAdminFailure());
-//             onFailure(response.message);
-//         }
-//     } catch (error: any) {
-//         yield put(fetchUpdateStatusAdminFailure());
-//     }
-// }
 function* updateStatusPharmacistWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
     const {
@@ -525,7 +509,53 @@ function* handleSendOTPAdmin (action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchGetMonthlyLoginStatistics(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            month,
+            year,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+        const rs = yield call(getMonthlyLoginStatistics, year);
+        if (rs.status_code === 200) {
+            yield put(fetchGetMonthlyLoginStatisticsSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetMonthlyLoginStatisticsFailure(rs.message));
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetMonthlyLoginStatisticsFailure());
+    }
+}
 
+function* fetchGetCountUserRoleStatistics(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
+        } = payload;
+        const rs = yield call(getCountUserRoleStatistics);
+        if (rs.status_code === 200) {
+            yield put(fetchGetCountUserRoleStatisticsSuccess(rs.data));
+            onSuccess();
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetCountUserRoleStatisticsFailure(rs.message));
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetCountUserRoleStatisticsFailure());
+    }
+}
 
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
@@ -541,11 +571,12 @@ export function* userSaga() {
     yield takeLatest(fetchForgotPasswordPharmacistStart.type, forgotPasswordPharmacistWorkerSaga);
     yield takeLatest(fetchGetAllPharmacistStart.type, userGetAllPharmacistWorkerSaga);
     yield takeLatest(fetchGetAllAdminStart.type, userGetAllAdminWorkerSaga);
-    // yield takeLatest(fetchUpdateStatusAdminStart.type, updateStatusAdminWorkerSaga);
     yield takeLatest(fetchUpdateStatusPharmacistStart.type, updateStatusPharmacistWorkerSaga);
     yield takeLatest(fetchInsertPharmacistStart.type, insertPharmacistWorkerSaga);
     yield takeLatest(fetchRegisterAdminStart.type, handlRegisterAdmin);
     yield takeLatest(fetchVerifyOtpAdminStart.type, handleVerifyOTPAdmin);
     yield takeLatest(fetchSendOtpAdminStart.type, handleSendOTPAdmin);
+    yield takeLatest(fetchGetMonthlyLoginStatisticsStart.type, fetchGetMonthlyLoginStatistics);
+    yield takeLatest(fetchGetCountUserRoleStatisticsStart.type, fetchGetCountUserRoleStatistics);
 }
 

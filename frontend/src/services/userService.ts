@@ -360,6 +360,36 @@ export const sendOTPAdmin = async (params: any): Promise<any> => {
     }
 };
 
+export const getMonthlyLoginStatistics = async (year: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/admin/monthly-login-statistics?year=${year}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error monthly login statistics", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy chỉ số đăng nhập tài khoản theo tháng',
+        }
+    }
+}
 
-
-
+export const getCountUserRoleStatistics = async () => {
+    try {
+        const response: any = await axiosClient.get(`/v1/admin/user-role-statistics`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error count user role statistics", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy tổng số người dùng theo loại',
+        }
+    }
+}

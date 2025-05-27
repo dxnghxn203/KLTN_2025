@@ -16,9 +16,11 @@ import {
     fetchUpdateStatusPharmacistStart,
     fetchUpdateStatusUserStart,
     fetchVerifyOtpAdminStart,
-    fetchVerifyOtpStart
+    fetchVerifyOtpStart,
+    fetchGetMonthlyLoginStatisticsStart,
+    fetchGetCountUserRoleStatisticsStart
 } from "@/store";
-import {insertUserSelector, selectAllAdmin, selectAllPharmacist, selectAllUserAdmin} from "@/store/user/userSelector";
+import {insertUserSelector, selectAllAdmin, selectAllPharmacist, selectAllUserAdmin, selectCountUserRole} from "@/store/user/userSelector";
 import {useDispatch, useSelector} from "react-redux";
 import {useSession} from "next-auth/react";
 import {useState} from "react";
@@ -46,6 +48,7 @@ export function useUser() {
     const allUserAdmin = useSelector(selectAllUserAdmin);
     const allPharmacist = useSelector(selectAllPharmacist);
     const allAdmin = useSelector(selectAllAdmin);
+    const countUserRole = useSelector(selectCountUserRole);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(100);
@@ -274,6 +277,20 @@ export function useUser() {
 
     }
 
+    const fetchGetMonthlyLoginStatistics = async (year: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+            dispatch(fetchGetMonthlyLoginStatisticsStart({
+                year: year,
+                onSuccess: onSuccess,
+                onFailed: onFailed
+            }));
+        }
+
+    const fetchGetCountUserRoleStatistics = async (onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+            dispatch(fetchGetCountUserRoleStatisticsStart({
+                onSuccess: onSuccess,
+                onFailed: onFailed
+            }));
+        }
 
     return {
         insertUser,
@@ -317,7 +334,14 @@ export function useUser() {
 
         fetchVerifyEmail,
 
-        fetchSendOTPAdmin
+        fetchSendOTPAdmin,
+
+        fetchGetMonthlyLoginStatistics,
+
+        fetchGetCountUserRoleStatistics,
+        countUserRole,
+
+        
     };
 }
 

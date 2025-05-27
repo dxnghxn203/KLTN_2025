@@ -188,7 +188,6 @@ export default function OverviewCards() {
 
     {/* Hàng 1: Biểu đồ đường 1 */}
     <div className="bg-white rounded-2xl p-4 shadow">
-      <h2 className="text-sm font-semibold mb-2">Tỉ lệ duy trì đăng ký tài khoản</h2>
       <LineChartComponent />
     </div>
 
@@ -196,13 +195,12 @@ export default function OverviewCards() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="bg-white rounded-2xl p-4 shadow flex flex-col items-center justify-center">
         <h2 className="text-lg font-semibold mb-4">Tổng người dùng</h2>
-        <PieChartComponent total={500} />
+        <PieChartComponent />
       </div>
       <div className="bg-white rounded-2xl p-4 shadow">
         <TopCustomers />
       </div>
     </div>
-
   </div>
 )}
 

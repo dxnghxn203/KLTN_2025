@@ -37,7 +37,9 @@ export const ROLE_ACTIONS_ADMIN = [
 
     'fetchGetMonthlyRevenueStatisticsOrderStart',
     'fetchGetCategoryMonthlyRevenueStatisticsOrderStart',
-    'fetchGetTypeMonthlyRevenueStatisticsOrderStart'
+    'fetchGetTypeMonthlyRevenueStatisticsOrderStart',
+
+    'fetchGetMonthlyLoginStatisticsStart,'
 
 ]
 

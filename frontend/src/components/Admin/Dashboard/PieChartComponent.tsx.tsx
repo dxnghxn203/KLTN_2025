@@ -1,24 +1,35 @@
-import React from "react";
+import { useUser } from "@/hooks/useUser";
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
-interface Props {
-  total: number;
-}
-
-const data = [
-  { name: "Khách hàng", value: 200 },
-  { name: "Dược sĩ", value: 60 },
-  { name: "Admin", value: 40 },
-];
+interface Props {}
 
 const COLORS = ["#56bfa0", "#c5e37d", "#f5a5ab"];
 
-const PieChartComponent: React.FC<Props> = ({ total }) => {
+const PieChartComponent: React.FC<Props> = () => {
+  const { fetchGetCountUserRoleStatistics, countUserRole } = useUser();
+
+
+  useEffect(() => {
+    fetchGetCountUserRoleStatistics(
+      () => {
+      },
+      () => {
+      }
+    );
+  }, []);
+
+  const pieChartData = [
+    { name: "Khách hàng", value: countUserRole?.user || 0 },
+    { name: "Dược sĩ", value: countUserRole?.pharmacist || 0 },
+    { name: "Quản trị viên", value: countUserRole?.admin || 0 },
+  ];
+
   return (
     <div className="w-[400px] h-[400px] relative">
       <PieChart width={400} height={400}>
         <Pie
-          data={data}
+          data={pieChartData}
           cx="50%"
           cy="50%"
           outerRadius={140}
@@ -49,13 +60,13 @@ const PieChartComponent: React.FC<Props> = ({ total }) => {
                 fontWeight={600}
                 className="focus:outline-none"
               >
-                {`${data[index].name} (${(percent * 100).toFixed(0)}%)`}
+                {`${pieChartData[index].name} (${(percent * 100).toFixed(0)}%)`}
               </text>
             );
           }}
           labelLine={false}
         >
-          {data.map((entry, index) => (
+          {pieChartData.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
