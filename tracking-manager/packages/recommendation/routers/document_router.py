@@ -1,16 +1,17 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from typing import List, Dict, Any, Optional
 
-from core import logger
-from services.document_extractor import process_document
+from core import logger, response
+from services.document_extractor import process_document, extract_drug_information
 from models.document import (
     DocumentExtractionRequest,
     DocumentExtractionResponse,
     get_document,
-    get_user_documents
+    get_user_documents, DrugExtractionResponse
 )
 
 router = APIRouter()
+
 
 
 @router.post("/extract", response_model=DocumentExtractionResponse)
@@ -107,3 +108,85 @@ async def get_user_documents_endpoint(
 
     documents = await get_user_documents(user_id, document_type, skip, limit)
     return documents
+
+
+@router.post("/extract-drugs")
+async def extract_drugs_from_images(
+        files: List[UploadFile] = File(...),
+        extraction_method: str = Form("hybrid")
+):
+    """
+    Extract drug information from up to 2 images.
+
+    - **files**: Up to 2 image files containing drug information
+    - **extraction_method**: Extraction method (ocr/llm/hybrid)
+    """
+    try:
+        # Validate number of files
+        if len(files) > 2:
+            logger.warn(f"Too many files submitted: {len(files)}")
+            return response.BaseResponse(
+                status_code=400,
+                message="Maximum 2 images allowed",
+                data=None
+            )
+
+        # Check file extensions
+        allowed_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"]
+        for file in files:
+            if not file.filename or "." not in file.filename:
+                logger.warn(f"Invalid filename: {file.filename}")
+                return response.BaseResponse(
+                    status_code=400,
+                    message="Invalid file format. Only images are supported.",
+                    data=None
+                )
+
+            file_ext = file.filename.split(".")[-1].lower()
+            if file_ext not in allowed_extensions:
+                logger.warn(f"Unsupported file extension: {file_ext}")
+                return response.BaseResponse(
+                    status_code=400,
+                    message=f"Unsupported file format: {file_ext}. Only images are supported.",
+                    data=None
+                )
+
+            # Check file size (limit to 5MB per file)
+            file_size_limit = 5 * 1024 * 1024  # 5MB
+            file_content = await file.read()
+            file_size = len(file_content)
+            await file.seek(0)
+
+            if file_size > file_size_limit:
+                logger.warn(f"File too large: {file.filename} ({file_size} bytes)")
+                return response.BaseResponse(
+                    status_code=400,
+                    message=f"File {file.filename} is too large. Maximum size is 5MB per file.",
+                    data=None
+                )
+
+        # Process files
+        logger.info(f"Processing {len(files)} drug image(s) with {extraction_method} extraction method")
+        result = await extract_drug_information(files, extraction_method)
+        drug_response = DrugExtractionResponse(**result)
+
+        return response.BaseResponse(
+            status_code=200,
+            message="Drug information extracted successfully",
+            data=drug_response.dict()
+        )
+
+    except HTTPException as he:
+        logger.error(f"HTTP Exception in drug extraction: {he.detail}")
+        return response.BaseResponse(
+            status_code=he.status_code,
+            message=he.detail,
+            data=None
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error in drug extraction: {str(e)}", exc_info=True)
+        return response.BaseResponse(
+            status_code=500,
+            message=f"Error processing drug images: {str(e)}",
+            data=None
+        )

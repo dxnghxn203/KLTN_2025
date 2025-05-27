@@ -187,3 +187,22 @@ async def get_user_documents(
 
     # Áp dụng limit sau khi đã sort và gộp
     return all_results[:limit]
+
+class DrugInformation(BaseModel):
+    name: Optional[str] = None
+    brand: Optional[str] = None
+    origin: Optional[str] = None
+    serial_number: Optional[str] = None
+    dosage_form: Optional[str] = None
+    active_ingredients: Optional[List[str]] = None
+    composition: Optional[str] = None
+    manufacturer: Optional[str] = None
+    expiration_date: Optional[str] = None
+    batch_number: Optional[str] = None
+    registration_number: Optional[str] = None
+    additional_info: Optional[dict] = {}
+
+class DrugExtractionResponse(BaseModel):
+    drugs: List[DrugInformation] = []
+    raw_text: Optional[str] = None
+    extraction_method: str

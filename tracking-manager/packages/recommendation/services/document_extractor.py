@@ -592,3 +592,147 @@ async def process_document(
                 logger.warn(f"Đã xóa file ảnh trang tạm thời còn sót lại: {temp_image_page_path}")
             except Exception as e_unlink_page:
                 logger.error(f"Không thể xóa file ảnh trang tạm thời {temp_image_page_path}: {e_unlink_page}")
+
+
+async def extract_drug_information(
+        files: List[UploadFile],
+        extraction_method: str = "hybrid"
+) -> Dict[str, Any]:
+    """Extract drug information from up to 2 images."""
+    if len(files) > 2:
+        raise HTTPException(status_code=400, detail="Maximum 2 images allowed")
+
+    all_drugs = []
+    combined_raw_text = []
+
+    for file in files:
+        temp_file_path = None
+        try:
+            file_content = await file.read()
+            await file.seek(0)
+
+            file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
+            supported_image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'webp', 'gif']
+
+            if file_ext not in supported_image_exts:
+                raise HTTPException(status_code=400,
+                                    detail=f"Unsupported file format: {file_ext}. Only images are supported.")
+
+            # Save temp file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_file:
+                temp_file.write(file_content)
+                temp_file_path = Path(temp_file.name)
+
+            # Extract text with OCR if needed
+            ocr_text = None
+            ocr_available = is_tesseract_available()
+            if extraction_method in ["ocr", "hybrid"] and ocr_available:
+                ocr_text = extract_text_from_image(temp_file_path)
+                if ocr_text:
+                    combined_raw_text.append(ocr_text)
+
+            # Process with LLM
+            if extraction_method in ["llm", "hybrid"]:
+                # Special prompt for drug information extraction
+                system_prompt = """
+                Bạn là trợ lý trích xuất thông tin về thuốc. Hãy phân tích hình ảnh thuốc được cung cấp và trích xuất các thông tin sau:
+
+                1. name: Tên thuốc
+                2. brand: Nhãn hiệu thuốc
+                3. origin: Xuất xứ (quốc gia sản xuất)
+                4. serial_number: Số hiệu/mã thuốc
+                5. dosage_form: Dạng bào chế (viên, siro, ống tiêm, v.v.)
+                6. active_ingredients: Hoạt chất chính
+                7. composition: Thành phần
+                8. manufacturer: Nhà sản xuất
+                9. expiration_date: Hạn sử dụng
+                10. batch_number: Số lô
+                11. registration_number: Số đăng ký
+                12. additional_info: Thông tin bổ sung (phải là một đối tượng JSON)
+
+                Trả về kết quả dưới dạng JSON với các trường trên. Nếu không thể xác định thông tin nào đó, để giá trị là null.
+                Chú ý rằng thuốc có thể là thuốc sản xuất tại Việt Nam hoặc thuốc nhập khẩu.
+                """
+
+                base64_content = encode_image_to_base64(temp_file_path)
+                data_url = f"data:image/{file_ext};base64,{base64_content}"
+
+                user_content_parts = [{"type": "image_url", "image_url": {"url": data_url}}]
+
+                if ocr_text:
+                    user_content_parts.append(
+                        {"type": "text", "text": f"OCR text tham khảo (nếu hình ảnh không rõ):\n{ocr_text}"}
+                    )
+
+                user_content_parts.append({"type": "text", "text": "Hãy trích xuất thông tin thuốc từ hình ảnh này."})
+                messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_content_parts)]
+
+                try:
+                    response = await llm.ainvoke(messages)
+                    content = response.content if hasattr(response, 'content') else str(response)
+
+                    # Extract JSON from response
+                    drug_info = {}
+                    try:
+                        drug_info = json.loads(content)
+                    except json.JSONDecodeError:
+                        json_pattern = r'```(?:json)?\s*([\s\S]*?)\s*```'
+                        match = re.search(json_pattern, content)
+                        if match:
+                            try:
+                                drug_info = json.loads(match.group(1))
+                            except json.JSONDecodeError:
+                                logger.warn("Failed to parse JSON from markdown code block in LLM response.")
+
+                    # Ensure additional_info is a dictionary
+                    additional_info = drug_info.get("additional_info", {})
+                    if not isinstance(additional_info, dict):
+                        if isinstance(additional_info, str):
+                            additional_info = {"description": additional_info}
+                        else:
+                            additional_info = {}
+
+                    # Convert to DrugInformation model-compatible dict
+                    drug_data = {
+                        "name": drug_info.get("name"),
+                        "brand": drug_info.get("brand"),
+                        "origin": drug_info.get("origin"),
+                        "serial_number": drug_info.get("serial_number"),
+                        "dosage_form": drug_info.get("dosage_form"),
+                        "active_ingredients": drug_info.get("active_ingredients"),
+                        "composition": drug_info.get("composition"),
+                        "manufacturer": drug_info.get("manufacturer"),
+                        "expiration_date": drug_info.get("expiration_date"),
+                        "batch_number": drug_info.get("batch_number"),
+                        "registration_number": drug_info.get("registration_number"),
+                        "additional_info": additional_info
+                    }
+                    all_drugs.append(drug_data)
+
+                except Exception as e:
+                    logger.error(f"LLM extraction error: {str(e)}", exc_info=True)
+
+            # If only OCR is used
+            if extraction_method == "ocr" and ocr_available and not all_drugs:
+                all_drugs.append({
+                    "name": None,
+                    "description": "OCR extraction only - structured data not available",
+                    "additional_info": {"ocr_text": ocr_text or ""}
+                })
+
+        except Exception as e:
+            logger.error(f"Error processing drug image: {str(e)}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
+        finally:
+            # Cleanup temp file
+            if temp_file_path and os.path.exists(temp_file_path):
+                try:
+                    os.unlink(temp_file_path)
+                except Exception as e_unlink:
+                    logger.error(f"Could not delete temp file {temp_file_path}: {e_unlink}")
+
+    return {
+        "drugs": all_drugs,
+        "raw_text": "\n".join(combined_raw_text),
+        "extraction_method": extraction_method
+    }
