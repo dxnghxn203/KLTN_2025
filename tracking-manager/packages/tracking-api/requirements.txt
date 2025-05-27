@@ -31,4 +31,4 @@ websocket~=0.2.1
 websockets~=15.0.1
 pillow~=11.1.0
 
-sendgrid
+sendgrid~=6.12.2
