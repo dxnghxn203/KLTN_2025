@@ -122,6 +122,9 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
             device_id=device_id)
         res = ItemPharmacistRes.from_mongo(pt)
         res.token = jwt_token
+
+        await pharmacist.update_pharmacist_login_history(str(pt.get("_id")))
+
         return SuccessResponse(message="Đăng nhập thành công", data=res)
     except JsonException as je:
         raise je

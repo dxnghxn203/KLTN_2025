@@ -31,6 +31,8 @@ async def login(request: GoogleAuthRequest):
             role_id="user",
             device_id="web")
 
+        await user.update_user_login_history(user_info.data["user_id"])
+
         return SuccessResponse(message=user_info.message, data={"token": jwt_token})
     except JsonException as je:
         raise je
@@ -70,6 +72,9 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
             device_id=device_id)
         res = ItemUserRes.from_mongo(us)
         res.token = jwt_token
+
+        await user.update_user_login_history(str(us.get("_id")))
+
         return SuccessResponse(message="Đăng nhập thành công", data=res)
     except JsonException as je:
         raise je

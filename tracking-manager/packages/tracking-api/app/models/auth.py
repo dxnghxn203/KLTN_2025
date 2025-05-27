@@ -11,7 +11,6 @@ from app.helpers.time_utils import get_current_time
 from app.middleware.middleware import get_private_key, generate_otp, generate_password
 
 TOKEN_EXPIRY_SECONDS = 31536000
-collection_name = "authorizations"
 
 async def get_token(username: str, role_id: str, device_id: str = "web"):
     token = redis.get_jwt_token(username, device_id)

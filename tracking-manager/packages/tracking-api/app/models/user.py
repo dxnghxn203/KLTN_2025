@@ -36,6 +36,7 @@ async def create_user(item: ItemUserRegisReq, auth_provider: str, password: str 
         "role_id": "user",
         "active": True,
         "auth_provider": auth_provider,
+        "login_history": []
     })
 
     insert_result = collection.insert_one(item_dict)
@@ -109,6 +110,16 @@ async def update_user_verification(email: str):
     collection.update_one({"email": email, "auth_provider": "email"}, {"$set": {"verified_email_at": get_current_time()}})
     return response.SuccessResponse(message="Email đã được xác thực")
 
+async def update_user_login_history(user_id: str):
+    try:
+        collection = database.db[collection_name]
+        result = collection.update_one({"_id": ObjectId(user_id)}, {"$push": {"login_history": get_current_time()}})
+        if result.modified_count == 0:
+            logger.error(f"[update_user_login_history] User not found: {user_id}")
+    except Exception as e:
+        logger.error(f"Error updating user login history: {str(e)}")
+
+
 async def get_by_id(user_id: str):
     try:
         collection = database.db[collection_name]
@@ -165,4 +176,68 @@ async def update_user_password(email: str, new_password: str):
         raise je
     except Exception as e:
         logger.error(f"[update_user_password] Lỗi: {str(e)}")
+        raise e
+
+async def get_user_monthly_login_statistics(year: int):
+    try:
+        collection = database.db[collection_name]
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year + 1, 1, 1)
+
+        pipeline = [
+            {
+                "$match": {
+                    "login_history": {
+                        "$elemMatch": {
+                            "$gte": start_date,
+                            "$lt": end_date
+                        }
+                    }
+                }
+            },
+            {
+                "$project": {
+                    "login_history": {
+                        "$filter": {
+                            "input": "$login_history",
+                            "as": "login",
+                            "cond": {
+                                "$and": [
+                                    {"$gte": ["$$login", start_date]},
+                                    {"$lt": ["$$login", end_date]}
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "$unwind": "$login_history"
+            },
+            {
+                "$group": {
+                    "_id": {"month": {"$month": "$login_history"}},
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "month": "$_id.month",
+                    "count": 1
+                }
+            }
+        ]
+
+        results = collection.aggregate(pipeline).to_list(length=12)
+
+        counts = [0] * 12
+
+        for item in results:
+            counts[item["month"] - 1] = item["count"]
+
+        return counts
+
+    except Exception as e:
+        logger.error(f"Failed to get login stats for user in year {year}: {e}")
         raise e

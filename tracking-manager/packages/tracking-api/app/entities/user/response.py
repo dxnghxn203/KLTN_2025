@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from pydantic import BaseModel, Field
 
@@ -20,6 +20,7 @@ class ItemUserRes(BaseModel):
     updated_at: Optional[Union[datetime.datetime, None]] = None
     token: Optional[Union[str, None]] = None
     password: Optional[Union[str, None]] = None
+    login_history: Optional[List[datetime.datetime]] = []
 
     @classmethod
     def from_mongo(cls, data):

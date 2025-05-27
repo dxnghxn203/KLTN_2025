@@ -12,7 +12,7 @@ from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
-from app.models import auth, admin
+from app.models import auth, admin, pharmacist, user
 from app.models.auth import handle_otp_verification, handle_password_verification
 router = APIRouter()
 
@@ -122,6 +122,9 @@ async def login(email: str = Form(), password: str = Form(), device_id: Optional
             device_id=device_id)
         res = ItemAdminRes.from_mongo(ad)
         res.token = jwt_token
+
+        await admin.update_admin_login_history(str(ad.get("_id")))
+
         return SuccessResponse(message="Đăng nhập thành công", data=res)
     except JsonException as je:
         raise je
@@ -235,6 +238,31 @@ async def get_top_revenue_customer_statistics(
         raise je
     except Exception as e:
         logger.error(f"Error get top revenue customer statistics: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/admin/monthly-login-statistics", response_model=BaseResponse)
+async def get_monthly_login_statistics(
+        year: int,
+        # token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        admin_result = await admin.get_admin_monthly_login_statistics(year)
+        pharmacy_result = await pharmacist.get_pharmacist_monthly_login_statistics(year)
+        user_result = await user.get_user_monthly_login_statistics(year)
+        return SuccessResponse(
+            data={
+                "admin_stastistics": admin_result,
+                "pharmacist_stastistics": pharmacy_result,
+                "user_stastistics": user_result
+            }
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error get monthly login statistics: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
