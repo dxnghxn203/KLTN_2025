@@ -4,13 +4,16 @@ import React, {useEffect, useState} from "react";
 import {X} from "lucide-react";
 import Image from "next/image";
 import voucher from "@/images/gift.png";
+import {useAuth} from "@/hooks/useAuth";
 
 interface VoucherDialogProps {
     onClose: () => void;
     allVoucherUser: any;
     setVouchers?: (vouchers: any) => void;
     vouchers?: any;
-    orderCheck: boolean
+    orderCheck: boolean;
+    totalAmount?: any;
+    voucherErrors?: Array<{ voucher_id: string, message: string }>;
 }
 
 const VoucherDialog: React.FC<VoucherDialogProps> = ({
@@ -18,8 +21,11 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                          allVoucherUser,
                                                          setVouchers,
                                                          vouchers,
-                                                         orderCheck
+                                                         orderCheck,
+                                                         totalAmount,
+                                                         voucherErrors = []
                                                      }) => {
+    const {user} = useAuth();
     const [voucherCode, setVoucherCode] = useState("");
     const [selectedVoucher, setSelectedVoucher] = useState<any>(null);
     const [selectedVoucherOrder, setSelectedVoucherOrder] = useState<any>(null);
@@ -29,6 +35,28 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
         (voucher: any) => voucher.voucher_type === "delivery"
     );
 
+    const isVoucherEligible = (voucher: any) => {
+        if (!totalAmount || !orderCheck) return false;
+        return voucher.min_order_value <= totalAmount;
+    };
+
+    const hasUserUsedVoucher = (voucher: any) => {
+        if (!user || !voucher.used_by) return false;
+        return voucher.used_by.includes(user._id);
+    };
+
+    const isVoucherError = (voucherId: string) => {
+        return voucherErrors.some(error => error.voucher_id === voucherId);
+    };
+
+    const getVoucherErrorMessage = (voucherId: string) => {
+        const error = voucherErrors.find(error => error.voucher_id === voucherId);
+        return error ? error.message : "";
+    };
+
+    const isSingleUseVoucher = (voucher: any) => {
+        return voucher.inventory === 1;
+    };
 
     const vouchersToShow = showAll
         ? deliveryVouchers
@@ -42,45 +70,119 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
         : orderVouchers.slice(0, 3);
 
     useEffect(() => {
-        if (vouchers && vouchers.selectedVoucher && vouchers.selectedVoucherOrder) {
+        if (vouchers) {
             setSelectedVoucher(vouchers.selectedVoucher);
             setSelectedVoucherOrder(vouchers.selectedVoucherOrder);
-        } else {
-            if (deliveryVouchers && deliveryVouchers.length > 0) {
-                setSelectedVoucher(deliveryVouchers[0]);
-                if (setVouchers) {
-                    setVouchers((props: any) => {
-                            return {
-                                ...props,
-                                selectedVoucher: deliveryVouchers[0],
-                            }
-                        }
-                    )
-                }
+        }
+    }, [totalAmount]);
+
+    useEffect(() => {
+        if (totalAmount && setVouchers) {
+            let newSelectedVoucher = selectedVoucher;
+            let newSelectedVoucherOrder = selectedVoucherOrder;
+            let needsUpdate = false;
+
+            if (selectedVoucher && selectedVoucher.min_order_value > totalAmount) {
+                newSelectedVoucher = null;
+                needsUpdate = true;
             }
-            if (orderVouchers && orderVouchers.length > 0) {
-                setSelectedVoucherOrder(orderVouchers[0]);
-                if (setVouchers) {
-                    setVouchers((props: any) => {
-                        return {
-                            ...props,
-                            selectedVoucherOrder: orderVouchers[0],
-                        }
-                    })
-                }
+
+            if (selectedVoucherOrder && selectedVoucherOrder.min_order_value > totalAmount) {
+                newSelectedVoucherOrder = null;
+                needsUpdate = true;
+            }
+
+            if (needsUpdate) {
+                setSelectedVoucher(newSelectedVoucher);
+                setSelectedVoucherOrder(newSelectedVoucherOrder);
+
+                setVouchers({
+                    selectedVoucher: newSelectedVoucher,
+                    selectedVoucherOrder: newSelectedVoucherOrder
+                });
             }
         }
+    }, [totalAmount, selectedVoucher, selectedVoucherOrder, setVouchers]);
 
-    }, []);
+    useEffect(() => {
+        if (voucherErrors.length > 0 && setVouchers) {
+            let newSelectedVoucher = selectedVoucher;
+            let newSelectedVoucherOrder = selectedVoucherOrder;
+
+            if (selectedVoucher && voucherErrors.some(error => error.voucher_id === selectedVoucher.voucher_id)) {
+                newSelectedVoucher = null;
+            }
+
+            if (selectedVoucherOrder && voucherErrors.some(error => error.voucher_id === selectedVoucherOrder.voucher_id)) {
+                newSelectedVoucherOrder = null;
+            }
+
+            if (newSelectedVoucher !== selectedVoucher || newSelectedVoucherOrder !== selectedVoucherOrder) {
+                setSelectedVoucher(newSelectedVoucher);
+                setSelectedVoucherOrder(newSelectedVoucherOrder);
+
+                setVouchers({
+                    selectedVoucher: newSelectedVoucher,
+                    selectedVoucherOrder: newSelectedVoucherOrder
+                });
+            }
+        }
+    }, [voucherErrors, selectedVoucher, selectedVoucherOrder, setVouchers]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setVoucherCode(e.target.value);
     };
 
+    const truncateText = (text: string, maxLength: number = 60) => {
+        if (!text) return "";
+        return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+    };
+
+    const highlightPercentage = (text: string) => {
+        if (!text) return "";
+        const parts = text.split(/(\d+\s*%)/g);
+        return parts.map((part, index) => {
+            if (part.match(/\d+\s*%/)) {
+                return <span key={index} className="font-semibold text-red-600">{part}</span>;
+            }
+            return part;
+        });
+    };
+
+    const getVoucherStatusMessage = (voucher: any) => {
+        if (!orderCheck) return null;
+
+        if (!isVoucherEligible(voucher)) {
+            return (
+                <p className="text-[10px] text-red-500">
+                    Đơn hàng chưa đủ giá trị tối thiểu
+                </p>
+            );
+        }
+
+        if (hasUserUsedVoucher(voucher)) {
+            return (
+                <p className="text-[10px] text-red-500">
+                    Voucher chỉ được sử dụng 1 lần
+                </p>
+            );
+        }
+
+        if (isVoucherError(voucher.voucher_id)) {
+            return (
+                <p className="text-[10px] text-red-500 font-medium">
+                    {getVoucherErrorMessage(voucher.voucher_id)}
+                </p>
+            );
+        }
+
+        return null;
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div
-                className="bg-white w-full max-w-lg max-h-[100vh] rounded-lg flex flex-col items-center relative overflow-hidden px-8 py-6">
+                className="bg-white w-full max-w-lg max-h-[100vh] rounded-lg flex flex-col items-center relative overflow-hidden px-6 py-4">
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-500 hover:text-black"
@@ -122,41 +224,63 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                     </button>
                 </div>
 
-                {/* Nội dung voucher scrollable */}
-                <div className="w-full max-w-lg overflow-y-auto scrollbar-hide mt-4 px-1 space-y-10 flex flex-col">
+                <div className="w-full max-w-lg overflow-y-auto scrollbar-hide mt-3 px-1 space-y-6 flex flex-col">
                     <div>
-                        <h2 className="text-lg font-bold text-gray-800">
+                        <h2 className="text-base font-bold text-gray-800">
                             Mã Giảm giá Vận Chuyển
                         </h2>
-                        <p className="text-sm text-gray-500 mb-4">Có thể chọn 1 Voucher</p>
+                        <p className="text-xs text-gray-500 mb-3">Có thể chọn 1 Voucher</p>
 
                         {vouchersToShow.map(
                             (voucher: any, index: number) =>
                                 voucher.voucher_type === "delivery" && (
                                     <label
                                         key={voucher.voucher_id}
-                                        className={`flex justify-between border rounded-xl mb-2 ${
-                                            orderCheck ? "cursor-pointer hover:bg-gray-50" : "cursor-default opacity-80"
+                                        className={`flex justify-between border rounded-lg mb-2 ${
+                                            isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher) ? "border-red-300 bg-red-50" : ""
+                                        } ${
+                                            orderCheck && isVoucherEligible(voucher) && !hasUserUsedVoucher(voucher)
+                                                ? "cursor-pointer hover:bg-gray-50"
+                                                : "cursor-default opacity-80"
                                         }`}
                                     >
                                         <div className="flex">
                                             <div
-                                                className="relative rang-cua-left w-32 bg-[#26A999] text-white text-center font-bold p-4 rounded-l-xl">
+                                                className="relative rang-cua-left w-24 bg-[#26A999] text-white text-center font-bold p-2 rounded-l-lg">
                                                 FREE
                                                 <br/>
                                                 SHIP
-                                                <p className="text-xs mt-2">Toàn Ngành Hàng</p>
+                                                <p className="text-[10px] mt-1">Toàn Ngành Hàng</p>
+                                                {isSingleUseVoucher(voucher) && (
+                                                    <div
+                                                        className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-full">
+                                                        Dùng 1 lần
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex flex-col px-4 py-2 justify-center">
-                                                <p className="text-gray-700 font-semibold">
-                                                    Giảm tối đa{" "}
-                                                    {voucher.max_discount_value.toLocaleString("vi-VN")}đ
+                                            <div className="flex flex-col px-3 py-1 justify-center">
+                                                <div className="flex justify-between items-center">
+                                                    <p className="text-sm font-semibold text-gray-700">
+                                                        Giảm tối đa{" "}
+                                                        {voucher.max_discount_value.toLocaleString("vi-VN")}đ
+                                                    </p>
+                                                    {isSingleUseVoucher(voucher) && (
+                                                        <span
+                                                            className="ml-2 text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">
+                                                            Chỉ dùng 1 lần
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <p className="text-xs text-gray-600">
+                                                    {highlightPercentage(truncateText(voucher.description, 50))}
                                                 </p>
-                                                <p className="text-sm text-gray-500">
+
+                                                <p className="text-xs text-gray-500">
                                                     Đơn tối thiểu{" "}
                                                     {voucher.min_order_value.toLocaleString("vi-VN")}đ
                                                 </p>
-                                                <div className="w-full h-2 bg-red-200 rounded mt-2 overflow-hidden">
+                                                <div className="w-full h-1.5 bg-red-200 rounded mt-1 overflow-hidden">
                                                     <div
                                                         className="h-full bg-gradient-to-r from-red-500 to-orange-500"
                                                         style={{
@@ -166,36 +290,50 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                         }}
                                                     ></div>
                                                 </div>
-                                                <p className="text-xs text-gray-400 mt-2">
-                                                    Đã dùng {(voucher.used / voucher.inventory) * 100}%
-                                                </p>
-                                                <p className="text-xs text-gray-400 mt-1">
-                                                    Sắp hết hạn:{" "}
-                                                    {new Date(voucher.expired_date).toLocaleDateString(
-                                                        "vi-VN"
-                                                    )}
-                                                </p>
+                                                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                                                    <span>
+                                                        Đã dùng {(voucher.used / voucher.inventory) * 100}%
+                                                    </span>
+                                                    <span>
+                                                        HSD: {new Date(voucher.expired_date).toLocaleDateString("vi-VN")}
+                                                    </span>
+                                                </div>
+                                                {getVoucherStatusMessage(voucher)}
                                             </div>
                                         </div>
 
                                         <input
-                                            type="radio"
+                                            type="checkbox"
                                             name="selectedVoucher"
                                             value={voucher.voucher_id}
-                                            checked={!(selectedVoucher?.voucher_id !== voucher.voucher_id)}
+                                            checked={selectedVoucher?.voucher_id === voucher.voucher_id}
                                             onChange={() => {
-                                                if (orderCheck) {
-                                                    setSelectedVoucher(voucher);
-                                                    if (setVouchers) {
-                                                        setVouchers({
-                                                            selectedVoucher: voucher,
-                                                            selectedVoucherOrder: selectedVoucherOrder,
-                                                        })
+                                                if (orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)) {
+                                                    if (selectedVoucher?.voucher_id === voucher.voucher_id) {
+                                                        setSelectedVoucher(null);
+                                                        if (setVouchers) {
+                                                            setVouchers({
+                                                                selectedVoucher: null,
+                                                                selectedVoucherOrder: selectedVoucherOrder,
+                                                            });
+                                                        }
+                                                    } else {
+                                                        setSelectedVoucher(voucher);
+                                                        if (setVouchers) {
+                                                            setVouchers({
+                                                                selectedVoucher: voucher,
+                                                                selectedVoucherOrder: selectedVoucherOrder,
+                                                            });
+                                                        }
                                                     }
                                                 }
                                             }}
-                                            className={`mr-4 flex items-center ${orderCheck ? "cursor-pointer" : "cursor-not-allowed"}`}
-                                            disabled={!orderCheck}
+                                            className={`mr-3 flex items-center ${
+                                                orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)
+                                                    ? "cursor-pointer"
+                                                    : "cursor-not-allowed"
+                                            }`}
+                                            disabled={!orderCheck || !isVoucherEligible(voucher) || isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher)}
                                         />
                                     </label>
                                 )
@@ -213,35 +351,58 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                     </div>
 
                     <div>
-                        <h2 className="text-lg font-bold text-gray-800">Giảm Giá</h2>
-                        <p className="text-sm text-gray-500 mb-4">Có thể chọn 1 Voucher</p>
+                        <h2 className="text-base font-bold text-gray-800">Giảm Giá</h2>
+                        <p className="text-xs text-gray-500 mb-3">Có thể chọn 1 Voucher</p>
                         {orderVouchersToShow.map(
                             (voucher: any, index: number) =>
                                 voucher.voucher_type === "order" && (
                                     <label
                                         key={voucher.voucher_id}
-                                        className={`flex justify-between border rounded-xl mb-2 ${
-                                            orderCheck ? "cursor-pointer hover:bg-gray-50" : "cursor-default opacity-80"
+                                        className={`flex justify-between border rounded-lg mb-2 ${
+                                            isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher) ? "border-red-300 bg-red-50" : ""
+                                        } ${
+                                            orderCheck && isVoucherEligible(voucher) && !hasUserUsedVoucher(voucher)
+                                                ? "cursor-pointer hover:bg-gray-50"
+                                                : "cursor-default opacity-80"
                                         }`}
                                     >
                                         <div className="flex">
                                             <div
-                                                className="relative rang-cua-left w-32 bg-[#EA4B2A] text-white text-center font-bold p-4 rounded-l-xl rang-cua-left">
+                                                className="relative rang-cua-left w-24 bg-[#EA4B2A] text-white text-center font-bold p-2 rounded-l-lg rang-cua-left">
                                                 ĐƠN
                                                 <br/>
                                                 HÀNG
-                                                <p className="text-xs mt-2">Toàn Ngành Hàng</p>
+                                                <p className="text-[10px] mt-1">Toàn Ngành Hàng</p>
+                                                {isSingleUseVoucher(voucher) && (
+                                                    <div
+                                                        className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] px-1 py-0.5 rounded-full">
+                                                        Dùng 1 lần
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex flex-col px-4 py-2 justify-center">
-                                                <p className="text-gray-700 font-semibold">
-                                                    Giảm tối đa{" "}
-                                                    {voucher.max_discount_value.toLocaleString("vi-VN")}đ
+                                            <div className="flex flex-col px-3 py-1 justify-center">
+                                                <div className="flex justify-between items-center">
+                                                    <p className="text-sm font-semibold text-gray-700">
+                                                        Giảm tối đa{" "}
+                                                        {voucher.max_discount_value.toLocaleString("vi-VN")}đ
+                                                    </p>
+                                                    {isSingleUseVoucher(voucher) && (
+                                                        <span
+                                                            className="ml-2 text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">
+                                                            Chỉ dùng 1 lần
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <p className="text-xs text-gray-600">
+                                                    {highlightPercentage(truncateText(voucher.description, 50))}
                                                 </p>
-                                                <p className="text-sm text-gray-500">
+
+                                                <p className="text-xs text-gray-500">
                                                     Đơn tối thiểu{" "}
                                                     {voucher.min_order_value.toLocaleString("vi-VN")}đ
                                                 </p>
-                                                <div className="w-full h-2 bg-red-200 rounded mt-2 overflow-hidden">
+                                                <div className="w-full h-1.5 bg-red-200 rounded mt-1 overflow-hidden">
                                                     <div
                                                         className="h-full bg-gradient-to-r from-red-500 to-orange-500"
                                                         style={{
@@ -252,33 +413,51 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                     ></div>
                                                 </div>
 
-                                                <p className="text-xs text-gray-400 mt-1">
-                                                    Sắp hết hạn:{" "}
-                                                    {new Date(voucher.expired_date).toLocaleDateString(
-                                                        "vi-VN"
-                                                    )}
-                                                </p>
+                                                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                                                    <span>
+                                                        Đã dùng {(voucher.used / voucher.inventory) * 100}%
+                                                    </span>
+                                                    <span>
+                                                        HSD: {new Date(voucher.expired_date).toLocaleDateString("vi-VN")}
+                                                    </span>
+                                                </div>
+
+                                                {getVoucherStatusMessage(voucher)}
                                             </div>
                                         </div>
 
                                         <input
-                                            type="radio"
+                                            type="checkbox"
                                             name="selectedVoucherOrder"
                                             value={voucher.voucher_id}
-                                            checked={!(selectedVoucherOrder?.voucher_id !== voucher.voucher_id)}
+                                            checked={selectedVoucherOrder?.voucher_id === voucher.voucher_id}
                                             onChange={() => {
-                                                if (orderCheck) {
-                                                    setSelectedVoucherOrder(voucher);
-                                                    if (setVouchers) {
-                                                        setVouchers({
-                                                            selectedVoucher: selectedVoucher,
-                                                            selectedVoucherOrder: voucher,
-                                                        })
+                                                if (orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)) {
+                                                    if (selectedVoucherOrder?.voucher_id === voucher.voucher_id) {
+                                                        setSelectedVoucherOrder(null);
+                                                        if (setVouchers) {
+                                                            setVouchers({
+                                                                selectedVoucher: selectedVoucher,
+                                                                selectedVoucherOrder: null,
+                                                            });
+                                                        }
+                                                    } else {
+                                                        setSelectedVoucherOrder(voucher);
+                                                        if (setVouchers) {
+                                                            setVouchers({
+                                                                selectedVoucher: selectedVoucher,
+                                                                selectedVoucherOrder: voucher,
+                                                            });
+                                                        }
                                                     }
                                                 }
                                             }}
-                                            className={`mr-4 flex items-center ${orderCheck ? "cursor-pointer" : "cursor-not-allowed"}`}
-                                            disabled={!orderCheck}
+                                            className={`mr-3 flex items-center ${
+                                                orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)
+                                                    ? "cursor-pointer"
+                                                    : "cursor-not-allowed"
+                                            }`}
+                                            disabled={!orderCheck || !isVoucherEligible(voucher) || isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher)}
                                         />
                                     </label>
                                 )

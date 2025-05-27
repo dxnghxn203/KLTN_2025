@@ -17,7 +17,8 @@ const ShoppingCart = forwardRef(({
                                      setIsCheckout,
                                      setProductForCheckOut,
                                      setPriceOrder,
-                                     setVouchers
+                                     setVouchers,
+                                     shippingFee
                                  }: any, ref) => {
     const [selectedProducts, setSelectedProducts] = useState<
         { product_id: string; price_id: string }[]
@@ -302,8 +303,14 @@ const ShoppingCart = forwardRef(({
 
     const checkout = () => {
         setIsCheckout(true);
-        setProductForCheckOut(getProductForCheckOut());
     };
+
+    useEffect(() => {
+        if (selectedProducts) {
+            setProductForCheckOut(getProductForCheckOut());
+        }
+    }, [selectedProducts]);
+
     const calculateTotalPrice = (price: number, quantity: number) => {
         return price * quantity;
     };
@@ -405,7 +412,7 @@ const ShoppingCart = forwardRef(({
 
                     {isLoadingQuantity ? (
                         <div className="text-xs text-gray-500 mt-1">Đang tải...</div>
-                    ) : availableQuantity !== null && availableQuantity !== undefined ? (
+                    ) : availableQuantity !== null && availableQuantity !== undefined && availableQuantity <= 10 ? (
                         <div className="text-xs text-gray-500 mt-1">
                             <span className={availableQuantity < 10 ? "text-orange-500 font-medium" : ""}>
                                 Còn {availableQuantity} {price?.unit}
@@ -575,6 +582,7 @@ const ShoppingCart = forwardRef(({
                     totalOriginPrice={calculateCartTotals?.total_original_price || 0}
                     totalDiscount={calculateCartTotals?.total_discount || 0}
                     totalSave={calculateCartTotals?.total_discount || 0}
+                    shippingFee={shippingFee}
                     checkout={checkout}
                     vouchers={vouchersCart}
                     setVouchers={changeSelectVouhcher}
@@ -627,7 +635,5 @@ const ShoppingCart = forwardRef(({
         </>
     );
 });
-
-ShoppingCart.displayName = "ShoppingCart";
 
 export default ShoppingCart;

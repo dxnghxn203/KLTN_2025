@@ -1,15 +1,15 @@
-import { 
+import {
     fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart,
-    fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart, 
-    fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser, 
-    fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart, 
-    fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart, 
-    fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart, 
+    fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart,
+    fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser,
+    fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart,
+    fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart,
+    fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart,
     fetchGetMonthlyRevenueStatisticsOrderStart, fetchGetCategoryMonthlyRevenueStatisticsOrderStart
 } from "@/store/order";
-import { on } from "events";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import {on} from "events";
+import {useEffect, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 
 export function useOrder() {
     const dispatch = useDispatch();
@@ -97,8 +97,8 @@ export function useOrder() {
     }
 
     const fetchRequestPrescription = async (
-        data: any, 
-        onSuccess: (message: any) => void, 
+        data: any,
+        onSuccess: (message: any) => void,
         onFailed: (message: any) => void
     ) => {
         console.log(data, "hook");
@@ -112,18 +112,18 @@ export function useOrder() {
 
     const fetchGetRequestOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchGetRequestOrderStart({
-            
+
             onSuccess: onSuccess,
             onFailed: onFailed
         }));
     }
     const fetchGetApproveRequestOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchGetApproveRequestOrderStart({
-                
-                onSuccess: onSuccess,
-                onFailed: onFailed
-            }));
-        }
+
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
 
     const fetchApproveRequestOrder = async (data: any, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchApproveRequestOrderStart({
@@ -135,26 +135,26 @@ export function useOrder() {
 
     const fetchGetOverviewSatisticsOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchGetOverviewStatisticsOrderStart({
-                
-                onSuccess: onSuccess,
-                onFailed: onFailed
+
+            onSuccess: onSuccess,
+            onFailed: onFailed
         }));
     }
 
     const fetchGetMonthlyRevenueStatisticsOrder = async (year: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchGetMonthlyRevenueStatisticsOrderStart({
-                year: year,
-                onSuccess: onSuccess,
-                onFailed: onFailed
+            year: year,
+            onSuccess: onSuccess,
+            onFailed: onFailed
         }));
     }
 
     const fetchGetCategoryMonthlyRevenueStatisticsOrder = async (month: number, year: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchGetCategoryMonthlyRevenueStatisticsOrderStart({
-                month: month,
-                year: year,
-                onSuccess: onSuccess,
-                onFailed: onFailed
+            month: month,
+            year: year,
+            onSuccess: onSuccess,
+            onFailed: onFailed
         }));
     }
 

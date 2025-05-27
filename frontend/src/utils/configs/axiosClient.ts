@@ -61,7 +61,7 @@ axiosClient.interceptors.response.use(
 export const setClientToken = (token: any) => {
     axiosClient.interceptors.request.use(function (config) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log("setClientToken", config.headers.Authorization)
+        // console.log("setClientToken", config.headers.Authorization)
         return config;
     });
 };

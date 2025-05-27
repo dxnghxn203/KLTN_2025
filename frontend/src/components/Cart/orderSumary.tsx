@@ -2,6 +2,7 @@ import VoucherDialog from "@/components/Dialog/voucherDialog";
 import React, {useEffect, useState} from "react";
 import Link from "next/link";
 import {useVoucher} from "@/hooks/useVoucher";
+import {useAuth} from "@/hooks/useAuth";
 
 interface OrderSummaryProps {
     totalAmount: number;
@@ -11,6 +12,7 @@ interface OrderSummaryProps {
     checkout: () => void;
     setVouchers?: (vouchers: any) => void;
     vouchers?: any;
+    shippingFee: any
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -20,9 +22,13 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                                        totalSave,
                                                        checkout,
                                                        vouchers,
-                                                       setVouchers
+                                                       setVouchers,
+                                                       shippingFee
                                                    }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const {user} = useAuth();
+
     const {fetchGetAllVoucherUser, allVoucherUser} = useVoucher();
     useEffect(() => {
         fetchGetAllVoucherUser(
@@ -33,6 +39,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         );
     }, []);
 
+    const [shippingFeeCart, setShippingFeeCart] = useState<any>(shippingFee);
+
+    useEffect(() => {
+        if (totalOriginPrice <= 0) {
+            setShippingFeeCart(null)
+        } else {
+            setShippingFeeCart(shippingFee);
+        }
+    }, [totalOriginPrice, shippingFee]);
 
     return (
         <div className="flex flex-col ml-5 w-[33%] max-md:ml-0 max-md:w-full">
@@ -51,6 +66,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     />
                 </div>
 
+                {shippingFeeCart?.voucher_error && shippingFeeCart.voucher_error.length > 0 && (
+                    <div className="mt-2 ml-2.5 w-full">
+                        {shippingFeeCart.voucher_error.map((error: any, index: number) => (
+                            <div key={index} className="text-sm text-red-500 bg-red-50 p-2 rounded-md mb-1">
+                                {error.message}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <div className="flex flex-col mt-4 ml-2.5 max-w-full text-sm w-[337px]">
                     <div className="flex justify-between text-black">
                         <div>Tổng tiền</div>
@@ -64,12 +89,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     </div>
                     <div className="flex justify-between text-black mt-5">
                         <div>Giảm giá voucher</div>
-                        <div className="text-amber-500"></div>
+                        <div className="text-amber-500">
+                            {shippingFeeCart && shippingFeeCart?.voucher_order_discount > 0
+                                ? `-${shippingFeeCart?.voucher_order_discount.toLocaleString("vi-VN")}đ`
+                                : "0đ"}
+                        </div>
                     </div>
                     <div className="flex justify-between text-black mt-5">
                         <div>Tiết kiệm được</div>
                         <div className="text-amber-500">
-                            {totalSave.toLocaleString("vi-VN")}đ
+                            {(totalSave + (shippingFeeCart?.voucher_order_discount || 0)).toLocaleString("vi-VN")}đ
                         </div>
                     </div>
                 </div>
@@ -86,7 +115,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         )}
                         <div className="text-xl font-bold text-blue-700">
                             {" "}
-                            {totalAmount.toLocaleString("vi-VN")}đ
+                            {(totalAmount - (shippingFeeCart?.voucher_order_discount || 0)).toLocaleString("vi-VN")}đ
                         </div>
                     </div>
                 </div>
@@ -119,8 +148,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     onClose={() => setIsDialogOpen(false)}
                     allVoucherUser={allVoucherUser}
                     setVouchers={setVouchers}
+                    totalAmount={totalAmount}
                     vouchers={vouchers}
                     orderCheck={!!(totalOriginPrice && totalOriginPrice != 0)}
+                    voucherErrors={shippingFeeCart?.voucher_error || []}
                 />
             )}
         </div>
@@ -128,3 +159,4 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 };
 
 export default OrderSummary;
+

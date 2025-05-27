@@ -1,13 +1,23 @@
 'use client';
-import { ChevronLeft } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import {ChevronLeft} from "lucide-react";
+import React, {useEffect, useState} from "react";
 import Delivery from "./CheckoutInfo/pickupPharma";
 import ProductList from "./ProductInfo/productList";
 import OrderSummary from "./ProductInfo/orderSumary";
 
 
-const CheckOut = ({ back, productForCheckOut, price, setData, handleCheckout , shippingFee}: any) => {
-    
+const CheckOut = ({
+                      back,
+                      productForCheckOut,
+                      price,
+                      setData,
+                      handleCheckout,
+                      shippingFee,
+                      vouchers,
+                      setVouchers
+                  }: any) => {
+
+
     return (
         <main className="flex flex-col px-5">
             <div className="flex flex-col">
@@ -16,7 +26,7 @@ const CheckOut = ({ back, productForCheckOut, price, setData, handleCheckout , s
                         onClick={back}
                         className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
                     >
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={20}/>
                         <span>Quay lại giỏ hàng</span>
                     </a>
                 </div>
@@ -24,16 +34,18 @@ const CheckOut = ({ back, productForCheckOut, price, setData, handleCheckout , s
             </div>
             <div className="flex flex-col lg:flex-row">
                 <div className="flex-1 rounded-xl">
-                    <ProductList products={productForCheckOut} />
-                    <Delivery setData={setData} />
+                    <ProductList products={productForCheckOut}/>
+                    <Delivery setData={setData}/>
                 </div>
                 <OrderSummary
                     totalAmount={price?.total_price || 0}
                     totalOriginPrice={price?.total_original_price || 0}
                     totalDiscount={price?.total_discount || 0}
                     totalSave={price?.total_discount || 0}
-                    shippingFee={shippingFee|| 0}
+                    shippingFee={shippingFee || 0}
                     checkout={handleCheckout}
+                    vouchers={vouchers}
+                    setVouchers={setVouchers}
                 />
             </div>
         </main>

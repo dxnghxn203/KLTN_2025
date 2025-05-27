@@ -78,7 +78,6 @@ function* fetchGetAllCategoryForMenu(action: any): Generator<any, void, any> {
     try {
         const category = yield call(categoryService.getMainCategory, mainCategory);
         if (category.status_code === 200) {
-            console.log("category222", category.data)
             onSuccess(category.data)
             yield put(fetchGetAllCategoryForMenuSuccess(category.data));
             return;

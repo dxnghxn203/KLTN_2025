@@ -33,7 +33,8 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchUpdateArticleAdminStart',
     'fetchUpdateLogoArticleAdminStart',
 
-    'fetchGetOverviewStatisticsOrderStart'
+    'fetchGetOverviewStatisticsOrderStart',
+
 
 ]
 

@@ -1,6 +1,6 @@
 import VoucherDialog from "@/components/Dialog/voucherDialog";
 import {useVoucher} from "@/hooks/useVoucher";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 
 interface OrderSummaryProps {
     totalAmount: number;
@@ -9,6 +9,8 @@ interface OrderSummaryProps {
     totalSave: number;
     shippingFee?: any;
     checkout: () => void;
+    vouchers?: any;
+    setVouchers?: (vouchers: any) => void;
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
@@ -18,6 +20,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                                        totalSave,
                                                        shippingFee,
                                                        checkout,
+                                                       vouchers,
+                                                       setVouchers
                                                    }) => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const {fetchGetAllVoucherUser, allVoucherUser} = useVoucher();
@@ -30,8 +34,14 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         );
     }, []);
 
-    const [vouchers, setVouchers] = useState<any>({});
-    console.log("vouchers", vouchers);
+    const [shippingFeeCart, setShippingFeeCart] = useState(shippingFee);
+    useEffect(() => {
+        if (totalOriginPrice <= 0) {
+            setShippingFeeCart(null)
+        } else {
+            setShippingFeeCart(shippingFee);
+        }
+    }, [totalOriginPrice, shippingFee]);
     return (
         <div className="flex flex-col ml-5 w-[33%] max-md:ml-0 max-md:w-full">
             <div
@@ -62,12 +72,16 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     </div>
                     <div className="flex justify-between text-black mt-5">
                         <div>Giảm giá voucher</div>
-                        <div className="text-amber-500">0đ</div>
+                        <div className="text-amber-500">
+                            {shippingFeeCart && shippingFeeCart?.voucher_order_discount > 0
+                                ? `-${shippingFeeCart?.voucher_order_discount.toLocaleString("vi-VN")}đ`
+                                : "0đ"}
+                        </div>
                     </div>
                     <div className="flex justify-between text-black mt-5">
                         <div>Tiết kiệm được</div>
                         <div className="text-amber-500">
-                            {totalSave.toLocaleString("vi-VN")}đ
+                            {(totalSave + (shippingFeeCart?.voucher_order_discount || 0)).toLocaleString("vi-VN")}đ
                         </div>
                     </div>
                 </div>
@@ -75,37 +89,27 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]"/>
                 <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
                     <div>Phí vận chuyển</div>
-                    <div className="flex items-center gap-2">
-                        {shippingFee?.shipping_fee === 0 ? (
-                            <div
-                                className="flex px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm items-center">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-blue-500 mr-1.5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                    <path
-                                        d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H18a1 1 0 001-1v-4a1 1 0 00-1-1h-8a1 1 0 00-.8.4L8 4H3z"/>
-                                </svg>
-                                <span className="text-xs font-medium text-blue-600">
-                  Miễn phí vận chuyển
-                </span>
-                            </div>
-                        ) : (
-                            <div className="text-amber-500">
-                                {shippingFee?.shipping_fee?.toLocaleString("vi-VN")}đ
+                    <div className="flex flex-col items-end">
+                        {shippingFeeCart?.voucher_delivery_discount > 0 && (
+                            <div className="text-xs text-gray-500 line-through">
+                                {(shippingFeeCart?.shipping_fee || 0)?.toLocaleString("vi-VN")}đ
                             </div>
                         )}
+                        <div className="text-amber-500">
+                            {(shippingFeeCart?.shipping_fee - (shippingFeeCart?.voucher_delivery_discount || 0))?.toLocaleString("vi-VN")}đ
+                            {shippingFeeCart?.voucher_delivery_discount > 0 && (
+                                <span className="text-xs text-green-600 ml-1">
+                                    (-{shippingFeeCart.voucher_delivery_discount.toLocaleString("vi-VN")}đ)
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="shrink-0 mt-5 ml-2.5 max-w-full h-px border border-black border-opacity-10 w-[337px]"/>
                 <div className="flex justify-between items-center mt-3 ml-2.5 max-w-full text-sm text-black w-[337px]">
                     <div>Thời gian giao hàng dự kiến</div>
-                    {shippingFee?.delivery_time ? (
+                    {shippingFeeCart?.delivery_time ? (
                         <div className="flex items-center gap-2">
                             <div className="flex px-3 py-1.5 rounded-full bg-green-50 shadow-sm items-center">
                                 <svg
@@ -122,7 +126,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                                 </svg>
 
                                 <span className="text-xs font-medium text-green-600">
-                  {new Date(shippingFee.delivery_time).toLocaleDateString(
+                  {new Date(shippingFeeCart.delivery_time).toLocaleDateString(
                       "vi-VN",
                       {
                           day: "2-digit",
@@ -146,7 +150,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                             </div>
                         )}
                         <div className="text-xl font-semibold text-blue-700">
-                            {(totalAmount + (shippingFee?.shipping_fee || 0)).toLocaleString(
+                            {(shippingFee?.estimated_total_fee || 0).toLocaleString(
                                 "vi-VN"
                             )}
                             đ
@@ -173,6 +177,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     onClose={() => setIsDialogOpen(false)}
                     allVoucherUser={allVoucherUser}
                     setVouchers={setVouchers}
+                    totalAmount={shippingFee?.product_fee || 0}
+                    vouchers={vouchers}
+                    orderCheck={!!(totalOriginPrice && totalOriginPrice != 0)}
                 />
             )}
         </div>
@@ -180,3 +187,4 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 };
 
 export default OrderSummary;
+

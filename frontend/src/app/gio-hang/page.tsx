@@ -51,7 +51,6 @@ export default function Cart() {
     const [productsOutOfStock, setProductsOutOfStock] = useState<any>([])
     const [isLoadingCheckFee, setIsLoadingCheckFee] = useState(false);
     const [vouchers, setVouchers] = useState<any>({});
-    const [voucherError, setVoucherError] = useState<any>(null);
 
     const handleShowSimilarProducts = (product: any) => {
         setIsOutOfStock(false);
@@ -63,10 +62,16 @@ export default function Cart() {
         }, 100);
     };
 
-    const validateData = () => {
+    const validateData = (isCheckVoucher: boolean) => {
+
+        if (isCheckVoucher) {
+            return productForCheckOut && productForCheckOut.length > 0;
+        }
+
         if (!data || !data?.ordererInfo || !data?.addressInfo) {
             return false;
         }
+
         const orderInf = data?.ordererInfo;
         const addressInf = data?.addressInfo;
         if (!orderInf || !orderInf.fullName || !orderInf.phone || !orderInf.email) {
@@ -81,46 +86,61 @@ export default function Cart() {
 
     const [shippingFee, setShippingFee] = useState<any>({});
 
-    console.log("Vouchers:", voucherError);
-    const checkShippingFeeUI = () => {
-        if (!validateData()) {
+    useEffect(() => {
+        if (!productForCheckOut || productForCheckOut.length === 0) {
+            setShippingFee({});
+            setIsOutOfStock(false);
+            setVouchers({})
+            return;
+        }
+    }, [productForCheckOut]);
+
+    const checkShippingFeeUI = (isCheckVoucher: boolean) => {
+        if (!validateData(isCheckVoucher)) {
             return;
         }
         setProductsOutOfStock([])
         setIsLoadingCheckFee(true)
-        checkShippingFee(
-            {
-                orderData: {
-                    product: productForCheckOut,
-                    ...data,
-                    voucherOrderId: vouchers?.selectedVoucher?.voucher_id || null,
-                    voucherDeliveryId: vouchers?.selectedVoucherOrder?.voucher_id || null,
+        try {
+            checkShippingFee(
+                {
+                    orderData: {
+                        product: productForCheckOut,
+                        ...data,
+                        voucherOrderId: vouchers?.selectedVoucherOrder?.voucher_id || null,
+                        voucherDeliveryId: vouchers?.selectedVoucher?.voucher_id || null,
+                    },
                 },
-            },
-            (data: any) => {
-                setIsLoadingCheckFee(false)
-                setVoucherError(null)
-                if (data) {
-                    setShippingFee(data);
+                (data: any) => {
+                    setIsLoadingCheckFee(false)
+                    setShippingFee(data || {});
+                },
+                (error: any) => {
+                    setIsLoadingCheckFee(false)
+                    setIsOutOfStock(error.isOutOfStock || false);
+                    setProductsOutOfStock(error?.data || []);
+                    closeQR()
+                    toast.showToast("Lỗi khi kiểm tra phí vận chuyển", error.message);
                 }
-            },
-            (error: any) => {
-                setIsLoadingCheckFee(false)
-                setIsOutOfStock(error.isOutOfStock)
-                setProductsOutOfStock(error?.data)
-                setVoucherError(error?.data?.voucher_error)
-                closeQR()
-                toast.showToast("Lỗi khi kiểm tra phí vận chuyển", error.message);
-            }
-        );
+            );
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     useEffect(() => {
-        checkShippingFeeUI();
+        checkShippingFeeUI(false);
     }, [data]);
 
+    useEffect(() => {
+        if (vouchers) {
+            checkShippingFeeUI(true)
+        }
+    }, [vouchers]);
+
+
     const checkOrderStatus = () => {
-        if (!validateData()) {
+        if (!validateData(false)) {
             toast.showToast("Vui lòng nhập đầy đủ thông tin", "error");
             return;
         }
@@ -130,6 +150,8 @@ export default function Cart() {
                 orderData: {
                     product: productForCheckOut,
                     ...data,
+                    voucherOrderId: vouchers?.selectedVoucherOrder?.voucher_id || null,
+                    voucherDeliveryId: vouchers?.selectedVoucher?.voucher_id || null,
                 },
             },
             (data: any) => {
@@ -154,6 +176,7 @@ export default function Cart() {
             }
         );
     };
+
     const handleCheckout = () => {
         checkOrderStatus();
     };
@@ -178,6 +201,7 @@ export default function Cart() {
         };
     };
 
+
     const closeQR = () => {
         setIsQR(false);
         setIsCheckout(false);
@@ -185,7 +209,6 @@ export default function Cart() {
         setLoadingCheckout(false);
         setImageQR(null);
     };
-
 
     return (
         <div className="flex flex-col items-center pb-12 bg-white pt-[80px]">
@@ -200,15 +223,21 @@ export default function Cart() {
                 <>
                     {isCheckout ? (
                         <>
-                            <Checkout
-                                back={() => setIsCheckout(false)}
-                                price={calculateCartTotals()}
-                                productForCheckOut={productForCheckOut}
-                                setData={setData}
-                                handleCheckout={handleCheckout}
-                                shippingFee={shippingFee}
-                            />
-                            {loadingCheckout && <LoaingCenter/>}
+
+                            {loadingCheckout ? <LoaingCenter/> :
+                                <Checkout
+                                    back={() => {
+                                        setIsCheckout(false)
+                                        setVouchers({});
+                                    }}
+                                    price={calculateCartTotals()}
+                                    productForCheckOut={productForCheckOut}
+                                    setData={setData}
+                                    handleCheckout={handleCheckout}
+                                    shippingFee={shippingFee}
+                                    vouchers={vouchers}
+                                    setVouchers={setVouchers}
+                                />}
                         </>
                     ) : (
                         <main className="flex flex-col space-y-8 w-full">
@@ -234,7 +263,7 @@ export default function Cart() {
                                                 setProductForCheckOut={setProductForCheckOut}
                                                 setPriceOrder={setPriceOrder}
                                                 setVouchers={setVouchers}
-
+                                                shippingFee={shippingFee}
                                             />
                                         ) : (
                                             <CartEmpty/>
@@ -268,13 +297,8 @@ export default function Cart() {
                     onShowSimilarProducts={handleShowSimilarProducts}
                 />
             )}
-            {
-                voucherError && (
-                    <div className="text-red-500 text-sm px-5">
-                        {voucherError || "Có lỗi xảy ra với mã giảm giá của bạn. Vui lòng kiểm tra lại."}
-                    </div>
-                )
-            }
+
+
             {isLoadingCheckFee && <LoaingCenter/>}
         </div>
     );

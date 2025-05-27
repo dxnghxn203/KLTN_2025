@@ -87,10 +87,10 @@ function* fetchCheckVoucher(action: any): Generator<any, void, any> {
         } = payload;
 
         const session = getSession();
-        const addressInfo = orderData.addressInfo;
-        const ordererInfo = orderData.ordererInfo;
+        const addressInfo = orderData?.addressInfo;
+        const ordererInfo = orderData?.ordererInfo;
         const products = () => {
-            return orderData.product.map((item: any) => ({
+            return orderData?.product.map((item: any) => ({
                 product_id: item.product_id,
                 price_id: item.price_id,
                 quantity: item.quantity,
@@ -111,24 +111,24 @@ function* fetchCheckVoucher(action: any): Generator<any, void, any> {
                 }
             },
             pick_to: {
-                "name": ordererInfo.fullName || "",
-                "phone_number": ordererInfo.phone || "",
-                "email": ordererInfo.email || "",
+                "name": ordererInfo?.fullName || "",
+                "phone_number": ordererInfo?.phone || "",
+                "email": ordererInfo?.email || "",
                 "address": {
-                    "address": addressInfo.address || "",
-                    "ward": addressInfo.ward || "",
-                    "district": addressInfo.district || "",
-                    "province": addressInfo.city || ""
+                    "address": addressInfo?.address || "",
+                    "ward": addressInfo?.ward || "",
+                    "district": addressInfo?.district || "",
+                    "province": addressInfo?.city || ""
                 }
             },
             "sender_province_code": 79,
             "sender_district_code": 765,
             "sender_commune_code": 26914,
-            "receiver_province_code": addressInfo.cityCode || 0,
-            "receiver_district_code": addressInfo.districtCode || 0,
-            "receiver_commune_code": addressInfo.wardCode || 0,
+            "receiver_province_code": addressInfo?.cityCode || 0,
+            "receiver_district_code": addressInfo?.districtCode || 0,
+            "receiver_commune_code": addressInfo?.wardCode || 0,
             "delivery_instruction": orderData?.note || "",
-            "payment_type": orderData.paymentMethod,
+            "payment_type": orderData?.paymentMethod,
         };
 
         const rs = yield call(orderService.checkVoucher, apiPayload);
@@ -243,10 +243,10 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
             },
             orderData
         } = payload;
-        const addressInfo = orderData.addressInfo;
-        const ordererInfo = orderData.ordererInfo;
+        const addressInfo = orderData?.addressInfo;
+        const ordererInfo = orderData?.ordererInfo;
         const products = () => {
-            return orderData.product.map((item: any) => ({
+            return orderData?.product.map((item: any) => ({
                 product_id: item.product_id,
                 price_id: item.price_id,
                 quantity: item.quantity,
@@ -267,24 +267,24 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
                 }
             },
             pick_to: {
-                "name": ordererInfo.fullName || "",
-                "phone_number": ordererInfo.phone || "",
-                "email": ordererInfo.email || "",
+                "name": ordererInfo?.fullName || "",
+                "phone_number": ordererInfo?.phone || "",
+                "email": ordererInfo?.email || "",
                 "address": {
-                    "address": addressInfo.address || "",
-                    "ward": addressInfo.ward || "",
-                    "district": addressInfo.district || "",
-                    "province": addressInfo.city || ""
+                    "address": addressInfo?.address || "",
+                    "ward": addressInfo?.ward || "",
+                    "district": addressInfo?.district || "",
+                    "province": addressInfo?.city || ""
                 }
             },
             "sender_province_code": 79,
             "sender_district_code": 765,
             "sender_commune_code": 26914,
-            "receiver_province_code": addressInfo.cityCode || 0,
-            "receiver_district_code": addressInfo.districtCode || 0,
-            "receiver_commune_code": addressInfo.wardCode || 0,
+            "receiver_province_code": addressInfo?.cityCode || 0,
+            "receiver_district_code": addressInfo?.districtCode || 0,
+            "receiver_commune_code": addressInfo?.wardCode || 0,
             "delivery_instruction": orderData?.note || "",
-            "payment_type": orderData.paymentMethod,
+            "payment_type": orderData?.paymentMethod,
             "voucher_order_id": orderData?.voucherOrderId || "",
             "voucher_delivery_id": orderData?.voucherDeliveryId || "",
         };
@@ -304,7 +304,7 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
         if (rs.status_code === 400) {
             const outOfStockIds = rs.data.out_of_stock;
             const {outOfStockProducts, availableProducts} = categorizeProducts(
-                orderData.product,
+                orderData?.product,
                 outOfStockIds
             );
 
@@ -315,6 +315,7 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
         }
         onFailed(error);
     } catch (error) {
+        console.log(error);
         yield put(fetchCheckShippingFeeFailed());
     }
 }
@@ -373,10 +374,10 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
         } = payload;
 
         const session = getSession();
-        const addressInfo = orderData.addressInfo;
-        const ordererInfo = orderData.ordererInfo;
+        const addressInfo = orderData?.addressInfo;
+        const ordererInfo = orderData?.ordererInfo;
         const products = () => {
-            return orderData.product.map((item: any) => ({
+            return orderData?.product.map((item: any) => ({
                 product_id: item.product_id,
                 price_id: item.price_id,
                 quantity: item.quantity,
@@ -397,24 +398,24 @@ function* fetchCheckOrder(action: any): Generator<any, void, any> {
                 }
             },
             pick_to: {
-                "name": ordererInfo.fullName || "",
-                "phone_number": ordererInfo.phone || "",
-                "email": ordererInfo.email || "",
+                "name": ordererInfo?.fullName || "",
+                "phone_number": ordererInfo?.phone || "",
+                "email": ordererInfo?.email || "",
                 "address": {
-                    "address": addressInfo.address || "",
-                    "ward": addressInfo.ward || "",
-                    "district": addressInfo.district || "",
-                    "province": addressInfo.city || ""
+                    "address": addressInfo?.address || "",
+                    "ward": addressInfo?.ward || "",
+                    "district": addressInfo?.district || "",
+                    "province": addressInfo?.city || ""
                 }
             },
             "sender_province_code": 79,
             "sender_district_code": 765,
             "sender_commune_code": 26914,
-            "receiver_province_code": addressInfo.cityCode || 0,
-            "receiver_district_code": addressInfo.districtCode || 0,
-            "receiver_commune_code": addressInfo.wardCode || 0,
+            "receiver_province_code": addressInfo?.cityCode || 0,
+            "receiver_district_code": addressInfo?.districtCode || 0,
+            "receiver_commune_code": addressInfo?.wardCode || 0,
             "delivery_instruction": orderData?.note || "",
-            "payment_type": orderData.paymentMethod,
+            "payment_type": orderData?.paymentMethod,
             "voucher_order_id": orderData?.voucherOrderId || "",
             "voucher_delivery_id": orderData?.voucherDeliveryId || "",
         };
