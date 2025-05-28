@@ -668,23 +668,19 @@ async def get_order_invoice(order_id: str):
 
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, images):
     try:
-        if not item.product or not item.product.product:
-            raise response.JsonException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Không tìm thấy sản phẩm"
-            )
-
-        product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
-
-        if out_of_stock or out_of_date:
-            return response.BaseResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
-                data={
-                    "out_of_stock": out_of_stock,
-                    "out_of_date": out_of_date
-                }
-            )
+        product_items = []
+        if item.product:
+            if item.product.product:
+                product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
+                if out_of_stock or out_of_date:
+                    return response.BaseResponse(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                        data={
+                            "out_of_stock": out_of_stock,
+                            "out_of_date": out_of_date
+                        }
+                    )
 
         image_list = []
         if images:
