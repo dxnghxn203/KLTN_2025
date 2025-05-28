@@ -301,28 +301,49 @@ async def extract_with_llm(file_path: Path, document_type: str, file_type: str, 
             "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
         }
 
+def convert_image_to_jpeg(temp_file_orig_path: Path):
+    with Image.open(temp_file_orig_path) as img:
+        img_rgb = img
+        if img.mode in ('RGBA', 'LA', 'P'):
+            img_rgb = Image.new("RGB", img.size, (255, 255, 255))
+            alpha_mask = None
+            if img.mode == 'P' and 'transparency' in img.info:
+                alpha_mask = img.convert('RGBA').split()[-1]
+            elif 'A' in img.mode:
+                alpha_mask = img.split()[-1]
+            img_rgb.paste(img, (0, 0), mask=alpha_mask)
+        elif img.mode != 'RGB':
+            img_rgb = img.convert('RGB')
+
+        fd_jpeg, temp_jpeg_path_str = tempfile.mkstemp(suffix=".jpeg")
+        os.close(fd_jpeg)
+        temp_jpeg_path = Path(temp_jpeg_path_str)
+
+        img_rgb.save(temp_jpeg_path, "JPEG", quality=95)
+        logger.info(f"Converted image to JPEG: {temp_jpeg_path}")
+        return temp_jpeg_path,  "jpeg"
 
 async def process_document(
         file: UploadFile,
         request: DocumentExtractionRequest
 ) -> DocumentExtractionResponse:
     temp_file_orig_path: Optional[Path] = None
-    temp_image_page_path: Optional[Path] = None  # For individual PDF page images
+    temp_image_page_path: Optional[Path] = None
 
     try:
         file_content = await file.read()
         await file.seek(0)
 
         file_ext = file.filename.split('.')[-1].lower() if '.' in file.filename else ''
-        supported_image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'webp', 'gif']
+        supported_image_exts = ['jpg', 'jpeg', 'png']
 
         if file_ext not in ['pdf'] + supported_image_exts:
             raise HTTPException(status_code=400, detail=f"Định dạng file không được hỗ trợ: {file_ext}.")
 
         ocr_available = is_tesseract_available()
-        if not ocr_available and request.extraction_method == "ocr":
+        if not ocr_available :
             logger.warn("Tesseract OCR không khả dụng cho phương thức 'ocr'. Chuyển sang chế độ 'llm'.")
-            request.extraction_method = "llm"
+            # request.extraction_method = "llm"
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_file_orig:
             temp_file_orig.write(file_content)
@@ -330,13 +351,10 @@ async def process_document(
         logger.info(f"Đã lưu file gốc tạm thời tại: {temp_file_orig_path}")
 
         all_pages_extracted_data: List[Dict[str, Any]] = []
-        final_document_type = request.document_type
-        total_pages_processed = 0
-        aggregated_raw_text_list = []  # Store OCR text per page
+        aggregated_raw_text_list = []
 
         if file_ext == 'pdf':
             logger.info("Xử lý file PDF bằng cách chuyển đổi sang hình ảnh từng trang...")
-            # --- Poppler Path Configuration for Windows ---
             poppler_bin_path_windows: Optional[str] = None
 
             try:
@@ -355,9 +373,8 @@ async def process_document(
 
                 for i, image_page in enumerate(images_from_path):
                     page_number = i + 1
-                    # Use a more robust temp file creation for the image page
                     fd, temp_image_page_path_str = tempfile.mkstemp(suffix=".jpeg")
-                    os.close(fd)  # Close the file descriptor, as PIL will open it
+                    os.close(fd)
                     temp_image_page_path = Path(temp_image_page_path_str)
 
                     image_page.save(temp_image_page_path, "JPEG")
@@ -366,41 +383,31 @@ async def process_document(
                         f"Đang xử lý trang {page_number}/{total_pages_processed} của PDF (ảnh tạm: {temp_image_page_path})")
 
                     page_ocr_text: Optional[str] = None
-                    if request.extraction_method in ["ocr", "hybrid"] and ocr_available:
+                    if ocr_available:
                         page_ocr_text = extract_text_from_image(temp_image_page_path)
                         if page_ocr_text:
                             aggregated_raw_text_list.append(f"--- Trang {page_number} ---\n{page_ocr_text}\n")
                         logger.info(f"Trích xuất OCR từ trang {page_number} (ảnh): {len(page_ocr_text or '')} ký tự.")
 
-                    current_page_document_type = request.document_type
-                    if current_page_document_type == "auto":
-                        if page_ocr_text:
-                            current_page_document_type = detect_layout_type(page_ocr_text)
-                        else:
-                            current_page_document_type = "prescription"
+                    if page_ocr_text:
+                        current_page_document_type = (page_ocr_text)
+                    else:
+                        current_page_document_type = "prescription"
 
-                    if request.extraction_method == "ocr" and ocr_available:  # Only OCR
-                        page_extracted_data = {
-                            "document_type": current_page_document_type, "raw_text": page_ocr_text or "",
-                            "products": [],
-                            "patient_information": {}, "document_date": None, "issuing_organization": None,
-                            "medical_code": None, "invoice_id": None, "prescription_id": None,
-                            "prescribing_doctor": None
-                        }
-                    else:  # LLM or Hybrid
-                        page_extracted_data = await extract_with_llm(
-                            file_path=temp_image_page_path,
-                            document_type=current_page_document_type,
-                            file_type="jpeg",
-                            ocr_text=page_ocr_text,
-                            page_number=page_number,
-                            total_pages=total_pages_processed
-                        )
+                    page_extracted_data = await extract_with_llm(
+                        file_path=temp_image_page_path,
+                        document_type=current_page_document_type,
+                        file_type="jpeg",
+                        ocr_text=page_ocr_text,
+                        page_number=page_number,
+                        total_pages=total_pages_processed
+                    )
                     all_pages_extracted_data.append(page_extracted_data)
-                    os.unlink(temp_image_page_path)  # Xóa file ảnh trang tạm thời
-                    temp_image_page_path = None  # Reset path
+                    os.unlink(temp_image_page_path)
+                    temp_image_page_path = None
 
-                if request.document_type == "auto" and all_pages_extracted_data:
+                final_document_type = "prescription"
+                if all_pages_extracted_data:
                     type_counts = {}
                     for data in all_pages_extracted_data:
                         dt = data.get("document_type", "prescription")
@@ -410,7 +417,7 @@ async def process_document(
                     else:
                         final_document_type = "prescription"
 
-            except PDFInfoNotInstalledError as e:  # Poppler not found or not in PATH
+            except PDFInfoNotInstalledError as e:
                 logger.error(
                     f"Lỗi Poppler: {str(e)}. Đảm bảo Poppler đã được cài đặt và trong PATH, hoặc chỉ định 'poppler_path' chính xác cho Windows.",
                     exc_info=True)
@@ -423,77 +430,43 @@ async def process_document(
                 logger.error(f"Lỗi không mong muốn khi xử lý PDF thành ảnh: {str(e)}", exc_info=True)
                 raise HTTPException(status_code=500, detail=f"Lỗi không mong muốn khi chuyển đổi PDF: {str(e)}")
 
-        else:  # Xử lý file hình ảnh gốc
+        else:
             total_pages_processed = 1
             logger.info(f"Xử lý file hình ảnh gốc: {file.filename} ({file_ext})")
 
-            # For non-PDF, temp_file_orig_path is the one to process
-            # We might want to convert it to JPEG for consistency if it's not already
             temp_image_to_process_path = temp_file_orig_path
             processed_file_type_for_llm = file_ext
 
-            if file_ext not in ["jpeg", "jpg"]:  # Attempt to convert to JPEG
+            if file_ext not in ["jpeg", "jpg"]:
                 try:
                     logger.info(f"Attempting to convert image {file.filename} to JPEG for consistency.")
-                    with Image.open(temp_file_orig_path) as img:
-                        img_rgb = img
-                        if img.mode in ('RGBA', 'LA', 'P'):
-                            # Create a white background image
-                            img_rgb = Image.new("RGB", img.size, (255, 255, 255))
-                            # Determine mask for pasting
-                            alpha_mask = None
-                            if img.mode == 'P' and 'transparency' in img.info:
-                                alpha_mask = img.convert('RGBA').split()[-1]
-                            elif 'A' in img.mode:
-                                alpha_mask = img.split()[-1]
-                            img_rgb.paste(img, (0, 0), mask=alpha_mask)
-                        elif img.mode != 'RGB':
-                            img_rgb = img.convert('RGB')
+                    temp_image_to_process_path, processed_file_type_for_llm = convert_image_to_jpeg(temp_file_orig_path)
 
-                        # Save to a new temp file with .jpeg extension
-                        fd_jpeg, temp_jpeg_path_str = tempfile.mkstemp(suffix=".jpeg")
-                        os.close(fd_jpeg)
-                        temp_jpeg_path = Path(temp_jpeg_path_str)
-
-                        img_rgb.save(temp_jpeg_path, "JPEG", quality=95)
-                        logger.info(f"Converted image to JPEG: {temp_jpeg_path}")
-                        temp_image_to_process_path = temp_jpeg_path  # Process this JPEG
-                        processed_file_type_for_llm = "jpeg"
                 except Exception as e_img_convert:
                     logger.warn(f"Could not convert image {file.filename} to JPEG: {e_img_convert}. Using original.")
-                    # temp_image_to_process_path remains temp_file_orig_path
 
             ocr_text_for_llm: Optional[str] = None
-            if request.extraction_method in ["ocr", "hybrid"] and ocr_available:
+            if ocr_available:
                 ocr_text_for_llm = extract_text_from_image(temp_image_to_process_path)
                 if ocr_text_for_llm:
                     aggregated_raw_text_list.append(ocr_text_for_llm)
                 logger.info(f"Trích xuất OCR từ hình ảnh '{file.filename}': {len(ocr_text_for_llm or '')} ký tự.")
 
-            if final_document_type == "auto":
-                if ocr_text_for_llm:
-                    final_document_type = detect_layout_type(ocr_text_for_llm)
-                else:
-                    final_document_type = "prescription"
-
-            if request.extraction_method == "ocr" and ocr_available:
-                single_page_data = {
-                    "document_type": final_document_type, "raw_text": ocr_text_for_llm or "", "products": [],
-                    "patient_information": {}, "document_date": None, "issuing_organization": None,
-                    "medical_code": None, "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
-                }
+            if ocr_text_for_llm:
+                final_document_type = detect_layout_type(ocr_text_for_llm)
             else:
-                single_page_data = await extract_with_llm(
-                    file_path=temp_image_to_process_path,
-                    document_type=final_document_type,
-                    file_type=processed_file_type_for_llm,
-                    ocr_text=ocr_text_for_llm,
-                    page_number=1,
-                    total_pages=1
-                )
+                final_document_type = "prescription"
+
+            single_page_data = await extract_with_llm(
+                file_path=temp_image_to_process_path,
+                document_type=final_document_type,
+                file_type=processed_file_type_for_llm,
+                ocr_text=ocr_text_for_llm,
+                page_number=1,
+                total_pages=1
+            )
             all_pages_extracted_data.append(single_page_data)
 
-            # Clean up the converted JPEG if it was created and is different from original temp file
             if temp_image_to_process_path != temp_file_orig_path and os.path.exists(temp_image_to_process_path):
                 os.unlink(temp_image_to_process_path)
 
@@ -505,16 +478,13 @@ async def process_document(
             "document_type": final_document_type,
             "raw_text": "\n".join(aggregated_raw_text_list).strip(),
             "products": [],
-            "patient_information": {},  # Default to empty dict
+            "patient_information": {},
             "document_date": None, "issuing_organization": None, "medical_code": None,
             "invoice_id": None, "prescription_id": None, "prescribing_doctor": None
         }
 
-        # Aggregate results (simple strategy)
-        # Prioritize info from the first page that has it, append products
         first_patient_info_found = False
         first_doc_date_found = False
-        # ... similar flags for other common fields
 
         for page_data in all_pages_extracted_data:
             final_result["products"].extend(page_data.get("products", []))
@@ -523,15 +493,13 @@ async def process_document(
             if isinstance(current_page_patient_info,
                           dict) and current_page_patient_info and not first_patient_info_found:
                 final_result["patient_information"] = current_page_patient_info
-                first_patient_info_found = True  # Take the first non-empty dict
+                first_patient_info_found = True
 
-            # For other fields, take the first non-None value encountered
             if not final_result["document_date"] and page_data.get("document_date"):
                 final_result["document_date"] = page_data["document_date"]
             if not final_result["issuing_organization"] and page_data.get("issuing_organization"):
                 final_result["issuing_organization"] = page_data["issuing_organization"]
 
-        # Ensure patient_information is a dict, even if it was never found or set
         if not isinstance(final_result["patient_information"], dict):
             final_result["patient_information"] = {}
 
@@ -539,12 +507,10 @@ async def process_document(
             document_type=final_result["document_type"],
             raw_text=final_result["raw_text"],
             products=final_result["products"],
-            extraction_method=request.extraction_method,
             file_name=file.filename,
-            file_content=file_content,
-            user_id=request.user_id,
+            request_id=request.request_id,
             total_pages=total_pages_processed,
-            current_page=total_pages_processed,  # Indicates all pages processed
+            current_page=total_pages_processed,
             patient_information=final_result.get("patient_information"),
             document_date=final_result.get("document_date"),
             issuing_organization=final_result.get("issuing_organization"),
@@ -559,7 +525,6 @@ async def process_document(
             document_type=final_result["document_type"],
             raw_text=final_result["raw_text"],
             products=final_result["products"],
-            extraction_method=request.extraction_method,
             total_pages=total_pages_processed,
             current_page=total_pages_processed,
             patient_information=final_result.get("patient_information"),
@@ -573,20 +538,19 @@ async def process_document(
 
     except HTTPException as he:
         logger.error(f"HTTP Exception trong quá trình xử lý tài liệu: {str(he.detail)}",
-                     exc_info=False)  # exc_info=False for cleaner HTTP logs
+                     exc_info=False)
         raise he
     except Exception as e:
         logger.error(f"Lỗi xử lý tài liệu không mong muốn: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Lỗi xử lý tài liệu nghiêm trọng: {str(e)}")
     finally:
-        # Cleanup temp files
         if temp_file_orig_path and os.path.exists(temp_file_orig_path):
             try:
                 os.unlink(temp_file_orig_path)
                 logger.info(f"Đã xóa file gốc tạm thời cuối cùng: {temp_file_orig_path}")
             except Exception as e_unlink:
                 logger.error(f"Không thể xóa file gốc tạm thời {temp_file_orig_path}: {e_unlink}")
-        if temp_image_page_path and os.path.exists(temp_image_page_path):  # Should have been deleted in loop
+        if temp_image_page_path and os.path.exists(temp_image_page_path):
             try:
                 os.unlink(temp_image_page_path)
                 logger.warn(f"Đã xóa file ảnh trang tạm thời còn sót lại: {temp_image_page_path}")
@@ -598,7 +562,6 @@ async def extract_drug_information(
         files: List[UploadFile],
         extraction_method: str = "hybrid"
 ) -> Dict[str, Any]:
-    """Extract drug information from up to 2 images."""
     if len(files) > 2:
         raise HTTPException(status_code=400, detail="Maximum 2 images allowed")
 
@@ -618,12 +581,10 @@ async def extract_drug_information(
                 raise HTTPException(status_code=400,
                                     detail=f"Unsupported file format: {file_ext}. Only images are supported.")
 
-            # Save temp file
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_ext}") as temp_file:
                 temp_file.write(file_content)
                 temp_file_path = Path(temp_file.name)
 
-            # Extract text with OCR if needed
             ocr_text = None
             ocr_available = is_tesseract_available()
             if extraction_method in ["ocr", "hybrid"] and ocr_available:
@@ -631,9 +592,7 @@ async def extract_drug_information(
                 if ocr_text:
                     combined_raw_text.append(ocr_text)
 
-            # Process with LLM
             if extraction_method in ["llm", "hybrid"]:
-                # Special prompt for drug information extraction
                 system_prompt = """
                 Bạn là trợ lý trích xuất thông tin về thuốc. Hãy phân tích hình ảnh thuốc được cung cấp và trích xuất các thông tin sau:
 
@@ -671,7 +630,6 @@ async def extract_drug_information(
                     response = await llm.ainvoke(messages)
                     content = response.content if hasattr(response, 'content') else str(response)
 
-                    # Extract JSON from response
                     drug_info = {}
                     try:
                         drug_info = json.loads(content)
@@ -684,7 +642,6 @@ async def extract_drug_information(
                             except json.JSONDecodeError:
                                 logger.warn("Failed to parse JSON from markdown code block in LLM response.")
 
-                    # Ensure additional_info is a dictionary
                     additional_info = drug_info.get("additional_info", {})
                     if not isinstance(additional_info, dict):
                         if isinstance(additional_info, str):
@@ -692,7 +649,6 @@ async def extract_drug_information(
                         else:
                             additional_info = {}
 
-                    # Convert to DrugInformation model-compatible dict
                     drug_data = {
                         "name": drug_info.get("name"),
                         "brand": drug_info.get("brand"),
@@ -712,7 +668,6 @@ async def extract_drug_information(
                 except Exception as e:
                     logger.error(f"LLM extraction error: {str(e)}", exc_info=True)
 
-            # If only OCR is used
             if extraction_method == "ocr" and ocr_available and not all_drugs:
                 all_drugs.append({
                     "name": None,
@@ -724,7 +679,6 @@ async def extract_drug_information(
             logger.error(f"Error processing drug image: {str(e)}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Error processing image: {str(e)}")
         finally:
-            # Cleanup temp file
             if temp_file_path and os.path.exists(temp_file_path):
                 try:
                     os.unlink(temp_file_path)

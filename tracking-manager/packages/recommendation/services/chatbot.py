@@ -23,7 +23,6 @@ SUGGESTED_PRODUCTS_KEY_PREFIX = "suggested_products:"
 MAX_SUGGESTED_PRODUCTS_HISTORY = 3
 SESSION_MEMORY_KEY_PREFIX = "chat_history:"
 
-
 def _get_chat_history_from_redis(session_id: str) -> list:
     key = f"{SESSION_MEMORY_KEY_PREFIX}{session_id}"
     chat_messages = []
@@ -223,13 +222,6 @@ def generate_response(session_id: str, user_input: str) -> str:
                 prices_list = p_item.get('prices', [])
                 price_info_str = _format_price_info(ref_id, prices_list)
 
-                # inventory_status_str = "Tình trạng: "
-                # if ref_id:
-                #     is_out_of_stock = check_out_of_stock(ref_id, price_id=)
-                #     inventory_status_str += "Hết hàng" if is_out_of_stock else "Còn hàng"
-                # else:
-                #     inventory_status_str += "Không xác định"
-
                 formatted_products.append(
                     f"- Tên: {p_name}\n  Công dụng: {p_item.get('uses', 'N/A')}\n  Giá: {price_info_str}\n  ")
                 if ref_id and not product_found_for_storing:
@@ -256,7 +248,6 @@ def generate_response(session_id: str, user_input: str) -> str:
                 "Thương hiệu": p_item.get("brand"),
                 "Xuất xứ": p_item.get("origin"),
             }
-            # Hiển thị thông tin cơ bản trước, trừ khi chỉ hỏi về tình trạng còn hàng hoặc giá
             if question_details not in ["inventory_status", "giá"]:
                 for label, value in basic_info_map.items():
                     if value:
@@ -275,7 +266,7 @@ def generate_response(session_id: str, user_input: str) -> str:
             elif "giá" in question_details:
                 context_parts.append(f"- Giá: {price_info_str}")
                 if inventory_status_str: context_parts.append(
-                    f"- Tình trạng: {inventory_status_str}")  # Thêm tình trạng nếu hỏi giá
+                    f"- Tình trạng: {inventory_status_str}")
             elif question_details:
                 detail_value = p_item.get(question_details)
                 if detail_value is None:
@@ -289,11 +280,11 @@ def generate_response(session_id: str, user_input: str) -> str:
                 context_parts.append(
                     f"- {question_details.capitalize()}: {detail_value if detail_value is not None else 'Thông tin này chưa được cập nhật.'}")
                 if "giá" not in question_details: context_parts.append(
-                    f"- Giá: {price_info_str}")  # Thêm giá nếu chưa có
+                    f"- Giá: {price_info_str}")
                 if "inventory_status" not in question_details and inventory_status_str: context_parts.append(
-                    f"- Tình trạng: {inventory_status_str}")  # Thêm tình trạng nếu chưa có
-            else:  # Không có question_details cụ thể, hiển thị thông tin chung bao gồm giá và tình trạng
-                for label, value in basic_info_map.items():  # Đảm bảo thông tin cơ bản được hiển thị nếu chưa có
+                    f"- Tình trạng: {inventory_status_str}")
+            else:
+                for label, value in basic_info_map.items():
                     if value and f"- {label}: {value}" not in context_parts:
                         context_parts.append(f"- {label}: {value}")
                 context_parts.append(f"- Giá: {price_info_str}")
@@ -361,17 +352,17 @@ def generate_response(session_id: str, user_input: str) -> str:
         _store_suggested_product(session_id, product_found_for_storing["id"], product_found_for_storing["name"])
 
     response_system_prompt_template_str = (
-        "Bạn là một trợ lý AI của cửa hàng dược mỹ phẩm trực tuyến, tên là 'Chatbot Dược Sĩ'. "
+        "Bạn là một trợ lý AI của cửa hàng dược trực tuyến tại Việt Nam, tên là 'Medicare Chatbot Dược Sĩ'. "
         "Hãy luôn thân thiện, chuyên nghiệp và hữu ích. "
         "Nhiệm vụ của bạn là trả lời câu hỏi, tư vấn sản phẩm dựa trên thông tin được cung cấp và lịch sử trò chuyện. "
         "Nếu bạn vừa tìm thấy sản phẩm cho người dùng, hãy trình bày thông tin một cách rõ ràng và mời họ xem xét. "
         "Nếu người dùng hỏi về sản phẩm đã gợi ý, hãy cung cấp thông tin chi tiết. "
         "Nếu không chắc chắn hoặc không có thông tin, hãy nói rõ và đề nghị hỗ trợ thêm hoặc hỏi lại cho rõ. "
         "Sử dụng tiếng Việt. Trả lời ngắn gọn, đi thẳng vào vấn đề nếu có thể. "
-        "Khi cung cấp giá hoặc tình trạng hàng, hãy liệt kê rõ ràng. Ví dụ: 'Sản phẩm X giá 100.000 VND và hiện còn hàng.' hoặc 'Sản phẩm Y giá 200.000 VND và hiện đã hết hàng.'\n"  # Cập nhật prompt
+        "Khi cung cấp giá hoặc tình trạng hàng, hãy liệt kê rõ ràng. Ví dụ: 'Sản phẩm X giá 100.000 VND/Hộp và hiện còn hàng.' hoặc 'Sản phẩm Y giá 200.000 VND/Vĩ và hiện đã hết hàng.'\n"
         "Thông tin hỗ trợ cho câu trả lời của bạn (nếu có): {context_for_response_generation}\n"
         "Sản phẩm bạn (AI) đã gợi ý hoặc đang thảo luận gần đây (để bạn nhớ ngữ cảnh): {latest_suggested_products_context}"
-        "Trả về dạng html với các thẻ <p>, <ul>, <li> cho câu trả lời. "
+        "Trả về dạng html với các thẻ <p>, <ul>, <li> <url>, <img>, ... cho câu trả lời. "
     )
     response_prompt_template = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template(response_system_prompt_template_str),
