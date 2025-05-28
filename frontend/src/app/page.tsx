@@ -31,9 +31,11 @@ export default function Home() {
           <ProductDealsList />
         </main>
         <IntroMedicare />
-        {/* <HealthCorner /> */}
+        <div className="self-start text-2xl font-extrabold text-black">
+          Góc sức khỏe
+        </div>
+        <HealthCorner />
       </div>
-      {/* Popup Chatbot */}
     </>
   );
 }

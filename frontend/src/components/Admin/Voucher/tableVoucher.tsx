@@ -181,16 +181,22 @@ const TableVoucher = ({ allVouchers }: TableVoucherProps) => {
 
                     <td className="p-4 ">
                       <div className="flex justify-center items-center">
-                        <button
-                          onClick={() => handleToggleStatus(voucher)}
-                          className={`w-14 h-8 flex items-center p-1 rounded-full transition-colors duration-300 ${
-                            voucher.active
-                              ? "bg-blue-600 justify-end"
-                              : "bg-gray-400 justify-start"
-                          }`}
-                        >
-                          <div className="w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300" />
-                        </button>
+                        {voucher.expired_date &&
+                        new Date(voucher.expired_date) < new Date() ? (
+                          <span className="text-red-500 font-medium">
+                            Hết hạn
+                          </span>
+                        ) : (
+                          <div>
+                            Còn{" "}
+                            {Math.ceil(
+                              (new Date(voucher.expired_date).getTime() -
+                                new Date().getTime()) /
+                                (1000 * 60 * 60 * 24)
+                            )}{" "}
+                            ngày
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="p-4 text-center">

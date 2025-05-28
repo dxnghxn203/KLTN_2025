@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
-import textlogo from "@/images/medicare.png";
-import logoyellow from "@/images/MM.png";
+import textlogo from "@/images/5.png";
+import logoyellow from "@/images/6.png";
 
 const InfoFooter: React.FC = () => {
   return (
@@ -9,26 +9,9 @@ const InfoFooter: React.FC = () => {
       <div className="grid grid-cols-5 justify-between text-black max-md:grid-cols-2 max-sm:grid-cols-1">
         {/* Cột 1: Logo và giới thiệu */}
         <div className="flex flex-col items-start col-span-2 mr-16">
-          <div className="relative flex self-start whitespace-nowrap -mt-10">
-            <Image
-              src={logoyellow}
-              alt=""
-              width={50}
-              height={50}
-              priority
-              className="object-contain aspect-square z-0"
-            />
-            <Image
-              src={textlogo}
-              alt=""
-              width={95}
-              height={95}
-              priority
-              className="top-1 ml-2 z-10"
-            />
-          </div>
+          <h3 className="text-lg font-semibold">GIỚI THIỆU CHUNG</h3>
 
-          <p className="text-sm mt-[-10px]">
+          <p className="text-sm mt-4">
             Cửa hàng thực phẩm chức năng <em className="italic">Medicare</em> là
             địa chỉ tin cậy hàng đầu, nơi bạn có thể tìm kiếm và lựa chọn những
             sản phẩm chất lượng nhất, được kiểm định kỹ lưỡng.

@@ -1,35 +1,83 @@
 import React from "react";
-import g from "@/images/g.png";
-import Image from "next/image";
+import { Clock, RotateCcw, ShieldCheck, Truck } from "lucide-react";
+import Family from "@/images/Family.png";
+import { LuTicketPercent } from "react-icons/lu";
+import { BsChatHeart } from "react-icons/bs";
+import Link from "next/link";
 
 const IntroMedicare: React.FC = () => {
   return (
-    <div className="flex gap-5 max-md:flex-col rounded-2xl bg-slate-100 mt-8 mx-5">
-      <div className="flex flex-col w-[66%] max-md:ml-0 max-md:w-full">
-        <div className="flex flex-col self-stretch my-auto text-black max-md:mt-10 max-md:max-w-full">
-          <div className="self-start ml-20 text-2xl font-bold max-md:max-w-full">
-            Giới Thiệu về ứng dụng đặt thuốc online Medicare
+    <div className="bg-blue-50 flex justify-between items-center rounded-xl p-6 w-full my-10 h-[220px] max-md:flex-col max-md:items-start max-md:h-auto">
+      {/* Left content */}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <ShieldCheck className="text-blue-600" />
           </div>
-          <div className="mt-8 ml-20 text-sm font-medium max-md:mt-10 max-md:max-w-full">
-            Ứng dụng giao thuốc Medigo mang trong mình sứ mệnh chăm sóc sức khỏe
-            cho hàng triệu người dân Việt Nam. Chúng tôi luôn không ngừng nâng
-            cao dịch vụ để mang lại chất lượng và trải nghiệm tốt nhất cho khách
-            hàng.
-            <br />
-            <br />
-            Với khát vọng trở thành nền tảng y tế từ xa uy tín, chất lượng hàng
-            đầu Việt Nam và tương lai là vươn ra thế giới, Medigo không ngừng nỗ
-            lực, sáng tạo để mang lại cho người dùng dịch vụ chăm sóc sức khỏe
-            nhanh chóng và chất lượng nhất.
+
+          <div>
+            <h3 className="text-blue-700 font-bold">CAM KẾT 100%</h3>
+            <p className="text-sm text-gray-700">thuốc chính hãng</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <Truck className="text-blue-600 w-6 h-6 " />
+          </div>
+          <div>
+            <h3 className="text-blue-700 font-bold">GIAO HÀNG ĐÚNG HẸN</h3>
+            <p className="text-sm text-gray-700">với ngày dự định</p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <LuTicketPercent className="text-blue-600 w-6 h-6 " />
+          </div>
+          <div>
+            <h3 className="text-blue-700 font-bold">VOUCHER HẤP DẪN</h3>
+            <Link href="/gio-hang">
+              <div className="text-sm text-blue-600 underline cursor-pointer">
+                Mua hàng ngay
+              </div>
+            </Link>
+          </div>
+        </div>
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <BsChatHeart className="text-blue-600 w-6 h-6 " />
+          </div>
+          <div>
+            <h3 className="text-blue-700 font-bold">TƯ VẤN MIỄN PHÍ</h3>
+            <a className="text-sm text-blue-600">Với dược sĩ chuyên môn</a>
           </div>
         </div>
       </div>
-      <div className="flex flex-col ml-5 w-[34%] max-md:ml-0 max-md:w-full">
-        <Image
-          src={g}
-          alt="Medicare app interface"
-          className="object-contain grow w-full rounded-2xl aspect-[1.21] max-md:mt-10"
-        />
+
+      {/* Right content */}
+      <div className="flex flex-col items-start justify-center ml-10">
+        <p className="text-blue-700 font-bold text-lg leading-tight">
+          TÌM KIẾM
+          <br />
+          SẢN PHẨM BẰNG HÌNH ẢNH
+        </p>
+        <Link
+          href="/tim-kiem-hinh-anh"
+          className="text-sm text-blue-600 underline mt-2"
+        >
+          <button className="bg-blue-600 text-white px-4 py-2 rounded mt-3 hover:bg-blue-700">
+            Tìm kiếm ngay
+          </button>
+        </Link>
+      </div>
+
+      <div className="hidden md:block relative w-[340px] h-[180px]">
+        <div className="absolute bottom-[-20px] left-0 ">
+          <img
+            src={Family.src}
+            alt="Gia đình và robot"
+            className="w-[340px] h-auto"
+          />
+        </div>
       </div>
     </div>
   );

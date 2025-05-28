@@ -197,7 +197,7 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                 {!orderCheck && (
                     <div
                         className="w-full bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md mb-4">
-                        <p className="text-center font-medium">Bạn hãy chọn sản phẩm để tiếp tục</p>
+                        <p className="text-center font-medium text-sm">Bạn hãy chọn sản phẩm để tiếp tục</p>
                     </div>
                 )}
 
@@ -427,7 +427,7 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                         </div>
 
                                         <input
-                                            type="checkbox"
+                                            type="radio"
                                             name="selectedVoucherOrder"
                                             value={voucher.voucher_id}
                                             checked={selectedVoucherOrder?.voucher_id === voucher.voucher_id}
