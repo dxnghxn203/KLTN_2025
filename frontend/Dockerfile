@@ -1,4 +1,3 @@
-
 FROM node:22-alpine AS builder
 
 WORKDIR /app
@@ -10,16 +9,21 @@ COPY . .
 
 RUN yarn build
 
-FROM node:22-alpine
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY package.json yarn.lock ./
 
-ENV NODE_OPTIONS="--max-old-space-size=768"
+RUN yarn install --frozen-lockfile --production && yarn cache clean
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["yarn", "start"]
+CMD ["node", "server.js"]

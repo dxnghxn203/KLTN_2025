@@ -1,7 +1,9 @@
 const {isServer} = require("@tanstack/react-query");
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
     swcMinify: false,
+    output: 'standalone',
     reactStrictMode: false,
     transpilePackages: ['react-quill', 'quill'],
     experimental: {
@@ -28,13 +30,27 @@ const nextConfig = {
         return config;
     },
     images: {
-        domains: [
-            "kltn2025.s3.ap-southeast-2.amazonaws.com",
-            "https://kltn2025.s3.ap-southeast-2.amazonaws.com",
-            "cdn.nhathuoclongchau.com.vn",
-            "https://medicaretechs3.s3.ap-southeast-2.amazonaws.com",
-            "medicaretechs3.s3.ap-southeast-2.amazonaws.com"
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'kltn2025.s3.ap-southeast-2.amazonaws.com',
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'medicaretechs3.s3.ap-southeast-2.amazonaws.com',
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdn.nhathuoclongchau.com.vn',
+                port: '',
+                pathname: '/**',
+            }
         ],
+        unoptimized: false,
     },
 };
 
