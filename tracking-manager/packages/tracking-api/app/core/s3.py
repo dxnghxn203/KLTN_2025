@@ -8,14 +8,11 @@ import time
 from app.core import logger
 
 load_dotenv()
-# AWS_ACCESS_KEY = "AKIATQPD67OQZ24E6UB7"
-AWS_ACCESS_KEY = "AKIASI273ZMCHQPYLIYU"
-# AWS_SECRET_KEY = "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"
-AWS_SECRET_KEY = "OfB3Y8kDNJKd5I97NjcUSegCHqTGt+D1R6quqtNo"
-AWS_S3_ENDPOINT = "s3.ap-southeast-2.amazonaws.com"
-AWS_REGION = 'ap-southeast-2'
-# AWS_BUCKET="kltn2025"
-AWS_BUCKET="medicaretechs3"
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
+AWS_S3_ENDPOINT = os.getenv("AWS_S3_ENDPOINT", "s3.amazonaws.com")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+AWS_BUCKET= os.getenv("AWS_BUCKET", "your-default-bucket")
 
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.pdf', '.doc', '.docx', '.xlsx', '.csv'}
 
