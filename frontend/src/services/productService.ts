@@ -448,3 +448,15 @@ export const getProductDiscount = async (page: any, page_size: any) => {
     }
 }
 
+export const getProductLowStock = async () => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/low-stock`);
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}

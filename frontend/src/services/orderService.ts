@@ -428,10 +428,44 @@ export const getTypeMonthlyRevenueStatisticsOrder = async (month: number, year: 
             data: response.data
         };
     } catch (error) {
-        console.log("error category monthly revenue", error)
+        console.log("error type monthly revenue", error)
         return {
             status_code: false,
             message: 'Lỗi lấy doanh thu thanh toán theo tháng',
+        }
+    }
+}
+
+export const getMonthlyProductSoldStatistics = async (year: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/monthly-product-sold-statistics?year=${year}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error monthly product sold", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy số lượng sản phẩm bán theo tháng',
+        }
+    }
+}
+
+export const getMonthlyTopSellingProductStatistics = async (month: number, year: number, top_n: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/monthly-top-selling-product-statistics?month=${month}&year=${year}&top_n=${top_n}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error monthly top selling product", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy top sản phẩm bán chạy bán theo tháng',
         }
     }
 }

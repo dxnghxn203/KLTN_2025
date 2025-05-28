@@ -32,6 +32,8 @@ import {
     fetchDeleteImportProductStart,
     selectAllProductDiscount,
     fetchProductDiscountStart, selectProductBestDeal, selectImageToProduct, fetchImageToProductStart,
+    fetchProductLowStockStart,
+    selectProductLowStock
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -51,6 +53,7 @@ export function useProduct() {
     const allFileImport = useSelector(selectAllFileImport);
     const allProductDiscount = useSelector(selectAllProductDiscount);
     const imageToProduct = useSelector(selectImageToProduct);
+    const productLowStock = useSelector(selectProductLowStock);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(100);
@@ -307,6 +310,13 @@ export function useProduct() {
         );
     }
 
+    const fetchGetProducLowStock = async (onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchProductLowStockStart({
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
 
     return {
         addProduct,
@@ -357,7 +367,10 @@ export function useProduct() {
         fetchGetProductDiscount,
 
         imageToProduct,
-        fetchImageToProduct
+        fetchImageToProduct,
+
+        productLowStock,
+        fetchGetProducLowStock
     };
 }
 

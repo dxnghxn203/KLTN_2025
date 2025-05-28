@@ -6,7 +6,8 @@ import {
     fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart,
     fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart,
     fetchGetMonthlyRevenueStatisticsOrderStart, fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
-    fetchGetTypeMonthlyRevenueStatisticsOrderStart
+    fetchGetTypeMonthlyRevenueStatisticsOrderStart, fetchGetMonthlyProductSoldStatisticsStart,
+    fetchGetMonthlyTopSellingProductStatisticsStart
 } from "@/store/order";
 import {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -167,6 +168,24 @@ export function useOrder() {
         }));
     }
 
+    const fetchGetMonthlyProductSoldStatistics = async (year: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetMonthlyProductSoldStatisticsStart({
+            year: year,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
+    const fetchGetMonthlyTopSellingProductStatistics = async (month: number, year: number, top_n: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetMonthlyTopSellingProductStatisticsStart({
+            month: month,
+            year: year,
+            top_n: top_n,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
     return {
         allOrder,
         checkOrder,
@@ -201,7 +220,11 @@ export function useOrder() {
 
         fetchGetCategoryMonthlyRevenueStatisticsOrder,
 
-        fetchGetTypeMonthlyRevenueStatisticsOrder
+        fetchGetTypeMonthlyRevenueStatisticsOrder,
+
+        fetchGetMonthlyProductSoldStatistics,
+
+        fetchGetMonthlyTopSellingProductStatistics
     }
 }
 

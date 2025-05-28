@@ -74,7 +74,15 @@ import {
 
     fetchGetTypeMonthlyRevenueStatisticsOrderStart,
     fetchGetTypeMonthlyRevenueStatisticsOrderSuccess,
-    fetchGetTypeMonthlyRevenueStatisticsOrderFailed
+    fetchGetTypeMonthlyRevenueStatisticsOrderFailed,
+
+    fetchGetMonthlyProductSoldStatisticsStart,
+    fetchGetMonthlyProductSoldStatisticsSuccess,
+    fetchGetMonthlyProductSoldStatisticsFailed,
+
+    fetchGetMonthlyTopSellingProductStatisticsStart,
+    fetchGetMonthlyTopSellingProductStatisticsSuccess,
+    fetchGetMonthlyTopSellingProductStatisticsFailed
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -727,6 +735,56 @@ function* fetchGetTypeMonthlyRevenueStatisticsOrder(action: any): Generator<any,
     }
 }
 
+function* fetchGetMonthlyProductSoldStatistics(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            year,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+        const rs = yield call(orderService.getMonthlyProductSoldStatistics, year);
+        if (rs.status_code === 200) {
+            yield put(fetchGetMonthlyProductSoldStatisticsSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetMonthlyProductSoldStatisticsFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetMonthlyProductSoldStatisticsFailed());
+    }
+}
+
+function* fetchGetMonthlyTopSellingProductStatistics(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            month,
+            year,
+            top_n,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+        const rs = yield call(orderService.getMonthlyTopSellingProductStatistics, month, year, top_n);
+        if (rs.status_code === 200) {
+            yield put(fetchGetMonthlyTopSellingProductStatisticsSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetMonthlyTopSellingProductStatisticsFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetMonthlyTopSellingProductStatisticsFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -746,4 +804,6 @@ export function* orderSaga() {
     yield takeLatest(fetchGetMonthlyRevenueStatisticsOrderStart.type, fetchGetMonthlyRevenueStatisticsOrder);
     yield takeLatest(fetchGetCategoryMonthlyRevenueStatisticsOrderStart.type, fetchGetCategoryMonthlyRevenueStatisticsOrder);
     yield takeLatest(fetchGetTypeMonthlyRevenueStatisticsOrderStart.type, fetchGetTypeMonthlyRevenueStatisticsOrder);
+    yield takeLatest(fetchGetMonthlyProductSoldStatisticsStart.type, fetchGetMonthlyProductSoldStatistics);
+    yield takeLatest(fetchGetMonthlyTopSellingProductStatisticsStart.type, fetchGetMonthlyTopSellingProductStatistics);
 }

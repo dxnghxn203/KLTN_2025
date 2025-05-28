@@ -282,6 +282,40 @@ export const orderSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
+
+        // fetch get monthly product sold statistics
+        fetchGetMonthlyProductSoldStatisticsStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetMonthlyProductSoldStatisticsStart')
+            state.loading = true;
+        },
+        fetchGetMonthlyProductSoldStatisticsSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetMonthlyProductSoldStatisticsSuccess')
+            state.loading = false;
+            state.error = null;
+
+        },
+        fetchGetMonthlyProductSoldStatisticsFailed(state) {
+            console.log('fetchGetMonthlyProductSoldStatisticsFailed')
+            state.loading = false;
+            state.error = null;
+        },
+
+        // fetch get monthly top selling product statistics
+        fetchGetMonthlyTopSellingProductStatisticsStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetMonthlyTopSellingProductStatisticsStart')
+            state.loading = true;
+        },
+        fetchGetMonthlyTopSellingProductStatisticsSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetMonthlyTopSellingProductStatisticsSuccess')
+            state.loading = false;
+            state.error = null;
+
+        },
+        fetchGetMonthlyTopSellingProductStatisticsFailed(state) {
+            console.log('fetchGetMonthlyTopSellingProductStatisticsFailed')
+            state.loading = false;
+            state.error = null;
+        },
     },
 });
 
@@ -361,6 +395,14 @@ export const {
     fetchGetTypeMonthlyRevenueStatisticsOrderFailed,
     fetchGetTypeMonthlyRevenueStatisticsOrderStart,
     fetchGetTypeMonthlyRevenueStatisticsOrderSuccess,
+
+    fetchGetMonthlyProductSoldStatisticsFailed,
+    fetchGetMonthlyProductSoldStatisticsStart,
+    fetchGetMonthlyProductSoldStatisticsSuccess,
+
+    fetchGetMonthlyTopSellingProductStatisticsFailed,
+    fetchGetMonthlyTopSellingProductStatisticsStart,
+    fetchGetMonthlyTopSellingProductStatisticsSuccess,
 
 } = orderSlice.actions;
 

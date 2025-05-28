@@ -17,6 +17,7 @@ interface ProductState {
     loading: boolean;
     error: string | null;
     imageToProduct: any[];
+    productLowStock: any[];
 }
 
 const initialState: ProductState = {
@@ -35,7 +36,8 @@ const initialState: ProductState = {
     productDiscount: [],
     loading: false,
     error: null,
-    imageToProduct: []
+    imageToProduct: [],
+    productLowStock: [],
 };
 
 export const productSlice = createSlice({
@@ -346,6 +348,19 @@ export const productSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+
+        fetchProductLowStockStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchProductLowStockSuccess(state, action: PayloadAction<any[]>) {
+            state.productLowStock = action.payload;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchProductLowStockFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -442,6 +457,10 @@ export const {
     fetchImageToProductStart,
     fetchImageToProductSuccess,
     fetchImageToProductFailed,
+
+    fetchProductLowStockStart,
+    fetchProductLowStockSuccess,
+    fetchProductLowStockFailed
 
 } = productSlice.actions;
 
