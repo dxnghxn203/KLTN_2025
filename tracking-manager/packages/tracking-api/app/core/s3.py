@@ -61,7 +61,7 @@ def upload_file(file, folder: str):
         name = str(int(time.time()))
         s3_key = f"{folder}/{name}"
         # Upload file to S3 bucket
-        s3_client.upload_fileobj(file.file, AWS_BUCKET, s3_key, ExtraArgs={'ContentType': 'image/png'})
+        s3_client.upload_fileobj(file.file, AWS_BUCKET, s3_key, ExtraArgs={'ContentType': 'image/png', 'ACL': 'public-read'})
         # Generate the file URL
         file_url = f"https://{AWS_BUCKET}.{AWS_S3_ENDPOINT}/{s3_key}"
         logger.info(f"File uploaded successfully: {file_url}")
