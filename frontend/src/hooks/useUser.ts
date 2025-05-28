@@ -18,9 +18,17 @@ import {
     fetchVerifyOtpAdminStart,
     fetchVerifyOtpStart,
     fetchGetMonthlyLoginStatisticsStart,
-    fetchGetCountUserRoleStatisticsStart
+    fetchGetCountUserRoleStatisticsStart,
+    fetchGetTopRevenueCustomersStatisticsStart
 } from "@/store";
-import {insertUserSelector, selectAllAdmin, selectAllPharmacist, selectAllUserAdmin, selectCountUserRole} from "@/store/user/userSelector";
+import {
+    insertUserSelector, 
+    selectAllAdmin, 
+    selectAllPharmacist, 
+    selectAllUserAdmin, 
+    selectCountUserRole, 
+    selectTopRevenueCustomers
+} from "@/store/user/userSelector";
 import {useDispatch, useSelector} from "react-redux";
 import {useSession} from "next-auth/react";
 import {useState} from "react";
@@ -49,6 +57,7 @@ export function useUser() {
     const allPharmacist = useSelector(selectAllPharmacist);
     const allAdmin = useSelector(selectAllAdmin);
     const countUserRole = useSelector(selectCountUserRole);
+    const topRevenueCustomers = useSelector(selectTopRevenueCustomers);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(100);
@@ -292,6 +301,14 @@ export function useUser() {
             }));
         }
 
+    const fetchGetTopRevenueCustomersStatistics = async (top_n: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+            dispatch(fetchGetTopRevenueCustomersStatisticsStart({
+                top_n: top_n,
+                onSuccess: onSuccess,
+                onFailed: onFailed
+            }));
+        }
+
     return {
         insertUser,
         fetchInsertUser,
@@ -341,7 +358,8 @@ export function useUser() {
         fetchGetCountUserRoleStatistics,
         countUserRole,
 
-        
+        fetchGetTopRevenueCustomersStatistics,
+        topRevenueCustomers
     };
 }
 

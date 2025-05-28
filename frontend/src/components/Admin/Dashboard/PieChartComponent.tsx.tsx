@@ -60,7 +60,7 @@ const PieChartComponent: React.FC<Props> = () => {
                 fontWeight={600}
                 className="focus:outline-none"
               >
-                {`${pieChartData[index].name} (${(percent * 100).toFixed(0)}%)`}
+                {`${pieChartData[index].name} (${(percent * 100).toFixed(2)}%)`}
               </text>
             );
           }}

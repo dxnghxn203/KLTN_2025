@@ -17,7 +17,7 @@ from app.models.product import get_product_by_slug, add_product_db, get_all_prod
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
     import_products, get_product_brands, get_imported_products, delete_imported_products, \
     get_discount_product, check_all_product_discount_expired, getAvailableQuantity, \
-    normalize_products_inventory
+    normalize_products_inventory, get_low_stock_products
 
 router = APIRouter()
 
@@ -594,6 +594,24 @@ async def automatic():
         raise je
     except Exception as e:
         logger.error("Error automatic", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/low-stock", response_model=response.BaseResponse)
+async def get_product_low_stock(
+        # token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        result = await get_low_stock_products()
+        return response.BaseResponse(
+            message="Tìm thấy sản sắp hết hàng",
+            data=result
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

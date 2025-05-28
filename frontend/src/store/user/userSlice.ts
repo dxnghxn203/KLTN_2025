@@ -10,6 +10,7 @@ interface UserSliceState {
     allAdmin: any[];
     token: any;
     countUserRole: any;
+    topRevenueCustomers: any[];
 }
 
 const initialState: UserSliceState = {
@@ -19,7 +20,8 @@ const initialState: UserSliceState = {
     allPharmacist: [],
     allAdmin: [],
     token: null,
-    countUserRole: null
+    countUserRole: null,
+    topRevenueCustomers: [],
 };
 
 export const userSlice = createSlice({
@@ -261,6 +263,18 @@ export const userSlice = createSlice({
         fetchGetCountUserRoleStatisticsFailure: (state) => {
             state.loading = false;
         },
+
+        // fetch get top revenue customers statistics
+        fetchGetTopRevenueCustomersStatisticsStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchGetTopRevenueCustomersStatisticsSuccess: (state, action: PayloadAction<any>) => {
+            state.topRevenueCustomers = action.payload;
+            state.loading = false;
+        },
+        fetchGetTopRevenueCustomersStatisticsFailure: (state) => {
+            state.loading = false;
+        },
     },
 });
 
@@ -343,7 +357,11 @@ export const {
 
     fetchGetCountUserRoleStatisticsStart,
     fetchGetCountUserRoleStatisticsSuccess,
-    fetchGetCountUserRoleStatisticsFailure
+    fetchGetCountUserRoleStatisticsFailure,
+
+    fetchGetTopRevenueCustomersStatisticsStart,
+    fetchGetTopRevenueCustomersStatisticsSuccess,
+    fetchGetTopRevenueCustomersStatisticsFailure
 
 } = userSlice.actions;
 
