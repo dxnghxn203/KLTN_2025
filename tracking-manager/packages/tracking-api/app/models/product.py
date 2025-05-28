@@ -1440,3 +1440,35 @@ async def normalize_products_inventory():
         inventory_collection.bulk_write(bulk_ops)
 
     print(f"Đã cập nhật đầy đủ {len(bulk_ops)} bản ghi từ prices sang products_inventory.")
+
+async def get_low_stock_products():
+    try:
+        collection = db[collection_name]
+
+        pipeline = [
+            {"$unwind": "$prices"},
+            {"$match": {"$expr": {"$lte": [{"$subtract": ["$prices.inventory", "$prices.sell"]}, 10]}}},
+            {
+                "$project": {
+                    "_id": 0,
+                    "product_id": 1,
+                    "product_name": 1,
+                    "images_primary": 1,
+                    "prices_id": "$prices.price_id",
+                    "unit": "$prices.unit",
+                    "sell": "$prices.sell",
+                    "delivery": "$prices.delivery",
+                    "inventory": "$prices.inventory",
+                }
+            }
+        ]
+
+        cursor = collection.aggregate(pipeline)
+        result = []
+        for doc in cursor:
+            result.append(doc)
+
+        return result
+    except Exception as e:
+        logger.error(f"Failed [get_low_stock_products]: {e}")
+        raise e

@@ -393,3 +393,20 @@ export const getCountUserRoleStatistics = async () => {
         }
     }
 }
+
+export const getTopRevenueCustomersStatistics = async (top_n: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/admin/top-revenue-customer-statistics?top_n=${top_n}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error top revenue customer statistics", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy top khách hàng mua nhiều nhất',
+        }
+    }
+}

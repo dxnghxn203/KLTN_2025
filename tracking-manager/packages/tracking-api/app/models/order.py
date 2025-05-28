@@ -1142,3 +1142,50 @@ async def get_payment_type_monthly_revenue(month: int, year: int):
     except Exception as e:
         logger.error(f"Failed [get_category_monthly_revenue]: {e}")
         raise e
+
+async def get_sold_quantity_by_month(year: int):
+    try:
+        collection = database.db[collection_name]
+
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year + 1, 1, 1)
+
+        pipeline = [
+            {
+                "$match": {
+                    "created_date": {
+                        "$gte": start_date,
+                        "$lt": end_date
+                    },
+                    "status": "delivery_success"
+                }
+            },
+            { "$unwind": "$product" },
+            {
+                "$group": {
+                    "_id": { "month": { "$month": "$created_date" } },
+                    "total_quantity": { "$sum": "$product.quantity" }
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "month": "$_id.month",
+                    "total_quantity": 1
+                }
+            }
+        ]
+
+        result = collection.aggregate(pipeline).to_list(length=12)
+
+        monthly_quantities = [0] * 12
+
+        for item in result:
+            month_index = item["month"] - 1    
+            monthly_quantities[month_index] = item["total_quantity"]
+
+        return monthly_quantities
+
+    except Exception as e:
+        logger.error(f"Failed [get_sold_quantity_by_month]: {e}")
+        raise e

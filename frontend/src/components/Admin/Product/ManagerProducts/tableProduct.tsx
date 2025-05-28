@@ -258,7 +258,7 @@ const TableProduct = () => {
                                 setIsOpenDialog(true);
                               }}
                             >
-                              <ImBin className="text-base text-sm" />
+                              <ImBin className="text-sm" />
                               <span>Xóa</span>
                             </button>
                           </div>

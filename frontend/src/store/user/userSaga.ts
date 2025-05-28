@@ -75,12 +75,39 @@ import {
     fetchGetMonthlyLoginStatisticsStart,
     fetchGetMonthlyLoginStatisticsSuccess,
     fetchGetMonthlyLoginStatisticsFailure,
+
     fetchGetCountUserRoleStatisticsSuccess,
     fetchGetCountUserRoleStatisticsFailure,
-    fetchGetCountUserRoleStatisticsStart
+    fetchGetCountUserRoleStatisticsStart,
+
+    fetchGetTopRevenueCustomersStatisticsStart,
+    fetchGetTopRevenueCustomersStatisticsSuccess,
+    fetchGetTopRevenueCustomersStatisticsFailure
 
 } from "./userSlice";
-import { getAllUserAdmin, insertUser, sendOtp, verifyOtp,forgotPasswordUser, changePasswordUser, changePasswordAdmin, forgotPasswordAdmin, updateStatusUser, changePasswordPharmacist, forgotPasswordPharmacist, getAllPharmacist, getAllAdmin, updateStatusAdmin, updateStatusPharmacist, insertPharmacist, registerAdmin, sendOTPAdmin, verifyOTPAdmin, getMonthlyLoginStatistics, getCountUserRoleStatistics } from "@/services/userService";
+import { 
+    getAllUserAdmin,
+    insertUser,
+    sendOtp,
+    verifyOtp,
+    forgotPasswordUser,
+    changePasswordUser,
+    changePasswordAdmin,
+    forgotPasswordAdmin,
+    updateStatusUser,
+    changePasswordPharmacist, 
+    forgotPasswordPharmacist, 
+    getAllPharmacist, 
+    getAllAdmin, 
+    updateStatusAdmin, 
+    updateStatusPharmacist, 
+    insertPharmacist, 
+    registerAdmin, 
+    sendOTPAdmin, 
+    verifyOTPAdmin, 
+    getMonthlyLoginStatistics,
+    getCountUserRoleStatistics, 
+    getTopRevenueCustomersStatistics } from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -513,7 +540,6 @@ function* fetchGetMonthlyLoginStatistics(action: any): Generator<any, void, any>
     try {
         const {payload} = action;
         const {
-            month,
             year,
             onSuccess = (message: any) => {
             },
@@ -557,6 +583,30 @@ function* fetchGetCountUserRoleStatistics(action: any): Generator<any, void, any
     }
 }
 
+function* fetchGetTopRevenueCustomersStatistics(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            top_n,
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
+        } = payload;
+        const rs = yield call(getTopRevenueCustomersStatistics, top_n);
+        if (rs.status_code === 200) {
+            yield put(fetchGetTopRevenueCustomersStatisticsSuccess(rs.data));
+            onSuccess();
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetTopRevenueCustomersStatisticsFailure(rs.message));
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetTopRevenueCustomersStatisticsFailure());
+    }
+}
+
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
@@ -578,5 +628,6 @@ export function* userSaga() {
     yield takeLatest(fetchSendOtpAdminStart.type, handleSendOTPAdmin);
     yield takeLatest(fetchGetMonthlyLoginStatisticsStart.type, fetchGetMonthlyLoginStatistics);
     yield takeLatest(fetchGetCountUserRoleStatisticsStart.type, fetchGetCountUserRoleStatistics);
+    yield takeLatest(fetchGetTopRevenueCustomersStatisticsStart.type, fetchGetTopRevenueCustomersStatistics);
 }
 
