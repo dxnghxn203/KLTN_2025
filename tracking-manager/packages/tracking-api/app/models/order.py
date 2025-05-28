@@ -1189,3 +1189,56 @@ async def get_sold_quantity_by_month(year: int):
     except Exception as e:
         logger.error(f"Failed [get_sold_quantity_by_month]: {e}")
         raise e
+
+async def get_top_selling_products_by_month(month: int, year: int, top_n: int = 10):
+    try:
+        start_date = datetime(year, month, 1)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1)
+        else:
+            end_date = datetime(year, month + 1, 1)
+
+        pipeline = [
+            {
+                "$match": {
+                    "status": "delivery_success",
+                    "created_date": {
+                        "$gte": start_date,
+                        "$lt": end_date
+                    }
+                }
+            },
+            { "$unwind": "$product" },
+            {
+                "$group": {
+                    "_id": {
+                        "product_id": "$product.product_id",
+                        "product_name": "$product.product_name",
+                        "images_primary": "$product.images_primary",
+                    },
+                    "total_quantity": { "$sum": "$product.quantity" }
+                }
+            },
+            {
+                "$sort": { "total_quantity": -1 }
+            },
+            {
+                "$limit": top_n
+            },
+            {
+                "$project": {
+                    "product_id": "$_id.product_id",
+                    "product_name": "$_id.product_name",
+                    "images_primary": "$_id.images_primary",
+                    "total_quantity": 1,
+                    "_id": 0
+                }
+            }
+        ]
+
+        result = database.db[collection_name].aggregate(pipeline).to_list(length=top_n)
+        return result
+
+    except Exception as e:
+        logger.error(f"Error in get_top_selling_products_by_month: {e}")
+        raise e

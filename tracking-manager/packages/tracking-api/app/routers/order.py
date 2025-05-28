@@ -402,3 +402,19 @@ async def get_monthly_product_sold(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
+
+@router.get("/order/monthly-top-selling-product-statistics", response_model=response.BaseResponse)
+async def get_monthly_top_selling_product(
+        month: int, year: int, top_n: int,
+        # token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        result = await order.get_top_selling_products_by_month(month, year, top_n)
+        return response.SuccessResponse(
+            data=result
+        )
+    except Exception as e:
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
