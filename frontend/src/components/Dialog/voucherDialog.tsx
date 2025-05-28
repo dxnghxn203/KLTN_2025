@@ -303,7 +303,7 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                         </div>
 
                                         <input
-                                            type="checkbox"
+                                            type="radio"
                                             name="selectedVoucher"
                                             value={voucher.voucher_id}
                                             checked={selectedVoucher?.voucher_id === voucher.voucher_id}
