@@ -999,16 +999,16 @@ async def extract_category_object(row: dict, all_categories: list) -> Tuple[Item
             return None, "Không tìm thấy danh mục chính nào"
 
         matched_sub = next((sub for sub in matched_main.get("sub_category", []) if normalize_text(sub.get("sub_category_name", "")) == normalized_sub), None)
-        if not matched_sub and sub_categories:
-            matched_sub = sub_categories[0]
+        if not matched_sub and matched_main.get("sub_category"):
+            matched_sub = matched_main.get("sub_category")[0]
             errors.append(
                 f"Danh mục phụ không hợp lệ: {row.get('sub_category_name')}, dùng mặc định '{matched_sub.get('sub_category_name')}'")
         elif not matched_sub:
             return None, f"Danh mục phụ không xác định và không có danh sách danh mục phụ cho '{matched_main.get('main_category_name')}'"
 
         matched_child = next((child for child in matched_sub.get("child_category", []) if normalize_text(child.get("child_category_name", "")) == normalized_child), None)
-        if not matched_child and child_categories:
-            matched_child = child_categories[0]
+        if not matched_child and matched_sub.get("child_category"):
+            matched_child = matched_sub.get("child_category")[0]
             errors.append(
                 f"Danh mục con không hợp lệ: {row.get('child_category_name')}, dùng mặc định '{matched_child.get('child_category_name')}'")
         elif not matched_child:
