@@ -25,7 +25,6 @@ export const authSlice = createSlice({
         googleLoginSuccess: (state, action) => {
             state.user = action.payload;
             state.loading = false;
-            state.isAuthenticated = true;
             state.error = null;
         },
         googleLoginFailure: (state, action: PayloadAction<string>) => {
@@ -39,14 +38,8 @@ export const authSlice = createSlice({
         },
         loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
             state.loading = false;
-            state.isAuthenticated = true;
             state.user = action.payload.user;
             state.error = null;
-            state.admin = null;
-            state.pharmacist = null;
-            state.isAdmin = false;
-            state.isPharmacist = false;
-
         },
         loginFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
@@ -55,21 +48,13 @@ export const authSlice = createSlice({
 
         // Logout actions
         logoutStart: (state, action) => {
-            console.log("logout start:", action.payload);
             state.loading = true;
             state.error = null;
         },
         logoutSuccess: (state) => {
             state.loading = false;
             state.isAuthenticated = false;
-            if (state.isAdmin) {
-                state.admin = null;
-            } else if (state.isPharmacist) {
-                state.pharmacist = null;
-            }
-            else {
-                state.user = null;
-            }
+            state.user = null;
         },
         logoutFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
@@ -84,11 +69,6 @@ export const authSlice = createSlice({
         loginAdminSuccess: (state, action: PayloadAction<{ admin: Admin; token: string }>) => {
             state.loading = false;
             state.admin = action.payload.admin;
-            state.isAuthenticated = true;
-            state.isAdmin = true;
-            state.user = null;
-            state.pharmacist = null;
-            state.isPharmacist = false;
         },
         loginAdminFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
@@ -101,12 +81,7 @@ export const authSlice = createSlice({
         },
         loginPharmacistSuccess: (state, action: PayloadAction<{ pharmacist: Pharmacist; token: string }>) => {
             state.loading = false;
-            state.isAuthenticated = true;
             state.pharmacist = action.payload.pharmacist;
-            state.isPharmacist = true;
-            state.user = null;
-            state.admin = null;
-            state.isAdmin = false;
         },
         loginPharmacistFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;

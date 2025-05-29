@@ -84,8 +84,8 @@ export default function MenuHeader() {
         router.push(`/${category.main_category_slug}`);
     };
 
-    const visibleCategories = allCategory?.slice(0, 6) || [];
-    const extraCategories = allCategory?.slice(6) || [];
+    const visibleCategories = Array.isArray(allCategory) ? allCategory.slice(0, 6) : [];
+    const extraCategories = Array.isArray(allCategory) ? allCategory.slice(6) : [];
 
     return (
         <nav className="bg-blue-700 py-3 flex justify-center items-center">
