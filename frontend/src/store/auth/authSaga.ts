@@ -81,9 +81,7 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
                     token: response?.token || null,
                 })
             );
-
         } else {
-            console.log('Login failed:', response.message);
             onFailed(response.message);
             yield put(loginFailure(response.message || 'Đăng nhập thất bại'));
         }
@@ -104,7 +102,6 @@ function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
         },
     } = payload;
     try {
-        console.log("logout call:", role_type);
         const response = yield call(signOut, {redirect: false});
         var token = null;
         if (role_type === "admin") {
@@ -114,9 +111,7 @@ function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
         } else {
             token = getToken();
         }
-        console.log("token", token);
         if (token) {
-            console.log("logout service")
             yield call(authService.logout, token);
         }
         removeToken();

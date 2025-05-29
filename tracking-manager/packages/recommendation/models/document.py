@@ -7,13 +7,10 @@ import uuid
 # Sử dụng MongoDB connection đã cấu hình
 from core.mongo import db
 from core import logger
+from helpers.constant import generate_id
 
-# Collections
-prescription_collection = db.prescriptions
-invoice_collection = db.invoices
+documents_collection = db.documents
 
-
-# Models
 class PrescriptionProduct(BaseModel):
     product_name: str
     dosage: Optional[str] = None
@@ -31,25 +28,20 @@ class InvoiceProduct(BaseModel):
 
 
 class DocumentExtractionRequest(BaseModel):
-    document_type: Optional[str] = "auto"  # "prescription", "invoice", or "auto"
-    extraction_method: str = "hybrid"  # "ocr", "llm", or "hybrid"
-    page: Optional[int] = None  # Trang cần trích xuất (cho PDF)
-    user_id: Optional[str] = None  # ID người dùng
-
+    request_id: Optional[str] = None
 
 class DocumentExtractionResponse(BaseModel):
-    document_id: str  # ID tài liệu
-    document_type: str  # Loại tài liệu
-    raw_text: Optional[str] = None  # Văn bản OCR thô (có thể là None nếu không có hoặc không áp dụng)
-    products: List[Union[PrescriptionProduct, InvoiceProduct]]  # Sản phẩm đã trích xuất
-    extraction_method: str  # Phương pháp trích xuất
-    total_pages: Optional[int] = None  # Tổng số trang
-    current_page: Optional[int] = None  # Trang hiện tại
+    document_id: str
+    document_type: str
+    raw_text: Optional[str] = None
+    products: List[Union[PrescriptionProduct, InvoiceProduct]]
+    total_pages: Optional[int] = None
+    current_page: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.now)
 
     patient_information: Optional[Dict[str, Any]] = None
-    document_date: Optional[str] = None  # Ngày tài liệu (chuỗi, ví dụ: "YYYY-MM-DD")
-    issuing_organization: Optional[str] = None  # Tổ chức phát hành (chuỗi)
+    document_date: Optional[str] = None
+    issuing_organization: Optional[str] = None
 
     model_config = ConfigDict(json_encoders={datetime: lambda v: v.isoformat()})
     medical_code: Optional[str] = None
@@ -60,12 +52,10 @@ class DocumentExtractionResponse(BaseModel):
 
 async def save_document(
         document_type: str,
-        raw_text: Optional[str],  # raw_text có thể là None
+        raw_text: Optional[str],
         products: List[Dict[str, Any]],
-        extraction_method: str,
         file_name: str,
-        file_content: bytes,
-        user_id: Optional[str] = None,
+        request_id: Optional[str] = None,
         total_pages: Optional[int] = None,
         current_page: Optional[int] = None,
         patient_information: Optional[Dict[str, Any]] = None,
@@ -76,22 +66,19 @@ async def save_document(
         prescription_id: Optional[str] = None,
         prescribing_doctor: Optional[str] = None
 ) -> str:
-    """Lưu tài liệu vào MongoDB"""
-    document_id = str(uuid.uuid4())
+    document_id = generate_id("DOC")
 
     document_data = {
         "document_id": document_id,
         "document_type": document_type,
         "raw_text": raw_text,
         "products": products,
-        "extraction_method": extraction_method,
         "file_name": file_name,
-        "file_content": base64.b64encode(file_content).decode('utf-8'),  # Lưu file content dưới dạng base64
-        "created_at": datetime.now(),  # Sử dụng datetime object, MongoDB sẽ lưu thành ISODate
+        "created_at": datetime.now(),
         "total_pages": total_pages,
         "current_page": current_page,
         "patient_information": patient_information,
-        "document_date": document_date,  # Lưu dưới dạng chuỗi
+        "document_date": document_date,
         "issuing_organization": issuing_organization,
         "medical_code": medical_code,
         "invoice_id": invoice_id,
@@ -99,27 +86,15 @@ async def save_document(
         "prescribing_doctor": prescribing_doctor
     }
 
-    if user_id:
-        document_data["user_id"] = user_id
+    if request_id:
+        document_data["request_id"] = request_id
 
     try:
-        collection_to_use = None
-        if document_type == "prescription":
-            collection_to_use = prescription_collection
-        elif document_type == "invoice":
-            collection_to_use = invoice_collection
-        else:
-            # Quyết định một collection mặc định hoặc raise lỗi nếu document_type không hợp lệ
-            logger.warn(
-                f"Document type '{document_type}' is not explicitly handled for collection selection. Defaulting or erroring.")
-            # Ví dụ: default to prescriptions or raise error
-            collection_to_use = prescription_collection  # Hoặc raise ValueError("Invalid document_type for saving")
-
+        collection_to_use = documents_collection
         if collection_to_use is not None:
             collection_to_use.insert_one(document_data)
             logger.info(f"Document saved to MongoDB collection for '{document_type}' with ID: {document_id}")
         else:
-            # This case should ideally be handled by the logic above
             logger.error(f"No collection determined for document_type: {document_type}. Document not saved.")
             raise ValueError(f"Could not determine collection for document_type: {document_type}")
 
@@ -128,65 +103,47 @@ async def save_document(
         logger.error(f"Failed to save document to MongoDB: {str(e)}")
         raise
 
-
-async def get_document(document_id: str) -> Optional[Dict[str, Any]]:
-    """Lấy thông tin tài liệu từ MongoDB"""
-    # Tìm trong cả hai collection
-    # Sử dụng await cho các hoạt động cơ sở dữ liệu với motor
-    prescription_doc =  prescription_collection.find_one({"document_id": document_id})
-    if prescription_doc:
-        prescription_doc["_id"] = str(prescription_doc["_id"])  # Chuyển ObjectId thành string cho JSON serialization
-        return prescription_doc
-
-    invoice_doc =  invoice_collection.find_one({"document_id": document_id})
-    if invoice_doc:
-        invoice_doc["_id"] = str(invoice_doc["_id"])
-        return invoice_doc
-
-    return None
-
-
-async def get_user_documents(
-        user_id: str,
-        document_type: Optional[str] = None,
-        skip: int = 0,
-        limit: int = 10
-) -> List[Dict[str, Any]]:
-    """Lấy danh sách tài liệu của một người dùng"""
-    query = {"user_id": user_id}
-
-    if document_type:
-        query["document_type"] = document_type
-
-    # Loại bỏ file_content để giảm kích thước phản hồi
-    projection = {"file_content": 0}
-
-    all_results = []
-
-    # Tìm trong collection prescriptions
-    if document_type is None or document_type == "prescription":
-        # Chú ý: to_list cần một argument 'length'
-        cursor = prescription_collection.find(query, projection).skip(skip)  # .limit(limit) # Limit sau khi gộp
-        prescription_docs =  cursor.to_list(
-            length=limit if limit > 0 else None)  # length=None để lấy hết nếu limit=0
-        for doc in prescription_docs:
-            doc["_id"] = str(doc["_id"])
-            all_results.append(doc)
-
-    # Tìm trong collection invoices
-    if document_type is None or document_type == "invoice":
-        cursor = invoice_collection.find(query, projection).skip(skip)  # .limit(limit)
-        invoice_docs =  cursor.to_list(length=limit if limit > 0 else None)
-        for doc in invoice_docs:
-            doc["_id"] = str(doc["_id"])
-            all_results.append(doc)
-
-    # Sắp xếp theo thời gian tạo (mới nhất trước) sau khi đã gộp kết quả
-    # Đảm bảo created_at tồn tại và là datetime để sort, nếu không thì xử lý fallback
-    all_results.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
-
-    # Áp dụng limit sau khi đã sort và gộp
-    return all_results[:limit]
+#
+# async def get_user_documents(
+#         user_id: str,
+#         document_type: Optional[str] = None,
+#         skip: int = 0,
+#         limit: int = 10
+# ) -> List[Dict[str, Any]]:
+#     query = {"user_id": user_id}
+#
+#     if document_type:
+#         query["document_type"] = document_type
+#
+#     # Loại bỏ file_content để giảm kích thước phản hồi
+#     projection = {"file_content": 0}
+#
+#     all_results = []
+#
+#     # Tìm trong collection prescriptions
+#     if document_type is None or document_type == "prescription":
+#         # Chú ý: to_list cần một argument 'length'
+#         cursor = prescription_collection.find(query, projection).skip(skip)  # .limit(limit) # Limit sau khi gộp
+#         prescription_docs =  cursor.to_list(
+#             length=limit if limit > 0 else None)  # length=None để lấy hết nếu limit=0
+#         for doc in prescription_docs:
+#             doc["_id"] = str(doc["_id"])
+#             all_results.append(doc)
+#
+#     # Tìm trong collection invoices
+#     if document_type is None or document_type == "invoice":
+#         cursor = invoice_collection.find(query, projection).skip(skip)  # .limit(limit)
+#         invoice_docs =  cursor.to_list(length=limit if limit > 0 else None)
+#         for doc in invoice_docs:
+#             doc["_id"] = str(doc["_id"])
+#             all_results.append(doc)
+#
+#     # Sắp xếp theo thời gian tạo (mới nhất trước) sau khi đã gộp kết quả
+#     # Đảm bảo created_at tồn tại và là datetime để sort, nếu không thì xử lý fallback
+#     all_results.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
+#
+#     # Áp dụng limit sau khi đã sort và gộp
+#     return all_results[:limit]
 
 class DrugInformation(BaseModel):
     name: Optional[str] = None

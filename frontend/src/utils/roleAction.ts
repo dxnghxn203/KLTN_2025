@@ -50,11 +50,16 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchForgotPasswordPharmacistStart',
     'fetchApproveProductByPharmacistStart',
     'loginPharmacistStart',
-    'fetchAcceptConversationStart',
-    'fetchApproveProductByPharmacistStart',
-    'fetchProductApprovedStart',
-    'fetchGetApproveRequestOrderStart'
-
-
-
+    'fetchAcceptConversationStart'
 ]
+
+export const SYSTEM_ACTIONS = [
+    'PERSIST',
+    'REHYDRATE',
+    'PAUSE',
+    'PURGE',
+    'REGISTER',
+    'FLUSH',
+    '@@redux/INIT',
+    '@@INIT'
+];
