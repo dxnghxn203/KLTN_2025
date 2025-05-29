@@ -316,6 +316,23 @@ export const orderSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
+
+        // fetch get monthly count order statistics
+        fetchGetMonthlyCountOrderStatisticsStart(state, action: PayloadAction<any>) {
+            console.log('fetchGetMonthlyCountOrderStatisticsStart')
+            state.loading = true;
+        },
+        fetchGetMonthlyCountOrderStatisticsSuccess(state, action: PayloadAction<any>) {
+            console.log('fetchGetMonthlyCountOrderStatisticsSuccess')
+            state.loading = false;
+            state.error = null;
+
+        },
+        fetchGetMonthlyCountOrderStatisticsFailed(state) {
+            console.log('fetchGetMonthlyCountOrderStatisticsFailed')
+            state.loading = false;
+            state.error = null;
+        },
     },
 });
 
@@ -403,6 +420,10 @@ export const {
     fetchGetMonthlyTopSellingProductStatisticsFailed,
     fetchGetMonthlyTopSellingProductStatisticsStart,
     fetchGetMonthlyTopSellingProductStatisticsSuccess,
+
+    fetchGetMonthlyCountOrderStatisticsFailed,
+    fetchGetMonthlyCountOrderStatisticsStart,
+    fetchGetMonthlyCountOrderStatisticsSuccess,
 
 } = orderSlice.actions;
 

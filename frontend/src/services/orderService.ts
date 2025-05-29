@@ -469,3 +469,20 @@ export const getMonthlyTopSellingProductStatistics = async (month: number, year:
         }
     }
 }
+
+export const getMonthlyCountOrderStatistics = async (year: number) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/order/monthly-count-order-statistics?year=${year}`);
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        console.log("error monthly count order product", error)
+        return {
+            status_code: false,
+            message: 'Lỗi lấy số lượng đơn hàng theo tháng',
+        }
+    }
+}

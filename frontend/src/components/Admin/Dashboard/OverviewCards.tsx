@@ -28,7 +28,7 @@ import { MdMoreHoriz } from "react-icons/md";
 import { useProduct } from "@/hooks/useProduct";
 import OutOfStock from "./OutOfStock";
 import CategoryRevenueChart from "./CategoryRevenueChart";
-import OrderChartByWeek from "./OrderCharyByWeekk";
+import OrderChartComponent from "./OrderChartComponents";
 // import { OrderChartByWeek } from "./OrderCharyByWeekk";
 
 
@@ -220,7 +220,7 @@ export default function OverviewCards() {
 
       {selectedCard === cards[3] && (
         <div className="space-y-4">
-          <OrderChartByWeek />
+          <OrderChartComponent />
           <LatestOrders />
         </div>
       )}

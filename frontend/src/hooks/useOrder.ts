@@ -7,7 +7,7 @@ import {
     fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart,
     fetchGetMonthlyRevenueStatisticsOrderStart, fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
     fetchGetTypeMonthlyRevenueStatisticsOrderStart, fetchGetMonthlyProductSoldStatisticsStart,
-    fetchGetMonthlyTopSellingProductStatisticsStart
+    fetchGetMonthlyTopSellingProductStatisticsStart, fetchGetMonthlyCountOrderStatisticsStart
 } from "@/store/order";
 import {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -186,6 +186,14 @@ export function useOrder() {
         }));
     }
 
+    const fetchGetMonthlyCountOrderProductStatistics = async (year: number, onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchGetMonthlyCountOrderStatisticsStart({
+            year: year,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
     return {
         allOrder,
         checkOrder,
@@ -224,7 +232,9 @@ export function useOrder() {
 
         fetchGetMonthlyProductSoldStatistics,
 
-        fetchGetMonthlyTopSellingProductStatistics
+        fetchGetMonthlyTopSellingProductStatistics,
+
+        fetchGetMonthlyCountOrderProductStatistics
     }
 }
 

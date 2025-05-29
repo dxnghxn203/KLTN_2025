@@ -82,7 +82,11 @@ import {
 
     fetchGetMonthlyTopSellingProductStatisticsStart,
     fetchGetMonthlyTopSellingProductStatisticsSuccess,
-    fetchGetMonthlyTopSellingProductStatisticsFailed
+    fetchGetMonthlyTopSellingProductStatisticsFailed,
+
+    fetchGetMonthlyCountOrderStatisticsStart,
+    fetchGetMonthlyCountOrderStatisticsSuccess,
+    fetchGetMonthlyCountOrderStatisticsFailed
 } from './orderSlice';
 import {getSession, getToken} from '@/utils/cookie';
 
@@ -785,6 +789,30 @@ function* fetchGetMonthlyTopSellingProductStatistics(action: any): Generator<any
     }
 }
 
+function* fetchGetMonthlyCountOrderStatistics(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            year,
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+        const rs = yield call(orderService.getMonthlyCountOrderStatistics, year);
+        if (rs.status_code === 200) {
+            yield put(fetchGetMonthlyCountOrderStatisticsSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchGetMonthlyCountOrderStatisticsFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchGetMonthlyCountOrderStatisticsFailed());
+    }
+}
+
 export function* orderSaga() {
     yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
@@ -806,4 +834,5 @@ export function* orderSaga() {
     yield takeLatest(fetchGetTypeMonthlyRevenueStatisticsOrderStart.type, fetchGetTypeMonthlyRevenueStatisticsOrder);
     yield takeLatest(fetchGetMonthlyProductSoldStatisticsStart.type, fetchGetMonthlyProductSoldStatistics);
     yield takeLatest(fetchGetMonthlyTopSellingProductStatisticsStart.type, fetchGetMonthlyTopSellingProductStatistics);
+    yield takeLatest(fetchGetMonthlyCountOrderStatisticsStart.type, fetchGetMonthlyCountOrderStatistics);
 }

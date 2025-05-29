@@ -116,7 +116,7 @@ async def get_all_order(page: int, page_size: int):
     try:
         collection = database.db[collection_name]
         skip_count = (page - 1) * page_size
-        order_list = collection.find().skip(skip_count).limit(page_size)
+        order_list = collection.find().sort("created_date", -1).skip(skip_count).limit(page_size)
         logger.info(f"Order list: {order_list}")
         return [ItemOrderRes.from_mongo(order) for order in order_list]
     except Exception as e:
