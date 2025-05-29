@@ -9,7 +9,7 @@ import categories2 from "@/images/2.jpg";
 import categories3 from "@/images/3.jpg";
 import categories4 from "@/images/4.jpg";
 import categories5 from "@/images/5.jpg";
-import categories6 from "@/images/6.jpg";
+import categories6 from "@/images/category6.jpg";
 import categories7 from "@/images/7.jpg";
 import categories8 from "@/images/categories8.png";
 // import slider1 from "@/images/83.png";

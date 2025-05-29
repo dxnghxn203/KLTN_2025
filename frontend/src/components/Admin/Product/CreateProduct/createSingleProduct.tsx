@@ -569,7 +569,10 @@ const CreateSingleProduct = () => {
           }
           await fetchUpdateImagesPrimaryProduct(
             { product_id: editId, file: formData_PrimaryImage },
-            (msg) => toast.showToast(msg, "success"),
+            (msg) => {
+              // toast.showToast(msg, "success");
+              router.push("/san-pham/quan-ly-san-pham");
+            },
             (msg) => Promise.reject(new Error(msg))
           );
         }
@@ -578,7 +581,10 @@ const CreateSingleProduct = () => {
           const formData_Images = await prepareImages();
           await fetchUpdateImagesProduct(
             { product_id: editId, files: formData_Images },
-            (msg) => toast.showToast(msg, "success"),
+            (msg) => {
+              // toast.showToast(msg, "success"),
+              router.push("/san-pham/quan-ly-san-pham");
+            },
             (msg) => Promise.reject(new Error(msg))
           );
         }
@@ -589,7 +595,6 @@ const CreateSingleProduct = () => {
             (msg: string) => toast.showToast(msg, "success"),
             () => router.push("/san-pham/them-san-pham-don?chi-tiet=" + editId)
           );
-          // console.log("dataToSend", dataToSend);
         }
       } catch (error: any) {
         toast.showToast("Lỗi khi cập nhật: " + error.message, "error");

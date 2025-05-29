@@ -50,6 +50,11 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchForgotPasswordPharmacistStart',
     'fetchApproveProductByPharmacistStart',
     'loginPharmacistStart',
-    'fetchAcceptConversationStart'
+    'fetchAcceptConversationStart',
+    'fetchApproveProductByPharmacistStart',
+    'fetchProductApprovedStart',
+    'fetchGetApproveRequestOrderStart'
+
+
 
 ]
