@@ -103,8 +103,8 @@ export default function TopSellingMedicine() {
             disabled={currentMonth >= currentMonthStr}
             className={`text-xl p-1 border rounded-full ${
               currentMonth >= currentMonthStr
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-500 hover:text-gray-700"
+                ? "text-gray-300 cursor-not-allowed"
+                : "text-gray-500 hover:text-gray-700"
             }`}
           >
             <MdNavigateNext />
@@ -126,34 +126,32 @@ export default function TopSellingMedicine() {
           ))}
         </div>
 
-        {/* Cột dữ liệu */}
-         <div className="relative flex items-end bottom-0 gap-20 w-full">
-          {salesData.map((item, idx) => {
-            const height = (item.value / maxValue) * chartHeight;
-            return (
-              <div
-                key={idx}
-                className="flex flex-col items-center group w-6 relative"
-              >
-                <div className="flex flex-col items-center">
-                  {/* Cột với ảnh ở dưới */}
-                  <div className="relative h-64 w-12 rounded-full overflow-hidden flex flex-col justify-end items-center">
-                    {/* Group cho cột màu */}
-                    <div
-                      className="group absolute bottom-0 left-0 w-12"
-                      style={{ height: `${height}px` }}
-                    >
-                      {/* Cột màu */}
-                      <div
-                        className={`h-full w-full transition-all duration-300 rounded-full ${item.color}`}
-                      ></div>
-                    </div>
-                  </div>
+        {/* Biểu đồ + tên tách riêng */}
+        <div className="flex flex-col">
+          {/* Biểu đồ cột */}
+          <div className="flex items-end gap-20 h-64">
+            {salesData.map((item, idx) => {
+              const height = (item.value / maxValue) * chartHeight;
+              return (
+                <div key={idx} className="w-12 flex justify-center">
+                  <div
+                    style={{ height: `${height}px` }}
+                    className={`w-full rounded-full ${item.color} transition-all duration-300`}
+                  ></div>
                 </div>
-                <span className="text-xs text-gray-600 mt-1">{item.name}({item.value.toLocaleString()})</span>
+              );
+            })}
+          </div>
+          {/* Tên + số lượng tách riêng ra dưới, vẫn căn giữa với cột */}
+          <div className="flex justify-between gap-20 mt-2">
+            {salesData.map((item, idx) => (
+              <div key={idx} className="w-12 text-center text-xs text-gray-600 font-medium leading-tight">
+                {item.name}
+                <br />
+                ({item.value.toLocaleString()})
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </div>
     </div>

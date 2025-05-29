@@ -325,7 +325,7 @@ async def reset_system_api(token: str = Depends(middleware.verify_token_admin)):
 
 @router.get("/order/overview-statistics", response_model=response.BaseResponse)
 async def get_overview_statistics(
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result =await order.get_order_overview_statistics()
@@ -358,7 +358,7 @@ async def get_monthly_revenue(
 @router.get("/order/category-monthly-revenue-statistics", response_model=response.BaseResponse)
 async def get_category_monthly_revenue(
         month: int, year: int,
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await order.get_category_monthly_revenue(month, year)
@@ -374,7 +374,7 @@ async def get_category_monthly_revenue(
 @router.get("/order/type-monthly-revenue-statistics", response_model=response.BaseResponse)
 async def get_type_monthly_revenue(
         month: int, year: int,
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await order.get_payment_type_monthly_revenue(month, year)
@@ -390,7 +390,7 @@ async def get_type_monthly_revenue(
 @router.get("/order/monthly-product-sold-statistics", response_model=response.BaseResponse)
 async def get_monthly_product_sold(
         year: int,
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await order.get_sold_quantity_by_month(year)
@@ -406,10 +406,26 @@ async def get_monthly_product_sold(
 @router.get("/order/monthly-top-selling-product-statistics", response_model=response.BaseResponse)
 async def get_monthly_top_selling_product(
         month: int, year: int, top_n: int,
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await order.get_top_selling_products_by_month(month, year, top_n)
+        return response.SuccessResponse(
+            data=result
+        )
+    except Exception as e:
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/order/monthly-count-order-statistics", response_model=response.BaseResponse)
+async def get_monthly_count_order(
+        year: int,
+        token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        result = await order.get_monthly_order_counts(year)
         return response.SuccessResponse(
             data=result
         )

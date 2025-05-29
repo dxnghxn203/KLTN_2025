@@ -51,24 +51,12 @@ const statusConfig: Record<
 };
 export default function LatestOrders() {
   const {
-    getAllOrdersAdmin,
     allOrderAdmin,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
   } = useOrder();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [showActions, setShowActions] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const toast = useToast();
-
-  const totalOrders = allOrderAdmin ? allOrderAdmin.length : 0;
-  const totalPages = Math.ceil(totalOrders / pageSize);
-  const currentPage = page;
-  const onPageChange = (pageNumber: number) => {
-    paginate(pageNumber);
-  };
 
   const calculateOrderTotal = (products: any[]) => {
     return products.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -89,20 +77,6 @@ export default function LatestOrders() {
 
   const toggleExpand = (orderId: string) => {
     setExpandedRow(expandedRow === orderId ? null : orderId);
-  };
-
-  const paginate = (pageNumber: number) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setPage(pageNumber);
-      setExpandedRow(null); // Đóng tất cả các hàng mở rộng khi chuyển trang
-      setShowActions(null); // Đóng tất cả menu action khi chuyển trang
-    }
-  };
-
-  // Hàm thay đổi số lượng hiển thị mỗi trang
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPageSize(Number(e.target.value));
-    setPage(1); // Reset về trang đầu tiên
   };
 
   const copyToClipboard = (text: string) => {

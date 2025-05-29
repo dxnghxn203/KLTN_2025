@@ -606,7 +606,7 @@ async def automatic():
 
 @router.get("/products/low-stock", response_model=response.BaseResponse)
 async def get_product_low_stock(
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await get_low_stock_products()

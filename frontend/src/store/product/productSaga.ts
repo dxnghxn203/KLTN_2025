@@ -737,15 +737,15 @@ function* fetchProductLowStock(action: any): Generator<any, void, any> {
 
         const product = yield call(productService.getProductLowStock);
         if (product.status_code === 200) {
-            yield put(fetchProductDiscountSuccess(product.data));
+            yield put(fetchProductLowStockSuccess(product.data));
             onSuccess(product.data);
             return;
         }
-        yield put(fetchProductDiscountFailed(product.message || 'Failed to get product low stock'));
+        yield put(fetchProductLowStockFailed(product.message || 'Failed to get product low stock'));
         onFailed(product.data);
     } catch (error) {
         console.log("error low stock", error);
-        yield put(fetchProductDiscountFailed('Failed to get product low stock'));
+        yield put(fetchProductLowStockFailed('Failed to get product low stock'));
     }
 }
 

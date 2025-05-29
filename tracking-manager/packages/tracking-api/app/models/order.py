@@ -1252,3 +1252,35 @@ async def get_top_selling_products_by_month(month: int, year: int, top_n: int = 
     except Exception as e:
         logger.error(f"Error in get_top_selling_products_by_month: {e}")
         raise e
+
+async def get_monthly_order_counts(year: int):
+    try:
+        pipeline = [
+            {
+                "$match": {
+                    "created_date": {
+                        "$gte": datetime(year, 1, 1),
+                        "$lt": datetime(year + 1, 1, 1)
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": { "$month": "$created_date" },
+                    "count": { "$sum": 1 }
+                }
+            }
+        ]
+
+        collection = database.db[collection_name]
+        results = collection.aggregate(pipeline).to_list(length=12)
+
+        monthly_counts = [0] * 12
+
+        for result in results:
+            monthly_counts[result["_id"] - 1] = result["count"]
+
+        return monthly_counts
+    except Exception as e:
+        logger.error(f"Failed [get_monthly_order_counts]: {e}")
+        raise e

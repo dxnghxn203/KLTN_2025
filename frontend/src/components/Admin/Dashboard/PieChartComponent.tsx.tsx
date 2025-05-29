@@ -13,6 +13,7 @@ const PieChartComponent: React.FC<Props> = () => {
   useEffect(() => {
     fetchGetCountUserRoleStatistics(
       () => {
+        console.log("fetchGetCountUserRoleStatistics", countUserRole);
       },
       () => {
       }
