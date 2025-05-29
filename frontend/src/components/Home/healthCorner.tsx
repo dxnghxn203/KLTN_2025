@@ -34,7 +34,7 @@ const HealthCorner: React.FC = () => {
 
       <div className="grid grid-cols-3 gap-8 mt-6 w-full max-md:grid-cols-1 max-md:gap-7">
         {getAllArticlesUser.slice(0, 3).map((article: any) => (
-          <Link href={`/goc-suc-khoe/${article.slug}`}>
+          <Link href={`/bai-viet/${article.slug}`}>
             <div className="flex flex-col cursor-pointer">
               <div className="w-full h-[180px] rounded-2xl overflow-hidden">
                 <Image

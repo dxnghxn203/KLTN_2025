@@ -88,6 +88,10 @@ import {
     fetchImageToProductStart,
     fetchImageToProductSuccess,
     fetchImageToProductFailed,
+
+    fetchProductLowStockStart,
+    fetchProductLowStockSuccess,
+    fetchProductLowStockFailed
 } from '@/store';
 import {getSession, getToken, setSession} from '@/utils/cookie';
 
@@ -721,6 +725,29 @@ function* fetchProductDiscount(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchProductLowStock(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            onSuccess = (message: any) => {
+            },
+            onFailed = (message: any) => {
+            },
+        } = payload;
+
+        const product = yield call(productService.getProductLowStock);
+        if (product.status_code === 200) {
+            yield put(fetchProductDiscountSuccess(product.data));
+            onSuccess(product.data);
+            return;
+        }
+        yield put(fetchProductDiscountFailed(product.message || 'Failed to get product low stock'));
+        onFailed(product.data);
+    } catch (error) {
+        console.log("error low stock", error);
+        yield put(fetchProductDiscountFailed('Failed to get product low stock'));
+    }
+}
 
 export function* productSaga() {
     yield takeLatest(fetchProductBySlugStart.type, fetchProductBySlug);
@@ -746,4 +773,5 @@ export function* productSaga() {
     yield takeLatest(fetchDeleteImportProductStart.type, handleDeleteImportFileAddProduct);
     yield takeLatest(fetchProductDiscountStart.type, fetchProductDiscount);
     yield takeLatest(fetchImageToProductStart.type, fetchImageToProduct);
+    yield takeLatest(fetchProductLowStockStart.type, fetchProductLowStock);
 }

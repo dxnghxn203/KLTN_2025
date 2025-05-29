@@ -14,6 +14,8 @@ import { usePathname } from "next/navigation";
 
 import logo from "@/images/MM.png";
 import textlogo from "@/images/medicare2.png";
+import textAdmin from "@/images/textAdmin.jpg";
+import logoAdmin from "@/images/8.jpg";
 import { IoMdSettings } from "react-icons/io";
 import { IoInformationCircleOutline, IoSettingsOutline } from "react-icons/io5";
 import { MdLockOutline } from "react-icons/md";
@@ -22,6 +24,7 @@ import { SlInfo } from "react-icons/sl";
 import { ImInfo } from "react-icons/im";
 import { RiDiscountPercentLine } from "react-icons/ri";
 import { GrArticle } from "react-icons/gr";
+import { te } from "date-fns/locale";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -109,16 +112,22 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2 mb-10 ml-2">
-        <Image src={logo} alt="Logo" width={40} height={40} priority />
+      <div className="flex items-center mb-10 ml-2">
         <Image
-          src={textlogo}
-          width={80}
-          height={80}
+          src={textAdmin}
+          width={50}
+          height={50}
           alt="Text Logo"
           priority
+        />
+        <Image
+          src={logoAdmin}
+          alt="Logo"
+          width={70}
+          height={70}
+          priority
           className={clsx(
-            "transition-opacity duration-1000",
+            "transition-opacity duration-1000 mt-2",
             isOpen ? "opacity-100" : "opacity-0 hidden"
           )}
         />

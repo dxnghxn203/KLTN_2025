@@ -1,74 +1,77 @@
 // components/TopSellingMedicine.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 import image from "@/images/2.jpg";
+import { useOrder } from "@/hooks/useOrder";
 
-const monthlyMedicineData: Record<
-  string,
-  { day: string; value: number; color: string; image: string; name: string }[]
-> = {
-  "2025-04": [
-    {
-      day: "01",
-      value: 23,
-      color: "bg-orange-500",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-    {
-      day: "02",
-      value: 300,
-      color: "bg-blue-500",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-    { day: "03", value: 75, color: "bg-lime-400", image: "", name: "dhfvbjdf" },
-  ],
-  "2025-05": [
-    {
-      day: "01",
-      value: 70,
-      color: "bg-orange-500",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-    {
-      day: "02",
-      value: 500,
-      color: "bg-blue-500",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-    {
-      day: "03",
-      value: 75,
-      color: "bg-lime-400",
-      image: image.src,
-      name: "dhfvbjdf",
-    },
-  ],
-};
+const colors = [
+  "bg-orange-500",
+  "bg-blue-500",
+  "bg-lime-400",
+  "bg-pink-500",
+  "bg-purple-500",
+  "bg-teal-500",
+];
 
 export default function TopSellingMedicine() {
-  const maxValue = 500;
-  const step = 100;
-  const chartHeight = 256;
-  const [currentMonth, setCurrentMonth] = useState("2025-04");
+  const { fetchGetMonthlyTopSellingProductStatistics } = useOrder();
+  const today = new Date();
+  const currentMonthStr = today.toISOString().slice(0, 7);
+  const [currentMonth, setCurrentMonth] = useState(currentMonthStr);
+  const [salesData, setSalesData] = useState<
+    {
+      // day: string;
+      value: number;
+      color: string;
+      // image: string;
+      name: string
+    }[]
+  >([]);
+
+  useEffect(() => {
+    const [year, month] = currentMonth.split("-");
+    fetchGetMonthlyTopSellingProductStatistics(
+      parseInt(month),
+      parseInt(year),
+      3,
+      (data) => {
+        const mappedData = data.map((item: any, idx: any) => ({
+          // day: (idx + 1).toString().padStart(2, "0"),
+          value: item.total_quantity,
+          color: colors[idx % colors.length],
+          // image: item.images_primary || image.src,
+          name: item.product_name,
+        }));
+        setSalesData(mappedData);
+      },
+      () => {
+        setSalesData([]);
+      }
+    );
+  }, [currentMonth]);
+
   const handlePrevMonth = () => {
     const date = new Date(currentMonth + "-01");
     date.setMonth(date.getMonth() - 1);
-    const formatted = date.toISOString().slice(0, 7);
-    setCurrentMonth(formatted);
+    setCurrentMonth(date.toISOString().slice(0, 7));
   };
 
   const handleNextMonth = () => {
     const date = new Date(currentMonth + "-01");
     date.setMonth(date.getMonth() + 1);
-    const formatted = date.toISOString().slice(0, 7);
-    setCurrentMonth(formatted);
+    const nextMonthStr = date.toISOString().slice(0, 7);
+
+    if (nextMonthStr <= currentMonthStr) {
+      setCurrentMonth(nextMonthStr);
+    }
   };
 
-  const salesData = monthlyMedicineData[currentMonth] || [];
+  const rawMax = Math.max(...salesData.map((d) => d.value), 10);
+  const digits = Math.floor(Math.log10(rawMax));
+  const roundTo = 10 ** digits;
+  const maxValue = Math.ceil(rawMax / roundTo) * roundTo;
+  const step = Math.ceil(maxValue / 5);
+  const chartHeight = 256;
 
   const yLabels = [];
   for (let i = maxValue; i >= 0; i -= step) {
@@ -83,6 +86,12 @@ export default function TopSellingMedicine() {
           Top thuốc bán chạy nhất
         </h2>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handlePrevMonth}
+            className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
+          >
+            <MdNavigateBefore />
+          </button>
           <button className="px-3 py-1 border rounded-full text-sm text-gray-600 hover:bg-gray-100">
             {new Date(currentMonth).toLocaleDateString("vi-VN", {
               month: "long",
@@ -90,14 +99,13 @@ export default function TopSellingMedicine() {
             })}
           </button>
           <button
-            onClick={handlePrevMonth}
-            className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
-          >
-            <MdNavigateBefore />
-          </button>
-          <button
             onClick={handleNextMonth}
-            className="text-xl text-gray-500 hover:text-gray-700 p-1 border rounded-full"
+            disabled={currentMonth >= currentMonthStr}
+            className={`text-xl p-1 border rounded-full ${
+              currentMonth >= currentMonthStr
+              ? "text-gray-300 cursor-not-allowed"
+              : "text-gray-500 hover:text-gray-700"
+            }`}
           >
             <MdNavigateNext />
           </button>
@@ -106,14 +114,10 @@ export default function TopSellingMedicine() {
 
       {/* Biểu đồ */}
       <div className="flex gap-4">
-        {/* Trục Y với nhãn */}
-        <div className=" w-14 h-64 flex flex-col justify-between items-end ">
+        {/* Trục Y */}
+        <div className="w-14 h-64 flex flex-col justify-between items-end">
           {yLabels.map((label, idx) => (
-            <div
-              key={idx}
-              className="flex items-center justify-end h-0 relative"
-              style={{ top: idx === 0 ? 0 : undefined }}
-            >
+            <div key={idx} className="flex items-center justify-end h-0 relative">
               <span className="text-xs text-gray-500 absolute -left-2 translate-x-[-100%]">
                 {label.toLocaleString()}
               </span>
@@ -123,7 +127,7 @@ export default function TopSellingMedicine() {
         </div>
 
         {/* Cột dữ liệu */}
-        <div className="relative flex items-end bottom-0 gap-12 w-full">
+         <div className="relative flex items-end bottom-0 gap-20 w-full">
           {salesData.map((item, idx) => {
             const height = (item.value / maxValue) * chartHeight;
             return (
@@ -131,12 +135,6 @@ export default function TopSellingMedicine() {
                 key={idx}
                 className="flex flex-col items-center group w-6 relative"
               >
-                {item.value === maxValue && (
-                  <div className="absolute -top-10 hidden group-hover:block bg-white border border-gray-300 text-xs px-2 py-1 rounded shadow z-10">
-                    <div>{item.value.toLocaleString()}</div>
-                  </div>
-                )}
-
                 <div className="flex flex-col items-center">
                   {/* Cột với ảnh ở dưới */}
                   <div className="relative h-64 w-12 rounded-full overflow-hidden flex flex-col justify-end items-center">
@@ -145,39 +143,14 @@ export default function TopSellingMedicine() {
                       className="group absolute bottom-0 left-0 w-12"
                       style={{ height: `${height}px` }}
                     >
-                      {/* Tooltip động nằm trên đầu cột */}
-                      <div
-                        className="absolute hidden group-hover:block bg-white border border-gray-300 text-xs px-2 py-1 rounded shadow z-10 left-1/2 -translate-x-1/2 mb-2"
-                        style={{ bottom: `${height}px` }}
-                      >
-                        <div>{item.value.toLocaleString()}</div>
-                      </div>
-
                       {/* Cột màu */}
                       <div
                         className={`h-full w-full transition-all duration-300 rounded-full ${item.color}`}
                       ></div>
                     </div>
-
-                    {/* Tên */}
-                    <span
-                      className="absolute top-1/2 text-white text-xs font-medium"
-                      style={{ transform: "rotate(90deg)" }}
-                    >
-                      {item.name}
-                    </span>
-
-                    {/* Ảnh */}
-                    <div className="z-10 mb-1 w-10 h-10 rounded-full border-4 border-white bg-white overflow-hidden shadow-md bottom-1">
-                      <img
-                        src={item.image || "/images/default.jpg"}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
                   </div>
                 </div>
-                <span className="text-xs text-gray-600 mt-1">{item.day}</span>
+                <span className="text-xs text-gray-600 mt-1">{item.name}({item.value.toLocaleString()})</span>
               </div>
             );
           })}

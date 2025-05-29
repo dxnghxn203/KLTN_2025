@@ -42,6 +42,10 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchGetMonthlyLoginStatisticsStart,',
     'fetchGetCountUserRoleStatisticsStart',
     'fetchGetTopRevenueCustomersStatisticsStart',
+
+    'fetchGetMonthlyProductSoldStatisticsStart',
+    'fetchGetMonthlyTopSellingProductStatisticsStart',
+    'fetchGetProductLowStockStart'
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [
