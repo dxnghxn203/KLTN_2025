@@ -14,26 +14,26 @@ export default function Home() {
             <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
                 <main className="flex flex-col space-y-8">
                     <ProductCatalog/>
-                    <SanDealHeader/>
+                    {/*<SanDealHeader/>*/}
                     <div className="self-start text-2xl font-extrabold text-black">
                         Sản phẩm bán chạy
                     </div>
-                    <ProductList/>
+                    {/*<ProductList/>*/}
                     <div className="self-start text-2xl font-extrabold text-black">
                         Thương hiệu nổi bật
                     </div>
-                    <BrandList/>
+                    {/*<BrandList/>*/}
                     <div className="self-start text-2xl font-extrabold text-black">
                         Deals tốt nhất hôm nay dành <br/>
                         cho bạn!
                     </div>
-                    <ProductDealsList/>
+                    {/*<ProductDealsList/>*/}
                 </main>
                 <IntroMedicare/>
                 <div className="self-start text-2xl font-extrabold text-black">
                     Góc sức khỏe
                 </div>
-                <HealthCorner/>
+                {/*<HealthCorner/>*/}
             </div>
         </>
     );

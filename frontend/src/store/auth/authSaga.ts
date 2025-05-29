@@ -154,7 +154,6 @@ function* handleLoginAdmin(action: PayloadAction<any>): Generator<any, void, any
                 loginAdminSuccess({
                     admin: response?.admin || null,
                     token: response?.token || null,
-
                 })
             );
         } else {

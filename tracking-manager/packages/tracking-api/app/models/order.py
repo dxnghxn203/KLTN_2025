@@ -15,6 +15,7 @@ from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
 from app.core.mail import send_invoice_email
+from app.core.recommendation import send_request_post
 from app.core.s3 import upload_file
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
     ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
@@ -530,7 +531,7 @@ async def add_order(item: OrderRequest):
             user_info = ItemUserRes.from_mongo(await get_by_id(ObjectId(order_item.created_by)))
             user_name = user_info.user_name
         except (InvalidId, TypeError):
-            logger.error(f"User not found: {order.created_by}")
+            logger.error(f"User not found: {order_item.created_by}")
 
         pdf_bytes = export_invoice_to_pdf(order_item, user_name)
         if not pdf_bytes:
@@ -696,13 +697,26 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
             ]
         logger.info(f"{image_list}")
 
+        request_sku = generate_id("REQUEST")
+
         order_request = ItemOrderForPTReq(
             **item.model_dump(exclude={"product"}),
-            request_id=generate_id("REQUEST"),
+            request_id=request_sku,
             product=product_items,
             created_by=user_id,
             images=image_list
         )
+
+        # send recommendation
+        send_recommendation = send_request_post(
+            "/v1/extract",
+            {
+                "request_id": order_request.request_id,
+                "files": images
+            }
+        )
+        logger.info(f"send_recommendation: {send_recommendation}")
+        #
 
         logger.info(f"order_request: {order_request}")
 
