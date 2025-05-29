@@ -601,7 +601,7 @@ async def extract_drug_information(
                 3. origin: Xuất xứ (quốc gia sản xuất)
                 4. serial_number: Số hiệu/mã thuốc
                 5. dosage_form: Dạng bào chế (viên, siro, ống tiêm, v.v.)
-                6. active_ingredients: Hoạt chất chính
+                6. active_ingredients: Hoạt chất chính (phải là danh sách các chuỗi)
                 7. composition: Thành phần
                 8. manufacturer: Nhà sản xuất
                 9. expiration_date: Hạn sử dụng

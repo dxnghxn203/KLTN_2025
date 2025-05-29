@@ -1,4 +1,4 @@
-import { setCookie, getCookie, deleteCookie } from '@/utils/cookie';
+import {setCookie, getCookie, deleteCookie} from '@/utils/cookie';
 
 /**
  * Device ID utility functions for generating and managing device identifiers
@@ -94,10 +94,8 @@ export function getDeviceId(): string {
     if (!isBrowser) return '';
 
     try {
-        // Get device ID from cookies
         const deviceId = getCookie(DEVICE_ID_KEY);
 
-        // If no deviceId found, generate a new one
         if (!deviceId) {
             return generateDeviceId();
         }
@@ -105,7 +103,6 @@ export function getDeviceId(): string {
         return deviceId;
     } catch (e) {
         console.error('Error accessing device ID:', e);
-        // Return a temporary ID if there's an error
         return `TEMP-${Date.now().toString(36)}`;
     }
 }
@@ -117,7 +114,6 @@ export function getDeviceId(): string {
 export function regenerateDeviceId(): string {
     if (isBrowser) {
         try {
-            // Remove from cookies only
             deleteCookie(DEVICE_ID_KEY);
         } catch (e) {
             console.error('Failed to remove existing device ID:', e);
