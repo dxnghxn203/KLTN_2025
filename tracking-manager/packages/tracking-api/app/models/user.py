@@ -19,8 +19,12 @@ async def get_by_email_and_auth_provider(email: str, auth_provider: str):
 async def get_all_user(page: int, page_size: int):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
-    user_list = collection.find().skip(skip_count).limit(page_size)
-    return [ItemUserRes.from_mongo(user) for user in user_list]
+    user_list = collection.find().sort("created_at", -1).skip(skip_count).limit(page_size)
+    total = collection.count_documents({})
+    return {
+            "total_users": total,
+            "users": [ItemUserRes.from_mongo(user) for user in user_list]
+        }
 
 async def create_user(item: ItemUserRegisReq, auth_provider: str, password: str = None):
     collection = database.db[collection_name]

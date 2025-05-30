@@ -30,27 +30,42 @@ const statusConfig: Record<
     color: "bg-blue-100",
     textColor: "text-blue-700",
   },
-  confirmed: {
-    label: "Đã xác nhận",
-    color: "bg-green-100",
-    textColor: "text-green-700",
+  waiting_to_pick: {
+    label: "Chờ lấy hàng",
+    color: "bg-gray-100",
+    textColor: "text-gray-700",
   },
-  processing: {
-    label: "Đang xử lý",
+  picking: {
+    label: "Đang lấy hàng",
+    color: "bg-blue-100",
+    textColor: "text-blue-700",
+  },
+  delivering: {
+    label: "Đang giao hàng",
     color: "bg-yellow-100",
     textColor: "text-yellow-700",
   },
-  shipping: {
-    label: "Đang vận chuyển",
-    color: "bg-purple-100",
-    textColor: "text-purple-700",
-  },
   delivery_success: {
-    label: "Đã giao hàng",
+    label: "Giao thành công",
     color: "bg-green-100",
     textColor: "text-green-700",
   },
-  cancelled: {
+  delivery_fail: {
+    label: "Giao thất bại",
+    color: "bg-red-100",
+    textColor: "text-red-700",
+  },
+  waiting_to_return: {
+    label: "Chờ trả hàng",
+    color: "bg-orange-100",
+    textColor: "text-orange-700",
+  },
+  returned: {
+    label: "Đã trả hàng",
+    color: "bg-purple-100",
+    textColor: "text-purple-700",
+  },
+  canceled: {
     label: "Đã hủy",
     color: "bg-red-100",
     textColor: "text-red-700",

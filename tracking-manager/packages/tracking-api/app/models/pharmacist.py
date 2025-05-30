@@ -22,8 +22,12 @@ async def get_by_email(email: str):
 async def get_all_pharmacist(page: int, page_size: int):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
-    pharmacist_list = collection.find().skip(skip_count).limit(page_size)
-    return [ItemPharmacistRes.from_mongo(pharmacist) for pharmacist in pharmacist_list]
+    pharmacist_list = collection.find().sort("created_at", -1).skip(skip_count).limit(page_size)
+    total = collection.count_documents({})
+    return {
+            "total_pharmacists": total,
+            "pharmacists": [ItemPharmacistRes.from_mongo(pharmacist) for pharmacist in pharmacist_list]
+        }
 
 async def create_pharmacist(item: ItemPharmacistRegisReq):
     try:

@@ -23,8 +23,12 @@ async def get_by_email(email: str):
 async def get_all_admin(page: int, page_size: int):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
-    admin_list = collection.find().skip(skip_count).limit(page_size)
-    return [ItemAdminRes.from_mongo(admin) for admin in admin_list]
+    admin_list = collection.find().sort("created_at", -1).skip(skip_count).limit(page_size)
+    total = collection.count_documents({})
+    return {
+            "total_admin": total,
+            "admin": [ItemAdminRes.from_mongo(admin) for admin in admin_list]
+        }
 
 async def create_admin(item: ItemAdminRegisReq):
     try:
