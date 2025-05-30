@@ -58,7 +58,7 @@ def upload_file(file, folder: str):
     try:
         #create_bucket_if_not_exists(AWS_BUCKET)
         # Construct the key with folder and file name
-        name = str(int(time.time()))
+        name = str(time.time_ns())
         s3_key = f"{folder}/{name}"
         # Upload file to S3 bucket
         s3_client.upload_fileobj(file.file, AWS_BUCKET, s3_key, ExtraArgs={'ContentType': 'image/png', 'ACL': 'public-read'})

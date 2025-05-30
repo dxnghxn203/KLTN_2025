@@ -6,7 +6,7 @@ from io import BytesIO
 from types import SimpleNamespace
 import platform
 import socket
-
+import time
 from openpyxl.reader.excel import load_workbook
 from openpyxl.utils import get_column_letter
 from types import SimpleNamespace
@@ -792,6 +792,7 @@ async def update_product_images(product_id: str, files, email: str):
                     "images_id": generate_id("IMAGE"),
                     "images_url": url
                 })
+                time.sleep(0.001)
 
         collection.update_one(
             {"product_id": product_id},
