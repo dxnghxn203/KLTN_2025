@@ -90,6 +90,7 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 func (e *UpdateStatusQueue) queueName() string {
 	return statics.UpdateQueueName
 }
+
 func (e *UpdateStatusQueue) queueRetry() string {
 	return statics.UpdateQueueNameRetry
 }
