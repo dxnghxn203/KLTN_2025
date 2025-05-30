@@ -4,9 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
-  Edit,
-  Eye,
-  Trash2,
   Copy,
   Check,
 } from "lucide-react";
@@ -15,7 +12,6 @@ import { useToast } from "@/providers/toastProvider";
 import {
   MdNavigateBefore,
   MdNavigateNext,
-  MdOutlineMoreHoriz,
 } from "react-icons/md";
 
 const statusConfig: Record<
@@ -69,30 +65,30 @@ const statusConfig: Record<
   },
 };
 
-const TableOrdersAdmin = () => {
-  const {
-    getAllOrdersAdmin,
-    allOrderAdmin,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
-  } = useOrder();
+interface OrderTableProps {
+    orders: any[];
+    currentPage: number;
+    pageSize: number;
+    totalOrders: number;
+    onPageChange: (page: number) => void;
+    onPageSizeChange: (pageSize: number) => void;
+    onSelectOrder: (order: any) => void
+}
+
+const TableOrdersAdmin = ({
+  orders,
+  currentPage,
+  pageSize,
+  totalOrders,
+  onPageChange,
+  onSelectOrder
+}: OrderTableProps) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [showActions, setShowActions] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const toast = useToast();
 
-  useEffect(() => {
-    getAllOrdersAdmin();
-  }, [page, pageSize]);
-
-  const totalOrders = allOrderAdmin ? allOrderAdmin.length : 0;
   const totalPages = Math.ceil(totalOrders / pageSize);
-  const currentPage = page;
-  const onPageChange = (pageNumber: number) => {
-    paginate(pageNumber);
-  };
 
   const calculateOrderTotal = (products: any[]) => {
     return products.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -107,26 +103,8 @@ const TableOrdersAdmin = () => {
       .replace("₫", "đ");
   };
 
-  const toggleActions = (orderId: string) => {
-    setShowActions(showActions === orderId ? null : orderId);
-  };
-
   const toggleExpand = (orderId: string) => {
     setExpandedRow(expandedRow === orderId ? null : orderId);
-  };
-
-  const paginate = (pageNumber: number) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setPage(pageNumber);
-      setExpandedRow(null); // Đóng tất cả các hàng mở rộng khi chuyển trang
-      setShowActions(null); // Đóng tất cả menu action khi chuyển trang
-    }
-  };
-
-  // Hàm thay đổi số lượng hiển thị mỗi trang
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPageSize(Number(e.target.value));
-    setPage(1); // Reset về trang đầu tiên
   };
 
   const copyToClipboard = (text: string) => {
@@ -145,7 +123,7 @@ const TableOrdersAdmin = () => {
 
   return (
     <>
-      {allOrderAdmin && allOrderAdmin.length > 0 ? (
+      {orders && totalOrders > 0 ? (
         <>
           <div className="overflow-x-auto bg-white rounded-xl shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
@@ -181,16 +159,10 @@ const TableOrdersAdmin = () => {
                   >
                     Tổng tiền
                   </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-4 text-right uppercase tracking-wider"
-                  >
-                    Thao tác
-                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {allOrderAdmin.map((order: any) => (
+                {orders.map((order: any) => (
                   <React.Fragment key={order.order_id}>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -207,7 +179,7 @@ const TableOrdersAdmin = () => {
                           </button>
                           <div className="flex items-center">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-gray-900 cursor-pointer" onClick={() => onSelectOrder(order)}>
                                 {order.order_id}
                               </div>
                               <div className="text-xs text-gray-500">
@@ -257,41 +229,6 @@ const TableOrdersAdmin = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                         {formatCurrency(calculateOrderTotal(order.product))}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        <div className="relative">
-                          <button
-                            onClick={() => toggleActions(order.order_id)}
-                            className={`text-gray-400 p-2 rounded-full transition
-                              ${
-                                showActions === order.order_id
-                                  ? "bg-gray-200"
-                                  : "hover:bg-gray-200"
-                              }
-                            `}
-                          >
-                            <MdOutlineMoreHoriz size={20} />
-                          </button>
-
-                          {showActions === order.order_id && (
-                            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                              <div className="py-1" role="menu">
-                                <button className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                  <Eye size={16} className="mr-2" />
-                                  Xem chi tiết
-                                </button>
-                                <button className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                  <Edit size={16} className="mr-2" />
-                                  Chỉnh sửa
-                                </button>
-                                <button className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                                  <Trash2 size={16} className="mr-2" />
-                                  Hủy đơn
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
                       </td>
                     </tr>
 

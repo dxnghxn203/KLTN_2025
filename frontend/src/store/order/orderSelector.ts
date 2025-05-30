@@ -1,5 +1,6 @@
-export const selectAllOrder = (state: any) => state.order.orders;
 export const selectAllOrderAdmin = (state: any) => state.order.ordersAdmin;
+export const selectTotalOrderAdmin = (state: any) => state.order.totalOrderAdmin;
+export const selectCountStatusOrder = (state: any) => state.order.countStatusOrder;
 export const selectLoading = (state: any) => state.order.loading;
 export const selectOrdersByUser = (state: any) => state.order.ordersByUser;
 export const selectStatistics365Days = (state: any) => state.order.statistics365Days;

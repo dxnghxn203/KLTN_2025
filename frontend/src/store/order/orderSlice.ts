@@ -1,8 +1,9 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 interface OrderState {
-    orders: any[];
     ordersAdmin: any[];
+    totalOrderAdmin: number;
+    countStatusOrder: any;
     ordersByUser: any[];
     statistics365Days: any[];
     allRequestOrder: any[];
@@ -13,8 +14,9 @@ interface OrderState {
 }
 
 const initialState: OrderState = {
-    orders: [],
     ordersAdmin: [],
+    totalOrderAdmin: 0,
+    countStatusOrder: null,
     ordersByUser: [],
     statistics365Days: [],
     allRequestOrder: [],
@@ -28,18 +30,6 @@ export const orderSlice = createSlice({
     name: "order",
     initialState,
     reducers: {
-        fetchGetAllOrderStart(state, action: PayloadAction<any>) {
-            state.loading = true;
-        },
-        fetchGetAllOrderSuccess(state, action: PayloadAction<any[]>) {
-            state.orders = action.payload
-            state.loading = false;
-            state.error = null;
-        },
-        fetchGetAllOrderFailed(state, action: PayloadAction<string>) {
-            state.loading = false;
-            state.error = action.payload;
-        },
         // check order
         fetchCheckOrderStart(state, action: PayloadAction<any>) {
             state.loading = true;
@@ -68,8 +58,10 @@ export const orderSlice = createSlice({
         fetchGetAllOrderAdminStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
-        fetchGetAllOrderAdminSuccess(state, action: PayloadAction<any[]>) {
-            state.ordersAdmin = action.payload
+        fetchGetAllOrderAdminSuccess(state, action: PayloadAction<any>) {
+            state.ordersAdmin = action.payload.orders;
+            state.totalOrderAdmin = action.payload.total_orders;
+            state.countStatusOrder = action.payload.status_counts;
             state.loading = false;
         },
         fetchGetAllOrderAdminFailed(state) {
@@ -337,10 +329,6 @@ export const orderSlice = createSlice({
 });
 
 export const {
-    fetchGetAllOrderStart,
-    fetchGetAllOrderSuccess,
-    fetchGetAllOrderFailed,
-
     fetchCheckOrderStart,
     fetchCheckOrderSuccess,
     fetchCheckOrderFailed,

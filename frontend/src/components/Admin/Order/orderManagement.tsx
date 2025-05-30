@@ -9,73 +9,120 @@ import { FiDownload } from "react-icons/fi";
 import TableOrdersAdmin from "./tableOrders";
 import { useOrder } from "@/hooks/useOrder";
 
-const statuses = [
-  {
-    label: "Tất cả",
-    count: 4,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Đã tạo",
-    count: 4,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Chờ lấy hàng",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Đang lấy hàng",
-    count: 2,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Đang giao hàng",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Giao hàng thành công",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Giao hàng thất bại",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Chờ trả hàng",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Đã trả hàng",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-  {
-    label: "Đã hủy",
-    count: 1,
-    bgColor: "bg-gray-300",
-    textColor: "text-gray-500",
-  },
-];
+type Status = {
+  label: string;
+  key: string;
+  count: number;
+  bgColor: string;
+  textColor: string;
+};
+
 const Order = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
-  const [selectedTab, setSelectedTab] = useState("Unpaid");
+  const {
+      getAllOrdersAdmin,
+      allOrderAdmin,
+      totalOrderAdmin,
+      countStatusOrder,
+      page,
+      setPage,
+      pageSize,
+      setPageSize,
+    } = useOrder();
+
+  const [statuses, setStatuses] = useState<Status[]>([]);
+
+  useEffect(() => {
+    if (!countStatusOrder) return;
+
+    const dynamicStatuses = [
+      {
+        label: "Tất cả",
+        key: "total",
+        count: countStatusOrder?.total || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Đã tạo",
+        key: "created",
+        count: countStatusOrder?.created || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Chờ lấy hàng",
+        key: "waiting_to_pick",
+        count: countStatusOrder?.waiting_to_pick || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Đang lấy hàng",
+        key: "picking",
+        count: countStatusOrder?.picking || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Đang giao hàng",
+        key: "delivering",
+        count: countStatusOrder?.delivering || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Giao hàng thành công",
+        key: "delivery_success",
+        count: countStatusOrder?.delivery_success || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Giao hàng thất bại",
+        key: "delivery_fail",
+        count: countStatusOrder?.delivery_fail || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Chờ trả hàng",
+        key: "waiting_to_return",
+        count: countStatusOrder?.waiting_to_return || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Đã trả hàng",
+        key: "returned",
+        count: countStatusOrder?.returned || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+      {
+        label: "Đã hủy",
+        key: "canceled",
+        count: countStatusOrder?.canceled || 0,
+        bgColor: "bg-gray-300",
+        textColor: "text-gray-500",
+      },
+    ];
+
+    setStatuses(dynamicStatuses);
+  }, [countStatusOrder]);
+  const [selectedTab, setSelectedTab] = useState("Tất cả");
+
+  useEffect(() => {
+    const currentStatus = statuses.find((s) => s.label === selectedTab)?.key;
+    getAllOrdersAdmin(currentStatus === "total" ? undefined : currentStatus );
+  }, [selectedTab, page, pageSize]);
+
+  const handleSelectOrder = (order: any) => {
+    setSelectedOrder(order);
+    setIsDrawerOpen(true);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -196,7 +243,10 @@ const Order = () => {
                   ? "bg-[#1E4DB7] text-white"
                   : "bg-gray-200 text-gray-500 hover:bg-gray-300"
               }`}
-              onClick={() => setSelectedTab(status.label)}
+              onClick={() =>{
+                setPage(1);
+                setSelectedTab(status.label);
+              }}
             >
               {status.label}
               <span
@@ -212,14 +262,22 @@ const Order = () => {
           ))}
         </div>
 
-        <TableOrdersAdmin />
+        <TableOrdersAdmin 
+          orders={allOrderAdmin}
+          currentPage={page}
+          pageSize={pageSize}
+          totalOrders={totalOrderAdmin}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          onSelectOrder={handleSelectOrder}
+          />
       </div>
       {isDrawerOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
           <div className="bg-white w-[400px] h-full shadow-lg p-6">
             <div className="flex justify-between items-center">
               <h3 className="text-2xl font-semibold">
-                Order #{selectedOrder?.id}
+                Order #{selectedOrder?.order_id}
               </h3>
               <button
                 onClick={() => setIsDrawerOpen(false)}
@@ -234,19 +292,21 @@ const Order = () => {
                 <h2 className="text-lg font-semibold my-4">
                   Order items{" "}
                   <span className="text-gray-500 ml-1">
-                    {selectedOrder?.products?.length || 0}
+                    {selectedOrder?.product?.length || 0}
                   </span>
                 </h2>
 
-                {Array.isArray(selectedOrder?.products) &&
-                  selectedOrder.products.map((product: any, index: number) => (
+                {Array.isArray(selectedOrder?.product) &&
+                  selectedOrder.product.map((product: any, index: number) => (
                     <div
                       key={index}
                       className="border-b pb-3 flex items-center space-x-4"
                     >
                       <Image
-                        src={product?.img}
-                        alt={product?.name}
+                        src={product?.images_primary}
+                        alt={product?.product_name}
+                        width={64}
+                        height={64}
                         className="w-16 h-16 rounded-lg border border-gray-300"
                       />
                       <div className="flex-1">

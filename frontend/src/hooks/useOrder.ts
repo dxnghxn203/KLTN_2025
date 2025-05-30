@@ -1,36 +1,32 @@
 import {
     fetchCallWebhookStart, fetchCancelOrderStart, fetchCheckOrderStart,
-    fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart, fetchGetAllOrderStart,
-    fetchGetOrderByUserStart, selectAllOrder, selectAllOrderAdmin, selectOrdersByUser,
+    fetchCheckShippingFeeStart, fetchGetAllOrderAdminStart,
+    fetchGetOrderByUserStart, selectAllOrderAdmin, selectOrdersByUser,
     fetchGetTrackingCodeStart, fetchDownloadInvoiceStart, fetchGetStatistics365DaysStart,
     fetchRequestPrescriptionStart, fetchGetRequestOrderStart, fetchGetApproveRequestOrderStart,
     fetchApproveRequestOrderStart, fetchGetOverviewStatisticsOrderStart,
     fetchGetMonthlyRevenueStatisticsOrderStart, fetchGetCategoryMonthlyRevenueStatisticsOrderStart,
     fetchGetTypeMonthlyRevenueStatisticsOrderStart, fetchGetMonthlyProductSoldStatisticsStart,
-    fetchGetMonthlyTopSellingProductStatisticsStart, fetchGetMonthlyCountOrderStatisticsStart
+    fetchGetMonthlyTopSellingProductStatisticsStart, fetchGetMonthlyCountOrderStatisticsStart,
+    selectTotalOrderAdmin,
+    selectCountStatusOrder
 } from "@/store/order";
-import {useEffect, useState} from "react";
+import { useState } from "react";
 import {useDispatch, useSelector} from "react-redux";
+
 
 export function useOrder() {
     const dispatch = useDispatch();
-    const allOrder = useSelector(selectAllOrder);
     const allOrderAdmin = useSelector(selectAllOrderAdmin);
+    const totalOrderAdmin = useSelector(selectTotalOrderAdmin);
+    const countStatusOrder = useSelector(selectCountStatusOrder);
     const ordersUser = useSelector(selectOrdersByUser);
     const statistics365Days = useSelector((state: any) => state.order.statistics365Days);
     const allRequestOrder = useSelector((state: any) => state.order.allRequestOrder);
     const allRequestOrderApprove = useSelector((state: any) => state.order.allRequestOrderApprove);
     const overviewStatisticsOrder = useSelector((state: any) => state.order.overviewStatisticsOrder);
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-
-
-    useEffect(() => {
-        dispatch(fetchGetAllOrderStart({
-            page: page,
-            pageSize: pageSize,
-        }));
-    }, []);
+    const [pageSize, setPageSize] = useState(5);
 
     const getTrackingCode = async (order_id: any, onSuccess: (data: any) => void, onFailed: (data: any) => void) => {
         dispatch(fetchGetTrackingCodeStart({
@@ -64,11 +60,16 @@ export function useOrder() {
         }));
     }
 
-    const getAllOrdersAdmin = async () => {
-        dispatch(fetchGetAllOrderAdminStart({
+    const getAllOrdersAdmin = async (status: any = undefined) => {
+        console.log("status", status)
+        const payload: any = {
             page: page,
-            pageSize: pageSize,
-        }))
+            page_size: pageSize
+        }
+        if (status) {
+            payload.status = status
+        }
+        dispatch(fetchGetAllOrderAdminStart(payload))
     };
     const getOrdersByUser = async () => {
         dispatch(fetchGetOrderByUserStart())
@@ -195,10 +196,11 @@ export function useOrder() {
     }
 
     return {
-        allOrder,
         checkOrder,
         getAllOrdersAdmin,
         allOrderAdmin,
+        totalOrderAdmin,
+        countStatusOrder,
         page,
         setPage,
         pageSize,

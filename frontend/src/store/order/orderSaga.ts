@@ -1,10 +1,6 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
 import * as orderService from '@/services/orderService';
 import {
-    fetchGetAllOrderStart,
-    fetchGetAllOrderSuccess,
-    fetchGetAllOrderFailed,
-
     fetchCheckOrderStart,
     fetchCheckOrderSuccess,
     fetchCheckOrderFailed,
@@ -358,22 +354,6 @@ function* fetchCallWebhook(action: any): Generator<any, void, any> {
         yield put(fetchCallWebhookFailed());
     } catch (error) {
         yield put(fetchCallWebhookFailed());
-    }
-}
-
-// Call webhook
-function* fetchGetAllOrder(action: any): Generator<any, void, any> {
-    try {
-        const {payload} = action;
-        const product = yield call(orderService.getAllOrder, payload);
-        if (product.status === 200) {
-            yield put(fetchGetAllOrderSuccess(product.data));
-            return;
-        }
-        yield put(fetchGetAllOrderFailed("Order not found"));
-
-    } catch (error) {
-        yield put(fetchGetAllOrderFailed("Failed to fetch order"));
     }
 }
 
@@ -814,7 +794,6 @@ function* fetchGetMonthlyCountOrderStatistics(action: any): Generator<any, void,
 }
 
 export function* orderSaga() {
-    yield takeLatest(fetchGetAllOrderStart.type, fetchGetAllOrder);
     yield takeLatest(fetchCheckOrderStart.type, fetchCheckOrder);
     yield takeLatest(fetchGetAllOrderAdminStart.type, fetchGetAllOrderAdmin);
     yield takeLatest(fetchGetOrderByUserStart.type, fetchGetOrderByUser);

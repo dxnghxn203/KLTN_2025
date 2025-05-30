@@ -6,11 +6,11 @@ interface UserSliceState {
     responseInsertUser: any;
     loading: boolean;
     allUserAdmin: any[];
-    totalUserAdmin: any;
+    totalUserAdmin: number;
     allPharmacist: any[];
-    totalPharmacist: any;
+    totalPharmacist: number;
     allAdmin: any[];
-    totalAdmin: any;
+    totalAdmin: number;
     token: any;
     countUserRole: any;
     topRevenueCustomers: any[];
@@ -20,11 +20,11 @@ const initialState: UserSliceState = {
     responseInsertUser: null,
     loading: false,
     allUserAdmin: [],
-    totalUserAdmin: null,
+    totalUserAdmin: 0,
     allPharmacist: [],
-    totalPharmacist: null,
+    totalPharmacist: 0,
     allAdmin: [],
-    totalAdmin: null,
+    totalAdmin: 0,
     token: null,
     countUserRole: null,
     topRevenueCustomers: [],
