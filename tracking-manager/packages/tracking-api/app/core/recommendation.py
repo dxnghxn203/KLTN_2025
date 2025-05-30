@@ -32,20 +32,3 @@ def send_request_get(function, payload=None):
         print(e)
         return None
 
-def send_request_post(function, payload=None):
-    try:
-        url = BASE_URL + function
-        files = None
-        if payload and isinstance(payload, dict) and 'files' in payload:
-            files = payload.pop('files')
-        if files is None:
-            files = {}
-
-        response = requests.request("POST", url, headers=headers, json=payload,files=files, timeout=TIME_OUT)
-        if response.status_code == 200:
-            return response_recommendation(response.content)
-        else:
-            return None
-    except Exception as e:
-        print(e)
-        return None

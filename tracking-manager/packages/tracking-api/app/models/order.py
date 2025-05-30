@@ -14,8 +14,8 @@ from starlette import status
 from starlette.responses import StreamingResponse
 
 from app.core import logger, response, rabbitmq, database
+from app.core.file import create_image_json_payload
 from app.core.mail import send_invoice_email
-from app.core.recommendation import send_request_post
 from app.core.s3 import upload_file
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
     ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
@@ -28,7 +28,7 @@ from app.entities.voucher.request import ItemVoucherReq
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
-    SENDER_COMMUNE_CODE
+    SENDER_COMMUNE_CODE, get_extract_document_queue
 from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
@@ -699,55 +699,56 @@ async def get_order_invoice(order_id: str):
 
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, images):
     try:
-        product_items = []
-        if item.product:
-            if item.product.product:
-                product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
-                if out_of_stock or out_of_date:
-                    return response.BaseResponse(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
-                        data={
-                            "out_of_stock": out_of_stock,
-                            "out_of_date": out_of_date
-                        }
-                    )
-
-        image_list = []
-        if images:
-            image_list = [
-                ItemOrderImageReq(
-                    images_id=generate_id("IMAGES_ORDERS"),
-                    images_url=file_url,
-                ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images_orders"))
-            ]
-        logger.info(f"{image_list}")
-
-        request_sku = generate_id("REQUEST")
-
-        order_request = ItemOrderForPTReq(
-            **item.model_dump(exclude={"product"}),
-            request_id=request_sku,
-            product=product_items,
-            created_by=user_id,
-            images=image_list
-        )
-
-        # send recommendation
-        send_recommendation = send_request_post(
-            "/v1/extract",
-            {
-                "request_id": order_request.request_id,
-                "files": images
-            }
-        )
-        logger.info(f"send_recommendation: {send_recommendation}")
+        # product_items = []
+        # if item.product:
+        #     if item.product.product:
+        #         product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
+        #         if out_of_stock or out_of_date:
+        #             return response.BaseResponse(
+        #                 status_code=status.HTTP_400_BAD_REQUEST,
+        #                 message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+        #                 data={
+        #                     "out_of_stock": out_of_stock,
+        #                     "out_of_date": out_of_date
+        #                 }
+        #             )
         #
+        # image_list = []
+        # if images:
+        #     image_list = [
+        #         ItemOrderImageReq(
+        #             images_id=generate_id("IMAGES_ORDERS"),
+        #             images_url=file_url,
+        #         ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images_orders"))
+        #     ]
+        # logger.info(f"{image_list}")
+        #
+        request_sku = generate_id("REQUEST")
+        #
+        # order_request = ItemOrderForPTReq(
+        #     **item.model_dump(exclude={"product"}),
+        #     request_id=request_sku,
+        #     product=product_items,
+        #     created_by=user_id,
+        #     images=image_list
+        # )
+        #
+        #
+        # logger.info(f"order_request: {order_request}")
+        #
+        # collection = database.db[request_collection_name]
+        # collection.insert_one(order_request.dict())
 
-        logger.info(f"order_request: {order_request}")
+        if images:
+            for image in images:
+                json_image = await create_image_json_payload(image)
+                data_queue = json.dumps({
+                    "request_id": request_sku,
+                    **json_image
+                })
 
-        collection = database.db[request_collection_name]
-        collection.insert_one(order_request.dict())
+                rabbitmq.send_message(get_extract_document_queue(), data_queue)
+                logger.info(f"Sent to extract document queue: {request_sku}")
 
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,

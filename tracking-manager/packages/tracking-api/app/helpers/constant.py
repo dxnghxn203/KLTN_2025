@@ -10,6 +10,9 @@ def get_create_order_queue():
 def get_update_status_queue():
     return "UPDATE_STATUS"
 
+def get_extract_document_queue():
+    return "EXTRACT_DOCUMENT"
+
 def generate_random_string(length: int) -> str:
     charset = string.ascii_uppercase + string.digits
     return ''.join(random.choices(charset, k=length))
