@@ -4,18 +4,11 @@ import Link from "next/link";
 import { BsBoxSeam } from "react-icons/bs";
 import { BsInboxes, BsBox2Heart, BsXCircle } from "react-icons/bs";
 import Image from "next/image";
-import { Table, X } from "lucide-react";
-import { DatePicker } from "antd";
-import { FaSyncAlt } from "react-icons/fa";
+import { X } from "lucide-react";
 import { FiDownload } from "react-icons/fi";
-import dayjs from "dayjs";
-import type { Dayjs } from "dayjs";
-import "dayjs/locale/en"; // Import locale nếu cần
 import TableOrdersAdmin from "./tableOrders";
 import { useOrder } from "@/hooks/useOrder";
-import { all } from "axios";
 
-const { RangePicker } = DatePicker;
 const statuses = [
   {
     label: "Tất cả",
@@ -80,13 +73,9 @@ const statuses = [
 ];
 const Order = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
   const [selectedTab, setSelectedTab] = useState("Unpaid");
-  const [dates, setDates] = useState<[Dayjs | null, Dayjs | null]>([
-    dayjs().startOf("month"), // Ngày đầu tháng hiện tại
-    dayjs().endOf("month"), // Ngày cuối tháng hiện tại
-  ]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -98,16 +87,6 @@ const Order = () => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
-  const handleAddOrder = (newUser: {
-    name: string;
-    email: string;
-    phoneNumber: number;
-    role: string;
-    password: string;
-    confirmPassword: string;
-  }) => {
-    console.log("User added:", newUser);
-  };
   const { allStatistics365Days, statistics365Days } = useOrder();
 
   useEffect(() => {
@@ -201,22 +180,6 @@ const Order = () => {
         </div>
 
         <div className="flex items-center justify-between w-full">
-          <div className="flex  ">
-            <RangePicker
-              value={dates}
-              onChange={(values) =>
-                setDates(
-                  values
-                    ? (values as [Dayjs | null, Dayjs | null])
-                    : [null, null]
-                )
-              }
-              format="DD MMM, YYYY"
-              size="large"
-              className="rounded-lg p-2 space-x-1 w-[270px]"
-            />
-          </div>
-
           <div className="flex items-center space-x-3">
             <button className="flex items-center gap-2 px-3 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition">
               <FiDownload className="text-[#1E4DB7]" />

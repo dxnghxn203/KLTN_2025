@@ -1,15 +1,12 @@
 "use client";
 import { useOrder } from "@/hooks/useOrder";
 import { useEffect, useState } from "react";
-import { RiMore2Fill } from "react-icons/ri";
 import {
   ChevronDown,
   ChevronUp,
   Edit,
   Eye,
   Trash2,
-  ChevronLeft,
-  ChevronRight,
   Copy,
   Check,
 } from "lucide-react";

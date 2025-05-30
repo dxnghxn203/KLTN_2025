@@ -20,22 +20,25 @@ const UserManagement = () => {
 
   const {
     allUserAdmin,
+    totalUserAdmin,
     getAllUser,
     page,
     setPage,
     setPageSize,
     pageSize,
     allAdmin,
+    totalAdmin,
     fetchAllAdmin,
     fetchAllPharmacist,
     allPharmacist,
+    totalPharmacist
   } = useUser();
 
   useEffect(() => {
     getAllUser();
     fetchAllAdmin();
     fetchAllPharmacist();
-  }, []);
+  }, [page, pageSize]);
   // const filteredUsers = allUserAdmin.filter(user=> user.role === selectedRole)
 
   const exportToCSV = () => {
@@ -132,7 +135,11 @@ const UserManagement = () => {
           {tabs.map((role) => (
             <button
               key={role}
-              onClick={() => setActiveTab(role)}
+              onClick={() =>{
+                setPage(1);
+                setActiveTab(role);
+              }
+            }
               className={clsx(
                 "pb-2 px-3 text-sm font-medium border-b-2 transition flex items-center",
                 activeTab === role
@@ -149,7 +156,7 @@ const UserManagement = () => {
             users={allUserAdmin}
             currentPage={page}
             pageSize={pageSize}
-            totalUsers={allUserAdmin.length}
+            totalUsers={totalUserAdmin}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
           />
@@ -159,7 +166,7 @@ const UserManagement = () => {
             admins={allAdmin}
             currentPage={page}
             pageSize={pageSize}
-            totalAdmins={allAdmin.length}
+            totalAdmins={totalAdmin}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
           />
@@ -169,7 +176,7 @@ const UserManagement = () => {
             pharmacists={allPharmacist}
             currentPage={page}
             pageSize={pageSize}
-            totalPharmacists={allPharmacist.length}
+            totalPharmacists={totalPharmacist}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
           />

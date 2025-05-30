@@ -12,8 +12,11 @@ collection_name = "vouchers"
 async def get_all_vouchers(page: int, page_size: int):
     collection = database.db[collection_name]
     skip_count = (page - 1) * page_size
-    voucher_list = collection.find().skip(skip_count).limit(page_size)
-    return [ItemVoucherDBRes(**voucher) for voucher in voucher_list]
+    voucher_list = collection.find().sort("created_at", -1).skip(skip_count).limit(page_size)
+    return {
+        "total_vouchers": collection.count_documents({}),
+        "vouchers": [ItemVoucherRes(**voucher) for voucher in voucher_list]
+    }
 
 async def get_all_vouchers_for_users():
     collection = database.db[collection_name]

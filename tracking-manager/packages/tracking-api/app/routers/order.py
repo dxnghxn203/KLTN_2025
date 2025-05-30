@@ -157,9 +157,10 @@ async def get_order_by_user(token: str = Depends(middleware.verify_token)):
         )
 
 @router.get("/order/all-orders-admin", response_model=response.BaseResponse)
-async def get_all_order(page: int = 1, page_size: int = 10):
+async def get_all_order(page: int = 1, page_size: int = 10, status: Optional[str] = None,
+                        token: str = Depends(middleware.verify_token_admin)):
     try:
-        result = await order.get_all_order(page, page_size)
+        result = await order.get_all_order(page, page_size, status)
         return response.BaseResponse(
             message=f"orders found",
             data=result

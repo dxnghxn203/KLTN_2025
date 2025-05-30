@@ -69,8 +69,12 @@ async def get_all_product(page: int, page_size: int):
     try:
         collection = db[collection_name]
         skip_count = (page - 1) * page_size
-        product_list = collection.find().skip(skip_count).limit(page_size)
-        return [ItemProductDBRes(**product) for product in product_list]
+        product_list = collection.find().sort("created_at", -1).skip(skip_count).limit(page_size)
+        total = collection.count_documents({})
+        return {
+            "total_products": total,
+            "products": [ItemProductDBRes.from_mongo(product) for product in product_list]
+        }
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
         raise e

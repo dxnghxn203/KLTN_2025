@@ -112,13 +112,43 @@ async def get_cancel_orders_last_365_days():
         logger.error(f"Failed [get_cancel_orders_last_365_days]: {e}")
         raise e
 
-async def get_all_order(page: int, page_size: int):
+async def get_all_order(page: int, page_size: int, status: Optional[str] = None):
     try:
         collection = database.db[collection_name]
         skip_count = (page - 1) * page_size
-        order_list = collection.find().sort("created_date", -1).skip(skip_count).limit(page_size)
-        logger.info(f"Order list: {order_list}")
-        return [ItemOrderRes.from_mongo(order) for order in order_list]
+
+        query = {}
+        if status:
+            query["status"] = status
+
+        status_counts = {
+            "total": collection.count_documents({}),
+            "created": collection.count_documents({"status": "created"}),
+            "waiting_to_pick": collection.count_documents({"status": "waiting_to_pick"}),
+            "picking": collection.count_documents({"status": "picking"}),
+            "delivering": collection.count_documents({"status": "delivering"}),
+            "delivery_success": collection.count_documents({"status": "delivery_success"}),
+            "delivery_fail": collection.count_documents({"status": "delivery_fail"}),
+            "waiting_to_return": collection.count_documents({"status": "waiting_to_return"}),
+            "returned": collection.count_documents({"status": "returned"}),
+            "canceled": collection.count_documents({"status": "canceled"}),
+        }
+
+        order_cursor = (
+            collection.find(query)
+            .sort("created_date", -1)
+            .skip(skip_count)
+            .limit(page_size)
+        )
+
+        total = collection.count_documents(query)
+        orders = [ItemOrderRes.from_mongo(order) for order in order_cursor]
+
+        return {
+            "total_orders": total,
+            "orders": orders,
+            "status_counts": status_counts
+        }
     except Exception as e:
         logger.error(f"Failed [get_all_order]: {e}")
         raise e

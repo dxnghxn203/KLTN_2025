@@ -27,7 +27,10 @@ import {
     selectAllPharmacist, 
     selectAllUserAdmin, 
     selectCountUserRole, 
-    selectTopRevenueCustomers
+    selectTopRevenueCustomers,
+    selectTotalAdmin,
+    selectTotalPharmacist,
+    selectTotalUserAdmin
 } from "@/store/user/userSelector";
 import {useDispatch, useSelector} from "react-redux";
 import {useSession} from "next-auth/react";
@@ -54,8 +57,11 @@ export function useUser() {
     const {data: session} = useSession();
     // const {user, setUser, isLoading} = useAuthContext();
     const allUserAdmin = useSelector(selectAllUserAdmin);
+    const totalUserAdmin = useSelector(selectTotalUserAdmin);
     const allPharmacist = useSelector(selectAllPharmacist);
+    const totalPharmacist = useSelector(selectTotalPharmacist);
     const allAdmin = useSelector(selectAllAdmin);
+    const totalAdmin = useSelector(selectTotalAdmin);
     const countUserRole = useSelector(selectCountUserRole);
     const topRevenueCustomers = useSelector(selectTopRevenueCustomers);
 
@@ -324,6 +330,7 @@ export function useUser() {
         // updateUser,
         getAllUser,
         allUserAdmin,
+        totalUserAdmin,
         page,
         setPage,
         pageSize,
@@ -338,9 +345,11 @@ export function useUser() {
         forgotPasswordPharmacist,
 
         allPharmacist,
+        totalPharmacist,
         fetchAllPharmacist,
 
         allAdmin,
+        totalAdmin,
         fetchAllAdmin,
 
         fetchUpdateStatusPharmacist,

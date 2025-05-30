@@ -6,8 +6,11 @@ interface UserSliceState {
     responseInsertUser: any;
     loading: boolean;
     allUserAdmin: any[];
+    totalUserAdmin: any;
     allPharmacist: any[];
+    totalPharmacist: any;
     allAdmin: any[];
+    totalAdmin: any;
     token: any;
     countUserRole: any;
     topRevenueCustomers: any[];
@@ -17,8 +20,11 @@ const initialState: UserSliceState = {
     responseInsertUser: null,
     loading: false,
     allUserAdmin: [],
+    totalUserAdmin: null,
     allPharmacist: [],
+    totalPharmacist: null,
     allAdmin: [],
+    totalAdmin: null,
     token: null,
     countUserRole: null,
     topRevenueCustomers: [],
@@ -66,7 +72,8 @@ export const userSlice = createSlice({
         },
         fetchGetAllUserAdminSuccess: (state, action: PayloadAction<any>) => {
             state.loading = false;
-            state.allUserAdmin = action.payload;
+            state.allUserAdmin = action.payload.users;
+            state.totalUserAdmin = action.payload.total_users;
         },
         fetchGetAllUserAdminFailure: (state) => {
             state.loading = false;
@@ -162,7 +169,8 @@ export const userSlice = createSlice({
         },
         fetchGetAllPharmacistSuccess: (state, action: PayloadAction<any>) => {
             state.loading = false;
-            state.allPharmacist = action.payload;
+            state.allPharmacist = action.payload.pharmacists;
+            state.totalPharmacist = action.payload.total_pharmacists;
         },
         fetchGetAllPharmacistFailure: (state) => {
             state.loading = false;
@@ -175,7 +183,8 @@ export const userSlice = createSlice({
         fetchGetAllAdminSuccess: (state, action: PayloadAction<any>) => {
             console.log("fetchGetAllAdminSuccess", action.payload)
             state.loading = false;
-            state.allAdmin = action.payload;
+            state.allAdmin = action.payload.admin;
+            state.totalAdmin = action.payload.total_admin;
         },
         fetchGetAllAdminFailure: (state) => {
             console.log("fetchGetAllAdminFailure")
