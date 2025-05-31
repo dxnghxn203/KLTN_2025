@@ -105,8 +105,11 @@ async def extract_drugs_from_images(
 
         product_result = []
         for product in drug_response.drugs:
-            product_info = search_medicine(product, )
-            product_result.append(product_info)
+            product_info = search_medicine(product)
+            product_result.append({
+                "product": product_info,
+                "raw_text": product,
+            })
 
         return response.BaseResponse(
             status_code=200,
