@@ -47,7 +47,11 @@ const ManagerProducts = () => {
           Dashboard
         </Link>
         <span> / </span>
-        <Link href="/product/product-management" className="text-gray-800">
+        <Link href="/san-pham" className="text-gray-800">
+          Sản phẩm
+        </Link>
+         <span> / </span>
+        <Link href="/san-pham/quan-ly-san-pham" className="text-gray-800">
           Quản lý sản phẩm
         </Link>
       </div>

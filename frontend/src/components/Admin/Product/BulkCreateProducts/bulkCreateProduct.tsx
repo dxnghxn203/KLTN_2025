@@ -98,6 +98,10 @@ const BulkCreateProduct = () => {
           Dashboard
         </Link>
         <span> / </span>
+        <Link href="/san-pham" className="text-gray-800">
+          Sản phẩm
+        </Link>
+         <span> / </span>
         <Link href="/san-pham/them-san-pham-hang-loat" className="text-gray-800">
           Thêm danh sách sản phẩm
         </Link>

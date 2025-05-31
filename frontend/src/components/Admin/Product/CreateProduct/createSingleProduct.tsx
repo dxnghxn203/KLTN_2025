@@ -756,7 +756,11 @@ const CreateSingleProduct = () => {
           Dashboard
         </Link>
         <span> / </span>
-        <Link href="/create-single-product" className="text-gray-800">
+        <Link href="/san-pham" className="text-gray-800">
+          Sản phẩm
+        </Link>
+         <span> / </span>
+        <Link href="/san-pham/them-san-pham-don" className="text-gray-800">
           {editId
             ? "Cập nhật sản phẩm"
             : detailId
