@@ -20,7 +20,7 @@ const Header = ({
   setSidebarOpen: (open: boolean) => void;
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [search, setSearch] = useState("");
+  // const [search, setSearch] = useState("");
   const { admin, logout } = useAuth();
 
   const toast = useToast();
@@ -53,7 +53,7 @@ const Header = ({
         <IoMenuOutline size={24} />
       </button>
 
-      <div className="relative flex-1 max-w-md mx-4">
+      {/* <div className="relative flex-1 max-w-md mx-4">
         <CiSearch className="text-xl absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
         <input
           type="text"
@@ -62,7 +62,7 @@ const Header = ({
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
-      </div>
+      </div> */}
 
       {/* Profile Dropdown */}
       <div

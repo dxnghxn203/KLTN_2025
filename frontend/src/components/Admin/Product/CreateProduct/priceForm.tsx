@@ -108,6 +108,9 @@ export const PriceForm = ({
                 <input
                   type="date"
                   value={price.expired_date?.split("T")[0]}
+                  onChange={(e) =>
+                    updatePriceItem(index, "expired_date", e.target.value)
+                  }
                   disabled={isViewOnly}
                   className="border rounded-lg p-2 w-full"
                 />

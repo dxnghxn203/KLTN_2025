@@ -37,7 +37,7 @@ def export_invoice_to_pdf(order: ItemOrderRes, user_name: str):
                     <td style="text-align: center;">{item.quantity}</td>
                     <td style="text-align: center;">{item.unit}</td>
                     <td style="text-align: center;">{item.original_price}</td>
-                    <td style="text-align: center;">{item.discount:,.0f}</td>
+                    <td style="text-align: center;">{item.discount:,.0f}%</td>
                     <td style="text-align: center;">{item.quantity * item.price:,.0f}</td>
                 </tr>
                 """
