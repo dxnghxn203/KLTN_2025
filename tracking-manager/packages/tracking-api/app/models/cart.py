@@ -11,7 +11,8 @@ async def get_cart_mongo(user_id: str):
         if cart_data is None:
             collection.insert_one({"user_id": user_id, "products": []})
         cart = []
-        for item in cart_data["products"]:
+        products = cart_data.get("products") or []
+        for item in products:
             product = {
                 "product_id": item["product_id"],
                 "price_id": item["price_id"],
