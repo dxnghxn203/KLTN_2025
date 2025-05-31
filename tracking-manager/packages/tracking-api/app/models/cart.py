@@ -46,7 +46,8 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
             "quantity": quantity
         }
         collection = db[collection_name]
-        if not collection.find_one({"user_id": user_id}):
+        existing = collection.find_one({"user_id": user_id})
+        if not existing:
             collection.insert_one({"user_id": user_id, "products": []})
         elif not isinstance(existing.get("products"), list):
             collection.update_one(
