@@ -713,17 +713,33 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
                         }
                     )
 
-        image_list = []
-        if images:
-            image_list = [
-                ItemOrderImageReq(
-                    images_id=generate_id("IMAGES_ORDERS"),
-                    images_url=file_url,
-                ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images_orders"))
-            ]
-        logger.info(f"{image_list}")
-
         request_sku = generate_id("REQUEST")
+        image_list = []
+
+        for img in images:
+            try:
+                await img.seek(0)
+                json_image = await create_image_json_payload(img)
+                await img.seek(0)
+                file_url = await upload_file(img, "images_orders")
+
+                data_queue = json.dumps({
+                    "request_id": request_sku,
+                    **json_image
+                })
+
+                rabbitmq.send_message(get_extract_document_queue(), data_queue)
+                logger.info(f"Sent to extract document queue: {request_sku}")
+                if file_url:
+                    image_obj = ItemOrderImageReq(
+                        images_id=generate_id("IMAGES_ORDERS"),
+                        images_url=file_url,
+                    )
+                    image_list.append(image_obj)
+            except Exception as e:
+                logger.error(f"Failed to upload image: {e}")
+
+        logger.info(f"{image_list}")
 
         order_request = ItemOrderForPTReq(
             **item.model_dump(exclude={"product"}),
@@ -738,16 +754,6 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
         collection = database.db[request_collection_name]
         collection.insert_one(order_request.dict())
 
-        if images:
-            for image in images:
-                json_image = await create_image_json_payload(image)
-                data_queue = json.dumps({
-                    "request_id": request_sku,
-                    **json_image
-                })
-
-                rabbitmq.send_message(get_extract_document_queue(), data_queue)
-                logger.info(f"Sent to extract document queue: {request_sku}")
 
         return response.BaseResponse(
             status_code=status.HTTP_200_OK,

@@ -54,7 +54,7 @@ def create_bucket_if_not_exists(bucket_name):
         logger.error(f"Error occurred: {e}")
         return False
 
-def upload_file(file, folder: str):
+async def upload_file(file, folder: str):
     try:
         #create_bucket_if_not_exists(AWS_BUCKET)
         # Construct the key with folder and file name
