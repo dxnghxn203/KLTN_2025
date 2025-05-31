@@ -9,9 +9,16 @@ async def create_image_json_payload(file: UploadFile) -> dict:
         file_name = file.filename
         file_type = file.content_type or "application/octet-stream"
 
-        contents = await file.read()
+        try:
+            contents = await file.read()
+            try:
+                await file.seek(0)
+            except Exception:
+                pass
+        except Exception as e:
+            return {}
+
         file_data = base64.b64encode(contents).decode("utf-8")
-        await file.seek(0)
 
         return {
             "file_name": file_name,
@@ -19,5 +26,4 @@ async def create_image_json_payload(file: UploadFile) -> dict:
             "file_type": file_type
         }
     except Exception as e:
-        print(f"Error creating image payload: {str(e)}")
-        raise
+        return {}
