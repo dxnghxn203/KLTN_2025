@@ -1,12 +1,13 @@
 from typing import Optional, List, Dict, Any
 
 from bson import ObjectId
+from fuzzywuzzy import fuzz
+import re
 
 from core import logger
 from core.mongo import db
 
 products_collection = db['products']
-
 
 def product_helper(product) -> dict:
     if product and "_id" in product:
@@ -183,9 +184,6 @@ async def get_newest_products_recommendation(limit: int = 20) -> List[Dict[str, 
         logger.error(f"Error fetching newest products: {str(e)}")
         return []
 
-
-from fuzzywuzzy import fuzz
-import re
 
 
 def search_medicine(extracted_data):
