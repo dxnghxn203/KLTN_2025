@@ -433,7 +433,7 @@ async def check_order(item: ItemOrderInReq, user_id: str):
 
         qr_code = None
         if item.payment_type and item.payment_type != PAYMENT_COD:
-            qr_code = await generate_qr_code(order_id, fee_data["total_fee"], item.payment_type)
+            qr_code = await generate_qr_code(order_id, fee_data["estimated_total_fee"], item.payment_type)
             if not qr_code:
                 return response.BaseResponse(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
