@@ -663,7 +663,8 @@ function* fetchGetAllImportFileAddProduct(action: any): Generator<any, void, any
     try {
         const {payload} = action;
         const {
-
+            page,
+            page_size,
             onSuccess = () => {
             },
             onFailed = () => {
@@ -671,14 +672,16 @@ function* fetchGetAllImportFileAddProduct(action: any): Generator<any, void, any
 
         } = payload;
 
-        const product = yield call(productService.getAllImportFileAddProduct);
+        const product = yield call(productService.getAllImportFileAddProduct, page, page_size);
         if (product.status_code === 200) {
             yield put(fetchGetAllImportFileAddProductSuccess(product.data));
+            onSuccess(product.data);
             return;
         }
         yield put(fetchGetAllImportFileAddProductFailed("Product not found"));
+        onFailed(product.message);
     } catch (error) {
-        yield put(fetchGetAllImportFileAddProductFailed("Failed to fetch product by slug"));
+        yield put(fetchGetAllImportFileAddProductFailed("Failed to fetch imprort file product"));
     }
 }
 

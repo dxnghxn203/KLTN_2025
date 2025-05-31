@@ -267,7 +267,7 @@ const Order = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-850">
+          <Link href="/quan-ly-don-hang" className="text-gray-850">
             Quản lý đơn hàng
           </Link>
         </div>

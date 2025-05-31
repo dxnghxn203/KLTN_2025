@@ -1247,7 +1247,7 @@ async def get_top_selling_products_by_month(month: int, year: int, top_n: int = 
         pipeline = [
             {
                 "$match": {
-                    "status": "delivery_success",
+                    "payment_status": "PAID",
                     "created_date": {
                         "$gte": start_date,
                         "$lt": end_date

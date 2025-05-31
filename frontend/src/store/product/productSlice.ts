@@ -3,6 +3,7 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 interface ProductState {
     products: any[];
     productsAdmin: any[];
+    totalProductAdmin: number;
     productsTopSelling: any[];
     productsRelated: any[];
     productsGetRecentlyViewed: any[];
@@ -13,6 +14,7 @@ interface ProductState {
     allBrand: any[];
     searchResult: any[];
     fileImport: any[];
+    totalFileImport: number;
     productDiscount: any[];
     loading: boolean;
     error: string | null;
@@ -23,6 +25,7 @@ interface ProductState {
 const initialState: ProductState = {
     products: [],
     productsAdmin: [],
+    totalProductAdmin: 0,
     productsTopSelling: [],
     productsGetRecentlyViewed: [],
     productProductFeatured: [],
@@ -33,6 +36,7 @@ const initialState: ProductState = {
     allBrand: [],
     searchResult: [],
     fileImport: [],
+    totalFileImport: 0,
     productDiscount: [],
     loading: false,
     error: null,
@@ -74,8 +78,9 @@ export const productSlice = createSlice({
         fetchAllProductAdminStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
-        fetchAllProductAdminSuccess(state, action: PayloadAction<any[]>) {
-            state.productsAdmin = action.payload;
+        fetchAllProductAdminSuccess(state, action: PayloadAction<any>) {
+            state.productsAdmin = action.payload.products;
+            state.totalProductAdmin = action.payload.total_products;
             state.loading = false;
             state.error = null;
         },
@@ -298,8 +303,9 @@ export const productSlice = createSlice({
         fetchGetAllImportFileAddProductStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
-        fetchGetAllImportFileAddProductSuccess(state, action: PayloadAction<any[]>) {
-            state.fileImport = action.payload;
+        fetchGetAllImportFileAddProductSuccess(state, action: PayloadAction<any>) {
+            state.fileImport = action.payload.imports;
+            state.totalFileImport = action.payload.total_imports;
             state.loading = false;
             state.error = null;
         },
