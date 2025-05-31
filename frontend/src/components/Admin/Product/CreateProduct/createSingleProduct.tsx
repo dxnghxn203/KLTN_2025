@@ -17,11 +17,13 @@ import { ProductFormProps, ProductFormData } from "./types";
 
 const CreateSingleProduct = () => {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
   const detailId = searchParams.get("chi-tiet");
   const isViewOnly = !!detailId;
   const productId = editId || detailId;
+
 
   const {
     addProduct,
@@ -32,7 +34,6 @@ const CreateSingleProduct = () => {
     fetchUpdateImagesPrimaryProduct,
     fetchUpdateImagesProduct,
   } = useProduct();
-
   const { categoryAdmin, fetchGetAllCategoryForAdmin } = useCategory();
   const toast = useToast();
 
@@ -371,6 +372,7 @@ const CreateSingleProduct = () => {
       newErrors.prices = "Cần có ít nhất một tùy chọn giá";
     } else {
       const priceErrors: string[] = [];
+      const today = new Date().toISOString().split("T")[0];
       formData.prices.forEach((price, index) => {
         if (!price.unit)
           priceErrors.push(`Tùy chọn ${index + 1}: Vui lòng điền đơn vị`);
@@ -378,6 +380,14 @@ const CreateSingleProduct = () => {
           priceErrors.push(`Tùy chọn ${index + 1}: Giá gốc phải lớn hơn 0`);
         if (price.inventory <= 0)
           priceErrors.push(`Tùy chọn ${index + 1}: Số lượng phải lớn hơn 0`);
+        if (price.expired_date) {
+          const inputDate = price.expired_date.split("T")[0];
+          if (inputDate < today) {
+            priceErrors.push(
+              `Tùy chọn ${index + 1}: Ngày hết hạn phải là hôm nay hoặc sau hôm nay`
+            );
+          }
+        }
       });
       if (priceErrors.length > 0) {
         newErrors.prices = priceErrors.join(";");
@@ -600,6 +610,7 @@ const CreateSingleProduct = () => {
         toast.showToast("Lỗi khi cập nhật: " + error.message, "error");
       }
     } else {
+      setLoading(true);
       await addProduct(
         formDataObj,
         (message: any) => {
@@ -610,6 +621,7 @@ const CreateSingleProduct = () => {
           toast.showToast(message, "error");
         }
       );
+      setLoading(false);
     }
   };
 
@@ -844,6 +856,7 @@ const CreateSingleProduct = () => {
           <div className="flex justify-center mt-4 space-x-2">
             <button
               type="submit"
+              disabled={loading}
               className="text-sm bg-[#1E4DB7] text-white font-semibold py-2 px-6 rounded-lg hover:bg-[#002E99]"
             >
               {editId ? "Cập nhật" : "Tạo sản phẩm"}
@@ -857,6 +870,34 @@ const CreateSingleProduct = () => {
             </button>
           </div>
         )}
+        {loading && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+            <div className="bg-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
+              <svg
+                className="animate-spin h-6 w-6 text-blue-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                ></path>
+              </svg>
+              <span className="text-sm font-medium text-gray-700">Đang xử lý...</span>
+            </div>
+          </div>
+        )}
+
 
         {formSubmitted && Object.keys(errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
