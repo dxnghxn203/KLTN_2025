@@ -6,7 +6,7 @@ import { IoArrowDown, IoFilter } from "react-icons/io5";
 import AddUserDialog from "../Dialog/addUserDialog";
 import TableUser from "./tableUser";
 import { useUser } from "@/hooks/useUser";
-import { formatDate } from "@/utils/string";
+import { formatDateCSV, formatDate } from "@/utils/string";
 import clsx from "clsx";
 import TableAdmin from "./tableAdmin";
 import TablePharmacist from "./tablePharmacist";
@@ -39,7 +39,6 @@ const UserManagement = () => {
     fetchAllAdmin();
     fetchAllPharmacist();
   }, [page, pageSize]);
-  // const filteredUsers = allUserAdmin.filter(user=> user.role === selectedRole)
 
   const exportToCSV = () => {
     let dataToExport: any[] = [];
@@ -71,26 +70,33 @@ const UserManagement = () => {
       user._id,
       user.user_name,
       user.gender,
-      formatDate(user.birthday),
+      formatDateCSV(user.birthday),
       user.email,
-      `="${user.phone_number}"`,
+      user.phone_number === "Google" ? "" : `'${user.phone_number}`,
       user.auth_provider === "email" ? "Email" : "Google",
       user.active ? "Đã kích hoạt" : "Chưa kích hoạt",
-      formatDate(user.verified_email_at),
-      formatDate(user.created_at),
+      user.verified_email_at === null ? "Chưa xác thực" : formatDateCSV(user.verified_email_at),
+      formatDateCSV(user.created_at),
     ]);
 
     const bom = "\uFEFF";
-    const csvContent =
-      bom + [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const csvRows = [headers, ...rows];
+    const csvContent = bom + csvRows.map(row =>
+      row.map(item =>
+        `"${(item ?? "").toString().replace(/"/g, '""')}"`
+      ).join(",")
+    ).join("\n");
 
-    const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `DanhSach_${activeTab}.csv`);
+    link.href = url;
+    link.setAttribute("download", `Danh sách ${activeTab}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Clean up
   };
 
   return (

@@ -8,6 +8,9 @@ import { X } from "lucide-react";
 import { FiDownload } from "react-icons/fi";
 import TableOrdersAdmin from "./tableOrders";
 import { useOrder } from "@/hooks/useOrder";
+import { useToast } from "@/providers/toastProvider";
+import { getAllOrderAdmin } from "@/services/orderService";
+import { formatDateCSV } from "@/utils/string";
 
 type Status = {
   label: string;
@@ -17,10 +20,43 @@ type Status = {
   textColor: string;
 };
 
+function flattenOrder(order: any) {
+  return {
+    order_id: order.order_id,
+    tracking_id: order.tracking_id,
+    status: order.status,
+    payment_type: order.payment_type,
+    payment_status: order.payment_status,
+    shipping_fee: order.shipping_fee,
+    product_fee: order.product_fee,
+    estimated_total_fee: order.estimated_total_fee,
+
+    created_date: formatDateCSV(order.created_date),
+    delivery_time: formatDateCSV(order.delivery_time),
+
+    customer_name: order.pick_to?.name,
+    customer_phone: `'${order.pick_to.phone_number.toString()}`,
+    customer_email: order.pick_to?.email,
+    customer_address: order.pick_to?.address
+      ? `${order.pick_to.address.address}, ${order.pick_to.address.ward}, ${order.pick_to.address.district}, ${order.pick_to.address.province}`
+      : "",
+
+    warehouse_name: order.pick_from?.name,
+    warehouse_address: order.pick_from?.address
+      ? `${order.pick_from.address.address}, ${order.pick_from.address.ward}, ${order.pick_from.address.district}, ${order.pick_from.address.province}`
+      : "",
+
+    product_list: order.product
+      ?.map((p: any) => `${p.product_name}-${p.weight} (${p.quantity} ${p.unit}): ${p.original_price}(${p.discount}%)=${p.price}`)
+      .join(" | "),
+  };
+}
+
+
 const Order = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
+  const toast = useToast();
   const {
       getAllOrdersAdmin,
       allOrderAdmin,
@@ -30,6 +66,7 @@ const Order = () => {
       setPage,
       pageSize,
       setPageSize,
+      downloadInvoice
     } = useOrder();
 
   const [statuses, setStatuses] = useState<Status[]>([]);
@@ -124,16 +161,6 @@ const Order = () => {
     setIsDrawerOpen(true);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!(event.target as HTMLElement).closest(".menu-container")) {
-        setMenuOpen(null);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
   const { allStatistics365Days, statistics365Days } = useOrder();
 
   useEffect(() => {
@@ -142,6 +169,94 @@ const Order = () => {
       () => {}
     );
   }, []);
+
+  const handleDownloadInvoice = (order: any) => {
+    downloadInvoice(
+      order, // Truyền đúng order_id
+      (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob); // ❗ KHÔNG tạo new Blob([blob])
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `HoaDon-${order}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url); // thu hồi URL
+
+        toast.showToast("Tải hóa đơn thành công", "success");
+      },
+      () => {
+        toast.showToast("Tải hóa đơn thất bại", "error");
+      }
+    );
+    console.log(order.order_id, "orderIDs");
+  };
+
+  const downloadCSV= (orders: any[]) => {
+    if (!orders || !orders.length) return;
+
+    const flattened = orders.map(flattenOrder);
+    const headers = Object.keys(flattened[0]);
+
+    const csvRows = [
+      "\uFEFF" + headers.join(","), // BOM + headers
+      ...flattened.map(order =>
+        headers.map(h =>
+          `"${(order[h as keyof typeof order] ?? "")
+            .toString()
+            .replace(/"/g, '""')}"`
+        )
+      )
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    const now = new Date();
+    const timestamp = now.toLocaleString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    }).replace(/[/:]/g, "-").replace(", ", "_");
+    const fileName = `don-hang_${timestamp}.csv`;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadCSV = async () => {
+    try {
+      const response = await getAllOrderAdmin({ page: 1, page_size: totalOrderAdmin });
+
+      if (response.status_code) {
+        const orders = response.data.orders || [];
+        downloadCSV(orders);
+      } else {
+        console.log({
+          title: "Lỗi tải đơn hàng",
+          description: response.message || "Không thể lấy dữ liệu",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.log({
+        title: "Lỗi mạng",
+        description: "Không thể tải dữ liệu đơn hàng",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
 
   return (
     <div>
@@ -228,7 +343,10 @@ const Order = () => {
 
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-3">
-            <button className="flex items-center gap-2 px-3 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+            <button
+              className="flex items-center gap-2 px-3 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+              onClick={handleDownloadCSV}
+            >
               <FiDownload className="text-[#1E4DB7]" />
               Tải file CSV
             </button>
@@ -274,92 +392,129 @@ const Order = () => {
       </div>
       {isDrawerOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-          <div className="bg-white w-[400px] h-full shadow-lg p-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-semibold">
-                Order #{selectedOrder?.order_id}
-              </h3>
-              <button
-                onClick={() => setIsDrawerOpen(false)}
-                className="absolute top-3 right-3 text-gray-500 hover:text-black"
-              >
-                <X className="text-2xl text-gray-700" />
-              </button>
+          <div className="bg-white w-[600px] h-full shadow-lg flex flex-col">
+            <div className="flex justify-between items-center p-6 flex-shrink-0">
+              <div className="flex justify-between items-center">
+                <h3 className="text-2xl font-semibold">
+                  Order #{selectedOrder?.order_id}
+                </h3>
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="absolute top-3 right-3 text-gray-500 hover:text-black"
+                >
+                  <X className="text-2xl text-gray-700" />
+                </button>
+              </div>
             </div>
+            <div className="overflow-y-auto px-6 pb-6 flex-1">
+              <div>
+                <div className="mt-4">
+                  <h2 className="text-lg font-semibold my-4">
+                    Order items{" "}
+                    <span className="text-gray-500 ml-1">
+                      {selectedOrder?.product?.length || 0}
+                    </span>
+                  </h2>
 
-            <div>
-              <div className="mt-4">
-                <h2 className="text-lg font-semibold my-4">
-                  Order items{" "}
-                  <span className="text-gray-500 ml-1">
-                    {selectedOrder?.product?.length || 0}
-                  </span>
-                </h2>
-
-                {Array.isArray(selectedOrder?.product) &&
-                  selectedOrder.product.map((product: any, index: number) => (
-                    <div
-                      key={index}
-                      className="border-b pb-3 flex items-center space-x-4"
-                    >
-                      <Image
-                        src={product?.images_primary}
-                        alt={product?.product_name}
-                        width={64}
-                        height={64}
-                        className="w-16 h-16 rounded-lg border border-gray-300"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm line-clamp-2">{product?.name}</p>
+                  {Array.isArray(selectedOrder?.product) &&
+                    selectedOrder.product.map((product: any, index: number) => (
+                      <div
+                        key={index}
+                        className="border-b pb-3 flex items-center space-x-4"
+                      >
+                        <Image
+                          src={product?.images_primary}
+                          alt={product?.product_name}
+                          width={64}
+                          height={64}
+                          className="w-16 h-16 rounded-lg border border-gray-300"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm line-clamp-2">{product?.product_name} dạng {product?.unit}</p>
+                        </div>
+                        <span className="space-x-4">
+                          <span className="font-semibold">
+                            {product?.quantity || 0}
+                          </span>
+                          <span className="font-normal text-gray-500">x</span>
+                          <span className="font-semibold">
+                            {new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(product?.price || 0)}
+                          </span>
+                        </span>
                       </div>
-                      <span className="space-x-4">
-                        <span className="font-semibold">
-                          {product?.quantity || 0}
-                        </span>
-                        <span className="font-normal text-gray-500">x</span>
-                        <span className="font-semibold">
-                          {new Intl.NumberFormat("vi-VN", {
-                            style: "currency",
-                            currency: "VND",
-                          }).format(product?.price || 0)}
-                        </span>
-                      </span>
+                    ))}
+                  
+                  <div className="mt-3 text-right text-lg text-gray-500">
+                    Total Product
+                    <span className="ml-4 text-black font-semibold">
+                      {selectedOrder?.product_fee?.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <div className="mt-3 text-right text-lg text-gray-500">
+                    Shipping fee
+                    <span className="ml-4 text-black font-semibold">
+                      {selectedOrder?.shipping_fee?.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <div className="mt-3 text-right text-lg text-gray-500">
+                    Basic Total Fee
+                    <span className="ml-4 text-black font-semibold">
+                      {selectedOrder?.basic_total_fee?.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <div className="mt-3 text-right text-lg text-gray-500">
+                    Discount Order Voucher
+                    <span className="ml-4 text-black font-semibold">
+                      -{selectedOrder?.voucher_order_discount?.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <div className="mt-3 text-right text-lg text-gray-500">
+                    Discount Shipping Voucher
+                    <span className="ml-4 text-black font-semibold">
+                      -{selectedOrder?.voucher_delivery_discount?.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <div className="mt-3 text-right text-lg text-gray-500">
+                    Final Total Fee
+                    <span className="ml-4 text-black font-semibold">
+                      {selectedOrder?.estimated_total_fee?.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <h2 className="text-lg font-semibold my-4">Contact</h2>
+                  <div className="gap-4">
+                    <div className="flex">
+                      <p className="text-gray-500 font-medium w-1/3">Customer:</p>
+                      <p className="w-2/3">{selectedOrder?.pick_to?.name}</p>
                     </div>
-                  ))}
-
-                <div className="mt-3 text-right text-lg text-gray-500">
-                  Total
-                  <span className="ml-4 text-black font-semibold">
-                    {selectedOrder?.total?.toLocaleString("vi-VN")} ₫
-                  </span>
-                </div>
-                <h2 className="text-lg font-semibold my-4">Contact</h2>
-                <div className="gap-4">
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Customer:</p>
-                    <p className="w-2/3">{selectedOrder?.customer?.name}</p>
-                  </div>
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Phone:</p>
-                    <p className="w-2/3">{selectedOrder?.customer?.phone}</p>
-                  </div>
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Email:</p>
-                    <p className="w-2/3">{selectedOrder?.customer?.email}</p>
-                  </div>
-                  <div className="flex">
-                    <p className="text-gray-500 font-medium w-1/3">Address:</p>
-                    <p className="w-2/3">
-                      {selectedOrder?.customer?.address
-                        ? `${selectedOrder.customer.address.street}, ${selectedOrder.customer.address.ward}, ${selectedOrder.customer.address.district}, ${selectedOrder.customer.address.city}`
-                        : "N/A"}
-                    </p>
+                    <div className="flex">
+                      <p className="text-gray-500 font-medium w-1/3">Phone:</p>
+                      <p className="w-2/3">{selectedOrder?.pick_to?.phone_number}</p>
+                    </div>
+                    <div className="flex">
+                      <p className="text-gray-500 font-medium w-1/3">Email:</p>
+                      <p className="w-2/3">{selectedOrder?.pick_to?.email}</p>
+                    </div>
+                    <div className="flex">
+                      <p className="text-gray-500 font-medium w-1/3">Address:</p>
+                      <p className="w-2/3">
+                        {selectedOrder?.pick_to?.address
+                          ? `${selectedOrder.pick_to.address.address}, ${selectedOrder.pick_to.address.ward}, ${selectedOrder.pick_to.address.district}, ${selectedOrder.pick_to.address.province}`
+                          : "N/A"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex justify-center mt-4">
-              <button className="bg-[#1E4DB7] text-white px-2 text-sm py-2 rounded-lg hover:bg-[#173F98]">
+            {/* Footer cố định cho nút Download Bill */}
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={() => handleDownloadInvoice(selectedOrder?.order_id)}
+                className="w-full bg-[#1E4DB7] text-white px-4 py-2 rounded-lg hover:bg-[#173F98] text-sm"
+              >
                 Download Bill
               </button>
             </div>

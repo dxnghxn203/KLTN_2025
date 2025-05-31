@@ -29,6 +29,8 @@ async def get_product_ids(user_id: str):
         collection = db[collection_name]
         cart_data = collection.find_one({"user_id": user_id})
         if cart_data:
+            if not cart_data.get("products"):
+                return None
             products = [item["product_id"] for item in cart_data["products"]]
             return products
         return None
@@ -46,6 +48,11 @@ async def add_product_to_cart(user_id:str, product_id: str,price_id:str, quantit
         collection = db[collection_name]
         if not collection.find_one({"user_id": user_id}):
             collection.insert_one({"user_id": user_id, "products": []})
+        elif not isinstance(existing.get("products"), list):
+            collection.update_one(
+                {"user_id": user_id},
+                {"$set": {"products": []}}
+            )
 
         result = collection.update_one(
             {

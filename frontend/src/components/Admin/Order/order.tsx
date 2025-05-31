@@ -14,15 +14,15 @@ import FilterBar from "./filterBar";
 import AddOrderDialog from "../Dialog/addOrderDialog";
 
 const Order = () => {
-  const { allOrder } = useOrder();
+  const { allOrderAdmin } = useOrder();
 
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const ordersPerPage = 6; // Số đơn hàng hiển thị trên mỗi trang
+  const ordersPerPage = 5; // Số đơn hàng hiển thị trên mỗi trang
 
   // Tính toán dữ liệu hiển thị theo trang
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = allOrder.slice(indexOfFirstOrder, indexOfLastOrder);
+  const currentOrders = allOrderAdmin.slice(indexOfFirstOrder, indexOfLastOrder);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
@@ -260,7 +260,7 @@ const Order = () => {
         <div className="flex justify-center p-6">
           <CustomPagination
             current={currentPage}
-            total={allOrder?.length}
+            total={allOrderAdmin?.length}
             pageSize={ordersPerPage}
             onChange={(page) => setCurrentPage(page)}
           />

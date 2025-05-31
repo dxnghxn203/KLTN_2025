@@ -14,6 +14,7 @@ interface User {
   verified_email_at: string;
   created_at: string;
   updated_at: string;
+  login_history: string[];
 }
 
 interface UserDetailModalProps {
@@ -159,7 +160,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
           {/* Time Info */}
           <div className="mt-6 pt-4 border-t">
             <h4 className="font-medium text-gray-900 mb-3">Thời gian</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <p className="text-sm text-gray-500">Ngày tạo tài khoản</p>
                 <p className="text-sm font-medium">
@@ -172,6 +173,14 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   {formatDate(user.updated_at)}
                 </p>
               </div>
+              {user.login_history?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">Đăng nhập lần cuối</p>
+                  <p className="text-sm font-medium">
+                    {formatDate(user.login_history[user.login_history.length - 1])}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

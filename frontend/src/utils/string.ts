@@ -59,3 +59,15 @@ export const formatDate = (dateString: string): string => {
 
     return `${hours}:${minutes} ${ampm} ${day}/${month}/${year}`;
 };
+
+export const formatDateCSV = (input: string): string => {
+  try {
+    const cleaned = input.replace(/\.\d{6}/, (match) => `.${match.slice(1, 4)}`);
+    const date = new Date(cleaned);
+
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    return `"${date.toISOString().replace('T', ' ').slice(0, 19)}"`;    
+  } catch {
+    return 'Invalid Date';
+  }
+};
