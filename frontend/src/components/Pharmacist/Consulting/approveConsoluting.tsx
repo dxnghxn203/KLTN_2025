@@ -12,6 +12,7 @@ import {ImBin} from "react-icons/im";
 import {useToast} from "@/providers/toastProvider";
 import {validateEmptyFields} from "@/utils/validation";
 import {original} from "@reduxjs/toolkit";
+import {useDocument} from "@/hooks/useDocument";
 
 export default function RequestDetailPage() {
     const {
@@ -19,6 +20,10 @@ export default function RequestDetailPage() {
         allRequestOrderApprove,
         fetchApproveRequestOrder,
     } = useOrder();
+    const {
+        getDocumentByRequestId
+    } = useDocument();
+
     const searchParams = useSearchParams();
     const detailId = searchParams.get("chi-tiet");
     const editId = searchParams.get("edit");
@@ -29,11 +34,15 @@ export default function RequestDetailPage() {
     const [quantity, setQuantity] = useState<number>(1);
     const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
     const toast = useToast();
+    const [document, setDocument] = useState<any>(null);
     const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
     const [statusApprove, setStatusApprove] = useState<string>("pending");
     const [noteApprove, setNoteApprove] = useState<string>("");
     const [original_price, setOriginalPrice] = useState<number>(0);
     const [price, setPrice] = useState<number>(0);
+    const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null);
+    const [editedProducts, setEditedProducts] = useState<any[]>([]);
+
     const router = useRouter();
     useEffect(() => {
         if (requestItem) return;
@@ -49,6 +58,15 @@ export default function RequestDetailPage() {
                 () => {
                 }
             );
+            getDocumentByRequestId(
+                item.request_id,
+                (data: any) => {
+                    setDocument(data);
+                },
+                (error: any) => {
+                    console.error("Error fetching document:", error);
+                }
+            )
         }
     }, [allRequestOrderApprove, detailId, requestItem]);
 
@@ -158,7 +176,6 @@ export default function RequestDetailPage() {
         product.prices.map((item: any) => item.unit)
     );
     // console.log("productUnit", productUnit);
-    console.log("product", selectedProduct);
     const totalOriginPrice = selectedProduct.reduce(
         (total, product) => total + product.price * product.quantity,
         0
@@ -172,6 +189,34 @@ export default function RequestDetailPage() {
     const totalSave = totalDiscount;
     const shippingFee = requestItem.shipping_fee;
     const totalAmount = totalDiscount + shippingFee?.shipping_fee || 0;
+
+
+    const startEditing = (index: number) => {
+        setEditingProductIndex(index);
+        setEditedProducts(document.products ? [...document.products] : []);
+    };
+
+    const handleProductChange = (index: number, field: string, value: string) => {
+        const updatedProducts = [...editedProducts];
+        updatedProducts[index] = {
+            ...updatedProducts[index],
+            [field]: value
+        };
+        setEditedProducts(updatedProducts);
+    };
+
+    const saveProductChanges = () => {
+        setDocument({
+            ...document,
+            products: editedProducts
+        });
+        setEditingProductIndex(null);
+        toast.showToast("Đã cập nhật thông tin thuốc", "success");
+    };
+
+    const cancelEditing = () => {
+        setEditingProductIndex(null);
+    };
 
     return (
         <div>
@@ -612,6 +657,183 @@ export default function RequestDetailPage() {
                                 <p className="text-sm text-gray-500 italic">
                                     Không có ảnh toa thuốc
                                 </p>
+                            )}
+                        </div>
+                        <div className="bg-white shadow-sm rounded-2xl p-4 mt-4">
+                            <h4 className="text-lg font-semibold">Thông tin toa thuốc</h4>
+                            {document && (
+                                <div className="mt-4 space-y-3 text-sm">
+                                    {document.created_at && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Ngày tạo:</span>
+                                            <span>{new Date(document.created_at).toLocaleDateString('vi-VN')}</span>
+                                        </div>
+                                    )}
+                                    {document.document_date && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Ngày toa thuốc:</span>
+                                            <span>{document.document_date}</span>
+                                        </div>
+                                    )}
+                                    {document.document_id && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Mã toa thuốc:</span>
+                                            <span>{document.document_id}</span>
+                                        </div>
+                                    )}
+                                    {document.document_type && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Loại tài liệu:</span>
+                                            <span className="capitalize">{document.document_type}</span>
+                                        </div>
+                                    )}
+                                    {document.issuing_organization && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Tổ chức phát hành:</span>
+                                            <span>{document.issuing_organization}</span>
+                                        </div>
+                                    )}
+                                    {document.patient_information && document.patient_information.name && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Bệnh nhân:</span>
+                                            <span>{document.patient_information.name}</span>
+                                        </div>
+                                    )}
+                                    {document.prescribing_doctor && (
+                                        <div className="flex justify-between">
+                                            <span className="font-medium text-gray-700">Bác sĩ kê đơn:</span>
+                                            <span>{document.prescribing_doctor}</span>
+                                        </div>
+                                    )}
+                                    {document.products && document.products.length > 0 && (
+                                        <div className="mt-4">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h5 className="font-medium text-gray-700">Danh sách thuốc:</h5>
+                                                {editingProductIndex === null && (
+                                                    <button
+                                                        onClick={() => startEditing(0)}
+                                                        className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-md hover:bg-blue-100 transition-colors"
+                                                    >
+                                                        Cập nhật thông tin
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <div className="overflow-x-auto">
+                                                <table className="min-w-full divide-y divide-gray-200">
+                                                    <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th scope="col"
+                                                            className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Tên thuốc
+                                                        </th>
+                                                        <th scope="col"
+                                                            className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Số lượng
+                                                        </th>
+                                                        <th scope="col"
+                                                            className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Đơn vị
+                                                        </th>
+                                                        <th scope="col"
+                                                            className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Thao tác
+                                                        </th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                    {(editingProductIndex !== null ? editedProducts : document.products).map((product: any, index: number) => (
+                                                        <tr key={index}
+                                                            className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                                            <td className="px-3 py-2 whitespace-nowrap">
+                                                                {editingProductIndex !== null ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editedProducts[index].product_name}
+                                                                        onChange={(e) => handleProductChange(index, 'product_name', e.target.value)}
+                                                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-full"
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        className="text-sm font-medium text-gray-900">{product.product_name}</div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-3 py-2 whitespace-nowrap">
+                                                                {editingProductIndex !== null ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editedProducts[index].quantity_value}
+                                                                        onChange={(e) => handleProductChange(index, 'quantity_value', e.target.value)}
+                                                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-16"
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        className="text-sm text-gray-900">{product.quantity_value}</div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-3 py-2 whitespace-nowrap">
+                                                                {editingProductIndex !== null ? (
+                                                                    <input
+                                                                        type="text"
+                                                                        value={editedProducts[index].quantity_unit}
+                                                                        onChange={(e) => handleProductChange(index, 'quantity_unit', e.target.value)}
+                                                                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                                                                    />
+                                                                ) : (
+                                                                    <div
+                                                                        className="text-sm text-gray-900">{product.quantity_unit}</div>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                                                                {editingProductIndex !== null ? (
+                                                                    <div className="flex space-x-2">
+                                                                        <button
+                                                                            onClick={() => saveProductChanges()}
+                                                                            className="text-green-600 hover:text-green-900 text-xs bg-green-50 px-2 py-1 rounded"
+                                                                        >
+                                                                            Lưu
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={cancelEditing}
+                                                                            className="text-red-600 hover:text-red-900 text-xs bg-red-50 px-2 py-1 rounded"
+                                                                        >
+                                                                            Hủy
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => startEditing(index)}
+                                                                        className="text-indigo-600 hover:text-indigo-900 text-xs bg-indigo-50 px-2 py-1 rounded"
+                                                                    >
+                                                                        Sửa
+                                                                    </button>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            {editingProductIndex !== null && (
+                                                <div className="flex justify-end mt-3 space-x-2">
+                                                    <button
+                                                        onClick={cancelEditing}
+                                                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-200"
+                                                    >
+                                                        Hủy tất cả
+                                                    </button>
+                                                    <button
+                                                        onClick={saveProductChanges}
+                                                        className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
+                                                    >
+                                                        Lưu tất cả
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>
