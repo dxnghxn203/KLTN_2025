@@ -699,45 +699,44 @@ async def get_order_invoice(order_id: str):
 
 async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, images):
     try:
-        # product_items = []
-        # if item.product:
-        #     if item.product.product:
-        #         product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
-        #         if out_of_stock or out_of_date:
-        #             return response.BaseResponse(
-        #                 status_code=status.HTTP_400_BAD_REQUEST,
-        #                 message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
-        #                 data={
-        #                     "out_of_stock": out_of_stock,
-        #                     "out_of_date": out_of_date
-        #                 }
-        #             )
-        #
-        # image_list = []
-        # if images:
-        #     image_list = [
-        #         ItemOrderImageReq(
-        #             images_id=generate_id("IMAGES_ORDERS"),
-        #             images_url=file_url,
-        #         ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images_orders"))
-        #     ]
-        # logger.info(f"{image_list}")
-        #
+        product_items = []
+        if item.product:
+            if item.product.product:
+                product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
+                if out_of_stock or out_of_date:
+                    return response.BaseResponse(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                        data={
+                            "out_of_stock": out_of_stock,
+                            "out_of_date": out_of_date
+                        }
+                    )
+
+        image_list = []
+        if images:
+            image_list = [
+                ItemOrderImageReq(
+                    images_id=generate_id("IMAGES_ORDERS"),
+                    images_url=file_url,
+                ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images_orders"))
+            ]
+        logger.info(f"{image_list}")
+
         request_sku = generate_id("REQUEST")
-        #
-        # order_request = ItemOrderForPTReq(
-        #     **item.model_dump(exclude={"product"}),
-        #     request_id=request_sku,
-        #     product=product_items,
-        #     created_by=user_id,
-        #     images=image_list
-        # )
-        #
-        #
-        # logger.info(f"order_request: {order_request}")
-        #
-        # collection = database.db[request_collection_name]
-        # collection.insert_one(order_request.dict())
+
+        order_request = ItemOrderForPTReq(
+            **item.model_dump(exclude={"product"}),
+            request_id=request_sku,
+            product=product_items,
+            created_by=user_id,
+            images=image_list
+        )
+
+        logger.info(f"order_request: {order_request}")
+
+        collection = database.db[request_collection_name]
+        collection.insert_one(order_request.dict())
 
         if images:
             for image in images:
