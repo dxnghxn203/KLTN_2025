@@ -23,7 +23,8 @@ from app.routers import (
     chat_box_router,
     voucher_router,
     brand_router,
-article_router
+    article_router,
+    document_router
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +72,7 @@ app.include_router(time_router, prefix="/v1", tags=["Time"])
 app.include_router(chat_box_router, prefix="/v1", tags=["ChatBox"])
 app.include_router(brand_router, prefix="/v1", tags=["Brand"])
 app.include_router(article_router, prefix="/v1", tags=["Article"])
+app.include_router(document_router, prefix="/v1", tags=["Document"])
 
 @app.get("/read-root")
 def read_root():

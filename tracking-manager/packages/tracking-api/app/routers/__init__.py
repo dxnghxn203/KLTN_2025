@@ -15,6 +15,7 @@ from .chat_box import router as chat_box_router
 from .voucher import router as voucher_router
 from .brand import router as brand_router
 from .article import router as article_router
+from .document import router as document_router
 
 __all__ = [
     'cart_router',
@@ -31,5 +32,8 @@ __all__ = [
     'fee_router',
     'time_router',
     'voucher_router',
-    'brand_router'
+    'brand_router',
+    'chat_box_router',
+    'article_router',
+    'document_router'
 ]
