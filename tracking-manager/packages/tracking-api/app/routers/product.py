@@ -544,9 +544,12 @@ async def admin_import_products(file: Optional[UploadFile] = File(None), token: 
         )
 
 @router.get("/products/import", response_model=response.BaseResponse)
-async def admin_get_imported_products():
+async def admin_get_imported_products(
+        page: int = 1, page_size: int = 10,
+        token: str = Depends(middleware.verify_token_admin)
+):
     try:
-        result = await get_imported_products()
+        result = await get_imported_products(page, page_size)
         return response.SuccessResponse(
             data=result
         )

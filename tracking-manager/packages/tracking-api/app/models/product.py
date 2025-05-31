@@ -1343,11 +1343,16 @@ async def import_products(file: UploadFile, email: str):
     finally:
         redis.clear_import_lock()
 
-async def get_imported_products():
+async def get_imported_products(page: int, page_size: int):
     try:
         collection = db[collection_import]
-        imports_list = list(collection.find({}, {"_id": 0}))
-        return [ItemProductImportRes(**imports) for imports in imports_list]
+        skip_count = (page - 1) * page_size
+        imports_list = list(collection.find({}, {"_id": 0}).sort("_id", -1).skip(skip_count).limit(page_size))
+        total = collection.count_documents({})
+        return {
+            "total_imports": total,
+            "imports": [ItemProductImportRes(**imports) for imports in imports_list]
+        }
     except Exception as e:
         logger.error(f"Error getting imported products: {str(e)}")
         raise e
