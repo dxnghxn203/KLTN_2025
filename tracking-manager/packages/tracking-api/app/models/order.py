@@ -907,7 +907,7 @@ async def get_order_overview_statistics():
                 "$facet": {
                     "total_orders": [{"$count": "count"}],
                     "total_revenue": [
-                        {"$match": {"status": "delivery_success"}},
+                        {"$match": {"payment_status": "PAID"}},
                         {
                             "$group": {
                                 "_id": None,
@@ -974,7 +974,7 @@ async def get_monthly_revenue(year: int):
                             "$gte": start_date,
                             "$lte": end_date
                         },
-                        "status": "delivery_success"
+                        "payment_status": "PAID"
                     }
                 },
                 {
@@ -1012,7 +1012,7 @@ async def get_category_monthly_revenue(month: int, year: int):
                         "$gte": start_date,
                         "$lt": end_date
                     },
-                    "status": "delivery_success"
+                    "payment_status": "PAID"
                 }
             },
             {"$unwind": "$product"},
@@ -1157,7 +1157,7 @@ async def get_payment_type_monthly_revenue(month: int, year: int):
                         "$gte": start_date,
                         "$lt": end_date
                     },
-                    "status": "delivery_success",
+                    "payment_status": "PAID",
                 }
             },
             {

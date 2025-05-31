@@ -56,6 +56,7 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 	}
 
 	if trackingReq.Status == "returned" || trackingReq.Status == "canceled" {
+		orderRes.PaymentStatus = "UNPAID"
 		err = models.UpdateProductCount(ctx, orderRes.Product, "sell", -1)
 		if err != nil {
 			slog.Error("Lỗi cập nhật số lượng đã bán của sản phẩm", "err", err)
