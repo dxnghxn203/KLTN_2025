@@ -1,10 +1,7 @@
-import base64
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field, ConfigDict
-import uuid
 
-# Sử dụng MongoDB connection đã cấu hình
 from core.mongo import db
 from core import logger
 from helpers.constant import generate_id
@@ -102,48 +99,6 @@ async def save_document(
     except Exception as e:
         logger.error(f"Failed to save document to MongoDB: {str(e)}")
         raise
-
-#
-# async def get_user_documents(
-#         user_id: str,
-#         document_type: Optional[str] = None,
-#         skip: int = 0,
-#         limit: int = 10
-# ) -> List[Dict[str, Any]]:
-#     query = {"user_id": user_id}
-#
-#     if document_type:
-#         query["document_type"] = document_type
-#
-#     # Loại bỏ file_content để giảm kích thước phản hồi
-#     projection = {"file_content": 0}
-#
-#     all_results = []
-#
-#     # Tìm trong collection prescriptions
-#     if document_type is None or document_type == "prescription":
-#         # Chú ý: to_list cần một argument 'length'
-#         cursor = prescription_collection.find(query, projection).skip(skip)  # .limit(limit) # Limit sau khi gộp
-#         prescription_docs =  cursor.to_list(
-#             length=limit if limit > 0 else None)  # length=None để lấy hết nếu limit=0
-#         for doc in prescription_docs:
-#             doc["_id"] = str(doc["_id"])
-#             all_results.append(doc)
-#
-#     # Tìm trong collection invoices
-#     if document_type is None or document_type == "invoice":
-#         cursor = invoice_collection.find(query, projection).skip(skip)  # .limit(limit)
-#         invoice_docs =  cursor.to_list(length=limit if limit > 0 else None)
-#         for doc in invoice_docs:
-#             doc["_id"] = str(doc["_id"])
-#             all_results.append(doc)
-#
-#     # Sắp xếp theo thời gian tạo (mới nhất trước) sau khi đã gộp kết quả
-#     # Đảm bảo created_at tồn tại và là datetime để sort, nếu không thì xử lý fallback
-#     all_results.sort(key=lambda x: x.get("created_at", datetime.min), reverse=True)
-#
-#     # Áp dụng limit sau khi đã sort và gộp
-#     return all_results[:limit]
 
 class DrugInformation(BaseModel):
     name: Optional[str] = None

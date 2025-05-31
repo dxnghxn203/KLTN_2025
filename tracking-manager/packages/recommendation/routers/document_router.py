@@ -2,6 +2,7 @@ from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from typing import List, Dict, Any, Optional
 
 from core import logger, response
+from models.product import search_medicine
 from services.document_extractor import process_document, extract_drug_information
 from models.document import (
     DocumentExtractionRequest,
@@ -102,10 +103,15 @@ async def extract_drugs_from_images(
         result = await extract_drug_information(files, extraction_method)
         drug_response = DrugExtractionResponse(**result)
 
+        product_result = []
+        for product in drug_response.drugs:
+            product_info = search_medicine(product, )
+            product_result.append(product_info)
+
         return response.BaseResponse(
             status_code=200,
             message="Drug information extracted successfully",
-            data=drug_response.dict()
+            data=product_result
         )
 
     except HTTPException as he:

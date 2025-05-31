@@ -47,7 +47,7 @@ async def update_document(request_id: str, document_data: dict):
         if not updated:
             return response.BaseResponse(
                 status_code=404,
-                
+
                 message="Document not found"
             )
         result = await update_document(request_id, document_data)

@@ -2,6 +2,9 @@ from typing import Optional, List, Dict, Any
 
 from bson import ObjectId
 
+from fuzzywuzzy import fuzz
+import re
+
 from core import logger
 from core.mongo import db
 from helpers import redis
@@ -126,9 +129,7 @@ def search_products_by_text(search_text: str, limit: int = 5) -> list[dict]:
 
 #recommendation
 async def get_all_products_recommendation() -> List[Dict[str, Any]]:
-    """
-    Lấy tất cả sản phẩm từ MongoDB cho hệ thống gợi ý
-    """
+
     try:
         products = db.products.find({"active": True}).to_list(length=None)
         return [product_helper(p) for p in products]
@@ -137,9 +138,7 @@ async def get_all_products_recommendation() -> List[Dict[str, Any]]:
         return []
 
 async def get_product_by_id_recommendation(product_id: str) -> Optional[Dict[str, Any]]:
-    """
-    Lấy thông tin sản phẩm theo ID cho hệ thống gợi ý
-    """
+
     try:
         product = db.products.find_one({"product_id": product_id})
         if product:
@@ -150,9 +149,6 @@ async def get_product_by_id_recommendation(product_id: str) -> Optional[Dict[str
         return None
 
 async def get_products_by_category_recommendation(category_slug: str) -> List[Dict[str, Any]]:
-    """
-    Lấy sản phẩm theo danh mục
-    """
     try:
         products = db.products.find({
             "active": True,
@@ -168,9 +164,6 @@ async def get_products_by_category_recommendation(category_slug: str) -> List[Di
         return []
 
 async def get_products_with_discount_recommendation(min_discount: int = 10) -> List[Dict[str, Any]]:
-    """
-    Lấy sản phẩm có khuyến mãi từ mức nhất định
-    """
     try:
         products = db.products.find({
             "active": True,
@@ -186,12 +179,98 @@ async def get_products_with_discount_recommendation(min_discount: int = 10) -> L
         return []
 
 async def get_newest_products_recommendation(limit: int = 20) -> List[Dict[str, Any]]:
-    """
-    Lấy sản phẩm mới nhất
-    """
+
     try:
         products = db.products.find({"active": True}).sort("created_at", -1).limit(limit).to_list(length=limit)
         return products
     except Exception as e:
         logger.error(f"Error fetching newest products: {str(e)}")
         return []
+
+
+from fuzzywuzzy import fuzz
+import re
+
+
+def search_medicine(extracted_data):
+
+    if extracted_data.registration_number:
+        product = db.products.find_one({"registration_number": extracted_data.registration_number})
+        if product:
+            return product_helper(product)
+
+    # Bước 2: Tìm theo kết hợp tên và thương hiệu
+    if extracted_data.name and extracted_data.brand:
+        query = {
+            "$and": [
+                {"product_name": {"$regex": re.escape(extracted_data.name), "$options": "i"}},
+                {"brand": {"$regex": re.escape(extracted_data.brand), "$options": "i"}}
+            ]
+        }
+        product = db.products.find_one(query)
+        if product:
+            return product_helper(product)
+
+    # Bước 3: Tìm chỉ theo tên sản phẩm
+    if extracted_data.name:
+        query = {
+            "$or": [
+                {"product_name": {"$regex": re.escape(extracted_data.name), "$options": "i"}},
+                {"name_primary": {"$regex": re.escape(extracted_data.name), "$options": "i"}}
+            ]
+        }
+        product = db.products.find_one(query)
+        if product:
+            return product_helper(product)
+
+    # Bước 4: Tìm theo hoạt chất (nếu có)
+    if extracted_data.active_ingredients and len(extracted_data.active_ingredients) > 0:
+        # Tìm tất cả sản phẩm có ít nhất 1 thành phần khớp
+        matching_products = []
+        all_products = list(db.products.find())
+
+        for product in all_products:
+            score = 0
+            if "ingredients" in product:
+                for extracted_ingredient in extracted_data.active_ingredients:
+                    for db_ingredient in product["ingredients"]:
+                        if extracted_ingredient.lower() in db_ingredient["ingredient_name"].lower():
+                            score += 1 / len(extracted_data.active_ingredients)
+                            break
+
+            # Tăng điểm nếu có thông tin khác khớp
+            if extracted_data.brand and product.get("brand") and \
+                    extracted_data.brand.lower() in product["brand"].lower():
+                score += 0.3
+
+            if extracted_data.dosage_form and product.get("dosage_form") and \
+                    extracted_data.dosage_form.lower() in product["dosage_form"].lower():
+                score += 0.2
+
+            if score > 0.5:  # Ngưỡng điểm tối thiểu
+                matching_products.append((product, score))
+
+        if matching_products:
+            # Sắp xếp theo điểm giảm dần
+            matching_products.sort(key=lambda x: x[1], reverse=True)
+            return product_helper(matching_products[0][0])
+
+    # Bước 5: Tìm kiếm mờ khi các phương pháp khác thất bại
+    if extracted_data.name:
+        best_match = None
+        best_score = 0
+
+        for product in list(db.products.find()):
+            name_score = max(
+                fuzz.token_set_ratio(extracted_data.name.lower(), product["product_name"].lower()),
+                fuzz.token_set_ratio(extracted_data.name.lower(), product.get("name_primary", "").lower())
+            ) / 100
+
+            if name_score > best_score and name_score > 0.7:
+                best_match = product
+                best_score = name_score
+
+        if best_match:
+            return product_helper(best_match)
+
+    return None
