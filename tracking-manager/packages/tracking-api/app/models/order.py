@@ -1176,7 +1176,7 @@ async def get_payment_type_monthly_revenue(month: int, year: int):
         for item in result:
             if item["_id"] == "COD":
                 revenue_cod = item["total_revenue"]
-            elif item["_id"] == "BANK":
+            else:
                 revenue_bank = item["total_revenue"]
 
         return {
