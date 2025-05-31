@@ -2,12 +2,8 @@ from typing import Optional, List, Dict, Any
 
 from bson import ObjectId
 
-from fuzzywuzzy import fuzz
-import re
-
 from core import logger
 from core.mongo import db
-from helpers import redis
 
 products_collection = db['products']
 
