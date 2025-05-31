@@ -11,7 +11,7 @@ interface ManagerImportProps {
 
 const ManagerImport = ({ allFileImport }: ManagerImportProps) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const productsPerPage = 10;
+  const productsPerPage = 5;
   const { fetchGetImportFileAddProduct, fetchDeleteImportFileProduct } =
     useProduct();
   const toast = useToast();
