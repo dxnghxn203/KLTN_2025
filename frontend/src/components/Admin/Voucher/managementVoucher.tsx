@@ -26,6 +26,7 @@ const VoucherManagement = () => {
             console.error("Error fetching data:", error);
         }
     };
+    
     useEffect(() => {
         fetchData();
     }, []);

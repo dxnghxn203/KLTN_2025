@@ -1,6 +1,6 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import { all } from "axios";
-import { fetchGetAllAdminFailure } from "../user";
+import {all} from "axios";
+import {fetchGetAllAdminFailure} from "../user";
 
 const initialState: any = {
     allVouchers: [],
@@ -14,17 +14,14 @@ export const voucherSlice = createSlice({
     initialState,
     reducers: {
         fetchAllVouchersStart: (state, action) => {
-            console.log("fetchAllVouchersStart", action.payload);
             state.loading = true;
             state.error = null;
         },
         fetchAllVouchersSuccess: (state, action: PayloadAction<any[]>) => {
-            console.log("fetchAllVouchersSuccess", action.payload);
             state.loading = false;
             state.allVouchers = action.payload;
         },
         fetchAllVouchersFailure: (state, action: PayloadAction<any>) => {
-            console.log("fetchAllVouchersFailure", action.payload);
             state.loading = false;
             state.error = action.payload;
         },
@@ -101,7 +98,7 @@ export const {
     fetchGetAllVoucherUserStart,
     fetchGetAllVoucherUserSuccess,
     fetchGetAllVoucherUserFailure,
-    
+
 } = voucherSlice.actions;
 
 export default voucherSlice.reducer;
