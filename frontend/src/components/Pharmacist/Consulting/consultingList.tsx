@@ -1,270 +1,271 @@
 "use client";
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
 import Link from "next/link";
-import { X } from "lucide-react";
+import {X} from "lucide-react";
 import Image from "next/image";
-import { RiMore2Fill } from "react-icons/ri";
-import { IoFilter, IoImage } from "react-icons/io5";
+import {RiMore2Fill} from "react-icons/ri";
+import {IoFilter, IoImage} from "react-icons/io5";
 import FilterBar from "./filterBar";
-import { useProduct } from "@/hooks/useProduct";
+import {useProduct} from "@/hooks/useProduct";
 import {
-  MdNavigateBefore,
-  MdNavigateNext,
-  MdOutlineModeEdit,
+    MdNavigateBefore,
+    MdNavigateNext,
+    MdOutlineModeEdit,
 } from "react-icons/md";
 import ApproveProductDialog from "../Dialog/approveProductDialog";
-import { FiEye } from "react-icons/fi";
-import { LuBadgeCheck, LuEye } from "react-icons/lu";
-import { useOrder } from "@/hooks/useOrder";
+import {FiEye} from "react-icons/fi";
+import {LuBadgeCheck, LuEye} from "react-icons/lu";
+import {useOrder} from "@/hooks/useOrder";
 import ApproveRequestDialog from "../Dialog/approveRequestDialog";
-import { useRouter } from "next/navigation";
+import {useRouter} from "next/navigation";
 
 const ConsultingList = () => {
-  const { fetchGetApproveRequestOrder, allRequestOrderApprove } = useOrder();
+    const {fetchGetApproveRequestOrder, allRequestOrderApprove} = useOrder();
 
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const orderRequestPerPage = 10; // Số đơn hàng hiển thị trên mỗi trang
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const orderRequestPerPage = 10; // Số đơn hàng hiển thị trên mỗi trang
 
-  // Tính toán dữ liệu hiển thị theo trang
-  const totalProducts = allRequestOrderApprove
-    ? allRequestOrderApprove.length
-    : 0;
-  const indexOfLastOrderRequest = currentPage * orderRequestPerPage;
-  const indexOfFirstOrderRequest =
-    indexOfLastOrderRequest - orderRequestPerPage;
-  const currentOrderRequest = allRequestOrderApprove
-    ? allRequestOrderApprove.slice(
-        indexOfFirstOrderRequest,
-        indexOfLastOrderRequest
-      )
-    : [];
-  const totalPages = Math.ceil(totalProducts / orderRequestPerPage);
-  const [selectedOrderRequest, setSelectedOrderRequest] = useState<any>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
-  const [showFilter, setShowFilter] = useState(false);
-  const [isDialogOpen, setDialogOpen] = useState(false);
-  const router = useRouter();
+    // Tính toán dữ liệu hiển thị theo trang
+    const totalProducts = allRequestOrderApprove
+        ? allRequestOrderApprove.length
+        : 0;
+    const indexOfLastOrderRequest = currentPage * orderRequestPerPage;
+    const indexOfFirstOrderRequest =
+        indexOfLastOrderRequest - orderRequestPerPage;
+    const currentOrderRequest = allRequestOrderApprove
+        ? allRequestOrderApprove.slice(
+            indexOfFirstOrderRequest,
+            indexOfLastOrderRequest
+        )
+        : [];
+    const totalPages = Math.ceil(totalProducts / orderRequestPerPage);
+    const [selectedOrderRequest, setSelectedOrderRequest] = useState<any>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
+    const [showFilter, setShowFilter] = useState(false);
+    const [isDialogOpen, setDialogOpen] = useState(false);
+    const router = useRouter();
 
-  const onPageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!(event.target as HTMLElement).closest(".menu-container")) {
-        setMenuOpen(null);
-      }
+    const onPageChange = (page: number) => {
+        setCurrentPage(page);
     };
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (!(event.target as HTMLElement).closest(".menu-container")) {
+                setMenuOpen(null);
+            }
+        };
 
-  useEffect(() => {
-    fetchGetApproveRequestOrder(
-      () => {},
-      () => {}
-    );
-  }, [allRequestOrderApprove]);
-  console.log(allRequestOrderApprove);
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
 
-  return (
-    <div>
-      <div className="space-y-6">
-        <h2 className="text-2xl font-extrabold text-black">
-          Danh sách yêu cầu tư vấn thuốc
-        </h2>
-        <div className="my-4 text-sm">
-          <Link href="/dashboard" className="hover:underline text-blue-600">
-            Dashboard
-          </Link>
-          <span> / </span>
-          <Link href="/order" className="text-gray-800">
-            Danh sách yêu cầu tư vấn thuốc
-          </Link>
-        </div>
+    useEffect(() => {
+        fetchGetApproveRequestOrder(
+            () => {
+            },
+            () => {
+            }
+        );
+    }, []);
 
-        <div className="flex justify-between">
-          <button
-            className="justify-start border border-gray-300 px-2 py-2 rounded-lg hover:text-[#1E4DB7] hover:border-[#1E4DB7] text-sm flex items-center gap-1"
-            onClick={() => setShowFilter(!showFilter)}
-          >
-            <IoFilter className="text-lg" />
-            Filter
-          </button>
-        </div>
-        {showFilter && (
-          <FilterBar onFilterChange={(filters) => console.log(filters)} />
-        )}
+    return (
+        <div>
+            <div className="space-y-6">
+                <h2 className="text-2xl font-extrabold text-black">
+                    Danh sách yêu cầu tư vấn thuốc
+                </h2>
+                <div className="my-4 text-sm">
+                    <Link href="/dashboard" className="hover:underline text-blue-600">
+                        Dashboard
+                    </Link>
+                    <span> / </span>
+                    <Link href="/order" className="text-gray-800">
+                        Danh sách yêu cầu tư vấn thuốc
+                    </Link>
+                </div>
 
-        <div className="bg-white shadow-sm rounded-xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto border-collapse">
-              <thead className="text-left text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
-                <tr className="uppercase text-sm">
-                  <th className="py-3 pl-4">Mã yêu cầu</th>
-                  <th className="py-3  ">Tên khách hàng</th>
-                  <th className="py-3 ">SĐT</th>
-                  <th className="py-3 ">Email</th>
-                  <th className="py-3">Trạng thái</th>
-                  <th className="py-3 pr-4"></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {currentOrderRequest && currentOrderRequest.length > 0 ? (
-                  currentOrderRequest.map((request: any, index: number) => (
-                    <tr
-                      key={request.request_id}
-                      className={`text-sm hover:bg-gray-50 transition ${
-                        index !== currentOrderRequest.length - 1
-                          ? "border-b border-gray-200"
-                          : ""
-                      }`}
+                <div className="flex justify-between">
+                    <button
+                        className="justify-start border border-gray-300 px-2 py-2 rounded-lg hover:text-[#1E4DB7] hover:border-[#1E4DB7] text-sm flex items-center gap-1"
+                        onClick={() => setShowFilter(!showFilter)}
                     >
-                      <td className="py-4 pl-4">{request.request_id}</td>
-                      <td className="py-4 ">{request.pick_to.name}</td>
-                      <td className="py-4 ">{request.pick_to.phone_number}</td>
-                      <td className="py-4">{request.pick_to.email}</td>
+                        <IoFilter className="text-lg"/>
+                        Filter
+                    </button>
+                </div>
+                {showFilter && (
+                    <FilterBar onFilterChange={(filters) => console.log(filters)}/>
+                )}
 
-                      <td className="py-4 text-center">
+                <div className="bg-white shadow-sm rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full table-auto border-collapse">
+                            <thead className="text-left text-[#1E4DB7] font-bold border-b border-gray-200 bg-[#F0F3FD]">
+                            <tr className="uppercase text-sm">
+                                <th className="py-3 pl-4">Mã yêu cầu</th>
+                                <th className="py-3  ">Tên khách hàng</th>
+                                <th className="py-3 ">SĐT</th>
+                                <th className="py-3 ">Email</th>
+                                <th className="py-3">Trạng thái</th>
+                                <th className="py-3 pr-4"></th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {currentOrderRequest && currentOrderRequest.length > 0 ? (
+                                currentOrderRequest.map((request: any, index: number) => (
+                                    <tr
+                                        key={request.request_id}
+                                        className={`text-sm hover:bg-gray-50 transition ${
+                                            index !== currentOrderRequest.length - 1
+                                                ? "border-b border-gray-200"
+                                                : ""
+                                        }`}
+                                    >
+                                        <td className="py-4 pl-4">{request.request_id}</td>
+                                        <td className="py-4 ">{request.pick_to.name}</td>
+                                        <td className="py-4 ">{request.pick_to.phone_number}</td>
+                                        <td className="py-4">{request.pick_to.email}</td>
+
+                                        <td className="py-4 text-center">
                         <span
-                          className={`px-2 py-1 rounded-full ${
-                            request.status === "rejected"
-                              ? "bg-red-100 text-red-600"
-                              : request.status === "pending"
-                              ? "bg-yellow-100 text-yellow-600"
-                              : request.status === "approved"
-                              ? "bg-green-100 text-green-600"
-                              : "bg-blue-100 text-blue-600"
-                          }`}
+                            className={`px-2 py-1 rounded-full ${
+                                request.status === "rejected"
+                                    ? "bg-red-100 text-red-600"
+                                    : request.status === "pending"
+                                        ? "bg-yellow-100 text-yellow-600"
+                                        : request.status === "approved"
+                                            ? "bg-green-100 text-green-600"
+                                            : "bg-blue-100 text-blue-600"
+                            }`}
                         >
                           {request.status === "rejected"
-                            ? "Đã từ chối"
-                            : request.status === "pending"
-                            ? "Chờ duyệt"
-                            : request.status === "approved"
-                            ? "Đã duyệt"
-                            : "Chưa liên lạc được"}
+                              ? "Đã từ chối"
+                              : request.status === "pending"
+                                  ? "Chờ duyệt"
+                                  : request.status === "approved"
+                                      ? "Đã duyệt"
+                                      : "Chưa liên lạc được"}
                         </span>
-                      </td>
+                                        </td>
 
-                      <td className="py-4 pl-4 text-center relative">
-                        {["approved", "rejected"].includes(request.status) ? (
-                          <button
-                            className="py-2 font-medium flex items-center gap-1 text-sm text-gray-500"
-                            onClick={() => {
-                              router.push(
-                                `/kiem-duyet-yeu-cau-tu-van-thuoc?chi-tiet=${request.request_id}`
-                              );
-                            }}
-                          >
-                            <FiEye className="text-gray-500 text-lg" />
-                            Chi tiết
-                          </button>
-                        ) : (
-                          <button
-                            className="underline py-2 text-blue-600 font-medium rounded-lg  flex items-center gap-2 text-sm"
-                            onClick={() => {
-                              router.push(
-                                `/kiem-duyet-yeu-cau-tu-van-thuoc?edit=${request.request_id}`
-                              );
-                            }}
-                          >
-                            <LuBadgeCheck className="text-blue-600 text-lg" />
-                            Duyệt
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="p-4 text-center text-gray-500">
-                      Không có sản phẩm nào
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        {/* CustomPagination */}
-        <div className="flex items-center justify-center space-x-2 py-4">
-          {/* Nút previous */}
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
-          >
-            <MdNavigateBefore className="text-xl" />
-          </button>
+                                        <td className="py-4 pl-4 text-center relative">
+                                            {["approved", "rejected"].includes(request.status) ? (
+                                                <button
+                                                    className="py-2 font-medium flex items-center gap-1 text-sm text-gray-500"
+                                                    onClick={() => {
+                                                        router.push(
+                                                            `/kiem-duyet-yeu-cau-tu-van-thuoc?chi-tiet=${request.request_id}`
+                                                        );
+                                                    }}
+                                                >
+                                                    <FiEye className="text-gray-500 text-lg"/>
+                                                    Chi tiết
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="underline py-2 text-blue-600 font-medium rounded-lg  flex items-center gap-2 text-sm"
+                                                    onClick={() => {
+                                                        router.push(
+                                                            `/kiem-duyet-yeu-cau-tu-van-thuoc?edit=${request.request_id}`
+                                                        );
+                                                    }}
+                                                >
+                                                    <LuBadgeCheck className="text-blue-600 text-lg"/>
+                                                    Duyệt
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={8} className="p-4 text-center text-gray-500">
+                                        Không có yêu cầu nào
+                                    </td>
+                                </tr>
+                            )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {/* CustomPagination */}
+                <div className="flex items-center justify-center space-x-2 py-4">
+                    {/* Nút previous */}
+                    <button
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+                    >
+                        <MdNavigateBefore className="text-xl"/>
+                    </button>
 
-          {/* Các nút số trang */}
-          {Array.from({ length: totalPages }, (_, index) => {
-            const pageNumber = index + 1;
+                    {/* Các nút số trang */}
+                    {Array.from({length: totalPages}, (_, index) => {
+                        const pageNumber = index + 1;
 
-            // Quy tắc ẩn bớt số
-            if (
-              pageNumber === 1 ||
-              pageNumber === totalPages ||
-              (pageNumber >= currentPage - 1 &&
-                pageNumber <= currentPage + 1) ||
-              (currentPage <= 3 && pageNumber <= 5) ||
-              (currentPage >= totalPages - 2 && pageNumber >= totalPages - 4)
-            ) {
-              return (
-                <button
-                  key={pageNumber}
-                  onClick={() => onPageChange(pageNumber)}
-                  className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
-                    currentPage === pageNumber
-                      ? "bg-blue-700 text-white"
-                      : "text-black hover:bg-gray-200"
-                  }`}
-                >
-                  {pageNumber}
-                </button>
-              );
-            }
+                        // Quy tắc ẩn bớt số
+                        if (
+                            pageNumber === 1 ||
+                            pageNumber === totalPages ||
+                            (pageNumber >= currentPage - 1 &&
+                                pageNumber <= currentPage + 1) ||
+                            (currentPage <= 3 && pageNumber <= 5) ||
+                            (currentPage >= totalPages - 2 && pageNumber >= totalPages - 4)
+                        ) {
+                            return (
+                                <button
+                                    key={pageNumber}
+                                    onClick={() => onPageChange(pageNumber)}
+                                    className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
+                                        currentPage === pageNumber
+                                            ? "bg-blue-700 text-white"
+                                            : "text-black hover:bg-gray-200"
+                                    }`}
+                                >
+                                    {pageNumber}
+                                </button>
+                            );
+                        }
 
-            // Hiển thị dấu ...
-            if (
-              (pageNumber === currentPage - 2 && currentPage > 4) ||
-              (pageNumber === currentPage + 2 && currentPage < totalPages - 3)
-            ) {
-              return (
-                <span key={pageNumber} className="px-2 text-gray-500">
+                        // Hiển thị dấu ...
+                        if (
+                            (pageNumber === currentPage - 2 && currentPage > 4) ||
+                            (pageNumber === currentPage + 2 && currentPage < totalPages - 3)
+                        ) {
+                            return (
+                                <span key={pageNumber} className="px-2 text-gray-500">
                   ...
                 </span>
-              );
-            }
+                            );
+                        }
 
-            return null;
-          })}
+                        return null;
+                    })}
 
-          {/* Nút next */}
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
-          >
-            <MdNavigateNext className="text-xl" />
-          </button>
+                    {/* Nút next */}
+                    <button
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
+                    >
+                        <MdNavigateNext className="text-xl"/>
+                    </button>
+                </div>
+                {/* Drawer (Chi tiết đơn hàng) */}
+            </div>
+            {isDialogOpen && selectedOrderRequest && (
+                <ApproveRequestDialog
+                    isOpen={isDialogOpen}
+                    onClose={() => setDialogOpen(false)}
+                    requestSelected={selectedOrderRequest}
+                />
+            )}
         </div>
-        {/* Drawer (Chi tiết đơn hàng) */}
-      </div>
-      {isDialogOpen && selectedOrderRequest && (
-        <ApproveRequestDialog
-          isOpen={isDialogOpen}
-          onClose={() => setDialogOpen(false)}
-          requestSelected={selectedOrderRequest}
-        />
-      )}
-    </div>
-  );
+    );
 };
 
 export default ConsultingList;

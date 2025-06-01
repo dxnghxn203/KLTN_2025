@@ -11,9 +11,7 @@ import chatReducer from "./chat/chatSlice";
 import voucherReducer from "./voucher/voucherSlice";
 import brandReducer from "./brand/brandSlice";
 import articleReducer from "./article/articleSlice";
-import {getToken, getTokenAdmin, getTokenPharmacist} from '@/utils/cookie';
-import {setClientToken} from '@/utils/configs/axiosClient';
-import {ROLE_ACTIONS_ADMIN, ROLE_ACTIONS_PHARMACIST} from "@/utils/roleAction";
+import documentReducer from "./document/documentSlice";
 
 // Import other reducers here
 
@@ -30,33 +28,10 @@ const reducer = combineReducers({
     voucher: voucherReducer,
     brand: brandReducer,
     article: articleReducer,
+    document: documentReducer
 });
 
 const rootReducer = (state: any, action: any) => {
-    // if (action.type === "authen/fetchLogoutStart") {
-    //     return reducer(undefined, action);
-    // }
-    //
-    // let token = null;
-    //
-    // const typeParts = typeof action.type === 'string' ? action.type.split('/') : [];
-    // const actionType = typeParts[1] || '';
-    // console.log("actionType", actionType);
-    // if ((ROLE_ACTIONS_ADMIN).includes(actionType)) {
-    //     token = getTokenAdmin()
-    //     console.log("1", token);
-    // } else if ((ROLE_ACTIONS_PHARMACIST).includes(actionType)) {
-    //     token = getTokenPharmacist()
-    //     console.log("2", token);
-    // } else {
-    //     token = getToken();
-    //     console.log("3", token);
-    // }
-    //
-    // if (token) {
-    //     setClientToken(token);
-    // }
-
     return reducer(state, action);
 };
 

@@ -130,8 +130,12 @@ export default function CategoryRevenueChart() {
               </Pie>
               <Tooltip
                 formatter={(value: number) =>
-                  `${value.toLocaleString("vi-VN")} đ`
+                  `${new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(value)}`
                 }
+                
               />
             </PieChart>
           </ResponsiveContainer>

@@ -1,21 +1,22 @@
-import { useRef, useState } from "react";
-import { IoMdArrowDown, IoMdArrowUp } from "react-icons/io";
+import { useEffect, useRef, useState } from "react";
+import { IoMdArrowDown } from "react-icons/io";
 import Link from "next/link";
 import ManagerImport from "./managerImport";
 import { useProduct } from "@/hooks/useProduct";
 import { useToast } from "@/providers/toastProvider";
-import { GrDocumentCsv } from "react-icons/gr";
 import { X } from "lucide-react";
-import { TbFileTypeCsv } from "react-icons/tb";
-import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
-import { FaFileExcel } from "react-icons/fa6";
 import { RiFileExcel2Fill } from "react-icons/ri";
 
 const BulkCreateProduct = () => {
   const {
     fetchImportAddFileProduct,
     allFileImport,
+    totalFileImport,
     fetchGetImportFileAddProduct,
+    page,
+    setPage,
+    pageSize,
+    setPageSize
   } = useProduct();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,6 +31,9 @@ const BulkCreateProduct = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const handleChooseFile = () => {
@@ -79,6 +83,10 @@ const BulkCreateProduct = () => {
     );
   };
 
+  useEffect(() => {
+    fetchGetImportFileAddProduct(() => {}, () => {});
+  }, [page, pageSize]);
+
   return (
     <div className="">
       <h2 className="text-2xl font-extrabold text-black mb-4">
@@ -90,24 +98,41 @@ const BulkCreateProduct = () => {
           Dashboard
         </Link>
         <span> / </span>
-        <Link href="/bulk-create-product" className="text-gray-800">
+        <Link href="/san-pham" className="text-gray-800">
+          Sản phẩm
+        </Link>
+         <span> / </span>
+        <Link href="/san-pham/them-san-pham-hang-loat" className="text-gray-800">
           Thêm danh sách sản phẩm
         </Link>
       </div>
 
-      <div className="flex justify-end gap-4 mb-6">
-        {/* Nút chọn file mẫu */}
-        <button
-          className="text-sm flex items-center gap-1 px-2 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 transition"
-          onClick={handleOpenDialog}
-        >
-          <RiFileExcel2Fill className="text-lg" /> Chọn file Excel
-        </button>
+      <div className="flex justify-between items-center gap-4 mb-6">
+        {/* Dòng chữ bên trái */}
+        <p className="text-sm text-gray-600">
+          Tổng số sản phẩm đã import: <span className="font-semibold">{totalFileImport}</span>
+        </p>
 
-        {/* Nút tải mẫu */}
-        <button className="flex items-center gap-2 px-2 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-100 transition">
-          <IoMdArrowDown /> Tải mẫu Excel
-        </button>
+        {/* Nhóm nút bên phải */}
+        <div className="flex gap-4">
+          {/* Nút chọn file mẫu */}
+          <button
+            className="text-sm flex items-center gap-1 px-2 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 transition"
+            onClick={handleOpenDialog}
+          >
+            <RiFileExcel2Fill className="text-lg" /> Chọn file Excel
+          </button>
+
+          {/* Nút tải mẫu */}
+          <a
+            href="/templates/template_import_products.xlsx"
+            download
+            className="flex items-center gap-2 px-2 py-2 border border-[#1E4DB7] text-[#1E4DB7] rounded-lg text-sm font-medium hover:bg-gray-100 transition"
+          >
+            <IoMdArrowDown /> Tải mẫu Excel
+          </a>
+
+        </div>
 
         {/* Input file ẩn */}
         <input
@@ -119,8 +144,16 @@ const BulkCreateProduct = () => {
         />
       </div>
 
+
       {/* Quản lý file import */}
-      <ManagerImport allFileImport={allFileImport} />
+      <ManagerImport
+        allFileImport={allFileImport}
+        currentPage={page}
+        pageSize={pageSize}
+        totalFileImport={totalFileImport}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
 
       {/* Modal Dialog Upload */}
       {isDialogOpen && (

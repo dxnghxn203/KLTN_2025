@@ -33,7 +33,9 @@ import {
     selectAllProductDiscount,
     fetchProductDiscountStart, selectProductBestDeal, selectImageToProduct, fetchImageToProductStart,
     fetchProductLowStockStart,
-    selectProductLowStock
+    selectProductLowStock,
+    selectTotalProductAdmin,
+    selectTotalFileImport,
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -42,6 +44,8 @@ export function useProduct() {
     const dispatch = useDispatch();
     const productBySlug = useSelector(selectProductBySlug);
     const allProductAdmin = useSelector(selectProductAdmin);
+    const totalProductAdmin = useSelector(selectTotalProductAdmin);
+    const totalFileImport = useSelector(selectTotalFileImport);
     const productsTopSelling = useSelector(selectProductTopSelling);
     const productRelated = useSelector(selectProductRelated);
     const productGetRecentlyViewed = useSelector(selectProductGetRecentlyViewed);
@@ -56,7 +60,7 @@ export function useProduct() {
     const productLowStock = useSelector(selectProductLowStock);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(100);
+    const [pageSize, setPageSize] = useState(5);
     const [top_n, setTopN] = useState(10);
 
     const fetchProductBySlug = async (slug: string, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
@@ -280,7 +284,8 @@ export function useProduct() {
     ) => {
         dispatch(
             fetchGetAllImportFileAddProductStart({
-
+                page: page,
+                page_size: pageSize,
                 onSuccess,
                 onFailure: onFailed
             })
@@ -328,6 +333,7 @@ export function useProduct() {
         pageSize,
         setPageSize,
         allProductAdmin,
+        totalProductAdmin,
         getProductTopSelling,
         productsTopSelling,
         fetchProductRelated,
@@ -360,6 +366,7 @@ export function useProduct() {
         fetchImportAddFileProduct,
         fetchGetImportFileAddProduct,
         allFileImport,
+        totalFileImport,
 
         fetchDeleteImportFileProduct,
 

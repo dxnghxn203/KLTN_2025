@@ -2,20 +2,14 @@ import { useOrder } from "@/hooks/useOrder";
 import React, { useEffect, useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 
-// Dữ liệu chú thích
-const data = [
-  { label: "Tổng thu", color: "#F87171" }, // đỏ
-  { label: "Tiền mặt", color: "#FACC15" }, // vàng
-  { label: "Ngân hàng", color: "#3B82F6" }, // xanh dương
-];
-
 export default function TodayReport() {
   const today = new Date();
   const currentMonthStr = today.toISOString().slice(0, 7);
   const [currentMonth, setCurrentMonth] = useState(currentMonthStr);
   const [chartData, setChartData] = useState<
-   { value: number; radius: number; color: string }[]
+   { value: number; radius: number; color: string, label: string}[]
   >([]);
+
   const [totalEarning, setTotalEarning] = useState(0);
   const { fetchGetTypeMonthlyRevenueStatisticsOrder } = useOrder();
   useEffect(() => {
@@ -35,17 +29,29 @@ export default function TodayReport() {
           {
             radius: 70,
             color: "#F87171",
-            value: totalPercent
+            value: totalPercent,
+            label: `Tổng thu: ${new Intl.NumberFormat("vi-VN",{
+              style: "currency",
+              currency: "VND",
+            }).format(revenue_all)}`,
           },
           {
             radius: 58,
             color: "#FACC15",
             value: codPercent,
+            label: `Tiền mặt: ${new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(revenue_cod)}`,
           },
           {
             radius: 46,
             color: "#3B82F6",
             value: bankPercent,
+            label: `Ngân hàng: ${new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(revenue_bank)}`,
           },
         ]);
         setTotalEarning(revenue_all);
@@ -150,7 +156,7 @@ export default function TodayReport() {
           </div>
 
           <div className="flex flex-col gap-2 text-sm">
-            {data.map(({ label, color }) => (
+            {chartData.map(({ label, color }) => (
               <div key={label} className="flex items-center gap-2">
                 <span
                   className="w-3 h-3 rounded-full"

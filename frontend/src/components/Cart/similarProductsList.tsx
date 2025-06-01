@@ -24,16 +24,12 @@ const SimilarProductsList = ({
     }>({});
     const [totalProducts, setTotalProducts] = useState<number>(0);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const pageSize = 12; // Increased to 12 products per page
+    const pageSize = 12;
 
-    // Get product ID safely, handling both data structures
     const getProductId = (productData: any) => {
-        // If product is from ShoppingCart (has product_id in product property)
         if (productData?.product && productData.product.product_id) {
             return productData.product.product_id;
         }
-
-        // If product is directly from OutOfStock (has product_id at root)
         if (productData?.product_id) {
             return productData.product_id;
         }
@@ -61,7 +57,6 @@ const SimilarProductsList = ({
                 setSimilarProducts(response.products);
                 setTotalProducts(response.total || 0);
 
-                // Initialize selected prices and quantities
                 const initialPrices: { [key: string]: string } = {};
                 const initialQuantities: { [key: string]: number } = {};
 
@@ -72,7 +67,6 @@ const SimilarProductsList = ({
                     }
                 });
 
-                // Merge with existing selections for pagination
                 setSelectedPrices(prev => ({...prev, ...initialPrices}));
                 setSelectedQuantities(prev => ({...prev, ...initialQuantities}));
             } else {

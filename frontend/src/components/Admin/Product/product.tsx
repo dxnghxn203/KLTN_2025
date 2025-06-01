@@ -11,7 +11,7 @@ const Product = () => {
             <BsClipboardPlus className="text-[#1A97F5] text-4xl" />
           </div>
           <div className="flex flex-col items-center">
-            <span className="font-medium font-semibold  text-xl">
+            <span className="font-semibold  text-xl">
               Thêm sản phẩm
             </span>
             <span className="text-sm text-[#9297A0]">Thêm sản phẩm đơn</span>

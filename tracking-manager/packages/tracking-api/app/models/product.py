@@ -1244,7 +1244,7 @@ async def import_products(file: UploadFile, email: str):
                             inventory=price_obj.inventory,
                             amount=price_obj.amount,
                         )
-                        inventory_list.append(inventory_obj)
+                        inventory_list.append(inventory_obj.dict())
                 except Exception as e:
                     row_errors.append(f"Dòng {excel_row_idx}: Lỗi đọc prices - {e}")
                     prices = []
@@ -1317,8 +1317,8 @@ async def import_products(file: UploadFile, email: str):
 
                     logger.info(f"Thêm sản phẩm thành công: {insert_result.inserted_id}")
 
-                    inventory_collection.insert_many(inventory_list)
-                    logger.info(f"Thêm lượng kho hàng: {len(inventory_list)}")
+                    result = inventory_collection.insert_many(inventory_list)
+                    logger.info(f"Đã thêm {len(inventory_list)} bản ghi vào bảng products_inventory")
                 except ValidationError as e:
                     error_messages.append(f"Dòng {excel_row_idx}: Lỗi dữ liệu không hợp lệ - {e}")
 
@@ -1343,11 +1343,16 @@ async def import_products(file: UploadFile, email: str):
     finally:
         redis.clear_import_lock()
 
-async def get_imported_products():
+async def get_imported_products(page: int, page_size: int):
     try:
         collection = db[collection_import]
-        imports_list = list(collection.find({}, {"_id": 0}))
-        return [ItemProductImportRes(**imports) for imports in imports_list]
+        skip_count = (page - 1) * page_size
+        imports_list = list(collection.find({}, {"_id": 0}).sort("_id", -1).skip(skip_count).limit(page_size))
+        total = collection.count_documents({})
+        return {
+            "total_imports": total,
+            "imports": [ItemProductImportRes(**imports) for imports in imports_list]
+        }
     except Exception as e:
         logger.error(f"Error getting imported products: {str(e)}")
         raise e

@@ -110,7 +110,7 @@ const UserManagement = () => {
             Trang chủ
           </Link>
           <span> / </span>
-          <Link href="/users" className="text-gray-800">
+          <Link href="/quan-ly-nguoi-dung" className="text-gray-800">
             Quản lý người dùng
           </Link>
         </div>

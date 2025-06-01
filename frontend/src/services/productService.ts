@@ -408,9 +408,9 @@ export const importFileAddProduct = async (params: any) => {
     }
 }
 
-export const getAllImportFileAddProduct = async () => {
+export const getAllImportFileAddProduct = async (page: any, page_size: any) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/import`);
+        const response: any = await axiosClient.get(`/v1/products/import?page=${page}&page_size=${page_size}`);
         return response;
     } catch (error) {
         console.error("Error fetching child category:", error);

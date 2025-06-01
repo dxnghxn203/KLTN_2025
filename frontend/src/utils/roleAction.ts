@@ -45,9 +45,10 @@ export const ROLE_ACTIONS_ADMIN = [
 
     'fetchGetMonthlyProductSoldStatisticsStart',
     'fetchGetMonthlyTopSellingProductStatisticsStart',
-    'fetchGetProductLowStockStart',
+    'fetchProductLowStockStart',
 
     'fetchGetMonthlyCountOrderStatisticsStart',
+    'fetchGetAllImportFileAddProductStart',
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [

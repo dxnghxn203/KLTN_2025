@@ -126,10 +126,6 @@ const PrescriptionForm = () => {
     const handleSendRequest = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        // if (!medicine) {
-        //   toast.showToast("Vui lòng chọn sản phẩm cần tư vấn", "warning");
-        //   return;
-        // }
 
         const formData = new FormData();
         const allProducts =
@@ -142,6 +138,11 @@ const PrescriptionForm = () => {
                 quantity: item.quantity,
             })),
         } : null;
+        console.log("productData:", productData);
+        if (!productData && (!images || images.length === 0)) {
+            toast.showToast("Vui lòng chọn thuốc hoặc nhập toa thuốc để tư vấn! ", "warning");
+            return;
+        }
 
         // console.log("productData:", productData);
         const pickToData = {
@@ -160,7 +161,9 @@ const PrescriptionForm = () => {
             formData.append("images", image.file);
         });
 
-        formData.append("product", JSON.stringify(productData));
+        if (productData) {
+            formData.append("product", JSON.stringify(productData));
+        }
         formData.append("pick_to", JSON.stringify(pickToData));
         formData.append(
             "receiver_province_code",

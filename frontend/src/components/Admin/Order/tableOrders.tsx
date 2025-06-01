@@ -1,6 +1,5 @@
 "use client";
-import { useOrder } from "@/hooks/useOrder";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -84,7 +83,6 @@ const TableOrdersAdmin = ({
   onSelectOrder
 }: OrderTableProps) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [showActions, setShowActions] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const toast = useToast();
 
@@ -228,7 +226,7 @@ const TableOrdersAdmin = ({
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        {formatCurrency(calculateOrderTotal(order.product))}
+                        {formatCurrency(order.estimated_total_fee)}
                       </td>
                     </tr>
 
