@@ -255,7 +255,7 @@ const HistoryOrder: React.FC = () => {
                                 </p>
                                 <p className="font-semibold text-blue-700">
                                     <span className="font-medium ">Tổng tiền:</span>{" "}
-                                    {order.total_fee?.toLocaleString("vi-VN")}đ
+                                    {order.estimated_total_fee?.toLocaleString("vi-VN")}đ
                                 </p>
                                 <p>
                                     <span className="font-medium ">Cân nặng:</span> {order.weight}{" "}
@@ -292,17 +292,12 @@ const HistoryOrder: React.FC = () => {
                                 >
                                     <div className="flex-shrink-0 mr-4">
                                         <Image
-                                            src={product.images_primary || "/placeholder-image.png"}
+                                            src={product.images_primary}
                                             alt={product.product_name}
                                             width={64}
                                             height={64}
                                             className="object-cover rounded"
-                                            onError={(e) => {
-                                                e.currentTarget.src = "/placeholder-image.png";
-                                            }}
-                                            unoptimized={product.images_primary?.includes(
-                                                "https://kltn2025.s3"
-                                            )}
+
                                         />
                                     </div>
                                     <div className="flex-grow">

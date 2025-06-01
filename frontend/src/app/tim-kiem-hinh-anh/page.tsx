@@ -3,19 +3,22 @@
 import {useState, useRef, useEffect} from "react";
 import Image from "next/image";
 import {useRouter} from "next/navigation";
-import {FiUpload, FiCamera, FiSearch, FiX, FiPlus} from "react-icons/fi";
+import {FiUpload, FiCamera, FiSearch, FiX, FiPlus, FiMessageCircle} from "react-icons/fi";
 import {BiLoaderAlt} from "react-icons/bi";
 import {BsImage} from "react-icons/bs";
 import {useToast} from "@/providers/toastProvider";
 import {useProduct} from "@/hooks/useProduct";
+import Link from "next/link";
+import {useCart} from "@/hooks/useCart";
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const MAX_IMAGES = 2;
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
+const MAX_IMAGES = 1;
 
 const Page = () => {
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [isUsingCamera, setIsUsingCamera] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedPriceIds, setSelectedPriceIds] = useState<{ [key: string]: string }>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -25,6 +28,11 @@ const Page = () => {
         imageToProduct,
         fetchImageToProduct
     } = useProduct();
+
+    const {addProductTocart, getProductFromCart} = useCart();
+
+    const [isCameraInitializing, setIsCameraInitializing] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     useEffect(() => {
         return () => {
@@ -46,26 +54,21 @@ const Page = () => {
         const files = e.target.files;
         if (!files) return;
 
-        const newImages: string[] = [...selectedImages];
+        setSelectedImages([]);
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-
-            if (newImages.length >= MAX_IMAGES) {
-                toast.showToast(`Chỉ được phép tải lên tối đa ${MAX_IMAGES} ảnh`, "info");
-                break;
-            }
 
             if (!validateFileSize(file)) continue;
 
             const reader = new FileReader();
             reader.onload = (e) => {
                 if (e.target?.result) {
-                    newImages.push(e.target.result as string);
-                    setSelectedImages([...newImages]);
+                    setSelectedImages([e.target.result as string]);
                 }
             };
             reader.readAsDataURL(file);
+            break;
         }
 
         if (fileInputRef.current) {
@@ -116,30 +119,20 @@ const Page = () => {
         e.preventDefault();
         const files = e.dataTransfer.files;
 
-        if (selectedImages.length >= MAX_IMAGES) {
-            toast.showToast(`Chỉ được phép tải lên tối đa ${MAX_IMAGES} ảnh`, "info");
-            return;
-        }
+        if (files.length === 0) return;
 
-        const newImages: string[] = [...selectedImages];
+        setSelectedImages([]);
+        const file = files[0];
+        if (!file.type.match('image.*')) return;
+        if (!validateFileSize(file)) return;
 
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-
-            if (newImages.length >= MAX_IMAGES) break;
-
-            if (!file.type.match('image.*')) continue;
-            if (!validateFileSize(file)) continue;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (e.target?.result) {
-                    newImages.push(e.target.result as string);
-                    setSelectedImages([...newImages]);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (e.target?.result) {
+                setSelectedImages([e.target.result as string]);
+            }
+        };
+        reader.readAsDataURL(file);
 
         setIsUsingCamera(false);
     };
@@ -150,59 +143,215 @@ const Page = () => {
 
     const startCamera = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({video: true});
+            setIsCameraInitializing(true);
+            setCameraError(null);
+            setIsUsingCamera(true);
+
+            const constraints = {
+                video: true,
+                audio: false
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+            if (stream.getVideoTracks().length > 0) {
+                const videoTrack = stream.getVideoTracks()[0];
+            } else {
+                throw new Error("No video tracks found in camera stream");
+            }
+
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
-            }
-            streamRef.current = stream;
-            setIsUsingCamera(true);
-        } catch (err) {
-            toast.showToast("Không thể truy cập camera", "error");
-            console.error("Error accessing camera:", err);
-        }
-    };
+                videoRef.current.style.display = "block";
 
-    const capturePhoto = () => {
-        if (videoRef.current && streamRef.current) {
-            if (selectedImages.length >= MAX_IMAGES) {
-                toast.showToast(`Chỉ được phép chụp tối đa ${MAX_IMAGES} ảnh`, "info");
+                videoRef.current.onloadedmetadata = async () => {
+                    try {
+                        await videoRef.current?.play();
+                    } catch (playError) {
+                        console.error("Error playing video:", playError);
+                        setCameraError("Không thể hiển thị camera, vui lòng cấp quyền và thử lại");
+                        stopCamera();
+                    }
+                };
+            } else {
+                setCameraError("Không thể khởi tạo camera - không tìm thấy element video");
+                stopCamera();
                 return;
             }
 
-            const canvas = document.createElement('canvas');
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            streamRef.current = stream;
 
-            const imageDataUrl = canvas.toDataURL('image/jpeg');
-            setSelectedImages([...selectedImages, imageDataUrl]);
+        } catch (err) {
+            console.error("Error accessing camera:", err);
 
-            if (selectedImages.length + 1 >= MAX_IMAGES) {
-                stopCamera();
+            if (err instanceof DOMException) {
+                switch (err.name) {
+                    case 'NotAllowedError':
+                        setCameraError("Bạn đã từ chối quyền truy cập camera. Vui lòng cấp quyền trong cài đặt trình duyệt.");
+                        break;
+                    case 'NotFoundError':
+                        setCameraError("Không tìm thấy thiết bị camera trên thiết bị của bạn.");
+                        break;
+                    case 'NotReadableError':
+                        setCameraError("Camera đang được sử dụng bởi ứng dụng khác. Vui lòng đóng các ứng dụng khác và thử lại.");
+                        break;
+                    case 'OverconstrainedError':
+                        setCameraError("Thiết bị camera không đáp ứng được yêu cầu kỹ thuật. Vui lòng thử lại.");
+                        break;
+                    case 'AbortError':
+                        setCameraError("Kết nối camera bị gián đoạn.");
+                        break;
+                    default:
+                        setCameraError("Không thể truy cập camera: " + err.name);
+                }
+            } else {
+                setCameraError("Không thể truy cập camera: " + (err instanceof Error ? err.message : String(err)));
             }
+            stopCamera();
+        } finally {
+            setIsCameraInitializing(false);
         }
     };
 
     const stopCamera = () => {
+        console.log("Stopping camera");
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current.getTracks().forEach(track => {
+                console.log(`Stopping track: ${track.kind}`);
+                track.stop();
+            });
             streamRef.current = null;
         }
+
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+            videoRef.current.onloadedmetadata = null;
+        }
+
         setIsUsingCamera(false);
     };
 
-    const removeImage = (index: number) => {
-        const newImages = [...selectedImages];
-        newImages.splice(index, 1);
-        setSelectedImages(newImages);
+    const tryAlternateCamera = async () => {
+        try {
+            setCameraError("Đang thử với camera khác...");
+
+            const alternateConstraints = {
+                video: {facingMode: "user"},
+                audio: false
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(alternateConstraints);
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                await videoRef.current.play();
+            }
+
+            streamRef.current = stream;
+            setCameraError(null);
+            console.log("Alternate camera activated successfully");
+
+        } catch (err) {
+            console.error("Error accessing alternate camera:", err);
+            setCameraError("Không thể truy cập bất kỳ camera nào. Vui lòng thử lại sau.");
+        } finally {
+            setIsCameraInitializing(false);
+        }
     };
 
-    const resetImages = () => {
+    const capturePhoto = () => {
+        console.log("Attempting to capture photo");
+        if (!videoRef.current || !streamRef.current) {
+            console.error("Video reference or stream is null");
+            toast.showToast("Không thể chụp ảnh: Camera chưa được khởi tạo", "error");
+            return;
+        }
+
+        const video = videoRef.current;
+
+        if (video.videoWidth === 0 || video.videoHeight === 0 || video.paused || video.ended) {
+            console.error("Video is not ready for capture", {
+                width: video.videoWidth,
+                height: video.videoHeight,
+                paused: video.paused,
+                ended: video.ended
+            });
+            toast.showToast("Không thể chụp ảnh: Camera chưa sẵn sàng", "error");
+            return;
+        }
+
+        try {
+            console.log("Creating canvas for capture");
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            console.log("Canvas dimensions:", canvas.width, canvas.height);
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error("Could not get canvas context");
+                toast.showToast("Không thể chụp ảnh: Lỗi canvas", "error");
+                return;
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+            if (imageDataUrl === 'data:,') {
+                console.error("Empty image data URL");
+                toast.showToast("Không thể chụp ảnh: Dữ liệu trống", "error");
+                return;
+            }
+
+            setSelectedImages([imageDataUrl]);
+            stopCamera();
+
+        } catch (error) {
+            console.error("Error during photo capture:", error);
+            toast.showToast("Không thể chụp ảnh: " + (error instanceof Error ? error.message : "Lỗi không xác định"), "error");
+        }
+    };
+
+    const removeImage = () => {
         setSelectedImages([]);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+    };
+
+    const handleSelectPrice = (productId: string, priceId: string) => {
+        setSelectedPriceIds(prev => ({
+            ...prev,
+            [productId]: priceId
+        }));
+    };
+
+    const handleAddToCart = (productId: string, productIndex: number) => {
+        const priceId = selectedPriceIds[productId];
+
+        if (!priceId) {
+            toast.showToast("Vui lòng chọn đơn vị trước khi thêm vào giỏ hàng", "warning");
+            return;
+        }
+
+        addProductTocart(
+            productId,
+            priceId,
+            1,
+            () => {
+                toast.showToast("Thêm vào giỏ hàng thành công", "success");
+                getProductFromCart(
+                    () => {
+                    },
+                    () => {
+                    }
+                );
+            },
+            () => {
+                toast.showToast("Thêm vào giỏ hàng thất bại", "error");
+            }
+        );
     };
 
     return (
@@ -217,7 +366,6 @@ const Page = () => {
 
                 {!showResults ? (
                     <>
-                        {/* Image input UI */}
                         <div className="flex flex-col md:flex-row gap-4 mb-6">
                             <button
                                 onClick={() => fileInputRef.current?.click()}
@@ -228,12 +376,11 @@ const Page = () => {
                                 } transition-colors`}
                             >
                                 <FiUpload className="text-xl"/>
-                                <span>Tải ảnh lên ({selectedImages.length}/{MAX_IMAGES})</span>
+                                <span>Tải ảnh lên</span>
                             </button>
                             <input
                                 type="file"
                                 accept="image/*"
-                                multiple
                                 className="hidden"
                                 ref={fileInputRef}
                                 onChange={handleFileChange}
@@ -254,28 +401,89 @@ const Page = () => {
 
                         {isUsingCamera && (
                             <div className="relative mb-6 bg-black rounded-lg overflow-hidden">
+                                {isCameraInitializing && (
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-10">
+                                        <div className="text-white text-center">
+                                            <BiLoaderAlt className="animate-spin text-4xl mx-auto mb-2"/>
+                                            <p>Đang kết nối camera...</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {cameraError && (
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-90 z-10">
+                                        <div className="text-white text-center p-6 max-w-sm">
+                                            <FiX className="text-4xl mx-auto mb-2"/>
+                                            <p className="font-medium mb-3 text-lg">Lỗi camera</p>
+                                            <p className="text-sm mb-4">{cameraError}</p>
+                                            <div className="flex gap-3 justify-center">
+                                                {cameraError.includes("camera khác") ? (
+                                                    <button
+                                                        onClick={stopCamera}
+                                                        className="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                                                    >
+                                                        Đóng
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={tryAlternateCamera}
+                                                            className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                                        >
+                                                            Thử camera khác
+                                                        </button>
+                                                        <button
+                                                            onClick={stopCamera}
+                                                            className="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                                                        >
+                                                            Đóng
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                            <p className="text-xs mt-4 text-gray-300">
+                                                Một số thiết bị yêu cầu cấp quyền camera trong cài đặt trình duyệt
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div
+                                    className={`camera-debug-info absolute top-2 left-2 bg-black/50 text-white text-xs p-2 rounded z-10 ${
+                                        streamRef.current ? 'block' : 'hidden'
+                                    }`}>
+                                    Camera đang hoạt động: {streamRef.current && videoRef.current ? 'Có' : 'Không'}
+                                </div>
+
                                 <video
                                     ref={videoRef}
                                     autoPlay
                                     playsInline
+                                    muted
                                     className="w-full h-[300px] md:h-[400px] object-cover"
+                                    style={{display: 'block'}} // Ensure video is visible
                                 />
+
                                 <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                                     <button
                                         onClick={capturePhoto}
-                                        className="bg-white rounded-full p-4 shadow-lg hover:bg-gray-100 transition-colors"
-                                        disabled={selectedImages.length >= MAX_IMAGES}
+                                        disabled={isCameraInitializing || !!cameraError}
+                                        className="bg-white rounded-full p-4 shadow-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                                     >
                                         <div className="w-12 h-12 rounded-full border-4 border-blue-500"></div>
                                     </button>
                                 </div>
 
-                                {selectedImages.length > 0 && (
-                                    <div className="absolute top-4 left-4 bg-black bg-opacity-50 rounded-lg p-2">
-                                    <span
-                                        className="text-white text-sm font-medium">{selectedImages.length}/{MAX_IMAGES} ảnh</span>
-                                    </div>
-                                )}
+                                <div className="absolute top-4 right-4">
+                                    <button
+                                        onClick={stopCamera}
+                                        className="bg-white/80 rounded-full p-2 shadow-lg hover:bg-white transition-colors"
+                                    >
+                                        <FiX size={20}/>
+                                    </button>
+                                </div>
                             </div>
                         )}
 
@@ -297,7 +505,7 @@ const Page = () => {
                                         </button>
                                     </p>
                                     <p className="text-gray-500 text-sm">
-                                        Hỗ trợ: JPG, PNG, GIF (tối đa 2MB/ảnh)
+                                        Hỗ trợ: JPG, PNG, GIF (tối đa 2MB)
                                     </p>
                                 </div>
                             </div>
@@ -305,44 +513,20 @@ const Page = () => {
 
                         {selectedImages.length > 0 && !isUsingCamera && (
                             <div className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {selectedImages.map((image, index) => (
-                                        <div key={index}
-                                             className="relative rounded-lg overflow-hidden h-[200px] bg-gray-100">
-                                            <Image
-                                                src={image}
-                                                alt={`Hình ảnh thuốc ${index + 1}`}
-                                                fill
-                                                className="object-contain"
-                                            />
-                                            <button
-                                                onClick={() => removeImage(index)}
-                                                className="absolute top-2 right-2 bg-gray-800 bg-opacity-70 text-white p-2 rounded-full hover:bg-opacity-90"
-                                            >
-                                                <FiX/>
-                                            </button>
-                                        </div>
-                                    ))}
-
-                                    {selectedImages.length < MAX_IMAGES && (
-                                        <div
-                                            className="flex items-center justify-center h-[200px] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            <div className="flex flex-col items-center text-gray-500">
-                                                <FiPlus className="text-3xl mb-2"/>
-                                                <span>Thêm ảnh</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                <div className="relative rounded-lg overflow-hidden h-[300px] bg-gray-100">
+                                    <Image
+                                        src={selectedImages[0]}
+                                        alt="Hình ảnh thuốc"
+                                        fill
+                                        className="object-contain"
+                                    />
+                                    <button
+                                        onClick={removeImage}
+                                        className="absolute top-2 right-2 bg-gray-800 bg-opacity-70 text-white p-2 rounded-full hover:bg-opacity-90"
+                                    >
+                                        <FiX/>
+                                    </button>
                                 </div>
-
-                                <button
-                                    onClick={resetImages}
-                                    className="mt-4 text-red-600 hover:text-red-800 text-sm flex items-center"
-                                >
-                                    <FiX className="mr-1"/> Xóa tất cả ảnh
-                                </button>
                             </div>
                         )}
 
@@ -372,390 +556,251 @@ const Page = () => {
                                 <li>Đảm bảo ảnh rõ nét và không bị mờ</li>
                                 <li>Chụp cận cảnh bao bì hoặc vỉ thuốc để dễ nhận diện</li>
                                 <li>Ánh sáng đầy đủ để thấy rõ màu sắc và thông tin</li>
-                                <li>Nếu có thể, chụp cả mặt trước và mặt sau của hộp thuốc</li>
-                                <li>Mỗi ảnh không vượt quá 2MB</li>
+                                <li>Nếu có thể, chụp cả mặt trước của hộp thuốc</li>
+                                <li>Ảnh không vượt quá 2MB</li>
                             </ul>
                         </div>
                     </>
                 ) : (
-                    <div className="search-results animate-fadeIn">
-                        <div className="flex items-center justify-between mb-6">
-                            <button
-                                onClick={backToImageInput}
-                                className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-all px-4 py-2 rounded-full hover:bg-blue-50"
-                            >
-                                <FiCamera className="text-lg"/>
-                                <span>Chụp ảnh mới</span>
-                            </button>
+                    <div className="search-results animate-fadeIn relative">
 
-                            <div className="text-sm text-gray-500 italic">
-                                {selectedImages.length} ảnh được sử dụng để tìm kiếm
+                        <div className="search-results animate-fadeIn">
+
+                            {isLoading && (
+                                <div
+                                    className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg">
+                                    <div className="flex justify-center mb-4">
+                                        <BiLoaderAlt className="animate-spin text-4xl text-blue-600"/>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-800 mb-2">Đang tìm kiếm thuốc</h3>
+                                    <p className="text-gray-600 mb-3 text-sm px-4 text-center">
+                                        Hệ thống đang nhận diện thông tin thuốc từ hình ảnh của bạn
+                                    </p>
+                                    <div className="w-48 bg-gray-200 rounded-full h-1.5 mb-3">
+                                        <div className="bg-blue-600 h-1.5 rounded-full animate-pulse"
+                                             style={{width: '100%'}}></div>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-800">Kết quả tìm kiếm</h2>
+                                <button
+                                    onClick={backToImageInput}
+                                    className="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-sm font-medium"
+                                >
+                                    <FiX className="w-4 h-4"/> Tìm kiếm mới
+                                </button>
                             </div>
-                        </div>
 
-                        <h2 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3 flex items-center gap-2">
-                            <FiSearch className="text-blue-600"/> Kết quả tìm kiếm
-                        </h2>
-
-                        {imageToProduct && imageToProduct.drugs && imageToProduct.drugs.length > 0 ? (
-                            <div className="space-y-8">
-                                {imageToProduct.drugs.map((drug: any, index: any) => (
-                                    <div key={index}
-                                         className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
-                                        <div
-                                            className="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-5 border-b border-gray-200">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-2xl font-bold text-blue-800">{drug.name}</h3>
-                                                    {drug.brand && (
-                                                        <div className="flex items-center mt-2 text-gray-600">
-                                                            <span className="font-medium mr-2">Thương hiệu:</span>
-                                                            <span className="text-gray-800">{drug.brand}</span>
+                            {imageToProduct && imageToProduct.length > 0 ? (
+                                <div className="space-y-6">
+                                    {imageToProduct.map((item: any, index: any) => (
+                                        <div key={index}
+                                             className="bg-white border rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300">
+                                            <div className="flex flex-col md:flex-row">
+                                                {/* Images section */}
+                                                <div className="p-4 md:w-1/3 border-r border-gray-100">
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <h3 className="text-sm font-medium text-gray-500 mb-2">Hình
+                                                                ảnh
+                                                                của bạn</h3>
+                                                            <div
+                                                                className="h-48 rounded-lg overflow-hidden bg-white border flex items-center justify-center">
+                                                                <Image
+                                                                    src={selectedImages[0]}
+                                                                    alt="Hình ảnh người dùng tải lên"
+                                                                    width={200}
+                                                                    height={200}
+                                                                    className="object-contain h-full w-full"
+                                                                />
+                                                            </div>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="p-6">
-                                            <div className="flex flex-col md:flex-row gap-6">
-                                                {/* Product Image - Left Side */}
-                                                <div className="md:w-1/3">
-                                                    <div
-                                                        className="bg-gray-50 rounded-lg p-4 h-full flex items-center justify-center border border-gray-200">
-                                                        {selectedImages && selectedImages.length > index ? (
-                                                            <Image
-                                                                src={selectedImages[index]}
-                                                                alt={`Hình ảnh ${drug.name}`}
-                                                                width={300}
-                                                                height={300}
-                                                                className="object-contain max-h-[250px]"
-                                                            />
-                                                        ) : (
-                                                            <div className="text-center text-gray-400">
-                                                                <BsImage className="text-5xl mx-auto mb-2"/>
-                                                                <p>Không có hình ảnh</p>
+                                                        {item.product && (
+                                                            <div>
+                                                                <h3 className="text-sm font-medium text-gray-500 mb-2">Hình
+                                                                    ảnh sản phẩm</h3>
+                                                                <div
+                                                                    className="h-48 rounded-lg overflow-hidden bg-white border flex items-center justify-center">
+                                                                    <Image
+                                                                        src={item.product.images_primary}
+                                                                        alt={item.product.product_name}
+                                                                        width={200}
+                                                                        height={200}
+                                                                        className="object-contain h-full w-full"
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
 
-                                                {/* Product Information - Right Side */}
-                                                <div className="md:w-2/3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                        <div>
-                                                            {drug.dosage_form && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                                        Dạng bào chế:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.dosage_form}</span>
-                                                                </div>
-                                                            )}
+                                                {/* Product information section */}
+                                                <div className="w-full md:w-2/3 p-5">
+                                                    {item.product ? (
+                                                        <div className="h-full flex flex-col">
+                                                            <div className="flex justify-between mb-2">
+                                                                <h3 className="text-lg font-semibold text-gray-800 line-clamp-2">{item.product.product_name}</h3>
+                                                                <span
+                                                                    className="px-2 py-1 bg-green-50 text-green-600 text-xs font-medium rounded-full flex items-center">
+                                                                    <div
+                                                                        className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                                                                    Có sẵn tại cửa hàng
+                                                                </span>
+                                                            </div>
 
-                                                            {drug.origin && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                                        Xuất xứ:
-                                                    </span>
-                                                                    <span className="text-gray-800">{drug.origin}</span>
-                                                                </div>
-                                                            )}
+                                                            <p className="text-sm text-gray-500 mb-3">{item.product.product_id}</p>
+                                                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.product.description}</p>
 
-                                                            {drug.manufacturer && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                                        Nhà sản xuất:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.manufacturer}</span>
+                                                            {/* Pricing options */}
+                                                            <div className="mb-4">
+                                                                <h4 className="text-sm font-medium text-gray-700 mb-2">Lựa
+                                                                    chọn đơn vị</h4>
+                                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                                    {item.product.prices.map((price: any, idx: any) => (
+                                                                        <div key={idx}
+                                                                             onClick={() => handleSelectPrice(item.product.product_id, price.price_id)}
+                                                                             className={`border rounded-lg p-2 cursor-pointer transition-colors ${
+                                                                                 selectedPriceIds[item.product.product_id] === price.price_id
+                                                                                     ? 'border-blue-500 bg-blue-50'
+                                                                                     : 'hover:border-blue-500'
+                                                                             }`}>
+                                                                            <div
+                                                                                className="flex justify-between items-center">
+                                                                                <span
+                                                                                    className="font-medium text-sm">{price.unit}</span>
+                                                                                {price.discount > 0 && (
+                                                                                    <span
+                                                                                        className="bg-red-50 text-red-600 text-xs px-1.5 py-0.5 rounded">-{price.discount}%</span>
+                                                                                )}
+                                                                            </div>
+                                                                            <div className="mt-1">
+                                                                                {price.original_price !== price.price && (
+                                                                                    <span
+                                                                                        className="text-gray-400 line-through text-xs mr-1">{price.original_price.toLocaleString('vi-VN')}đ</span>
+                                                                                )}
+                                                                                <span
+                                                                                    className="text-blue-600 font-semibold">{price.price.toLocaleString('vi-VN')}đ</span>
+                                                                            </div>
+                                                                            {price.inventory < 10 && (
+                                                                                <div
+                                                                                    className="text-xs text-orange-500 mt-1">Còn {price.inventory} sản
+                                                                                    phẩm</div>
+                                                                            )}
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
-                                                            )}
+                                                            </div>
 
-                                                            {drug.active_ingredients && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                                        Hoạt chất:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.active_ingredients}</span>
-                                                                </div>
-                                                            )}
+                                                            <div className="mt-auto flex gap-3">
+                                                                {item.product.prescription_required === true ? (
+                                                                    <button
+                                                                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                                                                        <FiMessageCircle size={16}/>
+                                                                        Thuốc này cần tư vấn
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => handleAddToCart(item.product.product_id, index)}
+                                                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                                                                        <FiPlus size={16}/>
+                                                                        Thêm vào giỏ hàng
+                                                                    </button>
+                                                                )}
+                                                                <Link href={`/chi-tiet-san-pham/${item.product.slug}`}>
+                                                                    <button
+                                                                        className="border border-gray-300 hover:bg-gray-50 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors">
+                                                                        Xem chi tiết
+                                                                    </button>
+                                                                </Link>
+                                                            </div>
                                                         </div>
+                                                    ) : (
+                                                        <div className="h-full flex flex-col">
+                                                            <div className="flex justify-between mb-2">
+                                                                <h3 className="text-lg font-semibold text-gray-800">{item.raw_text.name}</h3>
+                                                                <span
+                                                                    className="px-2 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-full flex items-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
+                    Không có sẵn
+                  </span>
+                                                            </div>
 
-                                                        <div>
-                                                            {drug.serial_number && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                                        Số seri:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.serial_number}</span>
-                                                                </div>
-                                                            )}
-
-                                                            {drug.registration_number && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                                        Số đăng ký:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.registration_number}</span>
-                                                                </div>
-                                                            )}
-
-                                                            {drug.expiration_date && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                                        Hạn sử dụng:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.expiration_date}</span>
-                                                                </div>
-                                                            )}
-
-                                                            {drug.batch_number && (
-                                                                <div className="flex items-start mb-4">
-                                                    <span
-                                                        className="font-medium text-gray-700 min-w-[140px] flex items-center">
-                                                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                                        Số lô:
-                                                    </span>
-                                                                    <span
-                                                                        className="text-gray-800">{drug.batch_number}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    {drug.additional_info && Object.keys(drug.additional_info).length > 0 && (
-                                                        <div className="mt-6">
-                                                            <h4 className="font-semibold text-gray-900 uppercase text-sm tracking-wider mb-3 flex items-center">
-                                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                                     className="h-5 w-5 mr-2 text-blue-600"
-                                                                     viewBox="0 0 24 24" fill="none"
-                                                                     stroke="currentColor" strokeWidth="2"
-                                                                     strokeLinecap="round" strokeLinejoin="round">
-                                                                    <path
-                                                                        d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                                                                    <path d="m9 12 2 2 4-4"></path>
-                                                                </svg>
-                                                                Thông tin bổ sung
-                                                            </h4>
                                                             <div
-                                                                className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100 shadow-inner">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                    {drug.additional_info.intelli_sense && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <path
-                                                                                    d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"></path>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Intelli Sense:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">{drug.additional_info.intelli_sense}</span>
-                                                                        </div>
-                                                                    )}
+                                                                className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mb-4">
+                                                                {item.raw_text.brand && (
+                                                                    <div className="flex items-start">
+                                                                        <span className="text-gray-500 min-w-24">Thương hiệu:</span>
+                                                                        <span
+                                                                            className="font-medium">{item.raw_text.brand}</span>
+                                                                    </div>
+                                                                )}
+                                                                {item.raw_text.origin && (
+                                                                    <div className="flex items-start">
+                                                                    <span
+                                                                        className="text-gray-500 min-w-24">Xuất xứ:</span>
+                                                                        <span
+                                                                            className="font-medium">{item.raw_text.origin}</span>
+                                                                    </div>
+                                                                )}
+                                                                {item.raw_text.dosage_form && (
+                                                                    <div className="flex items-start">
+                                                                        <span className="text-gray-500 min-w-24">Dạng bào chế:</span>
+                                                                        <span
+                                                                            className="font-medium">{item.raw_text.dosage_form}</span>
+                                                                    </div>
+                                                                )}
+                                                                {item.raw_text.active_ingredients && item.raw_text.active_ingredients.length > 0 && (
+                                                                    <div className="flex items-start col-span-2">
+                                                                    <span
+                                                                        className="text-gray-500 min-w-24">Hoạt chất:</span>
+                                                                        <span
+                                                                            className="font-medium">{item.raw_text.active_ingredients.join(", ")}</span>
+                                                                    </div>
+                                                                )}
+                                                                {item.raw_text.additional_info?.package_quantity && (
+                                                                    <div className="flex items-start col-span-2">
+                                                                    <span
+                                                                        className="text-gray-500 min-w-24">Quy cách:</span>
+                                                                        <span
+                                                                            className="font-medium">{item.raw_text.additional_info.package_quantity}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
 
-                                                                    {drug.additional_info.clinical_approval && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <path d="m9 12 2 2 4-4"></path>
-                                                                                <path
-                                                                                    d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"></path>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Chứng nhận:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">{drug.additional_info.clinical_approval}</span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {drug.additional_info.ideal_for_basic_measurement && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <path
-                                                                                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                                                                                <circle cx="12" cy="12" r="3"></circle>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Lý tưởng cho đo lường cơ bản:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">Có</span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {drug.additional_info.warranty && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <rect x="3" y="4" width="18" height="18"
-                                                                                      rx="2" ry="2"></rect>
-                                                                                <line x1="16" y1="2" x2="16"
-                                                                                      y2="6"></line>
-                                                                                <line x1="8" y1="2" x2="8"
-                                                                                      y2="6"></line>
-                                                                                <line x1="3" y1="10" x2="21"
-                                                                                      y2="10"></line>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Bảo hành:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">{drug.additional_info.warranty}</span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {drug.additional_info.storage_temperature && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <path
-                                                                                    d="M20 9v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9"></path>
-                                                                                <path
-                                                                                    d="M9 3h6a2 2 0 0 1 2 2v4H7V5a2 2 0 0 1 2-2z"></path>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Nhiệt độ bảo quản:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">{drug.additional_info.storage_temperature}</span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {drug.additional_info.prescribing_information && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <path
-                                                                                    d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Thông tin kê đơn:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">{drug.additional_info.prescribing_information}</span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {drug.additional_info.package_quantity && (
-                                                                        <div
-                                                                            className="flex items-center bg-white p-3 rounded-lg shadow-sm">
-                                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                                 className="h-5 w-5 mr-2 text-blue-600"
-                                                                                 viewBox="0 0 24 24" fill="none"
-                                                                                 stroke="currentColor" strokeWidth="2"
-                                                                                 strokeLinecap="round"
-                                                                                 strokeLinejoin="round">
-                                                                                <path
-                                                                                    d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16v-2"></path>
-                                                                                <path d="m3.3 7 8.7 5 8.7-5"></path>
-                                                                                <path d="M12 22V12"></path>
-                                                                            </svg>
-                                                                            <span
-                                                                                className="font-medium text-gray-700 mr-2">Quy cách đóng gói:</span>
-                                                                            <span
-                                                                                className="text-gray-800 font-medium">{drug.additional_info.package_quantity}</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                            <div className="mt-auto">
+                                                                <button
+                                                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                                                                    Yêu cầu tư vấn sản phẩm
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     )}
-
-                                                    <div className="mt-6 flex justify-end">
-                                                        <button
-                                                            className="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 shadow-md">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5"
-                                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                                 strokeWidth="2" strokeLinecap="round"
-                                                                 strokeLinejoin="round">
-                                                                <circle cx="9" cy="21" r="1"></circle>
-                                                                <circle cx="20" cy="21" r="1"></circle>
-                                                                <path
-                                                                    d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                                                            </svg>
-                                                            Tìm kiếm sản phẩm tại cửa hàng
-                                                        </button>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div
-                                className="text-center py-16 bg-gray-50 rounded-lg border border-gray-200 animate-pulse">
-                                <div className="flex justify-center mb-6">
-                                    <div className="p-4 bg-gray-100 rounded-full">
-                                        <FiSearch className="text-5xl text-gray-400"/>
-                                    </div>
+                                    ))}
                                 </div>
-                                <h3 className="text-gray-600 text-xl font-medium mb-2">Không tìm thấy kết quả nào phù
-                                    hợp</h3>
-                                <p className="text-gray-500 mb-6 max-w-md mx-auto">Vui lòng thử lại với hình ảnh khác
-                                    hoặc kiểm tra chất lượng hình ảnh của bạn</p>
-                                <button
-                                    onClick={backToImageInput}
-                                    className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
-                                >
-                                    <FiCamera/>
-                                    Thử với ảnh khác
-                                </button>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="text-center py-10">
+                                    <div className="text-gray-400 mb-4">
+                                        <BsImage className="text-5xl mx-auto mb-2"/>
+                                        <p>Không tìm thấy kết quả</p>
+                                    </div>
+                                    <p className="text-gray-600">
+                                        Vui lòng thử lại với ảnh khác hoặc điều chỉnh góc chụp để nhận dạng rõ hơn.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
+
             </div>
         </div>
     );
 };
 
 export default Page;
+
