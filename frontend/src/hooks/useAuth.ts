@@ -2,6 +2,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {useSession} from 'next-auth/react';
 import {useEffect, useMemo, useState} from 'react';
 import {
+    fetchLogoutAdminStart, fetchLogoutPharmacistStart,
     googleLoginStart,
     googleLoginSuccess,
     loginAdminStart,
@@ -47,21 +48,36 @@ export function useAuth() {
         }));
     };
 
+
     const logout = (
         role_type: string,
         onSuccess: (message: any) => void,
         onFailure: (message: any) => void,
     ) => {
-        console.log("logout hook");
+        if (!role_type) {
+            console.error('Role type is required for logout');
+            return;
+        }
+        if (role_type == 'admin') {
+            dispatch(fetchLogoutAdminStart({
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+            }));
+            return;
+        }
+        if (role_type == 'pharmacist') {
+            dispatch(fetchLogoutPharmacistStart({
+                onSuccess: onSuccess,
+                onFailure: onFailure,
+            }));
+            return;
+        }
         dispatch(logoutStart(
             {
-                role_type: role_type,
                 onSuccess: onSuccess,
                 onFailure: onFailure,
             }
         ));
-        // onSuccess("Đăng xuất thành công!");
-        // onFailure("Đăng xuất thất bại!");
     };
 
     const loginAdmin = (

@@ -2,6 +2,7 @@
 
 import {SessionProvider, useSession} from "next-auth/react";
 import React, {createContext, useContext, useEffect, useState} from "react";
+import {setToken} from "@/utils/cookie";
 
 interface UserData {
     _id: string;
@@ -34,48 +35,34 @@ export function useAuthContext() {
     return context;
 }
 
-// function AuthContextProvider({ children }: { children: React.ReactNode }) {
-//   const [user, setUser] = useState<UserData | null>(null);
-//   const [isLoading, setIsLoading] = useState(true);
-//   const { data: session, status } = useSession();
-//
-//   useEffect(() => {
-//     // Khi session thay đổi, kiểm tra localStorage hoặc api
-//     if (status === "authenticated") {
-//       // Kiểm tra xem có dữ liệu người dùng trong localStorage không
-//       const storedUser = localStorage.getItem("user");
-//
-//       if (storedUser) {
-//         try {
-//           setUser(JSON.parse(storedUser));
-//         } catch (e) {
-//           console.error("Failed to parse user data from localStorage");
-//         }
-//       } else if (session?.user) {
-//         // Nếu không có trong localStorage nhưng có trong session, cần gọi API để lấy thông tin chi tiết
-//         // Ví dụ code gọi API:
-//         // fetchUserData(session.user.email).then(userData => {
-//         //   setUser(userData);
-//         //   localStorage.setItem("user", JSON.stringify(userData));
-//         // });
-//       }
-//     }
-//     setIsLoading(status === "loading");
-//   }, [session, status]);
-//
-//   return (
-//     <AuthContext.Provider value={{ user, setUser, isLoading }}>
-//       {children}
-//     </AuthContext.Provider>
-//   );
-// }
+function AuthContextProvider({children}: { children: React.ReactNode }) {
+    const [user, setUser] = useState<UserData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const {data: session, status} = useSession();
 
-export function AuthProvider({children}: { children: React.ReactNode }) {
+    useEffect(() => {
+        if (status === "authenticated") {
+            if (session && session.appToken) {
+                setToken(session?.appToken);
+            }
+        }
+        setIsLoading(status === "loading");
+    }, [session, status]);
+
     return (
-        <SessionProvider>
-            {/*<AuthContextProvider>*/}
+        <AuthContext.Provider value={{user, setUser, isLoading}}>
             {children}
-            {/*</AuthContextProvider>*/}
+        </AuthContext.Provider>
+    );
+}
+
+export function AuthProvider({children, session}: { children: React.ReactNode, session?: any }) {
+    return (
+        <SessionProvider session={session} refetchInterval={5 * 60}>
+            <AuthContextProvider>
+                {children}
+            </AuthContextProvider>
         </SessionProvider>
     );
 }
+

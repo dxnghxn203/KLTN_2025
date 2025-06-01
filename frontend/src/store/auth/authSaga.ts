@@ -16,6 +16,12 @@ import {
     loginPharmacistStart,
     loginPharmacistSuccess,
     loginPharmacistFailure,
+    fetchLogoutAdminStart,
+    fetchLogoutAdminSuccess,
+    fetchLogoutAdminFailure,
+    fetchLogoutPharmacistStart,
+    fetchLogoutPharmacistSuccess,
+    fetchLogoutPharmacistFailure,
 } from '@/store';
 import {getSession, signIn, signOut} from 'next-auth/react';
 import {PayloadAction} from '@reduxjs/toolkit';
@@ -26,9 +32,6 @@ import {
     setToken,
     setTokenAdmin,
     setTokenPharmacist,
-    getToken,
-    getTokenAdmin,
-    getTokenPharmacist
 } from '@/utils/cookie';
 import {getDeviceId} from '@/utils/deviceId';
 
@@ -95,38 +98,19 @@ function* handleLogin(action: PayloadAction<any>): Generator<any, void, any> {
 function* handleLogout(action: PayloadAction<any>): Generator<any, void, any> {
     const {payload} = action;
     const {
-        role_type,
         onSuccess = () => {
         },
         onFailure = () => {
         },
     } = payload;
     try {
-        const response = yield call(signOut, {redirect: false});
-        var token = null;
-        if (role_type === "admin") {
-            token = getTokenAdmin();
-        } else if (role_type === "pharmacist") {
-            token = getTokenPharmacist();
-        } else {
-            token = getToken();
-        }
-        if (token) {
-            yield call(authService.logout, token);
-        }
+        signOut({callbackUrl: '/'});
         removeToken();
         onSuccess();
-        yield put(logoutSuccess(
-
-        ));
+        yield put(logoutSuccess());
     } catch (error: any) {
-        console.log('Logout error:', error);
         onFailure(error?.message);
         yield put(logoutFailure(error.message || 'Đăng xuất thất bại'));
-        localStorage.removeItem('token');
-        if (typeof window !== 'undefined') {
-            window.location.href = '/';
-        }
     }
 }
 
@@ -203,6 +187,48 @@ function* handleLoginPharmacist(action: PayloadAction<any>): Generator<any, void
     }
 }
 
+// Logout Admin
+function* handleLogoutAdmin(action: PayloadAction<any>): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
+    } = payload;
+    try {
+        // const response = yield call(signOut, {redirect: false});
+        removeTokenAdmin();
+        onSuccess();
+        yield put(fetchLogoutAdminSuccess());
+    } catch (error: any) {
+        console.log('Logout Admin error:', error);
+        onFailure(error?.message);
+        yield put(fetchLogoutAdminFailure(error.message || 'Đăng xuất Admin thất bại'));
+    }
+}
+
+// Logout Pharmacist
+function* handleLogoutPharmacist(action: PayloadAction<any>): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
+    } = payload;
+    try {
+        // const response = yield call(signOut, {redirect: false});
+        removeTokenPharmacist();
+        onSuccess();
+        yield put(fetchLogoutPharmacistSuccess());
+    } catch (error: any) {
+        console.log('Logout Pharmacist error:', error);
+        onFailure(error?.message);
+        yield put(fetchLogoutPharmacistFailure(error.message || 'Đăng xuất Pharmacist thất bại'));
+    }
+}
+
 // Check auth status
 export function* authSaga() {
     yield takeLatest(googleLoginStart.type, handleGoogleLogin);
@@ -210,4 +236,6 @@ export function* authSaga() {
     yield takeLatest(logoutStart.type, handleLogout);
     yield takeLatest(loginAdminStart.type, handleLoginAdmin);
     yield takeLatest(loginPharmacistStart.type, handleLoginPharmacist);
+    yield takeLatest(fetchLogoutAdminStart.type, handleLogoutAdmin);
+    yield takeLatest(fetchLogoutPharmacistStart.type, handleLogoutPharmacist);
 }

@@ -8,7 +8,7 @@ import AddVoucherDialog from "../Dialog/addVoucherDialog";
 
 const VoucherManagement = () => {
     const [isOpenDialog, setIsOpenDialog] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
+    // const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
     const toast = useToast();
     const {allVouchers, fetchAllVouchers} = useVoucher();
     const [loading, setLoading] = useState(false);

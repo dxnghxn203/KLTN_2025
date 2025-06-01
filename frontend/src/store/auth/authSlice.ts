@@ -87,6 +87,32 @@ export const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+        fetchLogoutAdminStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchLogoutAdminSuccess: (state) => {
+            state.loading = false;
+            state.isAdmin = false;
+            state.admin = null;
+        },
+        fetchLogoutAdminFailure: (state, action: PayloadAction<string>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+        fetchLogoutPharmacistStart: (state, action: PayloadAction<any>) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchLogoutPharmacistSuccess: (state) => {
+            state.loading = false;
+            state.isPharmacist = false;
+            state.pharmacist = null;
+        },
+        fetchLogoutPharmacistFailure: (state, action: PayloadAction<string>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
     },
 });
 
@@ -108,6 +134,15 @@ export const {
     loginPharmacistStart,
     loginPharmacistSuccess,
     loginPharmacistFailure,
+
+    fetchLogoutAdminStart,
+    fetchLogoutAdminSuccess,
+    fetchLogoutAdminFailure,
+
+    fetchLogoutPharmacistStart,
+    fetchLogoutPharmacistSuccess,
+    fetchLogoutPharmacistFailure,
+
 } = authSlice.actions;
 
 export default authSlice.reducer;

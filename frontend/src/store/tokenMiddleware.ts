@@ -17,27 +17,12 @@ export const tokenMiddleware: Middleware = store => next => action => {
 
     if (ROLE_ACTIONS_ADMIN.includes(actionType)) {
         token = getTokenAdmin();
-        // if (!token) {
-        //     console.warn(`Admin token required for action: ${actionType}`);
-        //     return next({
-        //         ...action,
-        //         error: true,
-        //         payload: {message: 'Admin token not found'}
-        //     });
-        // }
     } else if (ROLE_ACTIONS_PHARMACIST.includes(actionType)) {
         token = getTokenPharmacist();
-        // if (!token) {
-        //     console.warn(`Pharmacist token required for action: ${actionType}`);
-        //     return next({
-        //         ...action,
-        //         error: true,
-        //         payload: {message: 'Pharmacist token not found'}
-        //     });
-        // }
     } else {
         token = getToken();
     }
+    console.log(token);
 
     if (token) {
         setClientToken(token);

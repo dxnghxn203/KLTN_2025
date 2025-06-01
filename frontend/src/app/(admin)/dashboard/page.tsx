@@ -12,15 +12,7 @@ import LatestOrders from "@/components/Admin/Dashboard/LatestOrders";
 import TopSellingMedicine from "@/components/Admin/Dashboard/TopSellingMedicine";
 
 const Dashboard = () => {
-    const toast = useToast();
-    const router = useRouter();
-    const {admin} = useAuth();
 
-    // useEffect(() => {
-    //   if (!admin) {
-    //     router.push("/dang-nhap-admin");
-    //   }
-    // }, [admin, router]);
 
     return (
         <div className="min-h-screen space-y-6">
