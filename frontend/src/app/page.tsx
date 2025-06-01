@@ -6,7 +6,6 @@ import IntroMedicare from "../components/Home/introMedicare";
 import HealthCorner from "../components/Home/healthCorner";
 import SanDealHeader from "@/components/Product/dealProduct";
 import ProductList from "@/components/Product/productList";
-import VoucherList from "@/components/Voucher/voucherList";
 
 export default function Home() {
   return (
