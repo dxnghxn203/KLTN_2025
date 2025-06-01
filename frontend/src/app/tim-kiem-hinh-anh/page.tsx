@@ -31,6 +31,9 @@ const Page = () => {
 
     const {addProductTocart, getProductFromCart} = useCart();
 
+    const [isCameraInitializing, setIsCameraInitializing] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+
     useEffect(() => {
         return () => {
             if (streamRef.current) {
@@ -140,38 +143,202 @@ const Page = () => {
 
     const startCamera = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({video: true});
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-            streamRef.current = stream;
+            setIsCameraInitializing(true);
+            setCameraError(null);
+
+            // Set isUsingCamera to true immediately to ensure the video container renders
             setIsUsingCamera(true);
+
+            console.log("Requesting camera access...");
+
+            // Simplified camera constraints for better compatibility
+            const constraints = {
+                video: true,  // Use default settings initially for better compatibility
+                audio: false
+            };
+
+            console.log("Camera constraints:", constraints);
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            console.log("Camera stream obtained:", stream.getVideoTracks().length > 0);
+
+            // Get camera details for debugging
+            if (stream.getVideoTracks().length > 0) {
+                const videoTrack = stream.getVideoTracks()[0];
+                console.log("Active camera:", videoTrack.label);
+                console.log("Camera settings:", videoTrack.getSettings());
+            } else {
+                throw new Error("No video tracks found in camera stream");
+            }
+
+            if (videoRef.current) {
+                console.log("Setting video source");
+                videoRef.current.srcObject = stream;
+                videoRef.current.style.display = "block"; // Ensure video is visible
+
+                // Wait for video to be ready
+                videoRef.current.onloadedmetadata = async () => {
+                    console.log("Video metadata loaded");
+                    try {
+                        await videoRef.current?.play();
+                        console.log("Video playing successfully");
+                    } catch (playError) {
+                        console.error("Error playing video:", playError);
+                        setCameraError("Không thể hiển thị camera, vui lòng cấp quyền và thử lại");
+                        stopCamera();
+                    }
+                };
+            } else {
+                console.error("Video element reference is null");
+                setCameraError("Không thể khởi tạo camera - không tìm thấy element video");
+                stopCamera();
+                return;
+            }
+
+            streamRef.current = stream;
+
         } catch (err) {
-            toast.showToast("Không thể truy cập camera", "error");
             console.error("Error accessing camera:", err);
-        }
-    };
 
-    const capturePhoto = () => {
-        if (videoRef.current && streamRef.current) {
-            const canvas = document.createElement('canvas');
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-
-            const imageDataUrl = canvas.toDataURL('image/jpeg');
-            setSelectedImages([imageDataUrl]); // Replace any existing image
+            // More specific error messages
+            if (err instanceof DOMException) {
+                switch (err.name) {
+                    case 'NotAllowedError':
+                        setCameraError("Bạn đã từ chối quyền truy cập camera. Vui lòng cấp quyền trong cài đặt trình duyệt.");
+                        break;
+                    case 'NotFoundError':
+                        setCameraError("Không tìm thấy thiết bị camera trên thiết bị của bạn.");
+                        break;
+                    case 'NotReadableError':
+                        setCameraError("Camera đang được sử dụng bởi ứng dụng khác. Vui lòng đóng các ứng dụng khác và thử lại.");
+                        break;
+                    case 'OverconstrainedError':
+                        setCameraError("Thiết bị camera không đáp ứng được yêu cầu kỹ thuật. Vui lòng thử lại.");
+                        break;
+                    case 'AbortError':
+                        setCameraError("Kết nối camera bị gián đoạn.");
+                        break;
+                    default:
+                        setCameraError("Không thể truy cập camera: " + err.name);
+                }
+            } else {
+                setCameraError("Không thể truy cập camera: " + (err instanceof Error ? err.message : String(err)));
+            }
             stopCamera();
+        } finally {
+            setIsCameraInitializing(false);
         }
     };
 
     const stopCamera = () => {
+        console.log("Stopping camera");
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current.getTracks().forEach(track => {
+                console.log(`Stopping track: ${track.kind}`);
+                track.stop();
+            });
             streamRef.current = null;
         }
+
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+            videoRef.current.onloadedmetadata = null;
+        }
+
         setIsUsingCamera(false);
+    };
+
+    // Add a function to try alternate camera if the first attempt fails
+    const tryAlternateCamera = async () => {
+        try {
+            setCameraError("Đang thử với camera khác...");
+
+            // Try user-facing camera if environment camera failed
+            const alternateConstraints = {
+                video: {facingMode: "user"},
+                audio: false
+            };
+
+            const stream = await navigator.mediaDevices.getUserMedia(alternateConstraints);
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                await videoRef.current.play();
+            }
+
+            streamRef.current = stream;
+            setCameraError(null);
+            console.log("Alternate camera activated successfully");
+
+        } catch (err) {
+            console.error("Error accessing alternate camera:", err);
+            setCameraError("Không thể truy cập bất kỳ camera nào. Vui lòng thử lại sau.");
+        } finally {
+            setIsCameraInitializing(false);
+        }
+    };
+
+    const capturePhoto = () => {
+        console.log("Attempting to capture photo");
+        if (!videoRef.current || !streamRef.current) {
+            console.error("Video reference or stream is null");
+            toast.showToast("Không thể chụp ảnh: Camera chưa được khởi tạo", "error");
+            return;
+        }
+
+        const video = videoRef.current;
+
+        // Check if video is actually playing and has dimensions
+        if (video.videoWidth === 0 || video.videoHeight === 0 || video.paused || video.ended) {
+            console.error("Video is not ready for capture", {
+                width: video.videoWidth,
+                height: video.videoHeight,
+                paused: video.paused,
+                ended: video.ended
+            });
+            toast.showToast("Không thể chụp ảnh: Camera chưa sẵn sàng", "error");
+            return;
+        }
+
+        try {
+            console.log("Creating canvas for capture");
+            const canvas = document.createElement('canvas');
+            // Use actual video dimensions
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            console.log("Canvas dimensions:", canvas.width, canvas.height);
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error("Could not get canvas context");
+                toast.showToast("Không thể chụp ảnh: Lỗi canvas", "error");
+                return;
+            }
+
+            // Draw the current video frame to the canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            console.log("Video frame drawn to canvas");
+
+            // Convert canvas to data URL
+            const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            console.log("Image captured, data URL length:", imageDataUrl.length);
+
+            if (imageDataUrl === 'data:,') {
+                console.error("Empty image data URL");
+                toast.showToast("Không thể chụp ảnh: Dữ liệu trống", "error");
+                return;
+            }
+
+            // Set the captured image
+            setSelectedImages([imageDataUrl]);
+            console.log("Image saved to state");
+
+            // Stop the camera after successful capture
+            stopCamera();
+
+        } catch (error) {
+            console.error("Error during photo capture:", error);
+            toast.showToast("Không thể chụp ảnh: " + (error instanceof Error ? error.message : "Lỗi không xác định"), "error");
+        }
     };
 
     const removeImage = () => {
@@ -263,18 +430,87 @@ const Page = () => {
 
                         {isUsingCamera && (
                             <div className="relative mb-6 bg-black rounded-lg overflow-hidden">
+                                {isCameraInitializing && (
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-10">
+                                        <div className="text-white text-center">
+                                            <BiLoaderAlt className="animate-spin text-4xl mx-auto mb-2"/>
+                                            <p>Đang kết nối camera...</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {cameraError && (
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-90 z-10">
+                                        <div className="text-white text-center p-6 max-w-sm">
+                                            <FiX className="text-4xl mx-auto mb-2"/>
+                                            <p className="font-medium mb-3 text-lg">Lỗi camera</p>
+                                            <p className="text-sm mb-4">{cameraError}</p>
+                                            <div className="flex gap-3 justify-center">
+                                                {cameraError.includes("camera khác") ? (
+                                                    <button
+                                                        onClick={stopCamera}
+                                                        className="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                                                    >
+                                                        Đóng
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={tryAlternateCamera}
+                                                            className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                                                        >
+                                                            Thử camera khác
+                                                        </button>
+                                                        <button
+                                                            onClick={stopCamera}
+                                                            className="bg-white text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                                                        >
+                                                            Đóng
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                            <p className="text-xs mt-4 text-gray-300">
+                                                Một số thiết bị yêu cầu cấp quyền camera trong cài đặt trình duyệt
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div
+                                    className={`camera-debug-info absolute top-2 left-2 bg-black/50 text-white text-xs p-2 rounded z-10 ${
+                                        streamRef.current ? 'block' : 'hidden'
+                                    }`}>
+                                    Camera đang hoạt động: {streamRef.current && videoRef.current ? 'Có' : 'Không'}
+                                </div>
+
                                 <video
                                     ref={videoRef}
                                     autoPlay
                                     playsInline
+                                    muted
                                     className="w-full h-[300px] md:h-[400px] object-cover"
+                                    style={{display: 'block'}} // Ensure video is visible
                                 />
+
                                 <div className="absolute bottom-4 left-0 right-0 flex justify-center">
                                     <button
                                         onClick={capturePhoto}
-                                        className="bg-white rounded-full p-4 shadow-lg hover:bg-gray-100 transition-colors"
+                                        disabled={isCameraInitializing || !!cameraError}
+                                        className="bg-white rounded-full p-4 shadow-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                                     >
                                         <div className="w-12 h-12 rounded-full border-4 border-blue-500"></div>
+                                    </button>
+                                </div>
+
+                                <div className="absolute top-4 right-4">
+                                    <button
+                                        onClick={stopCamera}
+                                        className="bg-white/80 rounded-full p-2 shadow-lg hover:bg-white transition-colors"
+                                    >
+                                        <FiX size={20}/>
                                     </button>
                                 </div>
                             </div>
