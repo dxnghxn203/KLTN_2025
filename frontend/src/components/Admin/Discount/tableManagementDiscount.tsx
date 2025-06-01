@@ -173,7 +173,7 @@ const TableManagementDiscount = ({
                           const inventoryByUnit: { [unit: string]: number } =
                             {};
 
-                          product.prices.forEach((p: any) => {
+                          product?.prices.forEach((p: any) => {
                             if (!inventoryByUnit[p.unit]) {
                               inventoryByUnit[p.unit] = 0;
                             }

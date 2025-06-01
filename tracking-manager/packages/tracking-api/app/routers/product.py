@@ -165,7 +165,7 @@ async def get_all_product_admin(
         low_stock_status: Optional[bool] = None,
         main_category: Optional[str] = None,
         best_seller: Optional[bool] = None,
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await get_all_product(page, page_size, low_stock_status, main_category, best_seller)

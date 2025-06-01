@@ -75,9 +75,31 @@ export const addProduct = async (data: any): Promise<any> => {
     }
 }
 
-export const getAllProductAdmin = async (page: any, pageSize: any) => {
+export const getAllProductAdmin = async (
+    page: any, pageSize: any,
+    low_stock_status: any = null,
+    main_category: any = null,
+    best_seller: any = null
+) => {
     try {
-        const response: any = await axiosClient.get(`/v1/products/all-product-admin?page=${page}&page_size=${pageSize}`);
+         const params = new URLSearchParams();
+
+        params.append("page", page);
+        params.append("page_size", pageSize);
+
+        if (low_stock_status !== null && low_stock_status !== undefined) {
+            params.append("low_stock_status", low_stock_status);
+        }
+
+        if (main_category) {
+            params.append("main_category", main_category);
+        }
+
+        if (best_seller !== null && best_seller !== undefined) {
+            params.append("best_seller", best_seller);
+        }
+
+        const response: any = await axiosClient.get(`/v1/products/all-product-admin?${params.toString()}`);
         console.log(response.data);
         return {
             status_code: response.status_code,

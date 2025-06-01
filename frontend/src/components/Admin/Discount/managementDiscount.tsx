@@ -30,7 +30,7 @@ const DiscountManagement = () => {
         </div>
         <div className="flex justify-end items-center">
           <div
-            className="flex gap-2 px-2 py-2 rounded-lg text-sm flex items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
+            className="flex gap-2 px-2 py-2 rounded-lg text-sm items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
             onClick={() => setIsOpenDialog(true)}
           >
             + Thêm giảm giá

@@ -272,13 +272,16 @@ function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
         const {
             page,
             page_size,
+            low_stock_status,
+            main_category,
+            best_seller,
             onSuccess = () => {
             },
             onFailed = () => {
             },
         } = payload;
 
-        const product = yield call(productService.getAllProductAdmin, page, page_size);
+        const product = yield call(productService.getAllProductAdmin, page, page_size, low_stock_status, main_category, best_seller);
         // console.log('Product Data:', product);
         if (product.status_code === 200) {
             // console.log('Product Data Length:', product.data.length);
