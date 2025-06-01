@@ -13,11 +13,11 @@ from app.middleware import middleware
 from app.models import order, pharmacist, user, admin
 from app.models.product import (get_product_by_slug, add_product_db, get_all_product, update_product_category, \
     delete_product,
-    # get_product_top_selling,
-    # get_product_featured,
+    get_product_top_selling,
+    get_product_featured,
     get_product_by_list_id,
-    # get_related_product, \
-    # get_product_best_deals,
+    get_related_product, \
+    get_product_best_deals,
     approve_product, get_approved_product, update_product_status, update_product_fields, \
     update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
     import_products, get_product_brands, get_imported_products, delete_imported_products, \
@@ -25,32 +25,32 @@ from app.models.product import (get_product_by_slug, add_product_db, get_all_pro
     normalize_products_inventory, get_low_stock_products)
 
 router = APIRouter()
-#
-# @router.get("/products/top-selling", response_model=response.BaseResponse)
-# async def get_top_selling(top_n: int = 5):
-#     try:
-#         return await get_product_top_selling(top_n)
-#     except JsonException as je:
-#         raise je
-#     except Exception as e:
-#         logger.error("Error getting top selling product", error=str(e))
-#         raise response.JsonException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             message="Internal server error"
-#         )
-#
-# @router.get("/products/featured", response_model=response.BaseResponse)
-# async def get_featured(main_category_id: str, sub_category_id: Optional[str] = None, child_category_id: Optional[str] = None, top_n: int = 5):
-#     try:
-#         return await get_product_featured(main_category_id, sub_category_id, child_category_id, top_n)
-#     except JsonException as je:
-#         raise je
-#     except Exception as e:
-#         logger.error("Error getting featured product", error=str(e))
-#         raise response.JsonException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             message="Internal server error"
-#         )
+
+@router.get("/products/top-selling", response_model=response.BaseResponse)
+async def get_top_selling(top_n: int = 5):
+    try:
+        return await get_product_top_selling(top_n)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting top selling product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/featured", response_model=response.BaseResponse)
+async def get_featured(main_category_id: str, sub_category_id: Optional[str] = None, child_category_id: Optional[str] = None, top_n: int = 5):
+    try:
+        return await get_product_featured(main_category_id, sub_category_id, child_category_id, top_n)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting featured product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
 @router.get("/product/session/{slug}", response_model=response.BaseResponse)
 async def get_product(slug: str, session_id: str = None):
@@ -242,19 +242,19 @@ async def delete_product_id(product_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
         )
-#
-# @router.get("/products/get-relate/", response_model=response.BaseResponse)
-# async def get_relate_product(product_id: str, top_n: int = 5):
-#     try:
-#         return await get_related_product(product_id, top_n)
-#     except JsonException as je:
-#         raise je
-#     except Exception as e:
-#         logger.error("Error getting relate products", error=str(e))
-#         raise response.JsonException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             message="Internal server error"
-#         )
+
+@router.get("/products/get-relate/", response_model=response.BaseResponse)
+async def get_relate_product(product_id: str, top_n: int = 5):
+    try:
+        return await get_related_product(product_id, top_n)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting relate products", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
 @router.get("/products/get-recently-viewed/{session}", response_model=response.BaseResponse)
 async def get_recently_viewed_session(session: str):
@@ -309,18 +309,18 @@ async def get_recently_viewed_token(token: str = Depends(middleware.verify_token
             message="Internal server error"
         )
 
-# @router.get("/products/best-deal", response_model=response.BaseResponse)
-# async def get_best_deals(top_n: int = 5):
-#     try:
-#         return await get_product_best_deals(top_n)
-#     except JsonException as je:
-#         raise je
-#     except Exception as e:
-#         logger.error("Error getting best deals product", error=str(e))
-#         raise response.JsonException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             message="Internal server error"
-#         )
+@router.get("/products/best-deal", response_model=response.BaseResponse)
+async def get_best_deals(top_n: int = 5):
+    try:
+        return await get_product_best_deals(top_n)
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting best deals product", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
 
 @router.post("/products/upload", response_model=response.BaseResponse)
 async def upload_file(file: UploadFile = File(...)):

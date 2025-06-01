@@ -1,30 +1,11 @@
 import unittest
-
-import os
-
-from sendgrid import SendGridAPIClient, Mail
+from app.core.s3 import s3_client, list_all_objects
 
 
 class MyTestCase(unittest.IsolatedAsyncioTestCase):
     async def test(self):
-        SENDGRID_API_KEY = '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'
-
-        message = Mail(
-            from_email='21110435@student.hcmute.edu.vn',
-            to_emails='dxnghxn203@gmail.com',
-            subject='Test SendGrid sdwdsd Python',
-            html_content='<strong>Xin chào, đây là email test gửi qua SendGrid API!</strong>'
-        )
-
-        try:
-            sg = SendGridAPIClient(SENDGRID_API_KEY)
-            response = sg.send(message)
-            print(f"Status code: {response.status_code}")
-            print(f"Response body: {response.body}")
-            print(f"Headers: {response.headers}")
-        except Exception as e:
-            print(f"Error sending email: {e}")
-
+        # Sử dụng hàm
+        list_all_objects("kltn2025")
 
         self.assertTrue(True)
 

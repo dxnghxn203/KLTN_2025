@@ -122,67 +122,67 @@ async def get_discount_product(page: int, page_size: int):
         logger.error(f"Failed [get_discount_product]: {e}")
         raise e
 
-# async def get_product_top_selling(top_n):
-#     try:
-#         result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
-#         product_list = result["data"]
-#
-#         enriched_products = []
-#
-#         for product in product_list:
-#             product_id = product["product_id"]
-#
-#             count_review, count_comment, avg_rating = await asyncio.gather(
-#                 count_reviews(product_id),
-#                 count_comments(product_id),
-#                 average_rating(product_id)
-#             )
-#
-#             product["count_review"] = count_review
-#             product["count_comment"] = count_comment
-#             product["rating"] = avg_rating
-#
-#             enriched_products.append(product)
-#
-#         result["data"] = enriched_products
-#         return result
-#     except Exception as e:
-#         logger.error(f"Failed [get_product_top_selling]: {e}")
-#         return response.BaseResponse(
-#             status="failed",
-#             message="Internal server error",
-#         )
-#
-# async def get_related_product(product_id, top_n=5):
-#     try:
-#         result = recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
-#         product_list = result["data"]
-#         if not product_list:
-#             result["data"] = []
-#             return result
-#
-#         enriched_products = []
-#
-#         for product in product_list:
-#             product_id = product["product_id"]
-#
-#             count_review, count_comment, avg_rating = await asyncio.gather(
-#                 count_reviews(product_id),
-#                 count_comments(product_id),
-#                 average_rating(product_id)
-#             )
-#
-#             product["count_review"] = count_review
-#             product["count_comment"] = count_comment
-#             product["rating"] = avg_rating
-#
-#             enriched_products.append(product)
-#
-#         result["data"] = enriched_products
-#         return result
-#     except Exception as e:
-#         logger.error(f"Failed [get_related_product]: {e}")
-#         raise e
+async def get_product_top_selling(top_n):
+    try:
+        result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+        product_list = result["data"]
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        result["data"] = enriched_products
+        return result
+    except Exception as e:
+        logger.error(f"Failed [get_product_top_selling]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error",
+        )
+
+async def get_related_product(product_id, top_n=5):
+    try:
+        result = recommendation.send_request("/v1/related/", {"product_id": product_id, "top_n": top_n})
+        product_list = result["data"]
+        if not product_list:
+            result["data"] = []
+            return result
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        result["data"] = enriched_products
+        return result
+    except Exception as e:
+        logger.error(f"Failed [get_related_product]: {e}")
+        raise e
 
 async def get_product_by_cart_mongo(product_ids, cart):
     try:
@@ -269,45 +269,45 @@ async def get_product_by_list_id(product_ids):
         logger.error(f"Failed [get_product_by_list_id]: {e}")
         return []
 
-# async def get_product_featured(main_category_id, sub_category_id=None, child_category_id=None,  top_n=5):
-#     try:
-#         params = {
-#             "main_category_id": main_category_id,
-#             "sub_category_id": sub_category_id,
-#             "child_category_id": child_category_id,
-#             "top_n": top_n
-#         }
-#         filtered_params = {k: v for k, v in params.items() if v is not None}
-#
-#         result = recommendation.send_request("/v1/featured/", filtered_params)
-#         product_list = result["data"]
-#
-#         enriched_products = []
-#
-#         for product in product_list:
-#             product_id = product["product_id"]
-#
-#             count_review, count_comment, avg_rating = await asyncio.gather(
-#                 count_reviews(product_id),
-#                 count_comments(product_id),
-#                 average_rating(product_id)
-#             )
-#
-#             product["count_review"] = count_review
-#             product["count_comment"] = count_comment
-#             product["rating"] = avg_rating
-#
-#             enriched_products.append(product)
-#
-#         result["data"] = enriched_products
-#         return result
-#
-#     except Exception as e:
-#         logger.error(f"Failed [get_featured]: {e}")
-#         return response.BaseResponse(
-#             status="failed",
-#             message="Internal server error",
-#         )
+async def get_product_featured(main_category_id, sub_category_id=None, child_category_id=None,  top_n=5):
+    try:
+        params = {
+            "main_category_id": main_category_id,
+            "sub_category_id": sub_category_id,
+            "child_category_id": child_category_id,
+            "top_n": top_n
+        }
+        filtered_params = {k: v for k, v in params.items() if v is not None}
+
+        result = recommendation.send_request("/v1/featured/", filtered_params)
+        product_list = result["data"]
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            product["count_review"] = count_review
+            product["count_comment"] = count_comment
+            product["rating"] = avg_rating
+
+            enriched_products.append(product)
+
+        result["data"] = enriched_products
+        return result
+
+    except Exception as e:
+        logger.error(f"Failed [get_featured]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error",
+        )
 
 async def add_product_db(item: ItemProductDBInReq, images_primary, images, email, certificate_file=None):
     try:
@@ -624,54 +624,54 @@ async def restore_product_sell(product_id: str, price_id: str, quantity: int):
         logger.error(f"Error restoring product sell: {str(e)}")
         raise e
 
-# async def get_product_best_deals(top_n: int):
-#     try:
-#         result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
-#         product_list = result.get("data", [])
-#
-#         enriched_products = []
-#
-#         for product in product_list:
-#             product_id = product["product_id"]
-#
-#             count_review, count_comment, avg_rating = await asyncio.gather(
-#                 count_reviews(product_id),
-#                 count_comments(product_id),
-#                 average_rating(product_id)
-#             )
-#
-#             prices = product.get("prices", [])
-#             max_discount = max([p.get("discount", 0) for p in prices]) if prices else 0
-#
-#             product.update({
-#                 "count_review": count_review,
-#                 "count_comment": count_comment,
-#                 "rating": avg_rating,
-#                 "max_discount_percent": max_discount
-#             })
-#
-#             enriched_products.append(product)
-#
-#         sorted_products = sorted(
-#             enriched_products,
-#             key=lambda x: (
-#                 -x.get("max_discount_percent", 0)  # discount giảm dần
-#                 -(x.get("rating") or 0),              # review giảm dần
-#             )
-#         )
-#
-#         return response.BaseResponse(
-#             status="success",
-#             message="Best deal products retrieved successfully",
-#             data=sorted_products[:top_n]
-#         )
-#
-#     except Exception as e:
-#         logger.error(f"Failed [get_product_best_deals]: {e}")
-#         return response.BaseResponse(
-#             status="failed",
-#             message="Internal server error"
-#         )
+async def get_product_best_deals(top_n: int):
+    try:
+        result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})
+        product_list = result.get("data", [])
+
+        enriched_products = []
+
+        for product in product_list:
+            product_id = product["product_id"]
+
+            count_review, count_comment, avg_rating = await asyncio.gather(
+                count_reviews(product_id),
+                count_comments(product_id),
+                average_rating(product_id)
+            )
+
+            prices = product.get("prices", [])
+            max_discount = max([p.get("discount", 0) for p in prices]) if prices else 0
+
+            product.update({
+                "count_review": count_review,
+                "count_comment": count_comment,
+                "rating": avg_rating,
+                "max_discount_percent": max_discount
+            })
+
+            enriched_products.append(product)
+
+        sorted_products = sorted(
+            enriched_products,
+            key=lambda x: (
+                -x.get("max_discount_percent", 0)
+                -(x.get("rating") or 0),
+            )
+        )
+
+        return response.BaseResponse(
+            status="success",
+            message="Best deal products retrieved successfully",
+            data=sorted_products[:top_n]
+        )
+
+    except Exception as e:
+        logger.error(f"Failed [get_product_best_deals]: {e}")
+        return response.BaseResponse(
+            status="failed",
+            message="Internal server error"
+        )
 
 async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes):
     try:

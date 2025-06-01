@@ -20,7 +20,7 @@ def response_recommendation(response_re):
     except Exception as e:
         raise Exception(f"fail response_spx: {str(e)}")
 
-def send_request_get(function, payload=None):
+def send_request(function, payload=None):
     try:
         url = BASE_URL + function
         response = requests.request("GET", url, headers=headers, params=payload, timeout=TIME_OUT)
@@ -31,4 +31,3 @@ def send_request_get(function, payload=None):
     except Exception as e:
         print(e)
         return None
-
