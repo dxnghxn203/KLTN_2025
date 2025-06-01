@@ -9,22 +9,19 @@ import AddNewDropdown from "./addNewDropdown";
 
 import { IoArrowDown, IoFilter } from "react-icons/io5";
 import TableProduct from "./tableProduct";
-import {
-  FaBox,
-  FaCapsules,
-  FaLungs,
-  FaNotesMedical,
-  FaPills,
-  FaSyringe,
-  FaTablets,
-} from "react-icons/fa6";
-import {
-  FaExclamationTriangle,
-  FaHeartbeat,
-  FaTimesCircle,
-} from "react-icons/fa";
+
+import { useProduct } from "@/hooks/useProduct";
 
 const ManagerProducts = () => {
+  const {
+      getAllProductsAdmin,
+      allProductAdmin,
+      totalProductAdmin,
+      page,
+      setPage,
+      pageSize,
+      setPageSize
+    } = useProduct();
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
   const [showFilter, setShowFilter] = useState(false);
 
@@ -38,6 +35,10 @@ const ManagerProducts = () => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    getAllProductsAdmin(() => {}, () => {});
+  }, [page, pageSize]);
 
   return (
     <div className="space-y-6">
@@ -78,7 +79,15 @@ const ManagerProducts = () => {
       {showFilter && (
         <FilterBar onFilterChange={(filters) => console.log(filters)} />
       )}
-      <TableProduct />
+      <
+        TableProduct
+        allProductAdmin={allProductAdmin}
+        currentPage={page}
+        pageSize={pageSize}
+        totalProductAdmin={totalProductAdmin}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+      />
     </div>
   );
 };

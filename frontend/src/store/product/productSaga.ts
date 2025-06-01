@@ -271,7 +271,11 @@ function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
         const {payload} = action;
         const {
             page,
-            page_size
+            page_size,
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
         } = payload;
 
         const product = yield call(productService.getAllProductAdmin, page, page_size);
@@ -279,9 +283,11 @@ function* handlerGetAllProductAdmin(action: any): Generator<any, void, any> {
         if (product.status_code === 200) {
             // console.log('Product Data Length:', product.data.length);
             yield put(fetchAllProductAdminSuccess(product.data));
+            onSuccess(product.data);
             return;
         }
         yield put(fetchAllProductAdminFailed("Product not found"));
+        onFailed(product.message);
     } catch (error) {
         yield put(fetchAllProductAdminFailed("Failed to fetch product by slug"));
     }

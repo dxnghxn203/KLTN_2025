@@ -135,19 +135,19 @@ const CreateSingleProduct = () => {
   // Load product data if editing
   useEffect(() => {
     if (!productId) return;
-    getAllProductsAdmin();
+    getAllProductsAdmin(() => {}, () => {});
   }, [productId]);
 
   useEffect(() => {
     if (
       !productId ||
-      !allProductAdmin?.products ||
-      allProductAdmin?.products.length === 0 ||
+      !allProductAdmin ||
+      allProductAdmin.length === 0 ||
       !categoryAdmin
     )
       return;
 
-    const product = allProductAdmin?.products.find(
+    const product = allProductAdmin.find(
       (item: any) => item.product_id === productId
     );
     if (!product) {

@@ -15,13 +15,13 @@ interface ManagerImportProps {
 }
 
 const ManagerImport = ({
-   allFileImport,
-   currentPage,
-   pageSize,
-   totalFileImport,
-   onPageChange,
-   onPageSizeChange
-  }: ManagerImportProps) => {
+    allFileImport,
+    currentPage,
+    pageSize,
+    totalFileImport,
+    onPageChange,
+    onPageSizeChange
+}: ManagerImportProps) => {
   const {
     fetchGetImportFileAddProduct,
     fetchDeleteImportFileProduct,
@@ -32,18 +32,6 @@ const ManagerImport = ({
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   const totalPages = Math.ceil(totalFileImport / pageSize);
-  useEffect(() => {
-    fetchGetImportFileAddProduct(
-      (message: any) => {
-        toast.showToast(message, "success");
-      },
-      (message: any) => {
-        toast.showToast(message, "error");
-      }
-    );
-  }, []);
-
-  console.log("allFileiImport", allFileImport);
 
   return (
     <>

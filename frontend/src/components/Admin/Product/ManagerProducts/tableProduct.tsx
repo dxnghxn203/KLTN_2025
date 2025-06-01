@@ -14,25 +14,35 @@ import {
 import DeleteProductDialog from "../../Dialog/confirmDeleteProductDialog";
 import { useToast } from "@/providers/toastProvider";
 import { FiEye } from "react-icons/fi";
+import { fi } from "date-fns/locale";
 
-const TableProduct = () => {
-  const { allProductAdmin, getAllProductsAdmin, deleteProduct } = useProduct();
-  const [currentPage, setCurrentPage] = useState<number>(1);
+interface TableProductProps {
+  allProductAdmin: any;
+  currentPage: number;
+  pageSize: number;
+  totalProductAdmin: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+}
+
+const TableProduct = ({
+    allProductAdmin,
+    currentPage,
+    pageSize,
+    totalProductAdmin,
+    onPageChange,
+    onPageSizeChange
+}: TableProductProps) => {
+  const {
+    deleteProduct,
+    getAllProductsAdmin,  
+  } = useProduct();
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const router = useRouter();
 
-  const onPageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   const toast = useToast();
-  const productsPerPage = 10;
-
-  useEffect(() => {
-    getAllProductsAdmin();
-  }, []);
 
   const toggleMenu = (productId: string) => {
     setMenuOpen(menuOpen === productId ? null : productId);
@@ -49,19 +59,10 @@ const TableProduct = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Phân trang
-  const totalProducts = allProductAdmin?.products
-    ? allProductAdmin?.products.length
-    : 0;
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = allProductAdmin?.products.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-  // console.log(allProductAdmin);
-  const totalPages = Math.ceil(totalProducts / productsPerPage);
-
+  const totalPages = Math.ceil(totalProductAdmin / pageSize);
+  const currentPageData = (currentPage - 1) * pageSize;
+  const firstIndex = currentPageData + 1;
+  const lastIndex = Math.min(currentPageData + pageSize, totalProductAdmin);
   return (
     <>
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
@@ -81,12 +82,12 @@ const TableProduct = () => {
             </thead>
 
             <tbody>
-              {currentProducts && currentProducts.length > 0 ? (
-                currentProducts.map((product: any, index: number) => (
+              {allProductAdmin && allProductAdmin.length > 0 ? (
+                allProductAdmin.map((product: any, index: number) => (
                   <tr
                     key={product.product_id}
                     className={`text-sm hover:bg-gray-50 transition ${
-                      index !== currentProducts.length - 1
+                      index !== allProductAdmin.length - 1
                         ? "border-b border-gray-200"
                         : ""
                     }`}
@@ -286,13 +287,13 @@ const TableProduct = () => {
       </div>
       <div className="flex items-center justify-between ">
         <span className="text-sm text-gray-700">
-          Hiện có {totalProducts} sản phẩm
+          Hiện có {totalProductAdmin} sản phẩm
         </span>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-700">
-            Hiển thị {indexOfFirstProduct + 1} đến{" "}
-            {Math.min(indexOfLastProduct, totalProducts)} trong số{" "}
-            {totalProducts} sản phẩm
+            Hiển thị {firstIndex} đến{" "}
+            {lastIndex} trong số{" "}
+            {totalProductAdmin} sản phẩm
           </span>
         </div>
       </div>
@@ -364,7 +365,7 @@ const TableProduct = () => {
               selectedProduct.product_id,
               (message) => {
                 toast.showToast(message, "success");
-                getAllProductsAdmin();
+                getAllProductsAdmin(() => {}, () => {});
                 setIsOpenDialog(false);
                 setSelectedProduct(null);
               },

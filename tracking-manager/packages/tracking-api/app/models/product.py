@@ -65,16 +65,137 @@ async def get_product_by_slug(slug: str):
     except Exception as e:
         raise e
 
-async def get_all_product(page: int, page_size: int):
+def build_match_conditions(main_category: str = None, low_stock_status: bool = None):
+    match_conditions = []
+
+    if main_category:
+        match_conditions.append({
+            "$match": {
+                "category.main_category_id": main_category
+            }
+        })
+
+    if low_stock_status is not None:
+        threshold = 10 if low_stock_status else 0
+        stock_expr = {
+            "$cond": {
+                "if": {
+                    "$lt" if low_stock_status else "$lte": [
+                        {"$subtract": ["$$item.inventory", "$$item.sell"]},
+                        threshold
+                    ]
+                },
+                "then": True,
+                "else": False
+            }
+        }
+
+        match_conditions.append({
+            "$match": {
+                "$expr": {
+                    "$gt": [
+                        {
+                            "$size": {
+                                "$filter": {
+                                    "input": "$prices",
+                                    "as": "item",
+                                    "cond": stock_expr
+                                }
+                            }
+                        },
+                        0
+                    ]
+                }
+            }
+        })
+
+    return match_conditions
+
+async def get_all_product(
+    page: int, page_size: int,
+    low_stock_status: bool = None,
+    main_category: str = None,
+    best_seller: bool = None
+):
     try:
         collection = db[collection_name]
         skip_count = (page - 1) * page_size
-        product_list = collection.find().sort("created_at", -1).skip(skip_count).limit(page_size)
-        total = collection.count_documents({})
+
+        if best_seller:
+            base_match = build_match_conditions(main_category, low_stock_status)
+
+            pipeline = base_match + [
+                {
+                    "$addFields": {
+                        "total_sell": {
+                            "$sum": {
+                                "$map": {
+                                    "input": "$prices",
+                                    "as": "p",
+                                    "in": {
+                                        "$multiply": ["$$p.sell", "$$p.amount"]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "$sort": {"total_sell": -1, "created_at": -1}
+                },
+                {"$skip": skip_count},
+                {"$limit": page_size}
+            ]
+
+            pipeline_total = base_match + [{"$count": "total"}]
+
+            product_list = collection.aggregate(pipeline).to_list(length=page_size)
+            total_result = collection.aggregate(pipeline_total).to_list(length=1)
+            total = total_result[0]["total"] if total_result else 0
+
+        else:
+            query = {}
+
+            if main_category:
+                query["category.main_category_id"] = main_category
+
+            if low_stock_status is not None:
+                threshold = 10 if low_stock_status else 0
+                stock_expr = {
+                    "$cond": {
+                        "if": {
+                            "$lt" if low_stock_status else "$lte": [
+                                {"$subtract": ["$$item.inventory", "$$item.sell"]},
+                                threshold
+                            ]
+                        },
+                        "then": True,
+                        "else": False
+                    }
+                }
+                query["$expr"] = {
+                    "$gt": [
+                        {
+                            "$size": {
+                                "$filter": {
+                                    "input": "$prices",
+                                    "as": "item",
+                                    "cond": stock_expr
+                                }
+                            }
+                        },
+                        0
+                    ]
+                }
+
+            product_list = collection.find(query).sort("created_at", -1).skip(skip_count).limit(page_size).to_list(length=page_size)
+            total = collection.count_documents(query)
+
         return {
             "total_products": total,
-            "products": [ItemProductDBRes.from_mongo(product) for product in product_list]
+            "products": [ItemProductDBRes.from_mongo(p) for p in product_list]
         }
+
     except Exception as e:
         logger.error(f"Failed [get_all_product]: {e}")
         raise e

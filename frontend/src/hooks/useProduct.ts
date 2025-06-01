@@ -91,10 +91,12 @@ export function useProduct() {
         ))
     }
 
-    const getAllProductsAdmin = () => {
+    const getAllProductsAdmin = (onSuccess: () => void, onFailed: () => void,) => {
         dispatch(fetchAllProductAdminStart({
             page: page,
             page_size: pageSize,
+            onSuccess: onSuccess,
+            onFailed: onFailed
         }))
     };
 

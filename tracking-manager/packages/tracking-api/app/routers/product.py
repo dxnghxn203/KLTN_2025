@@ -160,10 +160,15 @@ async def get_available_quantity(product_id: str, price_id: str):
 
 
 @router.get("/products/all-product-admin", response_model=response.BaseResponse)
-async def get_all_product_admin(page: int = 1, page_size: int = 10, token: str = Depends(middleware.verify_token_admin)):
+async def get_all_product_admin(
+        page: int = 1, page_size: int = 10,
+        low_stock_status: Optional[bool] = None,
+        main_category: Optional[str] = None,
+        best_seller: Optional[bool] = None,
+        # token: str = Depends(middleware.verify_token_admin)
+):
     try:
-        logger.info(f"page: {page}, page_size: {page_size}")
-        result = await get_all_product(page, page_size)
+        result = await get_all_product(page, page_size, low_stock_status, main_category, best_seller)
         return response.BaseResponse(
             message="Tìm thấy sản phẩm",
             data=result
