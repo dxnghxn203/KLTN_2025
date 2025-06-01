@@ -112,7 +112,7 @@ const Sidebar = memo(({ isOpen }: SidebarProps) => {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center mb-10 ml-2">
+      <div className="flex items-center mb-6 ml-2">
         <Image
           src={textAdmin}
           width={50}

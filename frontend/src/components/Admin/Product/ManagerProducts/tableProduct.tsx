@@ -50,13 +50,16 @@ const TableProduct = () => {
   }, []);
 
   // Phân trang
-  const totalProducts = allProductAdmin ? allProductAdmin.length : 0;
+  const totalProducts = allProductAdmin?.products
+    ? allProductAdmin?.products.length
+    : 0;
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = allProductAdmin?.slice(
+  const currentProducts = allProductAdmin?.products.slice(
     indexOfFirstProduct,
     indexOfLastProduct
   );
+  // console.log(allProductAdmin);
   const totalPages = Math.ceil(totalProducts / productsPerPage);
 
   return (
@@ -211,7 +214,8 @@ const TableProduct = () => {
                         <span className="text-yellow-500 font-semibold">
                           Đang chờ duyệt
                         </span>
-                      ) : product.is_approved === true ? (
+                      ) : product.is_approved === true &&
+                        product.rejected_note === "" ? (
                         <span className="text-green-500 font-semibold">
                           Đã duyệt bởi{" "}
                           <span className="text-xs text-gray-500 font-normal">
@@ -219,12 +223,14 @@ const TableProduct = () => {
                           </span>
                         </span>
                       ) : (
-                        <span className="text-red-500 font-semibold">
-                          Từ chối bởi{" "}
-                          <span className="text-xs text-gray-500 font-normal">
-                            {product.verified_by}
+                        product.rejected_note !== "" && (
+                          <span className="text-red-500 font-semibold">
+                            Từ chối bởi{" "}
+                            <span className="text-xs text-gray-500 font-normal">
+                              {product.verified_by}
+                            </span>
                           </span>
-                        </span>
+                        )
                       )}
                     </td>
 

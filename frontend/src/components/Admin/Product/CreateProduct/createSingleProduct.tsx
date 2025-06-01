@@ -140,13 +140,13 @@ const CreateSingleProduct = () => {
   useEffect(() => {
     if (
       !productId ||
-      !allProductAdmin ||
-      allProductAdmin.length === 0 ||
+      !allProductAdmin?.products ||
+      allProductAdmin?.products.length === 0 ||
       !categoryAdmin
     )
       return;
 
-    const product = allProductAdmin.find(
+    const product = allProductAdmin?.products.find(
       (item: any) => item.product_id === productId
     );
     if (!product) {
