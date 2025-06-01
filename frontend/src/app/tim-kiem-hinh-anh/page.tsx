@@ -145,42 +145,28 @@ const Page = () => {
         try {
             setIsCameraInitializing(true);
             setCameraError(null);
-
-            // Set isUsingCamera to true immediately to ensure the video container renders
             setIsUsingCamera(true);
 
-            console.log("Requesting camera access...");
-
-            // Simplified camera constraints for better compatibility
             const constraints = {
-                video: true,  // Use default settings initially for better compatibility
+                video: true,
                 audio: false
             };
 
-            console.log("Camera constraints:", constraints);
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            console.log("Camera stream obtained:", stream.getVideoTracks().length > 0);
 
-            // Get camera details for debugging
             if (stream.getVideoTracks().length > 0) {
                 const videoTrack = stream.getVideoTracks()[0];
-                console.log("Active camera:", videoTrack.label);
-                console.log("Camera settings:", videoTrack.getSettings());
             } else {
                 throw new Error("No video tracks found in camera stream");
             }
 
             if (videoRef.current) {
-                console.log("Setting video source");
                 videoRef.current.srcObject = stream;
-                videoRef.current.style.display = "block"; // Ensure video is visible
+                videoRef.current.style.display = "block";
 
-                // Wait for video to be ready
                 videoRef.current.onloadedmetadata = async () => {
-                    console.log("Video metadata loaded");
                     try {
                         await videoRef.current?.play();
-                        console.log("Video playing successfully");
                     } catch (playError) {
                         console.error("Error playing video:", playError);
                         setCameraError("Không thể hiển thị camera, vui lòng cấp quyền và thử lại");
@@ -188,7 +174,6 @@ const Page = () => {
                     }
                 };
             } else {
-                console.error("Video element reference is null");
                 setCameraError("Không thể khởi tạo camera - không tìm thấy element video");
                 stopCamera();
                 return;
@@ -199,7 +184,6 @@ const Page = () => {
         } catch (err) {
             console.error("Error accessing camera:", err);
 
-            // More specific error messages
             if (err instanceof DOMException) {
                 switch (err.name) {
                     case 'NotAllowedError':
@@ -247,12 +231,10 @@ const Page = () => {
         setIsUsingCamera(false);
     };
 
-    // Add a function to try alternate camera if the first attempt fails
     const tryAlternateCamera = async () => {
         try {
             setCameraError("Đang thử với camera khác...");
 
-            // Try user-facing camera if environment camera failed
             const alternateConstraints = {
                 video: {facingMode: "user"},
                 audio: false
@@ -287,7 +269,6 @@ const Page = () => {
 
         const video = videoRef.current;
 
-        // Check if video is actually playing and has dimensions
         if (video.videoWidth === 0 || video.videoHeight === 0 || video.paused || video.ended) {
             console.error("Video is not ready for capture", {
                 width: video.videoWidth,
@@ -302,7 +283,6 @@ const Page = () => {
         try {
             console.log("Creating canvas for capture");
             const canvas = document.createElement('canvas');
-            // Use actual video dimensions
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             console.log("Canvas dimensions:", canvas.width, canvas.height);
@@ -314,13 +294,9 @@ const Page = () => {
                 return;
             }
 
-            // Draw the current video frame to the canvas
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            console.log("Video frame drawn to canvas");
 
-            // Convert canvas to data URL
             const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            console.log("Image captured, data URL length:", imageDataUrl.length);
 
             if (imageDataUrl === 'data:,') {
                 console.error("Empty image data URL");
@@ -328,11 +304,7 @@ const Page = () => {
                 return;
             }
 
-            // Set the captured image
             setSelectedImages([imageDataUrl]);
-            console.log("Image saved to state");
-
-            // Stop the camera after successful capture
             stopCamera();
 
         } catch (error) {
@@ -366,7 +338,7 @@ const Page = () => {
         addProductTocart(
             productId,
             priceId,
-            1, // Default quantity is 1
+            1,
             () => {
                 toast.showToast("Thêm vào giỏ hàng thành công", "success");
                 getProductFromCart(
@@ -394,7 +366,6 @@ const Page = () => {
 
                 {!showResults ? (
                     <>
-                        {/* Image input UI */}
                         <div className="flex flex-col md:flex-row gap-4 mb-6">
                             <button
                                 onClick={() => fileInputRef.current?.click()}
