@@ -1,6 +1,7 @@
 package main
 
 import (
+	"consumer/helper"
 	"consumer/pkg/database"
 	"consumer/queue"
 	"context"
@@ -35,6 +36,14 @@ func main() {
 		slog.Error("Không thể kết nối đến mongodb.")
 		slog.Info(err.Error())
 	}
+
+	file, err := helper.ExportSampleInvoiceToPDF()
+
+	helper.SendInvoiceEmail(
+		"dxnghxn203@gmail.com",
+		file,
+		"Hóa đơn mẫu",
+	)
 
 	err = database.ConnectRedis()
 	if err != nil {

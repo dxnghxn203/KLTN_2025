@@ -5,10 +5,11 @@ from starlette.status import HTTP_400_BAD_REQUEST
 
 from app.core import logger
 from app.core import response
+from app.entities.time.request import TimeGHNReq
 from app.helpers.constant import TIME_INDEX
 from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import insert_es_common, delete_index, query_es_data, search_es
-
+from app.core import ghn
 
 async def insert_time_into_elasticsearch():
     await insert_es_common(TIME_INDEX, 'time.json')
@@ -44,3 +45,14 @@ async def get_range_time(route_code: str) -> Union[str, response.JsonException]:
     delivery_time = (get_current_time() + timedelta(days=days, seconds=seconds)).replace(tzinfo=timezone.utc)
 
     return delivery_time.isoformat()
+
+def get_delivery_time_ghn(request: TimeGHNReq):
+    try:
+        req = ghn.send_request_post(
+            function="/shiip/public-api/v2/shipping-order/leadtime",
+            payload=request.dict()
+        )
+        return req
+    except Exception as e:
+        logger.error(f"Error calculating delivery time: {str(e)}")
+        return None

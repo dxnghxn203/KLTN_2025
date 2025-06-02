@@ -470,6 +470,19 @@ export const getProductDiscount = async (page: any, page_size: any) => {
     }
 }
 
+export const getProductDiscountAdmin = async (page: any, page_size: any, is_approved: any) => {
+    try {
+        const response: any = await axiosClient.get(`/v1/products/discount-admin?page=${page}&page_size=${page_size}&is_approved=${is_approved}`);
+        return response;
+    } catch (error: any) {
+        return {
+            status_code: 500,
+            message: error?.response?.data?.message || "Internal server error",
+            data: null
+        }
+    }
+}
+
 export const getProductLowStock = async () => {
     try {
         const response: any = await axiosClient.get(`/v1/products/low-stock`);

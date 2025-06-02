@@ -141,8 +141,6 @@ export default function Header() {
     fetchSearchProduct(
       {
         query: search,
-        page: 1,
-        page_size: 100,
       },
       (responseData: any) => {
         setSearchResultProduct(false);
@@ -195,8 +193,6 @@ export default function Header() {
       fetchSearchProduct(
         {
           query: search,
-          page: 1,
-          page_size: 100,
         },
         (responseData: any) => {
           setSearchResultProduct(true);

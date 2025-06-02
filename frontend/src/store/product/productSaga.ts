@@ -85,6 +85,10 @@ import {
     fetchProductDiscountStart,
     fetchProductDiscountSuccess,
 
+    fetchProductDiscountAdminFailed,
+    fetchProductDiscountAdminStart,
+    fetchProductDiscountAdminSuccess,
+
     fetchImageToProductStart,
     fetchImageToProductSuccess,
     fetchImageToProductFailed,
@@ -737,6 +741,27 @@ function* fetchProductDiscount(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchProductDiscountAdmin(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            page,
+            page_size,
+            is_approved
+        } = payload;
+
+        const product = yield call(productService.getProductDiscountAdmin, page, page_size, is_approved);
+        if (product.status_code === 200) {
+            yield put(fetchProductDiscountAdminSuccess(product.data));
+            return;
+        }
+
+        yield put(fetchProductDiscountAdminFailed(product.data || 'Failed to update images product'));
+    } catch (error) {
+        yield put(fetchProductDiscountAdminFailed('Failed to update images product'));
+    }
+}
+
 function* fetchProductLowStock(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
@@ -784,6 +809,7 @@ export function* productSaga() {
     yield takeLatest(fetchGetAllImportFileAddProductStart.type, fetchGetAllImportFileAddProduct);
     yield takeLatest(fetchDeleteImportProductStart.type, handleDeleteImportFileAddProduct);
     yield takeLatest(fetchProductDiscountStart.type, fetchProductDiscount);
+    yield takeLatest(fetchProductDiscountAdminStart.type, fetchProductDiscountAdmin);
     yield takeLatest(fetchImageToProductStart.type, fetchImageToProduct);
     yield takeLatest(fetchProductLowStockStart.type, fetchProductLowStock);
 }

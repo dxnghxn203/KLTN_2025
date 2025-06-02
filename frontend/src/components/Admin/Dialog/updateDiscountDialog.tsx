@@ -19,9 +19,7 @@ const UpdateDiscountDialog = ({
     React.useState<any>(selectedProduct);
   const {
     fetchUpdateProduct,
-    allProductAdmin,
-    getAllProductsAdmin,
-    fetchGetProductDiscount,
+    fetchGetProductDiscountAdmin
   } = useProduct();
   const toast = useToast();
   const handleUpdateProduct = async (product: any) => {
@@ -73,8 +71,7 @@ const UpdateDiscountDialog = ({
       dataToSend,
       () => {
         toast.showToast("Cập nhật giảm giá thành công", "success");
-        getAllProductsAdmin(() => {}, () => {});
-        fetchGetProductDiscount();
+        fetchGetProductDiscountAdmin(false);
         onClose();
       },
       (error: any) => {
@@ -97,25 +94,25 @@ const UpdateDiscountDialog = ({
         <>
           <div className="mb-4 ">
             Sản phẩm:{" "}
-            <span className="font-medium">{selectedProduct?.name_primary}</span>
+            <span className="font-medium">{selectedProductData?.name_primary}</span>
           </div>
-          {selectedProduct?.prices?.length > 0 && (
+          {selectedProductData?.prices?.length > 0 && (
             <div
               className={`grid gap-6 ${
-                selectedProduct.prices.length === 1
+                selectedProductData.prices.length === 1
                   ? "grid-cols-1"
-                  : selectedProduct.prices.length === 2
+                  : selectedProductData.prices.length === 2
                   ? "grid-cols-2"
                   : "grid-cols-3"
               }`}
             >
-              {selectedProduct.prices.map((price: any, index: number) => (
+              {selectedProductData.prices.map((price: any, index: number) => (
                 <div
                   key={index}
                   className="space-y-3 border p-4 rounded-lg shadow-sm bg-gray-50"
                 >
                   <h3 className="font-semibold text-sm text-gray-700">
-                    Đơn giá {index + 1} ({price.unit})
+                    % Giảm giá đơn giá {index + 1} ({price.unit})
                   </h3>
 
                   <input
@@ -124,7 +121,7 @@ const UpdateDiscountDialog = ({
                     className="border px-4 py-2 rounded-lg w-full"
                     defaultValue={price.discount}
                     onChange={(e) => {
-                      const newPrices = [...selectedProduct.prices];
+                      const newPrices = [...selectedProductData.prices];
                       newPrices[index] = {
                         ...newPrices[index],
                         discount: Number(e.target.value),
@@ -148,8 +145,8 @@ const UpdateDiscountDialog = ({
                     type="date"
                     className="border px-4 py-2 rounded w-full"
                     value={
-                      selectedProduct.prices[index].expired_date
-                        ? selectedProduct.prices[index].expired_date.split(
+                      selectedProductData.prices[index].expired_date
+                        ? selectedProductData.prices[index].expired_date.split(
                             "T"
                           )[0]
                         : ""

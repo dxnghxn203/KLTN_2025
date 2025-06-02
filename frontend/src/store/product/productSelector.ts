@@ -18,5 +18,7 @@ export const selectAllBrands = (state: any) => state.product.allBrand;
 export const selectAllFileImport = (state: any) => state.product.fileImport;
 export const selectTotalFileImport = (state: any) => state.product.totalFileImport;
 export const selectAllProductDiscount = (state: any) => state.product.productDiscount;
+export const selectAllProductDiscountAdmin = (state: any) => state.product.productDiscountAdmin;
+export const selectTotalProductDiscountAdmin = (state: any) => state.product.totalProductDiscountAdmin;
 export const selectImageToProduct = (state: any) => state.product.imageToProduct;
 export const selectProductLowStock = (state: any) => state.product.productLowStock;

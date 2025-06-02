@@ -514,9 +514,9 @@ async def admin_update_product(item: ItemUpdateProductReq,
         )
 
 @router.get("/products/search", response_model=response.BaseResponse)
-async def search_product(query: str, page: int = 1, page_size: int = 10):
+async def search_product(query: str):
     try:
-        result = await search_products_by_name(query, page, page_size)
+        result = await search_products_by_name(query)
         return response.SuccessResponse(
             data=result
         )

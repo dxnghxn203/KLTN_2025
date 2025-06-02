@@ -8,9 +8,22 @@ import { useToast } from "@/providers/toastProvider";
 
 const DiscountManagement = () => {
   const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [isApproved, setIsApproved] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
   const toast = useToast();
-  const { allProductAdmin, getAllProductsAdmin } = useProduct();
+  const {
+    allProductDiscountAdmin,
+    fetchGetProductDiscountAdmin,
+    totalProductDiscountAdmin,
+    page,
+    setPage,
+    pageSize,
+    setPageSize
+  } = useProduct();
+
+  useEffect(() => {
+    fetchGetProductDiscountAdmin(isApproved);
+  }, [isApproved, page, pageSize]);
 
   return (
     <div>
@@ -35,32 +48,22 @@ const DiscountManagement = () => {
             + Thêm giảm giá
           </div>
         </div>
-        <TableManagementDiscount allProductAdmin={allProductAdmin} />
+        <TableManagementDiscount
+          allProductDiscountAdmin={allProductDiscountAdmin}
+          totalProductDiscountAdmin={totalProductDiscountAdmin}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          isApproved={isApproved}
+          setIsApproved={setIsApproved}
+        />
       </div>
       <SearchProductDialog
         isOpen={isOpenDialog}
         setIsOpen={setIsOpenDialog}
-        onSelectProduct={(product) => {
-          if (
-            selectedProduct.some(
-              (p: any) => p.product_id === product.product_id
-            )
-          ) {
-            toast.showToast("Sản phẩm đã được thêm", "error");
-            return;
-          }
-          const defaultPrice = product.prices?.[0];
-          const defaultUnit = defaultPrice?.price_id;
-          setSelectedProduct((prev: any) => [
-            ...prev,
-            {
-              ...product,
-              quantity: 1,
-              unit: defaultUnit,
-            },
-          ]);
-        }}
-        allProductAdmin={allProductAdmin}
+        allProductDiscountAdmin={allProductDiscountAdmin}
+        isApproved={isApproved}
       />
     </div>
   );

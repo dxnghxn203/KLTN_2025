@@ -27,8 +27,6 @@ export default function ProductFindList() {
       fetchSearchProduct(
         {
           query: keyword,
-          page: 1,
-          page_size: 100,
         },
         () => {
           setProducts(searchResult);

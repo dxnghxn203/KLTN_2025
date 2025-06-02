@@ -47,8 +47,6 @@ export default function SearchProductDialog({
     fetchSearchProduct(
       {
         query: search,
-        page: 1,
-        page_size: 100,
       },
       () => {
         setIsLoading(false);

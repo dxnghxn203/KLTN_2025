@@ -12,30 +12,28 @@ import { da, is } from "date-fns/locale";
 interface Props {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onSelectProduct: (product: any) => void;
-  allProductAdmin: any;
+  allProductDiscountAdmin: any;
+  isApproved: boolean;
 }
 
 export default function SearchProductDialog({
   isOpen,
   setIsOpen,
-  onSelectProduct,
-  allProductAdmin,
+  allProductDiscountAdmin,
+  isApproved,
 }: Props) {
   const {
     fetchSearchProduct,
     searchResult,
     fetchClearSearch,
     fetchUpdateProduct,
-    getAllProductsAdmin,
+    fetchGetProductDiscountAdmin,
   } = useProduct();
   const [search, setSearch] = useState("");
-  const [selectedProductIds, setSelectedProductIds] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscountForm, setShowDiscountForm] = useState(false);
   const [selectedProductData, setSelectedProductData] = useState<any>(null);
   const toast = useToast();
-  const { fetchGetProductDiscount } = useProduct();
 
   if (!isOpen) return null;
 
@@ -89,11 +87,8 @@ export default function SearchProductDialog({
       dataToSend,
       () => {
         toast.showToast("Thêm giảm giá thành công", "success");
-        getAllProductsAdmin(
-          () => {
-            fetchGetProductDiscount();
-          },
-          () => {}
+        fetchGetProductDiscountAdmin(
+          isApproved,
         );
         setIsOpen(false);
       },
@@ -104,12 +99,14 @@ export default function SearchProductDialog({
   };
 
   function handleSearch() {
+    if (!search) {
+      toast.showToast("Vui lặng nhập tên sản phẩm", "error");
+      return;
+    }
     setIsLoading(true);
     fetchSearchProduct(
       {
         query: search,
-        page: 1,
-        page_size: 100,
       },
       () => setIsLoading(false),
       () => setIsLoading(false)
@@ -177,7 +174,7 @@ export default function SearchProductDialog({
                   .filter((product: any) => {
                     // loại bỏ sản phẩm đã có giảm giá trong allProductAdmin
 
-                    const isAlreadyDiscounted = allProductAdmin?.some(
+                    const isAlreadyDiscounted = allProductDiscountAdmin?.some(
                       (p: any) =>
                         p.product_id === product.product_id &&
                         p.prices.some((price: any) => price.discount !== 0)

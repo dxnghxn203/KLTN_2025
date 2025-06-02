@@ -13,12 +13,13 @@ from dateutil.parser import parse
 from starlette import status
 from starlette.responses import StreamingResponse
 
-from app.core import logger, response, rabbitmq, database
+from app.core import logger, response, rabbitmq, database, ghn
 from app.core.file import create_image_json_payload
 from app.core.mail import send_invoice_email
 from app.core.s3 import upload_file
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
-    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq
+    ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq, \
+    ShippingOrderGHN
 from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductInReq, ItemProductReq
@@ -1320,3 +1321,16 @@ async def get_monthly_order_counts(year: int):
     except Exception as e:
         logger.error(f"Failed [get_monthly_order_counts]: {e}")
         raise e
+
+def create_order_ghn(item: ShippingOrderGHN):
+    try:
+        create_req = ghn.send_request_post(
+            function="/shiip/public-api/v2/shipping-order/create",
+            isPro=False,
+            payload=item.dict()
+        )
+        logger.info(create_req)
+        return create_req if create_req else None
+    except Exception as e:
+        logger.error(f"Error creating GHN order: {e}")
+        return None

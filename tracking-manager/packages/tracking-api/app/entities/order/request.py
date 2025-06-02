@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 import json
 from pydantic import BaseModel, Field, model_validator
@@ -119,3 +120,73 @@ class ItemOrderApproveReq(BaseModel):
     status: str = ""
     product: List[ItemProductInReq]
     note: str = ""
+
+#GHN
+class RequiredNote(str, Enum):
+    CHOTHUHANG = "CHOTHUHANG"
+    CHOXEMHANGKHONGTHU = "CHOXEMHANGKHONGTHU"
+    KHONGCHOXEMHANG = "KHONGCHOXEMHANG"
+
+class CategoryGHN(BaseModel):
+    level1: Optional[str] = None
+    level2: Optional[str] = None
+    level3: Optional[str] = None
+
+
+class ShippingGHNItem(BaseModel):
+    name: str = ""
+    code: str = ""
+    quantity: int = 0
+    price: int = 0
+    length: int = 0
+    width: int = 0
+    height: int = 0
+    weight: int = 0
+    category: Optional[CategoryGHN] = None
+
+class ShippingOrderGHN(BaseModel):
+
+    from_name: Optional[str] = None
+    from_phone: Optional[str] = None
+    from_address: Optional[str] = None
+    from_ward_name: Optional[str] = None
+    from_district_name: Optional[str] = None
+    from_province_name: Optional[str] = None
+
+    to_name: str = ""
+    to_phone: str = ""
+    to_address: str = ""
+    to_ward_name: str = ""
+    to_district_name: str = ""
+    to_province_name: str = ""
+
+    return_phone: Optional[str] = None
+    return_address: Optional[str] = None
+    return_district_name: Optional[str] = None
+    return_ward_name: Optional[str] = None
+    return_province_name: Optional[str] = None
+
+    client_order_code: Optional[str] = None
+    cod_amount: int = 0
+    content: Optional[str] = None
+
+    weight: Optional[int] = None
+    length: Optional[int] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
+
+    pick_station_id: Optional[int] = None
+    insurance_value: int = 0
+    service_type_id: int = 0
+    payment_type_id: int = 0
+    coupon: Optional[str] = None
+
+    note: Optional[str] = None
+    required_note: RequiredNote = RequiredNote.KHONGCHOXEMHANG
+
+    pickup_time: Optional[int] = None
+    pick_shift: Optional[List[int]] = None
+
+    cod_failed_amount: Optional[int] = None
+
+    items: List[ShippingGHNItem] = []

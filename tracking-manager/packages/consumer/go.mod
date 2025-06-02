@@ -8,7 +8,10 @@ require (
 	go.mongodb.org/mongo-driver v1.17.2
 )
 
-require golang.org/x/sys v0.23.0 // indirect
+require (
+	github.com/sendgrid/rest v2.6.9+incompatible // indirect
+	golang.org/x/sys v0.23.0 // indirect
+)
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -17,6 +20,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
 	github.com/sirupsen/logrus v1.9.3
 	github.com/streadway/amqp v1.1.0
 	github.com/subosito/gotenv v1.6.0
