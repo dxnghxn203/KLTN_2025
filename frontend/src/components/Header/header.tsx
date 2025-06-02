@@ -712,6 +712,38 @@ export default function Header() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full outline-none text-sm placeholder:text-gray-500"
               />
+              <div className="relative mx-2">
+                  <button
+                    type="button"
+                    className="flex items-center justify-center shrink-0 transition text-[#0053E2] hover:text-blue-700 relative"
+                    onClick={handleScanMedication}
+                    onMouseEnter={() => {
+                      if (tooltipTimer.current)
+                        clearTimeout(tooltipTimer.current);
+                      setShowScanTooltip(true);
+                    }}
+                    onMouseLeave={() => {
+                      tooltipTimer.current = setTimeout(() => {
+                        setShowScanTooltip(false);
+                      }, 500);
+                    }}
+                  >
+                    <BsCameraFill className="text-xl" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+                  </button>
+                  {isShowTooltip && (
+                    <div
+                      className="absolute -bottom-14 left-1/2 transform tooltip-animate bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs rounded-lg py-2 px-4 whitespace-nowrap z-50 border border-blue-400"
+                      style={{
+                        boxShadow: "0 4px 15px rgba(0, 83, 226, 0.3)",
+                      }}
+                    >
+                      <span className="font-medium">Chụp hình thuốc</span> để
+                      tìm kiếm
+                      <div className="absolute -top-1 left-1/2 tooltip-arrow w-2 h-2 bg-blue-700 rotate-45 border-t border-l border-blue-400"></div>
+                    </div>
+                  )}
+                </div>
               <button type="button" onClick={handleSearch}>
                 <RiSearch2Line className="text-blue-600 text-xl" />
               </button>
