@@ -10,7 +10,7 @@ import ProductList from "@/components/Product/productList";
 export default function Home() {
   return (
     <>
-      <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-[50px]">
+      <div className="flex flex-col items-center pb-12 bg-white pt-[80px] p-5 md:p-[50px]">
         <main className="flex flex-col space-y-8">
           <ProductCatalog />
           <SanDealHeader />

@@ -89,7 +89,12 @@ export default function SearchProductDialog({
       dataToSend,
       () => {
         toast.showToast("Thêm giảm giá thành công", "success");
-        getAllProductsAdmin();
+        getAllProductsAdmin(
+          () => {
+            fetchGetProductDiscount();
+          },
+          () => {}
+        );
         setIsOpen(false);
       },
       (error: any) => {

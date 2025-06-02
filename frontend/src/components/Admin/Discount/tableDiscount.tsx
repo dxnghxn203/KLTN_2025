@@ -31,7 +31,10 @@ const TableDiscount = () => {
   const productsPerPage = 10;
 
   useEffect(() => {
-    getAllProductsAdmin();
+    getAllProductsAdmin(
+      () => {},
+      () => {}
+    );
   }, []);
 
   const toggleMenu = (productId: string) => {

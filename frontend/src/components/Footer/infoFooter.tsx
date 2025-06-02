@@ -6,7 +6,7 @@ import logoyellow from "@/images/6.png";
 const InfoFooter: React.FC = () => {
   return (
     <div className="py-10 px-10">
-      <div className="grid grid-cols-5 justify-between text-black max-md:grid-cols-2 max-sm:grid-cols-1">
+      <div className="grid grid-cols-5 justify-between text-black max-md:grid-cols-2 max-sm:grid-cols-1 md:gap-10">
         {/* Cột 1: Logo và giới thiệu */}
         <div className="flex flex-col items-start col-span-2 mr-16">
           <h3 className="text-lg font-semibold">GIỚI THIỆU CHUNG</h3>
@@ -23,7 +23,7 @@ const InfoFooter: React.FC = () => {
         </div>
 
         {/* Cột 2: Về chúng tôi */}
-        <div className="flex flex-col items-start">
+        <div className="flex flex-col items-start max-md:mt-10">
           <h3 className="text-lg font-semibold">VỀ CHÚNG TÔI</h3>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
@@ -51,7 +51,7 @@ const InfoFooter: React.FC = () => {
         </div>
 
         {/* Cột 3: Chính sách */}
-        <div className="flex flex-col items-start">
+        <div className="flex flex-col items-start max-md:mt-10">
           <h3 className="text-lg font-semibold">CHÍNH SÁCH</h3>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
@@ -73,7 +73,7 @@ const InfoFooter: React.FC = () => {
         </div>
 
         {/* Cột 4: Thông tin liên hệ */}
-        <div className="flex flex-col items-start">
+        <div className="flex flex-col items-start max-md:mt-10">
           <h3 className="text-lg font-semibold">THÔNG TIN LIÊN HỆ</h3>
           <p className="mt-4 text-sm">
             📍 Số 1 Võ Văn Ngân, phường Linh Chiểu, thành phố Thủ Đức

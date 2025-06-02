@@ -27,6 +27,7 @@ import { useProduct } from "@/hooks/useProduct";
 import { X } from "lucide-react";
 import { GoHistory } from "react-icons/go";
 import { RiSearch2Line } from "react-icons/ri";
+import MobileSidebar from "./headerMenuMobile";
 
 export default function Header() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -69,6 +70,8 @@ export default function Header() {
 
   const [showScanTooltip, setShowScanTooltip] = useState(false);
   const isShowTooltip = pathname === "/";
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const toggleMobileSearch = () => setShowMobileSearch((prev) => !prev);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -295,32 +298,40 @@ export default function Header() {
   return (
     <>
       <div className="fixed top-0 left-0 w-full z-[50] bg-blue-700">
-        <header className="w-full px-4 md:px-8 transition-all duration-300">
-          <div className="relative flex items-center justify-between h-[72px] sm:h-[72px] px-4">
-            <div className="flex items-center gap-1 min-w-[160px]">
-              <Link href="/">
-                <div className="flex items-center cursor-pointer">
-                  <Image
-                    src={logo}
-                    alt=""
-                    width={50}
-                    height={50}
-                    className="object-contain aspect-square sm:w-[32px] sm:h-[32px] md:w-[50px] md:h-[50px]"
-                  />
-                  <Image
-                    src={text}
-                    alt=""
-                    width={100}
-                    height={100}
-                    priority
-                    className="top-1 ml-2 hidden sm:block"
-                  />
-                </div>
-              </Link>
+        <header className="w-full px-4 transition-all duration-300">
+          <div className="flex items-center justify-between h-[72px] sm:h-[72px]">
+            <div className="flex md:hidden items-center">
+              <MobileSidebar />
             </div>
 
-            <div className="flex-grow max-w-[540px] px-4" ref={searchRef}>
-              <div className="flex items-center bg-white rounded-lg px-4 py-2 ">
+            <Link href="/">
+              <div className="flex items-center cursor-pointer">
+                {/* Logo icon */}
+                <Image
+                  src={logo}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="object-contain aspect-square sm:w-[28px] sm:h-[28px] md:w-[50px] md:h-[50px]"
+                />
+
+                {/* Text logo */}
+                <Image
+                  src={text}
+                  alt=""
+                  width={100}
+                  height={100}
+                  priority
+                  className="top-1 ml-2 w-[80px] sm:w-[90px] md:w-[100px]"
+                />
+              </div>
+            </Link>
+
+            <div
+              className="hidden md:flex items-center justify-center"
+              ref={searchRef}
+            >
+              <div className="flex items-center bg-white rounded-lg px-4 py-2 w-[500px]">
                 <input
                   type="text"
                   value={search}
@@ -367,7 +378,6 @@ export default function Header() {
                     <BsCameraFill className="text-xl" />
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
                   </button>
-
                   {isShowTooltip && (
                     <div
                       className="absolute -bottom-14 left-1/2 transform tooltip-animate bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs rounded-lg py-2 px-4 whitespace-nowrap z-50 border border-blue-400"
@@ -381,7 +391,6 @@ export default function Header() {
                     </div>
                   )}
                 </div>
-
                 <button
                   type="button"
                   className="flex items-center justify-center shrink-0 transition"
@@ -390,9 +399,8 @@ export default function Header() {
                   <RiSearch2Line className="text-[#0053E2] text-2xl" />
                 </button>
               </div>
-
               {showSuggestions && (
-                <div className="absolute bg-white shadow-lg rounded-lg z-50 p-4 w-full max-w-[580px] mt-1">
+                <div className="absolute bg-white shadow-lg rounded-lg z-50 p-4 w-full max-w-[500px] top-[60px]">
                   <div>
                     <div className="flex justify-between items-center mb-2 font-medium text-sm">
                       <span>Lịch sử tìm kiếm</span>
@@ -451,35 +459,46 @@ export default function Header() {
                   </div>
                 </div>
               )}
-
               {searchResultProduct && searchResult !== null && !isLoading && (
-                <div className="absolute bg-white shadow-lg rounded-lg z-50 w-full max-w-[580px] overflow-y-auto max-h-[500px] hide-scrollbar mt-1 ">
+                <div className="absolute bg-white shadow-lg rounded-lg z-50 w-full max-w-[500px] overflow-y-auto hide-scrollbar top-[60px]">
                   {searchResult.length > 0 ? (
                     <>
                       {searchResult
                         .slice(0, 5)
                         .map((product: any, index: any) => (
-                          <div
+                          <Link
+                            href={`/chi-tiet-san-pham/${product.slug}`}
                             key={product.id}
-                            className={`flex gap-3 items-center hover:bg-gray-100 cursor-pointer p-4 ${
-                              index !== Math.min(4, searchResult.length - 1)
-                                ? "border-b"
-                                : ""
-                            }`}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setShowSuggestions(false);
+                              setSearchResultProduct(false);
+                              setSearch("");
+                              fetchClearSearch();
+                            }}
                           >
-                            <Image
-                              width={70}
-                              height={70}
-                              src={product.images_primary}
-                              alt={product.name}
-                              className="p-1 rounded-lg object-cover border"
-                            />
-                            <div className="flex-grow">
-                              <div className="text-sm">
-                                {product.name_primary}
+                            <div
+                              key={product.id}
+                              className={`flex gap-3 items-center hover:bg-gray-100 cursor-pointer p-4 ${
+                                index !== Math.min(4, searchResult.length - 1)
+                                  ? "border-b"
+                                  : ""
+                              }`}
+                            >
+                              <Image
+                                width={70}
+                                height={70}
+                                src={product.images_primary}
+                                alt={product.name}
+                                className="p-1 rounded-lg object-cover border"
+                              />
+                              <div className="flex-grow">
+                                <div className="text-sm">
+                                  {product.name_primary}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
 
                       {searchResult.length > 5 && (
@@ -502,117 +521,115 @@ export default function Header() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 min-w-[260px] justify-end text-white">
-              <div className="flex items-center gap-2 text-white h-full justify-end">
-                <div
-                  className="relative h-full"
-                  ref={cartDropdownRef}
-                  onMouseEnter={() => setShowCartDropdown(true)}
-                  onMouseLeave={() => setShowCartDropdown(false)}
+            <div className="flex items-center gap-2 text-white">
+              <div
+                className="relative h-full"
+                ref={cartDropdownRef}
+                onMouseEnter={() => setShowCartDropdown(true)}
+                onMouseLeave={() => setShowCartDropdown(false)}
+              >
+                <Link
+                  href="/gio-hang"
+                  className="focus:outline-none h-full flex items-center"
                 >
-                  <Link
-                    href="/gio-hang"
-                    className="focus:outline-none h-full flex items-center"
+                  <div
+                    className={`relative flex items-center cursor-pointer px-2 md:px-3 rounded-full w-[48px] md:w-[120px] h-[40px] md:h-[48px] transition ${
+                      pathname === "/cart"
+                        ? "bg-[#002E99]"
+                        : "hover:bg-[#004BB7]"
+                    }`}
                   >
-                    <div
-                      className={`relative flex items-center cursor-pointer px-3 ml-4 rounded-full w-[120px] h-[48px] transition ${
-                        pathname === "/cart"
-                          ? "bg-[#002E99]"
-                          : "hover:bg-[#004BB7]"
-                      }`}
-                    >
-                      <div className="relative">
-                        <AiOutlineShoppingCart className="text-2xl" />
-                        {cart && cart?.length > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                            {cart?.length}
-                          </span>
-                        )}
-                      </div>
-                      <span className="ml-2 text-[14px] hidden sm:inline">
-                        Giỏ hàng
-                      </span>
+                    <div className="relative">
+                      <AiOutlineShoppingCart className="text-xl md:text-2xl" />
+                      {cart?.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {cart.length}
+                        </span>
+                      )}
                     </div>
-                  </Link>
-                  {showCartDropdown && (
-                    <div className="absolute right-0 w-80 bg-white rounded-lg shadow-lg z-[51]">
-                      <div className="p-4">
-                        <h3 className="text-black font-semibold">
-                          Giỏ hàng của bạn
-                        </h3>
+                    <span className="ml-1 text-sm hidden md:inline">
+                      Giỏ hàng
+                    </span>
+                  </div>
+                </Link>
 
-                        {!cart ? (
-                          <div className="py-6 text-center text-gray-500">
-                            Giỏ hàng trống
-                          </div>
-                        ) : (
-                          <>
-                            <div
-                              className={`max-h-[250px] overflow-y-auto ${
-                                cart.length > 3 ? "scrollbar-thin" : ""
-                              }`}
-                            >
-                              {cart &&
-                                cart.map((item: any, index: any) => (
-                                  <div
-                                    key={item.id}
-                                    className={`flex py-3 ${
-                                      index !== cart?.length - 1
-                                        ? "border-b"
-                                        : ""
-                                    }`}
-                                  >
-                                    <div className="w-14 h-14 flex-shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-                                      <Image
-                                        src={item.product?.images_primary}
-                                        alt={item.name}
-                                        width={50}
-                                        height={50}
-                                        className="object-cover"
-                                        priority
-                                      />
-                                    </div>
+                {showCartDropdown && (
+                  <div className="absolute right-0 w-80 bg-white rounded-lg shadow-lg z-[51]">
+                    <div className="p-4">
+                      <h3 className="text-black font-semibold">
+                        Giỏ hàng của bạn
+                      </h3>
 
-                                    <div className="ml-3 flex-1 flex flex-col justify-between">
-                                      <div>
-                                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
-                                          {item.product?.product_name}
-                                        </h4>
-                                      </div>
-                                      {renderCartItems(
-                                        item.product,
-                                        item.price_id,
-                                        item.quantity
-                                      )}
-                                    </div>
-                                    <button
-                                      className="ml-3 text-black/50 hover:text-red-800"
-                                      onClick={() =>
-                                        handlRemoveFromCart(
-                                          item.product?.product_id,
-                                          item.price_id
-                                        )
-                                      }
-                                    >
-                                      <ImBin className="text-lg hover:text-black/70" />
-                                    </button>
+                      {!cart ? (
+                        <div className="py-6 text-center text-gray-500">
+                          Giỏ hàng trống
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            className={`max-h-[250px] overflow-y-auto ${
+                              cart.length > 3 ? "scrollbar-thin" : ""
+                            }`}
+                          >
+                            {cart &&
+                              cart.map((item: any, index: any) => (
+                                <div
+                                  key={item.id}
+                                  className={`flex py-3 ${
+                                    index !== cart?.length - 1 ? "border-b" : ""
+                                  }`}
+                                >
+                                  <div className="w-14 h-14 flex-shrink-0 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                                    <Image
+                                      src={item.product?.images_primary}
+                                      alt={item.name}
+                                      width={50}
+                                      height={50}
+                                      className="object-cover"
+                                      priority
+                                    />
                                   </div>
-                                ))}
-                            </div>
 
-                            <Link href="/gio-hang" legacyBehavior>
-                              <a className="mt-4 text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
-                                Xem giỏ hàng
-                              </a>
-                            </Link>
-                          </>
-                        )}
-                      </div>
+                                  <div className="ml-3 flex-1 flex flex-col justify-between">
+                                    <div>
+                                      <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                                        {item.product?.product_name}
+                                      </h4>
+                                    </div>
+                                    {renderCartItems(
+                                      item.product,
+                                      item.price_id,
+                                      item.quantity
+                                    )}
+                                  </div>
+                                  <button
+                                    className="ml-3 text-black/50 hover:text-red-800"
+                                    onClick={() =>
+                                      handlRemoveFromCart(
+                                        item.product?.product_id,
+                                        item.price_id
+                                      )
+                                    }
+                                  >
+                                    <ImBin className="text-lg hover:text-black/70" />
+                                  </button>
+                                </div>
+                              ))}
+                          </div>
+
+                          <Link href="/gio-hang" legacyBehavior>
+                            <a className="mt-4 text-sm block w-full py-2 px-4 bg-[#0053E2] text-white text-center font-medium rounded-3xl hover:bg-[#0042b4] transition-colors">
+                              Xem giỏ hàng
+                            </a>
+                          </Link>
+                        </>
+                      )}
                     </div>
-                  )}
-                </div>
-
-                {isAuthenticated ? (
+                  </div>
+                )}
+              </div>
+              {isAuthenticated ? (
+                <div className="hidden md:block">
                   <div className="relative" ref={dropdownRef}>
                     <div
                       className={`relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition ${
@@ -670,7 +687,9 @@ export default function Header() {
                       </div>
                     )}
                   </div>
-                ) : (
+                </div>
+              ) : (
+                <div className="hidden md:block">
                   <Link href="/dang-nhap" className="focus:outline-none">
                     <div
                       className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
@@ -683,12 +702,143 @@ export default function Header() {
                       <span className="ml-2 text-[14px]">Đăng nhập</span>
                     </div>
                   </Link>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
-        </header>
 
+          <div className="md:hidden relative" ref={searchRef}>
+            <div className="flex items-center bg-white rounded-lg px-3 py-2 mt-2 mb-2">
+              <input
+                type="text"
+                value={search}
+                placeholder="Tìm kiếm..."
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full outline-none text-sm placeholder:text-gray-500"
+              />
+              <button type="button" onClick={handleSearch}>
+                <RiSearch2Line className="text-blue-600 text-xl" />
+              </button>
+            </div>
+            {showSuggestions && (
+              <div className="absolute bg-white shadow-lg rounded-lg z-50 p-4 w-full top-[40px] left-0">
+                <div>
+                  <div className="flex justify-between items-center mb-2 font-medium text-sm">
+                    <span>Lịch sử tìm kiếm</span>
+                    {searchHistory.length > 0 && (
+                      <button
+                        className="text-blue-600 hover:underline"
+                        onClick={handleClearHistory}
+                      >
+                        Xóa tất cả
+                      </button>
+                    )}
+                  </div>
+                  {searchHistory.length > 0 ? (
+                    searchHistory.map((term, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <div
+                          className="flex items-center gap-1 cursor-pointer"
+                          onClick={() => handleSuggestionClick(term)}
+                        >
+                          <GoHistory className="text-gray-400 mr-1" size={16} />
+                          <span>{term}</span>
+                        </div>
+                        <button onClick={() => removeItem(term)}>
+                          <X size={16} className="text-gray-400" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-400 text-sm">
+                      Không có lịch sử
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4">
+                  <div className="text-sm font-semibold mb-2">
+                    Tra cứu hàng đầu
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {topSearches.map((item, i) => (
+                      <button
+                        key={i}
+                        className="border px-3 py-1 rounded-full text-sm text-gray-800 hover:bg-gray-100"
+                        onClick={() => handleSuggestionClick(item)}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {searchResultProduct && searchResult !== null && !isLoading && (
+              <div className="absolute bg-white shadow-lg rounded-lg z-50 w-full overflow-y-auto hide-scrollbar top-[40px] left-0">
+                {searchResult.length > 0 ? (
+                  <>
+                    {searchResult
+                      .slice(0, 5)
+                      .map((product: any, index: any) => (
+                        <Link
+                          href={`/chi-tiet-san-pham/${product.slug}`}
+                          key={product.id}
+                          className="cursor-pointer"
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setSearchResultProduct(false);
+                            setSearch("");
+                            fetchClearSearch();
+                          }}
+                        >
+                          <div
+                            key={product.id}
+                            className={`flex gap-3 items-center hover:bg-gray-100 cursor-pointer p-4 ${
+                              index !== Math.min(4, searchResult.length - 1)
+                                ? "border-b"
+                                : ""
+                            }`}
+                          >
+                            <Image
+                              width={70}
+                              height={70}
+                              src={product.images_primary}
+                              alt={product.name}
+                              className="p-1 rounded-lg object-cover border"
+                            />
+                            <div className="flex-grow">
+                              <div className="text-sm">
+                                {product.name_primary}
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+
+                    {searchResult.length > 5 && (
+                      <div className="text-center">
+                        <button
+                          onClick={() => {}}
+                          className="text-blue-600 text-sm hover:underline"
+                        >
+                          Xem tất cả {searchResult.length} sản phẩm
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-center text-sm text-gray-500 p-4 w-full">
+                    Không tìm thấy sản phẩm phù hợp.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </header>
         <MenuHeader />
         {isDeleteDialogOpen && selectedProductId !== null && (
           <DeleteProductDialog

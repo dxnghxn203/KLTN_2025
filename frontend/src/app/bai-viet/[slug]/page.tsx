@@ -68,7 +68,14 @@ const DetailArticle = () => {
         <Link href="/bai-viet" className="hover:underline text-blue-600">
           Bài viết
         </Link>{" "}
-        / <span className="text-gray-600">...</span>
+        /{" "}
+        <div className="text-gray-600 inline-block font-normal [&_*]:font-normal">
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(getArticleById.title || ""),
+            }}
+          />
+        </div>
       </div>
       <div className="p-6 max-w-3xl mx-auto mb-10">
         <h1 className="text-3xl font-bold mb-4">
