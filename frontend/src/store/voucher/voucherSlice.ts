@@ -1,9 +1,8 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {all} from "axios";
-import {fetchGetAllAdminFailure} from "../user";
 
 const initialState: any = {
     allVouchers: [],
+    totalVouchers: 0,
     allVoucherUser: [],
     loading: false,
     error: null,
@@ -17,9 +16,10 @@ export const voucherSlice = createSlice({
             state.loading = true;
             state.error = null;
         },
-        fetchAllVouchersSuccess: (state, action: PayloadAction<any[]>) => {
+        fetchAllVouchersSuccess: (state, action: PayloadAction<any>) => {
             state.loading = false;
-            state.allVouchers = action.payload;
+            state.allVouchers = action.payload.vouchers;
+            state.totalVouchers = action.payload.total_vouchers;
         },
         fetchAllVouchersFailure: (state, action: PayloadAction<any>) => {
             state.loading = false;
@@ -37,6 +37,20 @@ export const voucherSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+
+        // update Voucher 
+        fetchUpdateVoucherStart: (state, action) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchUpdateVoucherSuccess: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+        },
+        fetchUpdateVoucherFailure: (state, action: PayloadAction<any>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
         // delete Voucher
         fetchDeleteVoucherStart: (state, action) => {
             state.loading = true;
@@ -86,6 +100,10 @@ export const {
     fetchAddVoucherStart,
     fetchAddVoucherSuccess,
     fetchAddVoucherFailure,
+
+    fetchUpdateVoucherStart,
+    fetchUpdateVoucherSuccess,
+    fetchUpdateVoucherFailure,
 
     fetchDeleteVoucherStart,
     fetchDeleteVoucherSuccess,

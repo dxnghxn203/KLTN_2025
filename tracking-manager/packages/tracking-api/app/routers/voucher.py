@@ -104,7 +104,7 @@ async def update_voucher(voucher_id: str, item: ItemVoucherDBInReq, token: str =
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error(f"Error getting current user: {e}")
+        logger.error(f"Error updating voucher: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

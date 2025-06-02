@@ -126,11 +126,11 @@ async def update_voucher(voucher_id: str, item: ItemVoucherDBInReq, email: str):
         collection = database.db[collection_name]
         collection.update_one(
             {"voucher_id": voucher_id},
-            {"$set": item_data.dict()}
+            {"$set": item.dict()}
         )
         return response.SuccessResponse(message="Cập nhật voucher thành công")
     except Exception as e:
-        logger.error(f"Error updating voucher: {str(e)}")
+        logger.error(f"Error [update_voucher]: {str(e)}")
         raise e
 
 async def restore_voucher(voucher_id: str, user_id: str):
