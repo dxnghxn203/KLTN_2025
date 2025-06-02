@@ -62,29 +62,8 @@ const DiscountManagement = () => {
       <SearchProductDialog
         isOpen={isOpenDialog}
         setIsOpen={setIsOpenDialog}
-        onSelectProduct={(product) => {
-          if (
-            selectedProduct.some(
-              (p: any) => p.product_id === product.product_id
-            )
-          ) {
-            toast.showToast("Sản phẩm đã được thêm", "error");
-            return;
-          }
-          const defaultPrice = product.prices?.[0];
-          const defaultUnit = defaultPrice?.price_id;
-          setSelectedProduct((prev: any) => [
-            ...prev,
-            {
-              ...product,
-              quantity: 1,
-              unit: defaultUnit,
-            },
-          ]);
-        }}
         allProductDiscountAdmin={allProductDiscountAdmin}
         isApproved={isApproved}
-        totalProductDiscountAdmin={totalProductDiscountAdmin}
       />
     </div>
   );

@@ -36,23 +36,8 @@ const TableManagementDiscount = ({
   isApproved,
   setIsApproved,
 }: TableManagementDiscountProps) => {
-  const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [isOpenUpdateProduct, setIsOpenUpdateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const toggleMenu = (productId: string) => {
-    setMenuOpen(menuOpen === productId ? null : productId);
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!(event.target as HTMLElement).closest(".menu-container")) {
-        setMenuOpen(null);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
 
   const totalPages = Math.ceil(totalProductDiscountAdmin / pageSize);
   const currentPageData = (currentPage - 1) * pageSize;

@@ -12,19 +12,15 @@ import { da, is } from "date-fns/locale";
 interface Props {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onSelectProduct: (product: any) => void;
   allProductDiscountAdmin: any;
   isApproved: boolean;
-  totalProductDiscountAdmin: number;
 }
 
 export default function SearchProductDialog({
   isOpen,
   setIsOpen,
-  onSelectProduct,
   allProductDiscountAdmin,
   isApproved,
-  totalProductDiscountAdmin,
 }: Props) {
   const {
     fetchSearchProduct,
