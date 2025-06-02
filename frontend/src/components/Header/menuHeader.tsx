@@ -96,7 +96,7 @@ export default function MenuHeader() {
     : [];
 
   return (
-    <nav className="bg-blue-700 py-3 flex justify-center items-center">
+    <nav className="hidden md:flex bg-blue-700 py-3 flex justify-center items-center">
       <ul className="flex justify-center space-x-10 font-semibold text-sm ">
         {visibleCategories.map((category: any) => (
           <div key={category.main_category_slug}>
@@ -125,7 +125,7 @@ export default function MenuHeader() {
                         <Link
                           key={subCategory.sub_category_slug}
                           href={`/${category.main_category_slug}/${subCategory.sub_category_slug}`}
-                          className="hover:bg-blue-100 px-4 py-2"
+                          className="hover:bg-blue-100 px-4 py-3"
                         >
                           {subCategory.sub_category_name}
                         </Link>

@@ -24,11 +24,6 @@ export const PaymentMethod: React.FC<PaymentMethodProps> = ({
       label: "Thanh toán bằng chuyển khoản (QR Code)",
       icon: "https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/ef2a528bd3ff354fc1498a931df4f4010b4ef9f868879479a670ea309caca048?placeholderIfAbsent=true",
     },
-    {
-      type: "bank",
-      label: "Thanh toán bằng thẻ ATM nội địa và tài khoản ngân hàng",
-      icon: "https://cdn.builder.io/api/v1/image/assets/578eba90d74e42a9a5e59d68f5f9b1b7/fdc877a8a44a0135f2a37d6f510531e5f4bdfedae3585bdc2de05b8af6098c4f?placeholderIfAbsent=true",
-    },
   ];
 
   return (
@@ -66,7 +61,7 @@ export const PaymentMethod: React.FC<PaymentMethodProps> = ({
           </label>
 
           {index < methods.length - 1 && (
-            <div className="self-stretch border border-black border-opacity-10" />
+            <div className="self-stretch border border-gray-200" />
           )}
         </React.Fragment>
       ))}

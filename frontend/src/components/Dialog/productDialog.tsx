@@ -144,7 +144,7 @@ const ProductDialog = ({ product, onClose }: any) => {
             </div>
             <a
               onClick={() => handleAddToCart(true)}
-              className="block mt-4 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full text-center"
+              className="block mt-4 bg-[#0053E2] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[#002E99] w-full text-center cursor-pointer"
             >
               Mua ngay
             </a>

@@ -113,12 +113,14 @@
   border-top-left-radius: 0.5rem; /* = rounded-lg */
   border-top-right-radius: 0.5rem;
   border: 1px solid #f9fafb;; 
+  line-height: 1.75 !important; 
 }
 
 .custom-quill .ql-container {
   border-bottom-left-radius: 0.5rem;
   border-bottom-right-radius: 0.5rem;
   border: 1px solid #f9fafb; 
+  line-height: 1.75 !important; 
 
 }
 .rang-cua-left::before {
@@ -157,6 +159,7 @@
 .animate-fade-in {
   animation: fade-in 0.4s ease-out forwards;
 }
+
 
 
 

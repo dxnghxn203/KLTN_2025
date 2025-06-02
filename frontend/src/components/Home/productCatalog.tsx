@@ -173,12 +173,12 @@ const ProductCatalog: React.FC = () => {
       </div>
 
       {/* Product Categories */}
-      <div className="mt-8 text-2xl font-extrabold text-black">
+      <div className="mt-4 text-2xl font-extrabold text-black">
         Danh mục sản phẩm
       </div>
-      <div className="w-full max-md:px-5 max-md:max-w-full">
-        <div className="self-center mt-5 w-full">
-          <div className="grid grid-cols-4 gap-6 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
+      <div className="w-full max-md:max-w-full">
+        <div className="self-center w-full mt-0 md:mt-5">
+          <div className="grid grid-cols-4 md:gap-6 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
             {categories.map((category, index) => (
               <Link key={index} href={category.path} passHref>
                 <div

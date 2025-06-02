@@ -9,22 +9,24 @@ interface BrandProps {
 }
 
 const BrandItem: React.FC<BrandProps> = ({ name, logo }) => (
-  <Link
-    href={`/thuong-hieu/${encodeURIComponent(name)}`}
-    className="flex flex-col"
-  >
-    <div className="flex flex-col justify-center items-center px-7 rounded-full bg-neutral-100 h-[170px] w-[170px] max-md:px-5">
-      <img
-        loading="lazy"
-        src={logo}
-        alt={`${name} logo`}
-        className="object-contain w-28 aspect-[1.12]"
-      />
-    </div>
-    <div className="self-center mt-1.5 text-lg font-semibold text-black">
-      {name}
-    </div>
-  </Link>
+  <div className="flex flex-col justify-center items-center w-full max-md:w-1/2 max-lg:w-1/3">
+    <Link
+      href={`/thuong-hieu/${encodeURIComponent(name)}`}
+      className="flex flex-col "
+    >
+      <div className="flex flex-col justify-center items-center px-7 rounded-full bg-neutral-100 h-[170px] w-[170px] max-md:px-5 ">
+        <img
+          loading="lazy"
+          src={logo}
+          alt={`${name} logo`}
+          className="object-contain w-28 aspect-[1.12]"
+        />
+      </div>
+      <div className="self-center mt-1.5 text-lg font-semibold text-black">
+        {name}
+      </div>
+    </Link>
+  </div>
 );
 
 const BrandList: React.FC = () => {
@@ -47,7 +49,7 @@ const BrandList: React.FC = () => {
           </div>
         </Link>
 
-        <div className="flex gap-5 justify-around items-center py-0.5 mt-7 w-full max-md:flex-wrap">
+        <div className="flex gap-5 justify-around items-center py-0.5 mt-7 w-full max-md:flex-wrap md:g">
           {getAllBrandsUser &&
             getAllBrandsUser
               .slice(0, 6)

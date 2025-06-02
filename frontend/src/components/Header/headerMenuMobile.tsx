@@ -1,0 +1,178 @@
+"use client";
+import { useState, useEffect, useRef } from "react";
+import { useCategory } from "@/hooks/useCategory";
+import { usePathname, useRouter } from "next/navigation";
+import { HiMenu, HiOutlineUserCircle } from "react-icons/hi";
+import { IoChevronDownOutline, IoClose } from "react-icons/io5";
+import Link from "next/link";
+import { FiLogOut } from "react-icons/fi";
+import { useAuth } from "@/hooks/useAuth";
+
+export default function MobileSidebar() {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const { allCategory, fetchAllCategory, fetchGetCategoryForMenu } =
+    useCategory();
+
+  const [subCategoryMap, setSubCategoryMap] = useState<{
+    [key: string]: any[];
+  }>({});
+
+  useEffect(() => {
+    fetchAllCategory();
+  }, []);
+
+  useEffect(() => {
+    if (!allCategory || allCategory.length === 0) return;
+
+    const fetchSubs = async () => {
+      const promises = allCategory.map(
+        (category: any) =>
+          new Promise((resolve) => {
+            fetchGetCategoryForMenu(
+              category.main_category_slug,
+              (data) => {
+                resolve({
+                  slug: category.main_category_slug,
+                  subcategories: data.sub_category || [],
+                });
+              },
+              () =>
+                resolve({
+                  slug: category.main_category_slug,
+                  subcategories: [],
+                })
+            );
+          })
+      );
+
+      const results = await Promise.all(promises);
+
+      const map = results.reduce((acc, item) => {
+        acc[item.slug] = item.subcategories;
+        return acc;
+      }, {});
+
+      setSubCategoryMap(map);
+    };
+
+    fetchSubs();
+  }, [allCategory]);
+
+  return (
+    <>
+      {/* Toggle Button only on Mobile */}
+      <div className="flex items-center bg-blue-700 px-4 py-3 text-white">
+        <HiMenu
+          size={28}
+          onClick={() => setOpen(true)}
+          className="cursor-pointer"
+        />
+      </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setOpen(false)}
+        ></div>
+      )}
+
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b">
+          {isAuthenticated ? (
+            <div>
+              <div className="relative" ref={dropdownRef}>
+                <div className="relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    {user?.image ? (
+                      <img
+                        src={user?.image}
+                        alt={"User"}
+                        className="text-2xl rounded-full object-cover"
+                      />
+                    ) : (
+                      <HiOutlineUserCircle className="text-2xl" />
+                    )}
+                  </div>
+
+                  <div className="ml-2 flex-1 overflow-hidden">
+                    <p className="text-sm font-medium truncate">
+                      {user?.name || user?.user_name || ""}
+                    </p>
+                    <p className="text-xs text-gray-600 truncate">
+                      {user?.email || ""}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <Link href="/dang-nhap" className="focus:outline-none">
+                <div
+                  onClick={() => setOpen(false)}
+                  className={`relative flex items-center cursor-pointer px-2 py-1 rounded-full w-[120px] h-[48px] transition ${
+                    pathname === "/dang-nhap"
+                      ? "bg-[#002E99] text-white"
+                      : "hover:bg-blue-100 text-blue-700"
+                  }`}
+                >
+                  <HiOutlineUserCircle className="text-2xl" />
+                  <span className="ml-2 text-[14px]">Đăng nhập</span>
+                </div>
+              </Link>
+            </div>
+          )}
+
+          <IoClose
+            size={24}
+            className="cursor-pointer"
+            onClick={() => setOpen(false)}
+          />
+        </div>
+        <ul className="p-4 space-y-3 overflow-y-auto max-h-[90vh]">
+          {allCategory.map((category: any) => (
+            <li key={category.main_category_slug}>
+              <Link
+                href={`/${category.main_category_slug}`}
+                className="text-blue-700 font-semibold"
+              >
+                {category.main_category_name}
+              </Link>
+              <ul className="ml-4 mt-1 text-sm text-gray-600 space-y-1">
+                {subCategoryMap[category.main_category_slug]?.map((sub) => (
+                  <li key={sub.sub_category_slug}>
+                    <Link
+                      href={`/${category.main_category_slug}/${sub.sub_category_slug}`}
+                    >
+                      {sub.sub_category_name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+
+          <li className="pt-4 border-t">
+            <Link href="/goc-suc-khoe/bai-viet-y-te" className="text-blue-700">
+              Bài viết y tế
+            </Link>
+          </li>
+          <li>
+            <Link href="/goc-suc-khoe/truyen-thong" className="text-blue-700">
+              Truyền thông
+            </Link>
+          </li>
+        </ul>
+      </div>
+    </>
+  );
+}

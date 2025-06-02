@@ -48,6 +48,7 @@ const ArticleMain = () => {
     );
   }, []);
   if (!mainArticle) return null;
+  console.log("mainArticle", mainArticle);
 
   return (
     <div className="container mx-auto px-4 py-8 pt-[135px] px-5 ">
@@ -57,7 +58,19 @@ const ArticleMain = () => {
         </Link>
         <span className="text-gray-500">/ Góc sức khỏe / Truyền thông</span>
       </div>
-      <h1 className="text-3xl font-bold mb-6 py-4">Góc sức khỏe</h1>
+      <h1 className="text-3xl font-bold py-4">Góc sức khỏe</h1>
+      <div className="flex flex-wrap gap-2 p-2 mb-4 cursor-pointer">
+        {Array.isArray(getAllArticlesUser) &&
+          getAllArticlesUser.map((cat: any, index: any) => (
+            <div
+              key={index}
+              className="flex items-center px-4 py-2 rounded-full text-sm font-medium border border-gray-300"
+            >
+              {cat.category}
+            </div>
+          ))}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 ">
         {/* Bài viết chính */}
         <Link
