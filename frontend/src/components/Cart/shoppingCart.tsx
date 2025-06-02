@@ -281,7 +281,7 @@ const ShoppingCart = forwardRef(
         price_id,
         change,
         () => {
-          toast.showToast("Cập nhật thành công", "success");
+          // toast.showToast("Cập nhật thành công", "success");
           getCart();
         },
         (error: string) => {
@@ -343,16 +343,14 @@ const ShoppingCart = forwardRef(
       }));
     };
 
-    const renderPrice = (product: any, price_id: any) => {
+    const renderOriginalPrice = (product: any, price_id: any) => {
       const price = getPrice(product.product, price_id);
       const productId = product.product.product_id;
       const dropdownKey = `${productId}-${price_id}`;
-      const availableQuantity = availableQuantities[dropdownKey];
-      const isLoadingQuantity = loadingQuantities[dropdownKey];
 
       return (
         <>
-          <div className="w-[12%] text-center flex flex-col items-center">
+          <div className="text-center flex flex-col items-center">
             <span className="text-lg font-semibold text-[#0053E2]">
               {price?.price.toLocaleString("vi-VN")}đ
             </span>
@@ -363,67 +361,90 @@ const ShoppingCart = forwardRef(
                 </span>
               )}
           </div>
-          <div className="w-[12%] text-center flex items-center justify-center gap-2">
-            <button
-              onClick={() => {
-                handleQuantityChange(
-                  product.product.product_id,
-                  product.price_id,
-                  -1
-                );
-              }}
-              className="px-2 py-1 border rounded disabled:cursor-not-allowed"
-              disabled={product.quantity === 1}
-            >
-              -
-            </button>
+        </>
+      );
+    };
+    const renderQuantityControls = (product: any, price_id: any) => {
+      const price = getPrice(product.product, price_id);
+      const productId = product.product.product_id;
+      const dropdownKey = `${productId}-${price_id}`;
+      const available = availableQuantities[dropdownKey];
+      const maxQuantity =
+        available !== undefined && available !== null
+          ? Math.min(50, available)
+          : 50;
 
-            <input
-              value={
-                inputQuantities[`${product.product.product_id}`] ??
-                product.quantity
+      return (
+        <div className="text-center flex items-center justify-center gap-2">
+          {/* Nút - */}
+          <button
+            onClick={() => {
+              if (product.quantity > 1) {
+                handleQuantityChange(productId, price_id, -1);
               }
-              onChange={(e) => {
-                const value = parseInt(e.target.value);
-                const newQuantity = isNaN(value) || value <= 0 ? 1 : value;
+            }}
+            className="px-2 py-1 border rounded disabled:cursor-not-allowed"
+            disabled={product.quantity === 1}
+          >
+            -
+          </button>
 
-                setInputQuantities((prev) => ({
-                  ...prev,
-                  [`${product.product.product_id}`]: newQuantity,
-                }));
+          {/* Input số lượng */}
+          <input
+            type="number"
+            value={inputQuantities[productId] ?? product.quantity}
+            onChange={(e) => {
+              let value = parseInt(e.target.value);
+              if (isNaN(value) || value <= 0) value = 1;
+              if (value > maxQuantity) value = maxQuantity;
 
-                handleDebouncedQuantityChange(
-                  product.product.product_id,
-                  product.price_id,
-                  newQuantity,
-                  product.quantity
-                );
-              }}
-              className="w-14 text-center border rounded px-2 py-1"
-            />
+              setInputQuantities((prev) => ({
+                ...prev,
+                [productId]: value,
+              }));
 
-            <button
-              onClick={() => {
-                handleQuantityChange(
-                  product.product.product_id,
-                  product.price_id,
-                  1
-                );
-              }}
-              className="px-2 py-1 border rounded"
-            >
-              +
-            </button>
-          </div>
+              handleDebouncedQuantityChange(
+                productId,
+                price_id,
+                value,
+                product.quantity
+              );
+            }}
+            className="w-12 text-center border rounded px-2 py-1"
+          />
 
+          {/* Nút + */}
+          <button
+            onClick={() => {
+              if (product.quantity < maxQuantity) {
+                handleQuantityChange(productId, price_id, 1);
+              }
+            }}
+            className="px-2 py-1 border rounded"
+          >
+            +
+          </button>
+        </div>
+      );
+    };
+
+    const renderUnit = (product: any, price_id: any) => {
+      const price = getPrice(product.product, price_id);
+      const productId = product.product.product_id;
+      const dropdownKey = `${productId}-${price_id}`;
+      const availableQuantity = availableQuantities[dropdownKey];
+      const isLoadingQuantity = loadingQuantities[dropdownKey];
+
+      return (
+        <>
           <div
-            className="w-[12%] text-center relative flex flex-col"
+            className="text-center relative flex flex-col"
             ref={(el) => {
               dropdownRefs.current[dropdownKey] = el;
             }}
           >
             <div
-              className="border rounded px-2 py-1 cursor-pointer flex justify-between items-center bg-white"
+              className="border rounded px-2 py-1 cursor-pointer flex bg-white"
               onClick={() => toggleDropdown(dropdownKey)}
             >
               <span>{price?.unit}</span>
@@ -448,7 +469,7 @@ const ShoppingCart = forwardRef(
               <div className="text-xs text-gray-500 mt-1">
                 <span
                   className={
-                    availableQuantity < 10 ? "text-orange-500 font-medium" : ""
+                    availableQuantity < 10 ? "text-red-500 font-medium" : ""
                   }
                 >
                   Còn {availableQuantity} {price?.unit}
@@ -457,7 +478,7 @@ const ShoppingCart = forwardRef(
             ) : null}
 
             {openDropdowns[dropdownKey] && (
-              <div className="absolute z-10 mt-1 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-auto top-9">
+              <div className="absolute z-10 w-fit bg-white border rounded-md shadow-lg max-h-60 overflow-auto top-8 whitespace-nowrap">
                 {product?.product?.prices &&
                   product?.product?.prices.map((priceOption: any) => (
                     <div
@@ -487,8 +508,17 @@ const ShoppingCart = forwardRef(
               </div>
             )}
           </div>
+        </>
+      );
+    };
+    const renderTotalPrice = (product: any, price_id: any) => {
+      const price = getPrice(product.product, price_id);
+      const productId = product.product.product_id;
+      const dropdownKey = `${productId}-${price_id}`;
 
-          <div className="w-[12%] text-center font-semibold text-[#0053E2]">
+      return (
+        <>
+          <div className="text-center font-semibold text-[#0053E2] text-lg">
             {calculateTotalPrice(price?.price, product.quantity).toLocaleString(
               "vi-VN"
             )}
@@ -500,123 +530,146 @@ const ShoppingCart = forwardRef(
 
     return (
       <>
-        <div className="flex pt-4 flex-col lg:flex-row gap-6 justify-center">
+        <div className="pt-4 flex flex-col lg:flex-row">
           <div
-            className="flex-col bg-[#F5F7F9] rounded-xl w-full "
+            className="bg-[#F5F7F9] rounded-xl w-full"
             style={{ height: `${cart && cart?.length * 20}%` }}
           >
-            <div className="flex px-4 items-center justify-between border-b border-black border-opacity-10 text-sm text-black font-medium">
-              <div className="w-[40%] p-5 flex items-center">
-                <input
-                  type="checkbox"
-                  id="select-all"
-                  className="peer hidden"
-                  checked={cart && selectedProducts.length === cart?.length}
-                  onChange={handleSelectAll}
-                />
-                <label
-                  htmlFor="select-all"
-                  className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center cursor-pointer peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]"
+            <div className="overflow-hidden rounded-xl">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr className="border-b border-gray-300">
+                    <th className="text-left px-4 py-3 whitespace-nowrap font-normal">
+                      <div className="flex ">
+                        <input
+                          type="checkbox"
+                          id="select-all"
+                          checked={
+                            cart && selectedProducts.length === cart?.length
+                          }
+                          onChange={handleSelectAll}
+                        />
+                        <label
+                          htmlFor="select-all"
+                          className="ml-2 cursor-pointer"
+                        >
+                          Chọn tất cả ({selectedProducts.length}/{cart?.length})
+                        </label>
+                      </div>
+                    </th>
+                    <th className="text-center px-4 py-3 whitespace-nowrap font-normal">
+                      Giá thành
+                    </th>
+                    <th className="text-center px-4 py-3 whitespace-nowrap font-normal">
+                      Số lượng
+                    </th>
+                    <th className="text-center px-4 py-3 whitespace-nowrap font-normal">
+                      Đơn vị
+                    </th>
+                    <th className="text-center px-4 py-3 whitespace-nowrap font-normal">
+                      Thành tiền
+                    </th>
+                    <th className="text-center px-4 py-3 whitespace-nowrap font-normal">
+                      Hành động
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody
+                  className={
+                    loadingGetCart ? "pointer-events-none opacity-50" : ""
+                  }
                 >
-                  &#10003;
-                </label>
-
-                <label htmlFor="select-all" className="ml-4 cursor-pointer">
-                  Chọn tất cả ({selectedProducts.length}/{cart?.length})
-                </label>
-              </div>
-              <div className="flex justify-between w-[60%]">
-                <div className="text-center">Giá thành</div>
-                <div className="text-center">Số lượng</div>
-                <div className="text-center">Đơn vị</div>
-                <div className="text-center">Thành tiền</div>
-                <div className="text-center"></div>
-              </div>
-            </div>
-
-            <div
-              className={` ${
-                loadingGetCart ? "pointer-events-none opacity-50" : ""
-              }`}
-            >
-              {cart &&
-                cart?.map((product: any, index: any) => (
-                  <div
-                    key={`product-${product.product.product_id}-${product.price_id}`}
-                    className={`flex items-center justify-between py-4 mx-5 text-sm ${
-                      index !== cart?.length - 1
-                        ? "border-b border-gray-300"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex items-center space-x-8">
-                      <div className="flex items-center px-4 py-2 w-[40%]">
+                  {cart?.map((product: any, index: number) => (
+                    <tr
+                      key={`product-${product.product.product_id}-${product.price_id}`}
+                      className={`${
+                        index === cart.length - 1
+                          ? "" // không border cho hàng cuối
+                          : "border-b border-gray-200"
+                      }`}
+                    >
+                      <td className="px-4 py-3">
                         <label
                           htmlFor={`product-${product.product.product_id}-${product.price_id}`}
-                          className="flex items-center justify-center w-5 h-5 cursor-pointer"
+                          className="inline-flex items-center cursor-pointer"
                         >
                           <input
                             type="checkbox"
                             id={`product-${product.product.product_id}-${product.price_id}`}
-                            className="peer hidden"
                             checked={selectedProducts.some(
                               (item) =>
                                 item.product_id ===
                                   product.product.product_id &&
                                 item.price_id === product.price_id
                             )}
-                            onChange={() => {
+                            onChange={() =>
                               handleSelectProduct(
                                 product.product.product_id,
                                 product.price_id
-                              );
-                            }}
+                              )
+                            }
+                            className="h-6 w-6 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
-                          <span className="w-5 h-5 text-transparent peer-checked:text-white border border-gray-400 rounded-full flex items-center justify-center transition-all peer-checked:bg-[#0053E2] peer-checked:border-[#0053E2]">
-                            ✓
+
+                          <Image
+                            src={product?.product?.images_primary}
+                            alt={
+                              product.product?.product_name || "Product Image"
+                            }
+                            width={55}
+                            height={55}
+                            className="ml-2 p-1 rounded-lg border border-stone-300"
+                          />
+                          <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis max-w-[180px]">
+                            {product?.product?.name_primary}
                           </span>
                         </label>
-                        <Image
-                          src={product?.product?.images_primary}
-                          alt={product.product?.product_name || "Product Image"}
-                          width={55}
-                          height={55}
-                          className="ml-4 p-1 rounded-lg border border-stone-300"
-                        />
-                        <span className="ml-2 line-clamp-3 overflow-hidden text-ellipsis">
-                          {product?.product?.name_primary}
-                        </span>
-                      </div>
-                      {renderPrice(product, product.price_id)}
+                      </td>
 
-                      <div className="w-[10%] flex flex-col items-center justify-center gap-2">
-                        {/* Delete button */}
-                        <button
-                          title="Xóa sản phẩm"
-                          onClick={() =>
-                            handleDeleteClick(
-                              product.product.product_id,
-                              product.price_id
-                            )
-                          }
-                          className="text-gray-500 hover:text-red-600 transition-colors"
-                        >
-                          <ImBin size={16} />
-                        </button>
+                      <td className="text-center px-4 py-3">
+                        {renderOriginalPrice(product, product.price_id)}
+                      </td>
 
-                        {/* Updated Similar Products Button with Text */}
-                        <button
-                          title="Tìm sản phẩm tương tự"
-                          onClick={() => handleShowSimilarProducts(product)}
-                          className="flex items-center px-2 py-1 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors"
-                        >
-                          <FiSearch size={10} className="mr-1" />
-                          <span>Tương tự</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                      <td className="text-center px-4 py-3">
+                        {renderQuantityControls(product, product.price_id)}
+                      </td>
+
+                      <td className="text-center px-4 py-3">
+                        {renderUnit(product, product.price_id)}
+                      </td>
+
+                      <td className="text-center px-4 py-3">
+                        {renderTotalPrice(product, product.price_id)}
+                      </td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col items-center gap-1">
+                          <button
+                            title="Xóa sản phẩm"
+                            onClick={() =>
+                              handleDeleteClick(
+                                product.product.product_id,
+                                product.price_id
+                              )
+                            }
+                            className="text-gray-500 hover:text-red-600 transition-colors"
+                          >
+                            <ImBin size={16} />
+                          </button>
+                          <button
+                            title="Tìm sản phẩm tương tự"
+                            onClick={() => handleShowSimilarProducts(product)}
+                            className="px-2 py-1 text-xs text-red-500 font-medium"
+                          >
+                            Tìm sản phẩm tương tự
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -644,7 +697,7 @@ const ShoppingCart = forwardRef(
                     toast.showToast("Xóa sản phẩm thành công", "success");
                     getCart();
                   },
-                  (error: string) => {
+                  (error) => {
                     toast.showToast("Xóa sản phẩm thất bại", "error");
                   }
                 );

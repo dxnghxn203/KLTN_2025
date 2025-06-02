@@ -63,20 +63,17 @@ const ProductDialog = ({ product, onClose }: any) => {
         </button>
         <div className="text-left text-xl font-semibold">Chọn sản phẩm</div>
 
-        <div className="flex gap-6 py-4">
-          <div className="w-1/2 flex justify-center items-center bg-[#F1F5F9] p-4 rounded-lg ">
-            <Image
+        <div className="flex flex-col md:flex-row gap-6 py-4">
+          <div className="w-full md:w-1/2 flex justify-center items-center bg-[#F1F5F9] p-4 rounded-lg">
+            <img
               src={product?.images_primary}
               alt="Product"
-              width={250}
-              height={250}
-              className="object-contain w-full max-w-[250px]"
-              priority
+              className="object-contain w-60 h-60 md:w-full md:max-w-[250px]"
             />
           </div>
 
-          <div className="w-1/2 text-left">
-            <h1 className="text-2xl font-semibold text-black">
+          <div className="w-full md:w-1/2 text-left">
+            <h1 className="text-lg md:text-2xl font-semibold text-black">
               {product?.name_primary}
             </h1>
 

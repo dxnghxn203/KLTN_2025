@@ -14,7 +14,7 @@ const ProductsRelatedList = ({ product }: any) => {
   }, []);
 
   return (
-    <div className="w-full max-md:px-5 max-md:max-w-full mt-6">
+    <div className="max-md:px-5 w-full mt-6">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black mt-[-30px]">
         <div className="flex gap-4 text-sm font-semibold ml-auto items-center">
           <div>Tất cả sản phẩm</div>
@@ -22,7 +22,7 @@ const ProductsRelatedList = ({ product }: any) => {
         </div>
       </div>
       <div className="self-center mt-5 w-full max-md:max-w-full">
-        <div className="grid grid-cols-5 gap-6 max-md:grid-cols-1">
+        <div className="grid grid-cols-5 gap-6 max-md:grid-cols-2 w-full">
           {productRelated &&
             productRelated
               .slice(0, 5)

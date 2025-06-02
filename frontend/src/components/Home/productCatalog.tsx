@@ -107,9 +107,8 @@ const ProductCatalog: React.FC = () => {
   const canGoPrev = currentIndex > 0;
 
   return (
-    <div className="pt-14">
+    <div className="pt-20">
       {/* Slider */}
-
       <div className="flex flex-col lg:flex-row gap-4 max-w-screen-2xl mx-auto group">
         <div className="relative w-full overflow-hidden rounded-xl">
           <div
