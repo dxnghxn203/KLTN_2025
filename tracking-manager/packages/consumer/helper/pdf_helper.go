@@ -208,3 +208,135 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 
 	return outBuf.Bytes(), nil
 }
+
+// ExportSampleInvoiceToPDF generates a sample invoice PDF for testing without requiring input data
+func ExportSampleInvoiceToPDF() ([]byte, error) {
+	now := time.Now()
+	currentDate := now.Format("02/01/2006")
+	currentTime := now.Format("15:04:05")
+
+	// Sample items for demonstration
+	itemsHTML := `
+		<tr>
+			<td>Paracetamol</td>
+			<td style="text-align: center;">2</td>
+			<td style="text-align: center;">Hộp</td>
+			<td style="text-align: center;">50000</td>
+			<td style="text-align: center;">10%</td>
+			<td style="text-align: center;">90000</td>
+		</tr>
+		<tr>
+			<td>Vitamin C</td>
+			<td style="text-align: center;">1</td>
+			<td style="text-align: center;">Chai</td>
+			<td style="text-align: center;">120000</td>
+			<td style="text-align: center;">5%</td>
+			<td style="text-align: center;">114000</td>
+		</tr>
+		<tr>
+			<td>Băng y tế</td>
+			<td style="text-align: center;">3</td>
+			<td style="text-align: center;">Gói</td>
+			<td style="text-align: center;">25000</td>
+			<td style="text-align: center;">0%</td>
+			<td style="text-align: center;">75000</td>
+		</tr>
+	`
+
+	// Sample totals
+	productFeeBeforeDiscount := 245000.0
+	productDiscount := 16000.0
+	productFeeAfterDiscount := 229000.0
+	shippingFee := 30000.0
+	voucherOrderDiscount := 20000.0
+	voucherDeliveryDiscount := 10000.0
+	totalFee := productFeeAfterDiscount + shippingFee - voucherOrderDiscount - voucherDeliveryDiscount
+
+	htmlContent := fmt.Sprintf(`
+	<html>
+      	<body>
+        <h2>HÓA ĐƠN</h2>
+        <p><strong>Nhà thuốc:</strong> NHÀ THUỐC MEDICARE</p>
+        <p><strong>Địa chỉ:</strong> Số 1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức, TP. Hồ Chí Minh</p>
+        <p><strong>Website:</strong> https://kltn-2025.vercel.app</p>
+        <p><strong>Đường dây nóng:</strong> 18006928</p>
+        <hr>
+        <p><strong>Ngày:</strong> %s - <strong>Giờ:</strong> %s</p>
+        <p><strong>Mã đơn hàng:</strong> TEST-ORDER-123</p>
+        <p><strong>Khách hàng:</strong> Khách hàng mẫu</p>
+        <hr>
+        <h4>Chi tiết sản phẩm</h4>
+        <table border="1" cellpadding="5" cellspacing="0" width="100%%">
+          <tr>
+            <th>Tên sản phẩm</th>
+            <th>Số lượng</th>
+			<th>Đơn vị</th>
+            <th>Đơn giá (VNĐ)</th>
+            <th>Giảm giá</th>
+            <th>Thành tiền (VNĐ)</th>
+          </tr>
+          %s
+        </table>
+		<br>
+		<p style="text-align: right;"><strong>Giá sản phẩm:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Phí vận chuyển:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Tổng cộng:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Giảm giá sản phẩm:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Giảm giá từ voucher đơn hàng:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Giảm giá từ voucher vận chuyển:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Số tiền thanh toán:</strong> %.0f VNĐ</p>
+		<hr>
+		<h4>ĐÂY LÀ HÓA ĐƠN MẪU - CHỈ DÙNG CHO MỤC ĐÍCH KIỂM TRA</h4>
+	  </body>
+	</html>`,
+		currentDate, currentTime,
+		itemsHTML,
+		productFeeBeforeDiscount, shippingFee, productFeeBeforeDiscount+shippingFee,
+		productDiscount, voucherOrderDiscount, voucherDeliveryDiscount, totalFee,
+	)
+
+	wkhtmltopdfPath, err := GetWkhtmltopdfPath()
+	if err != nil {
+		return nil, err
+	}
+
+	args := []string{
+		"--encoding", "UTF-8",
+		"--enable-local-file-access",
+		"--page-size", "A5",
+		"--margin-top", "10mm",
+		"--margin-bottom", "10mm",
+		"--margin-left", "10mm",
+		"--margin-right", "10mm",
+		"-", // Đọc HTML từ stdin
+		"-", // Ghi PDF ra stdout
+	}
+
+	cmd := exec.Command(wkhtmltopdfPath, args...)
+
+	var outBuf, errBuf bytes.Buffer
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &errBuf
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+
+	// Gửi html content vào stdin
+	_, err = stdin.Write([]byte(htmlContent))
+	if err != nil {
+		return nil, err
+	}
+	stdin.Close()
+
+	err = cmd.Wait()
+	if err != nil {
+		return nil, fmt.Errorf("lỗi wkhtmltopdf: %s, chi tiết: %s", err, errBuf.String())
+	}
+
+	return outBuf.Bytes(), nil
+}

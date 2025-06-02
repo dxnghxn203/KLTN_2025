@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"log/slog"
@@ -13,7 +12,7 @@ import (
 )
 
 type SendEmailRequest struct {
-	ToEmails         []string
+	ToEmail          string
 	Subject          string
 	HtmlContent      string
 	PlainTextContent string
@@ -30,24 +29,22 @@ func SendEmail(req SendEmailRequest) error {
 
 	m := mail.NewV3Mail()
 
-	from := mail.NewEmail("Tracking Manager", fromEmail)
+	from := mail.NewEmail("Medicare", fromEmail)
 	m.SetFrom(from)
 
 	m.Subject = req.Subject
 
 	p := mail.NewPersonalization()
-	for _, toEmail := range req.ToEmails {
-		to := mail.NewEmail("", toEmail)
-		p.AddTos(to)
-	}
-	m.AddPersonalizations(p)
+	p.AddTos(mail.NewEmail("", req.ToEmail))
 
-	if req.HtmlContent != "" {
-		m.AddContent(mail.NewContent("text/html", req.HtmlContent))
-	}
+	m.AddPersonalizations(p)
 
 	if req.PlainTextContent != "" {
 		m.AddContent(mail.NewContent("text/plain", req.PlainTextContent))
+	}
+
+	if req.HtmlContent != "" {
+		m.AddContent(mail.NewContent("text/html", req.HtmlContent))
 	}
 
 	if len(req.Attachments) > 0 {
@@ -73,11 +70,18 @@ func SendEmail(req SendEmailRequest) error {
 		slog.Error("SendGrid API error",
 			"status_code", response.StatusCode,
 			"body", response.Body)
+
+		if len(req.Attachments) > 0 {
+			slog.Error("Email had attachments",
+				"attachment_count", len(req.Attachments),
+				"attachment_names", fmt.Sprintf("%v", getMapKeys(req.Attachments)))
+		}
+
 		return fmt.Errorf("failed to send email: status code %d", response.StatusCode)
 	}
 
 	slog.Info("Email sent successfully",
-		"to", req.ToEmails,
+		"to", req.ToEmail,
 		"status_code", response.StatusCode)
 	return nil
 }
@@ -97,19 +101,8 @@ func getContentType(filename string) string {
 	}
 }
 func encodeBase64(data []byte) string {
-	const maxLineLength = 76
-	encoded := base64.StdEncoding.EncodeToString(data)
-
-	var buf bytes.Buffer
-	for i := 0; i < len(encoded); i += maxLineLength {
-		end := i + maxLineLength
-		if end > len(encoded) {
-			end = len(encoded)
-		}
-		buf.WriteString(encoded[i:end])
-		buf.WriteString("\r\n")
-	}
-	return buf.String()
+	// Return simple base64 encoded string without line breaks
+	return base64.StdEncoding.EncodeToString(data)
 }
 
 func SendOtpEmail(email, otpCode string) error {
@@ -125,7 +118,7 @@ func SendOtpEmail(email, otpCode string) error {
         </html>`, otpCode)
 
 	return SendEmail(SendEmailRequest{
-		ToEmails:    []string{email},
+		ToEmail:     email,
 		Subject:     subject,
 		HtmlContent: htmlContent,
 	})
@@ -148,9 +141,17 @@ func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 	}
 
 	return SendEmail(SendEmailRequest{
-		ToEmails:    []string{email},
+		ToEmail:     email,
 		Subject:     subject,
 		HtmlContent: htmlContent,
 		Attachments: attachments,
 	})
+}
+
+func getMapKeys(m map[string][]byte) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
