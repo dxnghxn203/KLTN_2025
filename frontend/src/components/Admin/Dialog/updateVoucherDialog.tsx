@@ -1,11 +1,12 @@
 "use client";
 import { X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useToast } from "@/providers/toastProvider";
 import { useVoucher } from "@/hooks/useVoucher";
 import toast from "@/components/Toast/toast";
 
 interface Props {
+  voucher: any;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   page: number;
@@ -14,7 +15,8 @@ interface Props {
   setPageSize: (pageSize: number) => void;
 }
 
-export default function AddVoucherDialog({
+export default function UpdateVoucherDialog({
+  voucher,
   isOpen,
   setIsOpen,
   setPage,
@@ -23,7 +25,7 @@ export default function AddVoucherDialog({
   pageSize,
 }: Props) {
   const toast = useToast();
-  const { fetchAddVoucher, fetchAllVouchers } = useVoucher();
+  const { fetchUpdateVoucher, fetchAllVouchers } = useVoucher();
 
   const [voucherData, setVoucherData] = useState({
     voucher_name: "",
@@ -35,6 +37,23 @@ export default function AddVoucherDialog({
     voucher_type: "",
     expired_date: "",
   });
+
+  useEffect(() => {
+    if (voucher) {
+      setVoucherData({
+        voucher_name: voucher.voucher_name || "",
+        inventory: voucher.inventory || 0,
+        description: voucher.description || "",
+        discount: voucher.discount || 0,
+        min_order_value: voucher.min_order_value || 0,
+        max_discount_value: voucher.max_discount_value || 0,
+        voucher_type: voucher.voucher_type || "",
+        expired_date: voucher.expired_date
+        ? new Date(voucher.expired_date).toISOString().split("T")[0]
+        : "",
+      });
+    }
+  }, [voucher]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -85,6 +104,7 @@ export default function AddVoucherDialog({
       return;
     }
     const body = {
+      voucher_id: voucher.voucher_id,
       voucher_name: voucherData.voucher_name,
       inventory: voucherData.inventory,
       description: voucherData.description,
@@ -94,7 +114,7 @@ export default function AddVoucherDialog({
       voucher_type: voucherData.voucher_type,
       expired_date: voucherData.expired_date,
     };
-    fetchAddVoucher(
+    fetchUpdateVoucher(
       body,
       () => {
         toast.showToast("Thêm voucher thành công", "success");
@@ -110,7 +130,7 @@ export default function AddVoucherDialog({
         });
       },
       () => {
-        toast.showToast("Thêm voucher thất bại", "error");
+        toast.showToast("Cập nhật voucher thất bại", "error");
       }
     );
     console.log("body", body);
@@ -123,7 +143,7 @@ export default function AddVoucherDialog({
     setIsOpen(false);
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !voucher) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
@@ -136,7 +156,7 @@ export default function AddVoucherDialog({
         </button>
 
         <h2 className="text-xl font-bold mb-6 text-center">
-          Thêm voucher cho sản phẩm
+          Cập nhật voucher {voucher.voucher_id}
         </h2>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -211,15 +231,15 @@ export default function AddVoucherDialog({
             />
           </div>
               <div>
-              <label className="block mb-1 text-gray-600">Ngày hết hạn</label>
-              <input
-                type="date"
-                name="expired_date"
-                value={voucherData.expired_date}
-                onChange={handleChange}
-                className="w-full border rounded-lg p-2"
-                min={new Date().toISOString().split("T")[0]}
-              />
+                <label className="block mb-1 text-gray-600">Ngày hết hạn</label>
+                <input
+                  type="date"
+                  name="expired_date"
+                  value={voucherData.expired_date}
+                  onChange={handleChange}
+                  className="w-full border rounded-lg p-2"
+                  min={new Date().toISOString().split("T")[0]}
+                />
               </div>
 
           <div className="col-span-2">
@@ -239,7 +259,7 @@ export default function AddVoucherDialog({
             onClick={handleSubmit}
             className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 text-sm "
           >
-            Thêm
+            Cập nhật
           </button>
         </div>
       </div>

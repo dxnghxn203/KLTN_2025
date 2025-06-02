@@ -8,28 +8,28 @@ import AddVoucherDialog from "../Dialog/addVoucherDialog";
 
 const VoucherManagement = () => {
     const [isOpenDialog, setIsOpenDialog] = useState(false);
-    // const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
     const toast = useToast();
-    const {allVouchers, fetchAllVouchers} = useVoucher();
+    const {
+        allVouchers,
+        totalVouchers,
+        fetchAllVouchers,
+        page,
+        pageSize,
+        setPage,
+        setPageSize
+    } = useVoucher();
     const [loading, setLoading] = useState(false);
-
-    const fetchData = async () => {
+    
+    useEffect(() => {
         setLoading(true);
         try {
-            fetchAllVouchers(1, 10, () => {
-                setLoading(false);
-            }, () => {
-                setLoading(false);
-            });
+            fetchAllVouchers(page, pageSize, () => {}, () => {});
+            setLoading(false);
         } catch (error) {
             setLoading(false);
             console.error("Error fetching data:", error);
         }
-    };
-    
-    useEffect(() => {
-        fetchData();
-    }, []);
+    }, [page, pageSize]);
 
     return (
         <div>
@@ -40,13 +40,13 @@ const VoucherManagement = () => {
                         Dashboard
                     </Link>
                     <span> / </span>
-                    <Link href="/order" className="text-gray-850">
+                    <Link href="/quan-ly-voucher" className="text-gray-850">
                         Quản lý Voucher
                     </Link>
                 </div>
                 <div className="flex justify-end items-center">
                     <div
-                        className="flex gap-2 px-2 py-2 rounded-lg text-sm flex items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
+                        className="flex gap-2 px-2 py-2 rounded-lg text-sm items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
                         onClick={() => setIsOpenDialog(true)}
                     >
                         + Thêm voucher
@@ -76,12 +76,26 @@ const VoucherManagement = () => {
                                 />
                             </svg>
                         </div>
-                    ) : <TableVoucher allVouchers={allVouchers}/>
+                    ) : <TableVoucher
+                            allVouchers={allVouchers}
+                            totalVouchers={totalVouchers}
+                            currentPage={page}
+                            pageSize={pageSize}
+                            onPageChange={setPage}
+                            onPageSizeChange={setPageSize}
+                        />
 
                 }
 
             </div>
-            <AddVoucherDialog isOpen={isOpenDialog} setIsOpen={setIsOpenDialog}/>
+            <AddVoucherDialog
+                isOpen={isOpenDialog}
+                setIsOpen={setIsOpenDialog}
+                setPage={setPage}
+                page={page}
+                pageSize={pageSize}
+                setPageSize={setPageSize}
+            />
         </div>
     );
 };

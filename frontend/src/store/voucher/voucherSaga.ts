@@ -11,6 +11,10 @@ import {
     fetchAddVoucherSuccess,
     fetchAddVoucherFailure,
 
+    fetchUpdateVoucherStart,
+    fetchUpdateVoucherSuccess,
+    fetchUpdateVoucherFailure,
+
     fetchDeleteVoucherStart,
     fetchDeleteVoucherSuccess,
     fetchDeleteVoucherFailure,
@@ -94,6 +98,50 @@ function* handleAddVoucher(action: any): Generator<any, void, any> {
     }
 }
 
+function* handleUpdateVoucher(action: any): Generator<any, void, any> {
+    const {payload} = action;
+    const {
+        voucher_id,
+        voucher_name,
+        inventory,
+        description,
+        discount,
+        min_order_value,
+        max_discount_value,
+        voucher_type,
+        expired_date,
+        onSuccess = () => {
+        },
+        onFailure = () => {
+        },
+    } = payload;
+    const body = {
+        voucher_name,
+        inventory,
+        description,
+        discount,
+        min_order_value,
+        max_discount_value,
+        voucher_type,
+        expired_date,
+    }
+    console.log("body", body)
+    try {
+        const response = yield call(voucherService.updateVoucher, voucher_id, body);
+        if (response.status_code === 200) {
+            onSuccess(response.data)
+            yield put(fetchUpdateVoucherSuccess(response.data));
+            return;
+        }
+        onFailure()
+        yield put(fetchUpdateVoucherFailure("Failed to update voucher"));
+
+    } catch (error) {
+        onFailure()
+        yield put(fetchUpdateVoucherFailure("Failed to update voucher"));
+    }
+}
+
 function* handleDeleteVoucher(action: any): Generator<any, void, any> {
     const {payload} = action;
     const {
@@ -174,6 +222,7 @@ function* handleGetAllVoucherUser(action: any): Generator<any, void, any> {
 export function* voucherSaga() {
     yield takeLatest(fetchAllVouchersStart, handleGetAllVouchers);
     yield takeLatest(fetchAddVoucherStart, handleAddVoucher);
+    yield takeLatest(fetchUpdateVoucherStart, handleUpdateVoucher);
     yield takeLatest(fetchDeleteVoucherStart, handleDeleteVoucher);
     yield takeLatest(fetchUpdateStatusStart, handleUpdateStatus);
     yield takeLatest(fetchGetAllVoucherUserStart, handleGetAllVoucherUser);

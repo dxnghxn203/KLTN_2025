@@ -48,7 +48,7 @@ const DeleteProductDialog: React.FC<DeleteDialogProps> = ({
         <Image src={bin} alt="" width={300} height={300} />
         <p className="text-center mt-2 font-semibold text-black">Thông báo</p>
         <p className="text-center mt-2 font-sm text-black">
-          Bạn chắc chắn muốn xóa sản phẩm?
+          Bạn chắc chắn muốn xóa?
         </p>
         <div className="flex justify-end gap-4">
           <button

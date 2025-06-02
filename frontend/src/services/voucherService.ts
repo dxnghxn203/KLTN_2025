@@ -23,6 +23,17 @@ export const addVoucher = async (params: any) => {
     }
 }
 
+export const updateVoucher = async (voucher_id: any, payload: any) => {
+    try {
+        return await axiosClient.put(`/v1/vouchers/update?voucher_id=${voucher_id}`, payload);
+    } catch (error: any) {
+        return {
+            status: false,
+            message: 'Lỗi cập nhật voucher',
+        };
+    }
+}
+
 export const deleteVoucher = async (voucher_id: any) => {
     try {
         return await axiosClient.delete(`/v1/vouchers/delete?voucher_id=${voucher_id}`);
