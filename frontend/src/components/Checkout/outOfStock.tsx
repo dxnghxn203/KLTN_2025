@@ -1,12 +1,15 @@
 import {IoCloseOutline} from "react-icons/io5";
 import Image from "next/image";
-import React from "react";
+import React, {useState} from "react";
+import {BsArrowRepeat} from "react-icons/bs";
+import {useToast} from "@/providers/toastProvider";
+import SimilarProductsList from "@/components/Cart/similarProductsList";
+import {useCart} from "@/hooks/useCart";
 
 const OutOfStock = ({
                         products,
                         closeDialog,
                         onContinue,
-                        onShowSimilarProducts,
                     }: {
     products: {
         outOfStockProducts: any[];
@@ -14,18 +17,21 @@ const OutOfStock = ({
     };
     closeDialog: (isOpen: boolean) => void;
     onContinue: () => void;
-    onShowSimilarProducts: (product: any) => void;
 }) => {
     const {outOfStockProducts, availableProducts} = products;
+    const toast = useToast();
+    const [isSimilarProductsOpen, setIsSimilarProductsOpen] = useState(false);
+    const [currentProductForSimilar, setCurrentProductForSimilar] = useState<any>(null);
 
-    // Current date and user info - fixed values as requeste
+    const handleShowSimilarProducts = (product: any) => {
+        setCurrentProductForSimilar(product);
+        setIsSimilarProductsOpen(true);
+    };
 
-    // Tính số tiền tương ứng với số lượng sản phẩm
     const calculateTotalPrice = (price: number, quantity: number) => {
         return price * quantity;
     };
 
-    // tổng tiền giá gốc
     const calculateTotalOriginalPrice = (
         original_price: number,
         quantity: number
@@ -45,7 +51,6 @@ const OutOfStock = ({
                 !isLast ? "border-b border-gray-200" : ""
             }`}
         >
-            {/* Product Image and Name */}
             <div className="flex items-center w-[40%]">
                 <div className="relative min-w-[60px] h-[60px]">
                     <Image
@@ -64,14 +69,22 @@ const OutOfStock = ({
               Còn hàng
             </span>
                     ) : (
-                        <span className="text-red-500 text-xs font-medium mt-1">
-              Hết hàng
-            </span>
+                        <div className="flex items-center gap-2 mt-1">
+              <span className="text-red-500 text-xs font-medium">
+                Hết hàng
+              </span>
+                            <button
+                                onClick={() => handleShowSimilarProducts(product)}
+                                className="flex items-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                                <BsArrowRepeat className="mr-1" size={12}/>
+                                Sản phẩm tương tự
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Unit Price */}
             <div className="w-[15%] text-center">
                 <div className="flex flex-col">
           <span className="font-medium text-blue-600">
@@ -86,13 +99,11 @@ const OutOfStock = ({
                 </div>
             </div>
 
-            {/* Quantity */}
             <div className="w-[15%] text-center">
                 <span className="font-medium">{product?.quantity}</span>
                 <span className="text-gray-500 ml-1">{product?.unit}</span>
             </div>
 
-            {/* Total Price (Thành tiền) */}
             <div className="w-[20%] text-center">
                 <div className="flex flex-col">
           <span className="font-medium text-blue-600">
@@ -122,10 +133,42 @@ const OutOfStock = ({
         </div>
     );
 
+    const {addProductTocart, getProductFromCart, removeProductFromCart} =
+        useCart();
+
+    const getCart = () => {
+        getProductFromCart(
+            () => {
+            },
+            (error: string) => {
+            }
+        );
+    };
     return (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center overflow-auto p-4">
+            {isSimilarProductsOpen && currentProductForSimilar && (
+                <SimilarProductsList
+                    product={currentProductForSimilar}
+                    onClose={() => setIsSimilarProductsOpen(false)}
+                    addToCart={(productId, priceId, quantity) => {
+                        addProductTocart(
+                            productId,
+                            priceId,
+                            quantity,
+                            () => {
+                                toast.showToast("Thêm vào giỏ hàng thành công", "success");
+                                getCart();
+                                setIsSimilarProductsOpen(false);
+                            },
+                            (error: string) => {
+                                toast.showToast("Thêm vào giỏ hàng thất bại", "error");
+                            }
+                        );
+                    }}
+                />
+            )}
+
             <div className="bg-white rounded-xl w-full max-w-3xl shadow-xl relative my-10 transition-all duration-300">
-                {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-200">
                     <div className="text-base font-semibold text-red-600">
                         SẢN PHẨM KHÔNG ĐỦ HÀNG
@@ -143,7 +186,6 @@ const OutOfStock = ({
 
                 <div className="relative w-full overflow-hidden transition-all duration-300">
                     <div className="flex flex-col px-4 py-3">
-                        {/* Out of Stock Products Section */}
                         {outOfStockProducts && outOfStockProducts.length > 0 && (
                             <div className="mb-4">
                                 <p className="text-sm text-gray-700 font-medium mb-2">
@@ -162,22 +204,10 @@ const OutOfStock = ({
                                     )}
                                 </div>
 
-                                <div className="flex justify-end mb-3">
-                                    <button
-                                        onClick={() => {
-                                            if (outOfStockProducts.length > 0) {
-                                                onShowSimilarProducts(outOfStockProducts[0]);
-                                            }
-                                        }}
-                                        className="px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md border border-blue-200 transition-colors"
-                                    >
-                                        Xem sản phẩm tương tự
-                                    </button>
-                                </div>
+                                {/* Remove the general "Xem sản phẩm tương tự" button since we now have individual buttons */}
                             </div>
                         )}
 
-                        {/* Available Products Section */}
                         {availableProducts && availableProducts.length > 0 && (
                             <>
                                 <hr className="my-3 border-gray-200"/>
@@ -198,7 +228,6 @@ const OutOfStock = ({
                                     )}
                                 </div>
 
-                                {/* Total for available products */}
                                 <div className="flex justify-end items-center mb-3 text-sm">
                                     <div className="font-medium mr-2">Tổng tiền:</div>
                                     <div className="text-blue-600 font-bold">
@@ -222,7 +251,7 @@ const OutOfStock = ({
                                     <button
                                         onClick={() => {
                                             onContinue();
-                                            closeDialog(false);
+                                            // closeDialog(false);
                                         }}
                                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
                                     >
@@ -232,7 +261,6 @@ const OutOfStock = ({
                             </>
                         )}
 
-                        {/* If no available products */}
                         {(!availableProducts || availableProducts.length === 0) && (
                             <div className="flex justify-end pt-3 pb-2 border-t border-gray-200">
                                 <button
@@ -251,3 +279,4 @@ const OutOfStock = ({
 };
 
 export default OutOfStock;
+

@@ -17,7 +17,6 @@ const CheckOut = ({
                       setVouchers
                   }: any) => {
 
-
     return (
         <main className="flex flex-col px-5">
             <div className="flex flex-col">

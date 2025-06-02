@@ -13,6 +13,7 @@ import {useToast} from "@/providers/toastProvider";
 import LoaingCenter from "@/components/loading/loading";
 import QRPayment from "@/components/Checkout/qrPayment";
 import OutOfStock from "@/components/Checkout/outOfStock";
+import checkout from "@/components/Checkout/checkout";
 
 export default function Cart() {
     const {cart, getProductFromCart} = useCart();
@@ -99,6 +100,7 @@ export default function Cart() {
         if (!validateData(isCheckVoucher)) {
             return;
         }
+        if (!productForCheckOut) return;
         setProductsOutOfStock([])
         setIsLoadingCheckFee(true)
         try {
@@ -114,12 +116,12 @@ export default function Cart() {
                 (data: any) => {
                     setIsLoadingCheckFee(false)
                     setShippingFee(data || {});
+                    setIsOutOfStock(false)
                 },
                 (error: any) => {
                     setIsLoadingCheckFee(false)
                     setIsOutOfStock(error.isOutOfStock || false);
                     setProductsOutOfStock(error?.data || []);
-                    closeQR()
                     toast.showToast("Lỗi khi kiểm tra phí vận chuyển", error.message);
                 }
             );
@@ -233,7 +235,6 @@ export default function Cart() {
                 <>
                     {isCheckout ? (
                         <>
-
                             {loadingCheckout ? <LoaingCenter/> :
                                 <Checkout
                                     back={() => {
@@ -298,13 +299,14 @@ export default function Cart() {
                     products={productsOutOfStock}
                     onContinue={() => {
                         setIsOutOfStock(false);
-                        setIsCheckout(true);
                         setProductForCheckOut(productsOutOfStock?.availableProducts);
+                        setIsCheckout(true);
+                        setIsOutOfStock(false);
                     }}
                     closeDialog={(isClose: boolean) => {
                         setIsOutOfStock(isClose);
+                        closeQR();
                     }}
-                    onShowSimilarProducts={handleShowSimilarProducts}
                 />
             )}
 
