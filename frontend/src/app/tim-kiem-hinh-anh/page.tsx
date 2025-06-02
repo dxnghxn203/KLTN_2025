@@ -3,7 +3,7 @@
 import {useState, useRef, useEffect} from "react";
 import Image from "next/image";
 import {useRouter} from "next/navigation";
-import {FiUpload, FiCamera, FiSearch, FiX, FiPlus, FiMessageCircle} from "react-icons/fi";
+import {FiUpload, FiCamera, FiSearch, FiX, FiPlus, FiMessageCircle, FiRefreshCw} from "react-icons/fi";
 import {BiLoaderAlt} from "react-icons/bi";
 import {BsImage} from "react-icons/bs";
 import {useToast} from "@/providers/toastProvider";
@@ -33,6 +33,7 @@ const Page = () => {
 
     const [isCameraInitializing, setIsCameraInitializing] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [cameraMode, setCameraMode] = useState<'environment' | 'user'>('environment'); // 'environment' is back camera, 'user' is front camera
 
     useEffect(() => {
         return () => {
@@ -148,7 +149,9 @@ const Page = () => {
             setIsUsingCamera(true);
 
             const constraints = {
-                video: true,
+                video: {
+                    facingMode: cameraMode
+                },
                 audio: false
             };
 
@@ -257,6 +260,21 @@ const Page = () => {
         } finally {
             setIsCameraInitializing(false);
         }
+    };
+
+    const toggleCameraMode = async () => {
+        // Stop the current camera stream
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+        }
+
+        // Toggle camera mode
+        setCameraMode(prevMode => prevMode === 'environment' ? 'user' : 'environment');
+
+        // Short delay to ensure the previous stream is fully stopped
+        setTimeout(() => {
+            startCamera();
+        }, 300);
     };
 
     const capturePhoto = () => {
@@ -476,7 +494,15 @@ const Page = () => {
                                     </button>
                                 </div>
 
-                                <div className="absolute top-4 right-4">
+                                <div className="absolute top-4 right-4 flex gap-2">
+                                    <button
+                                        onClick={toggleCameraMode}
+                                        className="bg-white/80 rounded-full p-2 shadow-lg hover:bg-white transition-colors"
+                                        title={cameraMode === 'environment' ? 'Chuyển sang camera trước' : 'Chuyển sang camera sau'}
+                                    >
+                                        <FiRefreshCw size={20}/>
+                                    </button>
+
                                     <button
                                         onClick={stopCamera}
                                         className="bg-white/80 rounded-full p-2 shadow-lg hover:bg-white transition-colors"
