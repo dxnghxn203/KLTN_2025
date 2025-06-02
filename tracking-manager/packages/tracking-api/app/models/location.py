@@ -11,6 +11,7 @@ from app.helpers.constant import CITY_INDEX, DISTRICT_INDEX, WARD_INDEX, REGION_
 from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import delete_index, insert_es_common, query_es_data, search_es
 from app.models import user
+from app.core import ghn
 
 collection_name = "locations"
 
@@ -217,3 +218,34 @@ async def delete_location(token: str, location_id: str):
     except Exception as e:
         logger.error(f"Error delete location: {str(e)}")
         raise e
+
+def get_provinces_ghn():
+    try:
+        return ghn.send_request_get(
+            function="/shiip/public-api/master-data/province",
+            haveshopid=False,
+            isPayload=False
+        )
+    except Exception as e:
+        return None
+
+def get_wards_ghn(district_id: int):
+    try:
+        return ghn.send_request_post(
+            function="/shiip/public-api/master-data/ward?district_id",
+            haveshopid= False,
+            payload= {"district_id": district_id}
+        )
+    except Exception as e:
+        return None
+
+def get_districts_ghn(province_id: int):
+    try:
+        return ghn.send_request_get(
+            function="/shiip/public-api/master-data/district",
+            haveshopid=False,
+            payload={"province_id": province_id},
+            isPayload=True
+        )
+    except Exception as e:
+        return None

@@ -2,11 +2,13 @@ import math
 
 from app.core import elasticsearch
 from app.core import response
+from app.entities.fee.request import FeeGHNReq
 from app.entities.fee.response import FeeRes
 from app.helpers.constant import FEE_INDEX
 from app.helpers.es_helpers import delete_index, insert_es_common
 from app.models.location import query_es_data
 
+from app.core import ghn
 
 async def insert_fee_into_elasticsearch():
     await insert_es_common(FEE_INDEX, 'pricing.json')
@@ -34,3 +36,13 @@ def calculate_shipping_fee(fee_data: dict, weight: float) -> float:
         return base_price + steps * additional_price_per_step
 
     return pricing_list[-1]["price"]
+
+
+def get_fee_ghn(request: FeeGHNReq):
+    try:
+        return ghn.send_request_post(
+            function="/shiip/public-api/v2/shipping-order/fee",
+            payload=request.dict(),
+            )
+    except Exception as e:
+        return None
