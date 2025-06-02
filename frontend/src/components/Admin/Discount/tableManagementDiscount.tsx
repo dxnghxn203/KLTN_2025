@@ -37,7 +37,7 @@ const TableManagementDiscount = ({
   const filteredPendingDiscountProducts = allProductAdmin?.filter(
     (product: any) =>
       product.verified_by === "" &&
-      product.prices.some((p: any) => p.discount && !p.status_discount)
+      product.prices.some((p: any) => p.discount )
   );
 
   console.log("allProductAdmin", allProductAdmin);
@@ -173,7 +173,7 @@ const TableManagementDiscount = ({
                           const inventoryByUnit: { [unit: string]: number } =
                             {};
 
-                          product.prices.forEach((p: any) => {
+                          product?.prices.forEach((p: any) => {
                             if (!inventoryByUnit[p.unit]) {
                               inventoryByUnit[p.unit] = 0;
                             }

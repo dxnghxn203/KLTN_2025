@@ -243,6 +243,32 @@ async def get_discount_product(page: int, page_size: int):
         logger.error(f"Failed [get_discount_product]: {e}")
         raise e
 
+async def get_discount_product_for_admin(page: int, page_size: int, is_approved: bool):
+    try:
+        collection = db[collection_name]
+        skip_count = (page - 1) * page_size
+        now = get_current_time()
+
+        query = {
+            "is_approved": is_approved,
+            "prices": {
+                "$elemMatch": {
+                    "discount": {"$gt": 0},
+                    "expired_date": {"$gt": now}
+                }
+            }
+        }
+
+        product_list = collection.find(query).skip(skip_count).limit(page_size)
+
+        return {
+            "total_products": collection.count_documents(query),
+            "products": [ItemProductDBRes(**product) for product in product_list]
+        }
+    except Exception as e:
+        logger.error(f"Failed [get_discount_product_for_admin]: {e}")
+        raise e
+
 async def get_product_top_selling(top_n):
     try:
         result = recommendation.send_request("/v1/top-selling/", {"top_n": top_n})

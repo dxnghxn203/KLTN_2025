@@ -89,7 +89,7 @@ export const PriceForm = ({
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Giảm giá
+                  Giảm giá (%)
                 </label>
                 <input
                   type="number"

@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import TableDiscount from "./tableDiscount";
 import TableManagementDiscount from "./tableManagementDiscount";
 import SearchProductDialog from "../Dialog/searchProductDialog";
 import { useProduct } from "@/hooks/useProduct";
@@ -24,13 +23,13 @@ const DiscountManagement = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-850">
+          <Link href="/quan-ly-giam-gia" className="text-gray-850">
             Tạo chiến dịch giảm giá
           </Link>
         </div>
         <div className="flex justify-end items-center">
           <div
-            className="flex gap-2 px-2 py-2 rounded-lg text-sm flex items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
+            className="flex gap-2 px-2 py-2 rounded-lg text-sm items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
             onClick={() => setIsOpenDialog(true)}
           >
             + Thêm giảm giá

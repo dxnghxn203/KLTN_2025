@@ -26,7 +26,7 @@ export function useOrder() {
     const allRequestOrderApprove = useSelector((state: any) => state.order.allRequestOrderApprove);
     const overviewStatisticsOrder = useSelector((state: any) => state.order.overviewStatisticsOrder);
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
 
     const getTrackingCode = async (order_id: any, onSuccess: (data: any) => void, onFailed: (data: any) => void) => {
         dispatch(fetchGetTrackingCodeStart({

@@ -131,6 +131,9 @@ const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
         </h2>
 
         {/* Danh mục chính */}
+        <label className="block text-sm font-semibold mt-2 mb-1 text-gray-700">
+          Danh mục chính
+        </label>
         <div className="flex gap-4">
           <div className="w-full">
             <input
@@ -177,110 +180,121 @@ const AddNewCategoryDialog: React.FC<AddNewCategoryDialogProps> = ({
         </div>
 
         {/* Danh mục cấp 1 */}
+        
         {subCategories.map((subCategory, subCategoryIndex) => (
-          <div key={subCategoryIndex} className="relative mt-4">
-            <button
-              type="button"
-              onClick={() => removeSubCategory(subCategoryIndex)}
-              className="absolute -top-3 right-0 text-red-500 bg-[#FDF3F5] rounded-full p-2"
-            >
-              <ImBin className="w-4 h-4 text-[#D4380D] hover:text-red-700" />
-            </button>
-            <div className="flex gap-4">
-              <input
-                type="text"
-                className="w-full mt-2 p-3 border rounded-lg border-black/10 
-            focus:ring-1 focus:ring-[#0053E2] 
-            outline-none placeholder:font-normal placeholder:text-sm"
-                placeholder="Tên danh mục cấp 1"
-                value={subCategory.sub_category_name}
-                onChange={(e) =>
-                  setSubCategories((prevState) => {
-                    const updatedSubCategories = [...prevState];
-                    updatedSubCategories[subCategoryIndex].sub_category_name =
-                      e.target.value;
-                    return updatedSubCategories;
-                  })
-                }
-              />
-              <input
-                type="text"
-                className="w-full mt-2 p-3 border rounded-lg border-black/10 
-            focus:ring-1 focus:ring-[#0053E2] 
-            outline-none placeholder:font-normal placeholder:text-sm"
-                placeholder="Slug danh mục cấp 1"
-                value={subCategory.sub_category_slug}
-                onChange={(e) =>
-                  setSubCategories((prevState) => {
-                    const updatedSubCategories = [...prevState];
-                    updatedSubCategories[subCategoryIndex].sub_category_slug =
-                      e.target.value;
-                    return updatedSubCategories;
-                  })
-                }
-              />
+          <div key={subCategoryIndex}>
+            <label className="block text-sm font-semibold mt-6 mb-1 text-gray-700">
+              Danh mục cấp 1
+            </label>
+            <div className="relative mt-4">
+              <button
+                type="button"
+                onClick={() => removeSubCategory(subCategoryIndex)}
+                className="absolute -top-3 right-0 text-red-500 bg-[#FDF3F5] rounded-full p-2"
+              >
+                <ImBin className="w-4 h-4 text-[#D4380D] hover:text-red-700" />
+              </button>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  className="w-full mt-2 p-3 border rounded-lg border-black/10 
+                focus:ring-1 focus:ring-[#0053E2] 
+                outline-none placeholder:font-normal placeholder:text-sm"
+                  placeholder="Tên danh mục cấp 1"
+                  value={subCategory.sub_category_name}
+                  onChange={(e) =>
+                    setSubCategories((prevState) => {
+                      const updatedSubCategories = [...prevState];
+                      updatedSubCategories[subCategoryIndex].sub_category_name =
+                        e.target.value;
+                      return updatedSubCategories;
+                    })
+                  }
+                />
+                <input
+                  type="text"
+                  className="w-full mt-2 p-3 border rounded-lg border-black/10 
+                focus:ring-1 focus:ring-[#0053E2] 
+                outline-none placeholder:font-normal placeholder:text-sm"
+                  placeholder="Slug danh mục cấp 1"
+                  value={subCategory.sub_category_slug}
+                  onChange={(e) =>
+                    setSubCategories((prevState) => {
+                      const updatedSubCategories = [...prevState];
+                      updatedSubCategories[subCategoryIndex].sub_category_slug =
+                        e.target.value;
+                      return updatedSubCategories;
+                    })
+                  }
+                />
+              </div>
+        
+              {/* Danh mục cấp 2 */}
+{subCategory.child_category.map(
+  (child_category, child_categoryIndex) => (
+    <>
+      <label className="block text-sm font-medium mt-2 mb-1 text-gray-600">
+        Danh mục cấp 2
+      </label>
+      <div key={child_categoryIndex} className="relative mt-4">
+        <button
+          type="button"
+          onClick={() =>
+            removeChildCategory(subCategoryIndex, child_categoryIndex)
+          }
+          className="absolute -top-3 right-0 text-red-500 bg-[#FDF3F5] rounded-full p-2"
+        >
+          <ImBin className="w-4 h-4 text-[#D4380D] hover:text-red-700" />
+        </button>
+        <div className="flex gap-4">
+          <input
+            type="text"
+            className="w-full mt-2 p-3 border rounded-lg border-black/10 
+                    focus:ring-1 focus:ring-[#0053E2] 
+                    outline-none placeholder:font-normal placeholder:text-sm"
+            placeholder="Tên danh mục cấp 2"
+            value={child_category.child_category_name}
+            onChange={(e) =>
+              setSubCategories((prevState) => {
+                const updatedSubCategories = [...prevState];
+                updatedSubCategories[subCategoryIndex].child_category[
+                  child_categoryIndex
+                ].child_category_name = e.target.value;
+                return updatedSubCategories;
+              })
+            }
+          />
+          <input
+            type="text"
+            className="w-full mt-2 p-3 border rounded-lg border-black/10 
+                    focus:ring-1 focus:ring-[#0053E2] 
+                    outline-none placeholder:font-normal placeholder:text-sm"
+            placeholder="Slug danh mục cấp 2"
+            value={child_category.child_category_slug}
+            onChange={(e) =>
+              setSubCategories((prevState) => {
+                const updatedSubCategories = [...prevState];
+                updatedSubCategories[subCategoryIndex].child_category[
+                  child_categoryIndex
+                ].child_category_slug = e.target.value;
+                return updatedSubCategories;
+              })
+            }
+          />
+        </div>
+      </div>
+    </>
+  )
+)}
+        
+              <button
+                type="button"
+                onClick={() => addChildCategory(subCategoryIndex)}
+                className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                + Thêm danh mục cấp 2
+              </button>
             </div>
-
-            {/* Danh mục cấp 2 */}
-            {subCategory.child_category.map(
-              (child_category, child_categoryIndex) => (
-                <div key={child_categoryIndex} className="relative mt-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeChildCategory(subCategoryIndex, child_categoryIndex)
-                    }
-                    className="absolute -top-3 right-0 text-red-500 bg-[#FDF3F5] rounded-full p-2"
-                  >
-                    <ImBin className="w-4 h-4 text-[#D4380D] hover:text-red-700" />
-                  </button>
-                  <div className="flex gap-4">
-                    <input
-                      type="text"
-                      className="w-full mt-2 p-3 border rounded-lg border-black/10 
-                focus:ring-1 focus:ring-[#0053E2] 
-                outline-none placeholder:font-normal placeholder:text-sm"
-                      placeholder="Tên danh mục cấp 2"
-                      value={child_category.child_category_name}
-                      onChange={(e) =>
-                        setSubCategories((prevState) => {
-                          const updatedSubCategories = [...prevState];
-                          updatedSubCategories[subCategoryIndex].child_category[
-                            child_categoryIndex
-                          ].child_category_name = e.target.value;
-                          return updatedSubCategories;
-                        })
-                      }
-                    />
-                    <input
-                      type="text"
-                      className="w-full mt-2 p-3 border rounded-lg border-black/10 
-                focus:ring-1 focus:ring-[#0053E2] 
-                outline-none placeholder:font-normal placeholder:text-sm"
-                      placeholder="Slug danh mục cấp 2"
-                      value={child_category.child_category_slug}
-                      onChange={(e) =>
-                        setSubCategories((prevState) => {
-                          const updatedSubCategories = [...prevState];
-                          updatedSubCategories[subCategoryIndex].child_category[
-                            child_categoryIndex
-                          ].child_category_slug = e.target.value;
-                          return updatedSubCategories;
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-              )
-            )}
-
-            <button
-              type="button"
-              onClick={() => addChildCategory(subCategoryIndex)}
-              className="mt-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
-            >
-              + Thêm danh mục cấp 2
-            </button>
           </div>
         ))}
 

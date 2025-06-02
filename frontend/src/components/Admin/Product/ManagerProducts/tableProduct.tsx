@@ -9,12 +9,10 @@ import {
   MdMoreHoriz,
   MdNavigateBefore,
   MdNavigateNext,
-  MdOutlineModeEdit,
 } from "react-icons/md";
 import DeleteProductDialog from "../../Dialog/confirmDeleteProductDialog";
 import { useToast } from "@/providers/toastProvider";
 import { FiEye } from "react-icons/fi";
-import { fi } from "date-fns/locale";
 
 interface TableProductProps {
   allProductAdmin: any;
@@ -99,6 +97,7 @@ const TableProduct = ({
                             src={product.images_primary}
                             alt={product.product_name}
                             fill
+                            sizes="64px"
                             className="object-cover rounded"
                           />
                         </div>

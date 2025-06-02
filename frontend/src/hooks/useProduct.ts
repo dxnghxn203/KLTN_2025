@@ -60,8 +60,11 @@ export function useProduct() {
     const productLowStock = useSelector(selectProductLowStock);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
     const [top_n, setTopN] = useState(10);
+    const [low_stock_status, setLowStockStatus] = useState(null);
+    const [main_category, setMainCategory] = useState(null);
+    const [best_seller, setBestSeller] = useState(null);
 
     const fetchProductBySlug = async (slug: string, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchProductBySlugStart({
@@ -91,10 +94,14 @@ export function useProduct() {
         ))
     }
 
-    const getAllProductsAdmin = (onSuccess: () => void, onFailed: () => void,) => {
+
+    const getAllProductsAdmin = (onSuccess: () => void, onFailed: () => void) => {
         dispatch(fetchAllProductAdminStart({
             page: page,
             page_size: pageSize,
+            low_stock_status: low_stock_status,
+            main_category: main_category,
+            best_seller: best_seller,
             onSuccess: onSuccess,
             onFailed: onFailed
         }))
@@ -334,6 +341,12 @@ export function useProduct() {
         setPage,
         pageSize,
         setPageSize,
+        low_stock_status,
+        setLowStockStatus,
+        main_category,
+        setMainCategory,
+        best_seller,
+        setBestSeller,
         allProductAdmin,
         totalProductAdmin,
         getProductTopSelling,

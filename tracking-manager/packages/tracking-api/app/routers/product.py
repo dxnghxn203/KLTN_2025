@@ -12,17 +12,18 @@ from app.helpers.redis import get_session, get_recently_viewed, save_recently_vi
 from app.middleware import middleware
 from app.models import order, pharmacist, user, admin
 from app.models.product import (get_product_by_slug, add_product_db, get_all_product, update_product_category, \
-    delete_product,
-    get_product_top_selling,
-    get_product_featured,
-    get_product_by_list_id,
-    get_related_product, \
-    get_product_best_deals,
-    approve_product, get_approved_product, update_product_status, update_product_fields, \
-    update_product_images, update_product_images_primary, update_product_certificate_file, search_products_by_name, \
-    import_products, get_product_brands, get_imported_products, delete_imported_products, \
-    get_discount_product, check_all_product_discount_expired, getAvailableQuantity, \
-    normalize_products_inventory, get_low_stock_products)
+                                delete_product,
+                                get_product_top_selling,
+                                get_product_featured,
+                                get_product_by_list_id,
+                                get_related_product, \
+                                get_product_best_deals,
+                                approve_product, get_approved_product, update_product_status, update_product_fields, \
+                                update_product_images, update_product_images_primary, update_product_certificate_file,
+                                search_products_by_name, \
+                                import_products, get_product_brands, get_imported_products, delete_imported_products, \
+                                get_discount_product, check_all_product_discount_expired, getAvailableQuantity, \
+                                normalize_products_inventory, get_low_stock_products, get_discount_product_for_admin)
 
 router = APIRouter()
 
@@ -165,7 +166,7 @@ async def get_all_product_admin(
         low_stock_status: Optional[bool] = None,
         main_category: Optional[str] = None,
         best_seller: Optional[bool] = None,
-        # token: str = Depends(middleware.verify_token_admin)
+        token: str = Depends(middleware.verify_token_admin)
 ):
     try:
         result = await get_all_product(page, page_size, low_stock_status, main_category, best_seller)
@@ -194,6 +195,26 @@ async def get_product_discount(page: int = 1, page_size: int = 10):
         raise je
     except Exception as e:
         logger.error("Error getting product discount", error=str(e))
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.get("/products/discount-admin", response_model=response.BaseResponse)
+async def get_product_discount_for_admin(
+        page: int = 1, page_size: int = 10, is_approved: bool = False,
+        token: str = Depends(middleware.verify_token_admin)
+):
+    try:
+        data = await get_discount_product_for_admin(page, page_size, is_approved)
+        return response.BaseResponse(
+            message="Tìm thấy sản phẩm giảm giá cho quản trị viên",
+            data=data
+        )
+    except JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error("Error getting product discount for admin", error=str(e))
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

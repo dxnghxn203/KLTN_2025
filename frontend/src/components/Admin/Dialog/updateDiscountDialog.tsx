@@ -73,7 +73,7 @@ const UpdateDiscountDialog = ({
       dataToSend,
       () => {
         toast.showToast("Cập nhật giảm giá thành công", "success");
-        getAllProductsAdmin();
+        getAllProductsAdmin(() => {}, () => {});
         fetchGetProductDiscount();
         onClose();
       },
