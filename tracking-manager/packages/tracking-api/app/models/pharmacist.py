@@ -6,7 +6,7 @@ from starlette import status
 from app.core import database, logger, response, mail
 from app.entities.admin.request import ItemAdminRegisReq
 from app.entities.admin.response import ItemAdminRes
-from app.entities.pharmacist.request import ItemPharmacistRegisReq
+from app.entities.pharmacist.request import ItemPharmacistRegisReq, ItemPharmacistUpdateProfileReq
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.helpers import redis
 from app.helpers.time_utils import get_current_time
@@ -222,4 +222,15 @@ async def get_pharmacist_monthly_login_statistics(year: int):
 
     except Exception as e:
         logger.error(f"Failed to get login stats for pharmacist in year {year}: {e}")
+        raise e
+
+async def update_pharmacist_info(pharmacist_id: str, item: ItemPharmacistUpdateProfileReq):
+    try:
+        collection = database.db[collection_name]
+        item_dict = item.dict()
+        item_dict["updated_at"] = get_current_time()
+        collection.update_one({"_id": ObjectId(pharmacist_id)}, {"$set": item_dict})
+        return response.SuccessResponse(message="Cập nhật thông tin thành công")
+    except Exception as e:
+        logger.error(f"Error updating pharmacist info: {str(e)}")
         raise e

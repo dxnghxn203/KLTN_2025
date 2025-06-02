@@ -3,7 +3,8 @@ from starlette import status
 
 from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
-from app.entities.user.request import ItemUserRegisReq, ItemUserOtpReq, ItemUserVerifyEmailReq, ItemUserChangePassReq
+from app.entities.user.request import ItemUserRegisReq, ItemUserOtpReq, ItemUserVerifyEmailReq, ItemUserChangePassReq, \
+    ItemUserUpdateProfileReq
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
@@ -174,6 +175,24 @@ async def change_password(item: ItemUserChangePassReq, token: str = Depends(midd
         raise je
     except Exception as e:
         logger.error(f"Error change password: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/users/profile", response_model=BaseResponse)
+async def update_user_profile(item: ItemUserUpdateProfileReq, token: str = Depends(middleware.verify_token)):
+    try:
+        user_info = await user.get_current(token)
+        if not user_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Người dùng không tồn tại."
+            )
+        return await user.update_user_info(user_info.id, item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

@@ -4,7 +4,7 @@ from bson import ObjectId
 from starlette import status
 
 from app.core import database, logger, response, mail
-from app.entities.admin.request import ItemAdminRegisReq
+from app.entities.admin.request import ItemAdminRegisReq, ItemAdminUpdateProfileReq
 from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
 from app.helpers.time_utils import get_current_time
@@ -278,3 +278,13 @@ async def get_admin_monthly_login_statistics(year: int):
         logger.error(f"Failed to get login stats for admin in year {year}: {e}")
         raise e
 
+async def update_admin_info(admin_id: str, item: ItemAdminUpdateProfileReq):
+    try:
+        collection = database.db[collection_name]
+        item_dict = item.dict()
+        item_dict["updated_at"] = get_current_time()
+        collection.update_one({"_id": ObjectId(admin_id)}, {"$set": item_dict})
+        return response.SuccessResponse(message="Cập nhật thông tin thành công")
+    except Exception as e:
+        logger.error(f"Error updating admin info: {str(e)}")
+        raise e

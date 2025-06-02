@@ -7,7 +7,7 @@ from starlette import status
 from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
 from app.entities.admin.request import ItemAdminRegisReq, ItemAdminOtpReq, ItemAdminVerifyEmailReq, \
-    ItemAdminChangePassReq
+    ItemAdminChangePassReq, ItemAdminUpdateProfileReq
 from app.entities.admin.response import ItemAdminRes
 from app.helpers import redis
 from app.helpers.redis import delete_otp
@@ -263,6 +263,24 @@ async def get_monthly_login_statistics(
         raise je
     except Exception as e:
         logger.error(f"Error get monthly login statistics: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/admin/profile", response_model=BaseResponse)
+async def update_user_profile(item: ItemAdminUpdateProfileReq, token: str = Depends(middleware.verify_token_admin)):
+    try:
+        admin_info = await admin.get_current(token)
+        if not admin_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Quản trị viên không tồn tại."
+            )
+        return await admin.update_admin_info(admin_info.id, item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

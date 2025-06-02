@@ -84,3 +84,9 @@ class ItemUserChangePassReq(BaseModel):
     def validate_password(cls, v):
         password.validate_password(v)
         return v
+
+class ItemUserUpdateProfileReq(BaseModel):
+    user_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    gender: Optional[str] = None
+    birthday: datetime.datetime = None

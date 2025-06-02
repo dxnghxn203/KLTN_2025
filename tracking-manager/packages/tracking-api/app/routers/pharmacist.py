@@ -8,7 +8,7 @@ from app.core import response, logger
 from app.core.response import BaseResponse, SuccessResponse, JsonException
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.pharmacist.request import ItemPharmacistRegisReq, ItemPharmacistOtpReq, ItemPharmacistVerifyEmailReq, \
-    ItemPharmacistChangePassReq
+    ItemPharmacistChangePassReq, ItemPharmacistUpdateProfileReq
 from app.helpers import redis
 from app.helpers.redis import delete_otp
 from app.middleware import middleware
@@ -220,6 +220,24 @@ async def update_status_pharmacist(pharmacist_id: str, status_pharmacist: bool, 
         raise je
     except Exception as e:
         logger.error(f"Error getting current user: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
+@router.put("/pharmacist/profile", response_model=BaseResponse)
+async def update_user_profile(item: ItemPharmacistUpdateProfileReq, token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Dược sĩ không tồn tại."
+            )
+        return await pharmacist.update_pharmacist_info(pharmacist_info.id, item)
+    except JsonException as je:
+        raise je
+    except Exception as e:
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"

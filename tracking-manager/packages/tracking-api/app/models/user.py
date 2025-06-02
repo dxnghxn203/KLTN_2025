@@ -4,7 +4,7 @@ from bson import ObjectId
 from starlette import status
 
 from app.core import database, logger, response, mail
-from app.entities.user.request import ItemUserRegisReq
+from app.entities.user.request import ItemUserRegisReq, ItemUserUpdateProfileReq
 from app.entities.user.response import ItemUserRes
 from app.helpers import redis
 from app.middleware import middleware
@@ -244,4 +244,15 @@ async def get_user_monthly_login_statistics(year: int):
 
     except Exception as e:
         logger.error(f"Failed to get login stats for user in year {year}: {e}")
+        raise e
+
+async def update_user_info(user_id: str, item: ItemUserUpdateProfileReq):
+    try:
+        collection = database.db[collection_name]
+        item_dict = item.dict()
+        item_dict["updated_at"] = get_current_time()
+        collection.update_one({"_id": ObjectId(user_id)}, {"$set": item_dict})
+        return response.SuccessResponse(message="Cập nhật thông tin thành công")
+    except Exception as e:
+        logger.error(f"Error updating user info: {str(e)}")
         raise e
