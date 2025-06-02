@@ -15,6 +15,14 @@ interface Props {
   setPageSize: (pageSize: number) => void;
 }
 
+function formatDateToInput(dateStr: string) {
+  const date = new Date(dateStr);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().split("T")[0];
+}
+
+
 export default function UpdateVoucherDialog({
   voucher,
   isOpen,
@@ -49,7 +57,7 @@ export default function UpdateVoucherDialog({
         max_discount_value: voucher.max_discount_value || 0,
         voucher_type: voucher.voucher_type || "",
         expired_date: voucher.expired_date
-        ? new Date(voucher.expired_date).toISOString().split("T")[0]
+        ? formatDateToInput(voucher.expired_date)
         : "",
       });
     }
@@ -117,7 +125,7 @@ export default function UpdateVoucherDialog({
     fetchUpdateVoucher(
       body,
       () => {
-        toast.showToast("Thêm voucher thành công", "success");
+        toast.showToast("Cập nhật voucher thành công", "success");
         setVoucherData({
           voucher_name: "",
           inventory: 0,
@@ -133,13 +141,7 @@ export default function UpdateVoucherDialog({
         toast.showToast("Cập nhật voucher thất bại", "error");
       }
     );
-    console.log("body", body);
-    if (page !== 1) {
-      setPage(1);
-    }
-    else {
-      fetchAllVouchers(page, pageSize, () => {}, () => {});  
-    }
+    fetchAllVouchers(page, pageSize, () => {}, () => {});  
     setIsOpen(false);
   };
 
@@ -178,6 +180,15 @@ export default function UpdateVoucherDialog({
               name="inventory"
               value={voucherData.inventory}
               onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+            />
+          </div>
+          <div>
+            <label className="block mb-1 text-gray-600">Đã dùng</label>
+            <input
+              name="inventory"
+              value={voucher.used}
+              readOnly
               className="w-full border rounded-lg p-2"
             />
           </div>
@@ -238,7 +249,7 @@ export default function UpdateVoucherDialog({
                   value={voucherData.expired_date}
                   onChange={handleChange}
                   className="w-full border rounded-lg p-2"
-                  min={new Date().toISOString().split("T")[0]}
+                  min={formatDateToInput(new Date().toISOString())}
                 />
               </div>
 

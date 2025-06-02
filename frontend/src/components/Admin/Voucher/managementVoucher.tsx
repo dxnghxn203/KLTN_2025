@@ -29,7 +29,7 @@ const VoucherManagement = () => {
             setLoading(false);
             console.error("Error fetching data:", error);
         }
-    }, [page, pageSize]);
+    }, [page, pageSize, allVouchers]);
 
     return (
         <div>

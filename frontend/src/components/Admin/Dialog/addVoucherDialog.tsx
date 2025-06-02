@@ -114,12 +114,7 @@ export default function AddVoucherDialog({
       }
     );
     console.log("body", body);
-    if (page !== 1) {
-      setPage(1);
-    }
-    else {
-      fetchAllVouchers(page, pageSize, () => {}, () => {});  
-    }
+    fetchAllVouchers(page, pageSize, () => {}, () => {});  
     setIsOpen(false);
   };
 
