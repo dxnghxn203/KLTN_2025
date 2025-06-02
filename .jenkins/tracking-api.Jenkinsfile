@@ -81,7 +81,16 @@ pipeline {
                                     [vaultKey: 'REDIS_PORT', envVar: 'vault_REDIS_PORT'],
                                     [vaultKey: 'SUPABASE_PASS', envVar: 'vault_SUPABASE_PASS'],
                                     [vaultKey: 'SUPABASE_key', envVar: 'vault_SUPABASE_key'],
-                                    [vaultKey: 'SUPABSE_URL', envVar: 'vault_SUPABSE_URL']
+                                    [vaultKey: 'SUPABSE_URL', envVar: 'vault_SUPABSE_URL'],
+                                    [vaultKey: 'SENDGRID_API_KEY', envVar: 'vault_SENDGRID_API_KEY'],
+                                    [vaultKey: 'AWS_ACCESS_KEY', envVar: 'vault_AWS_ACCESS_KEY'],
+                                    [vaultKey: 'SENDGRID_GMAIL', envVar: 'vault_SENDGRID_GMAIL'],
+                                    [vaultKey: 'AWS_BUCKET', envVar: 'vault_AWS_BUCKET'],
+                                    [vaultKey: 'AWS_REGION', envVar: 'vault_AWS_REGION'],
+                                    [vaultKey: 'AWS_S3_ENDPOINT', envVar: 'vault_AWS_S3_ENDPOINT'],
+                                    [vaultKey: 'AWS_SECRET_KEY', envVar: 'vault_AWS_SECRET_KEY'],
+
+
                                 ]
                             ]
                         ]
@@ -122,6 +131,13 @@ pipeline {
                             echo "SUPABASE_PASS=\${vault_SUPABASE_PASS}" >> ${APP_PATH}/.env
                             echo "SUPABASE_key=\${vault_SUPABASE_key}" >> ${APP_PATH}/.env
                             echo "SUPABSE_URL=\${vault_SUPABSE_URL}" >> ${APP_PATH}/.env
+                            echo "SENDGRID_API_KEY=\${vault_SENDGRID_API_KEY}" >> ${APP_PATH}/.env
+                            echo "SENDGRID_GMAIL=\${vault_SENDGRID_GMAIL}" >> ${APP_PATH}/.env
+                            echo "AWS_ACCESS_KEY=\${vault_AWS_ACCESS_KEY}" >> ${APP_PATH}/.env
+                            echo "AWS_BUCKET=\${vault_AWS_BUCKET}" >> ${APP_PATH}/.env
+                            echo "AWS_REGION=\${vault_AWS_REGION}" >> ${APP_PATH}/.env
+                            echo "AWS_S3_ENDPOINT=\${vault_AWS_S3_ENDPOINT}" >> ${APP_PATH}/.env
+                            echo "AWS_SECRET_KEY=\${vault_AWS_SECRET_KEY}" >> ${APP_PATH}/.env
 
                             # Hiển thị thông tin về file .env
                             echo "===== File .env đã được tạo ====="
@@ -168,7 +184,13 @@ pipeline {
                                 echo "SUPABASE_PASS=password" >> ${APP_PATH}/.env
                                 echo "SUPABASE_key=key" >> ${APP_PATH}/.env
                                 echo "SUPABSE_URL=https://yourproject.supabase.co" >> ${APP_PATH}/.env
-
+                                echo "SENDGRID_API_KEY=" >> ${APP_PATH}/.env
+                                echo "SENDGRID_GMAIL=" >> ${APP_PATH}/.env
+                                echo "AWS_ACCESS_KEY=" >> ${APP_PATH}/.env
+                                echo "AWS_BUCKET=" >> ${APP_PATH}/.env
+                                echo "AWS_REGION=" >> ${APP_PATH}/.env
+                                echo "AWS_S3_ENDPOINT=" >> ${APP_PATH}/.env
+                                echo "AWS_SECRET_KEY=" >> ${APP_PATH}/.env
                                 echo "Đã tạo file .env mẫu với các giá trị mặc định"
                             """
                         }
@@ -283,50 +305,50 @@ pipeline {
                 - Thời gian: \$(date)
                 ===========================================
                 """
+           withCredentials([
+                    string(credentialsId: 'telegram-bot-token', variable: 'BOT_TOKEN'),
+                    string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
+                ]) {
+                    sh '''
+                        curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+                        -d chat_id=${CHAT_ID} \
+                        -d text="✅ DEPLOY THÀNH CÔNG! 🎉
+
+                🚀 Ứng dụng: ''' + "${IMAGE_NAME}" + '''
+                📦 Image: ''' + "${IMAGE_TAG}" + '''
+                🔢 Build: #''' + "${BUILD_NUMBER}" + '''
+                👨‍💻 Người deploy: dxnghxn203
+                ⏰ Thời gian: $(date)"
+                    '''
+                }
+
+            }
+        }
+
+        failure {
+            echo """
+            ===========================================
+            ❌ Triển khai thất bại!
+            ===========================================
+            """
             withCredentials([
-                                string(credentialsId: 'telegram-bot-token', variable: 'BOT_TOKEN'),
-                                string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
-                            ]) {
-                                sh '''
-                                    curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
-                                    -d chat_id=${CHAT_ID} \
-                                    -d text="✅ DEPLOY THÀNH CÔNG! 🎉
+                string(credentialsId: 'telegram-bot-token', variable: 'BOT_TOKEN'),
+                string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
+            ]) {
+                sh '''
+                    curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
+                    -d chat_id=${CHAT_ID} \
+                    -d text="❌ DEPLOY THẤT BẠI! 🚫
 
-                            🚀 Ứng dụng: ''' + "${IMAGE_NAME}" + '''
-                            📦 Image: ''' + "${IMAGE_TAG}" + '''
-                            🔢 Build: #''' + "${BUILD_NUMBER}" + '''
-                            👨‍💻 Người deploy: dxnghxn203
-                            ⏰ Thời gian: $(date)"
-                                '''
-                            }
+            🚀 Ứng dụng: ''' + "${IMAGE_NAME}" + '''
+            🔢 Build: #''' + "${BUILD_NUMBER}" + '''
+            👨‍💻 Người deploy: dxnghxn203
+            ⏰ Thời gian: $(date)
 
-                        }
-                    }
-
-                    failure {
-                        echo """
-                        ===========================================
-                        ❌ Triển khai thất bại!
-                        ===========================================
-                        """
-                        withCredentials([
-                            string(credentialsId: 'telegram-bot-token', variable: 'BOT_TOKEN'),
-                            string(credentialsId: 'telegram-chat-id', variable: 'CHAT_ID')
-                        ]) {
-                            sh '''
-                                curl -s -X POST https://api.telegram.org/bot${BOT_TOKEN}/sendMessage \
-                                -d chat_id=${CHAT_ID} \
-                                -d text="❌ DEPLOY THẤT BẠI! 🚫
-
-                        🚀 Ứng dụng: ''' + "${IMAGE_NAME}" + '''
-                        🔢 Build: #''' + "${BUILD_NUMBER}" + '''
-                        👨‍💻 Người deploy: dxnghxn203
-                        ⏰ Thời gian: $(date)
-
-                        🔍 Xem chi tiết lỗi tại: ''' + "${BUILD_URL}" + '''console"
-                            '''
-                        }
-                    }
+            🔍 Xem chi tiết lỗi tại: ''' + "${BUILD_URL}" + '''console"
+                '''
+            }
+        }
 
         always {
             // Dọn dẹp workspace - đặc biệt là xóa file .env
