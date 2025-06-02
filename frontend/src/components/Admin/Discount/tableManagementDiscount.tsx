@@ -37,7 +37,7 @@ const TableManagementDiscount = ({
   const filteredPendingDiscountProducts = allProductAdmin?.filter(
     (product: any) =>
       product.verified_by === "" &&
-      product.prices.some((p: any) => p.discount && !p.status_discount)
+      product.prices.some((p: any) => p.discount )
   );
 
   console.log("allProductAdmin", allProductAdmin);

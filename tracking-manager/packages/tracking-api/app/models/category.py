@@ -499,15 +499,15 @@ async def update_all_categories_image(image_url):
 
             if "sub_category" in category:
                 for sub in category["sub_category"]:
-                    #if "sub_image_url" not in sub or sub["sub_image_url"] == "":
-                    sub["sub_image_url"] = image_url
-                    updated = True
+                    if "sub_image_url" not in sub or sub["sub_image_url"] == "":
+                        sub["sub_image_url"] = image_url
+                        updated = True
 
                     if "child_category" in sub:
                         for child in sub["child_category"]:
-                            #if "child_image_url" not in child or child["child_image_url"] == "":
-                            child["child_image_url"] = image_url
-                            updated = True
+                            if "child_image_url" not in child or child["child_image_url"] == "":
+                                child["child_image_url"] = image_url
+                                updated = True
 
             if updated:
                 collection.update_one(

@@ -15,7 +15,7 @@ const Category = () => {
                     Dashboard
                 </Link>
                 <span> / </span>
-                <Link href="/product/product-management" className="text-gray-800">
+                <Link href="/quan-ly-danh-muc" className="text-gray-800">
                     Danh mục
                 </Link>
             </div>

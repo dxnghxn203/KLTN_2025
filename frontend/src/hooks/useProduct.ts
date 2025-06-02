@@ -60,7 +60,7 @@ export function useProduct() {
     const productLowStock = useSelector(selectProductLowStock);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
     const [top_n, setTopN] = useState(10);
     const [low_stock_status, setLowStockStatus] = useState(null);
     const [main_category, setMainCategory] = useState(null);

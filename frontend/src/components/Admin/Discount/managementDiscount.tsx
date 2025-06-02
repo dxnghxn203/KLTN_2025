@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import TableDiscount from "./tableDiscount";
 import TableManagementDiscount from "./tableManagementDiscount";
 import SearchProductDialog from "../Dialog/searchProductDialog";
 import { useProduct } from "@/hooks/useProduct";
@@ -24,7 +23,7 @@ const DiscountManagement = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-850">
+          <Link href="/quan-ly-giam-gia" className="text-gray-850">
             Tạo chiến dịch giảm giá
           </Link>
         </div>

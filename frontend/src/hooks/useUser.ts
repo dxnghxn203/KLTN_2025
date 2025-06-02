@@ -66,7 +66,7 @@ export function useUser() {
     const topRevenueCustomers = useSelector(selectTopRevenueCustomers);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
 
     // const saveUser = (userData: UserData) => {
     //     localStorage.setItem("user", JSON.stringify(userData));
