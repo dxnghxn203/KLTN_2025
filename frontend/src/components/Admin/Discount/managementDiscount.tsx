@@ -8,9 +8,22 @@ import { useToast } from "@/providers/toastProvider";
 
 const DiscountManagement = () => {
   const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [isApproved, setIsApproved] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
   const toast = useToast();
-  const { allProductAdmin, getAllProductsAdmin } = useProduct();
+  const {
+    allProductDiscountAdmin,
+    fetchGetProductDiscountAdmin,
+    totalProductDiscountAdmin,
+    page,
+    setPage,
+    pageSize,
+    setPageSize
+  } = useProduct();
+
+  useEffect(() => {
+    fetchGetProductDiscountAdmin(isApproved);
+  }, [isApproved, page, pageSize]);
 
   return (
     <div>
@@ -35,7 +48,16 @@ const DiscountManagement = () => {
             + Thêm giảm giá
           </div>
         </div>
-        <TableManagementDiscount allProductAdmin={allProductAdmin} />
+        <TableManagementDiscount
+          allProductDiscountAdmin={allProductDiscountAdmin}
+          totalProductDiscountAdmin={totalProductDiscountAdmin}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          isApproved={isApproved}
+          setIsApproved={setIsApproved}
+        />
       </div>
       <SearchProductDialog
         isOpen={isOpenDialog}
@@ -60,7 +82,9 @@ const DiscountManagement = () => {
             },
           ]);
         }}
-        allProductAdmin={allProductAdmin}
+        allProductDiscountAdmin={allProductDiscountAdmin}
+        isApproved={isApproved}
+        totalProductDiscountAdmin={totalProductDiscountAdmin}
       />
     </div>
   );

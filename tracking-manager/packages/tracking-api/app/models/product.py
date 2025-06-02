@@ -1071,7 +1071,7 @@ async def update_product_fields(update_data: ItemUpdateProductReq, email):
         logger.error(f"Error updating product fields: {str(e)}")
         raise e
 
-async def search_products_by_name(keyword: str, page: int, page_size: int):
+async def search_products_by_name(keyword: str):
     try:
         collection = db[collection_name]
         pattern = re.escape(keyword)
@@ -1080,8 +1080,7 @@ async def search_products_by_name(keyword: str, page: int, page_size: int):
             "is_approved": True,
             "active": True
         }
-        skip_count = (page - 1) * page_size
-        product_list = collection.find(query).skip(skip_count).limit(page_size)
+        product_list = collection.find(query)
 
         enriched_products = []
 

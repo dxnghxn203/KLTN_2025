@@ -36,6 +36,9 @@ import {
     selectProductLowStock,
     selectTotalProductAdmin,
     selectTotalFileImport,
+    selectAllProductDiscountAdmin,
+    selectTotalProductDiscountAdmin,
+    fetchProductDiscountAdminStart
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -56,6 +59,8 @@ export function useProduct() {
     const allBrands = useSelector(selectAllBrands);
     const allFileImport = useSelector(selectAllFileImport);
     const allProductDiscount = useSelector(selectAllProductDiscount);
+    const allProductDiscountAdmin = useSelector(selectAllProductDiscountAdmin);
+    const totalProductDiscountAdmin = useSelector(selectTotalProductDiscountAdmin);
     const imageToProduct = useSelector(selectImageToProduct);
     const productLowStock = useSelector(selectProductLowStock);
 
@@ -324,6 +329,16 @@ export function useProduct() {
         );
     }
 
+    const fetchGetProductDiscountAdmin = async (is_approved: any) => {
+        dispatch(
+            fetchProductDiscountAdminStart({
+                page: page,
+                page_size: pageSize,
+                is_approved: is_approved
+            })
+        );
+    }
+
     const fetchGetProducLowStock = async (onSuccess: (data: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchProductLowStockStart({
             onSuccess: onSuccess,
@@ -387,6 +402,10 @@ export function useProduct() {
 
         allProductDiscount,
         fetchGetProductDiscount,
+
+        allProductDiscountAdmin,
+        fetchGetProductDiscountAdmin,
+        totalProductDiscountAdmin,
 
         imageToProduct,
         fetchImageToProduct,

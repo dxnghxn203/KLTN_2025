@@ -13,46 +13,32 @@ import {
   MdOutlineModeEdit,
 } from "react-icons/md";
 import { useToast } from "@/providers/toastProvider";
-import { FiEye } from "react-icons/fi";
-import { getAllProductAdmin } from "@/services/productService";
 import UpdateDiscountDialog from "../Dialog/updateDiscountDialog";
 
 interface TableManagementDiscountProps {
-  allProductAdmin: any[];
+  allProductDiscountAdmin: any[];
+  totalProductDiscountAdmin: number;
+  currentPage: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+  isApproved: boolean;
+  setIsApproved: (isApproved: boolean) => void;
 }
 
 const TableManagementDiscount = ({
-  allProductAdmin,
+  allProductDiscountAdmin,
+  totalProductDiscountAdmin,
+  currentPage,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  isApproved,
+  setIsApproved,
 }: TableManagementDiscountProps) => {
-  const { allProductDiscount, fetchGetProductDiscount } = useProduct();
-  const [currentPage, setCurrentPage] = useState<number>(1);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const tabs = ["discounted", "pending"];
-  const [activeTab, setActiveTab] = useState<"discounted" | "pending">(
-    "discounted"
-  );
   const [isOpenUpdateProduct, setIsOpenUpdateProduct] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-
-  const filteredPendingDiscountProducts = allProductAdmin?.filter(
-    (product: any) =>
-      product.verified_by === "" &&
-      product.prices.some((p: any) => p.discount )
-  );
-
-  console.log("allProductAdmin", allProductAdmin);
-
-  const onPageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const toast = useToast();
-  const productsPerPage = 10;
-
-  useEffect(() => {
-    fetchGetProductDiscount();
-  }, []);
-
   const toggleMenu = (productId: string) => {
     setMenuOpen(menuOpen === productId ? null : productId);
   };
@@ -68,39 +54,40 @@ const TableManagementDiscount = ({
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const currentList =
-    activeTab === "discounted"
-      ? allProductDiscount
-      : filteredPendingDiscountProducts;
-
-  const totalProducts = currentList ? currentList.length : 0;
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = currentList?.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  const totalPages = Math.ceil(totalProductDiscountAdmin / pageSize);
+  const currentPageData = (currentPage - 1) * pageSize;
+  const firstIndex = currentPageData + 1;
+  const lastIndex = Math.min(currentPageData + pageSize, totalProductDiscountAdmin);
 
   return (
     <div>
       <div className="flex border-b border-gray-200 mb-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab as "discounted" | "pending");
-              setCurrentPage(1); // reset page khi đổi tab
-            }}
-            className={`pb-2 px-3 text-sm font-medium border-b-2 transition flex items-center ${
-              activeTab === tab
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-blue-500"
-            }`}
-          >
-            {tab === "discounted" ? "Sản phẩm giảm giá" : "Chờ duyệt"}
-          </button>
-        ))}
+        <button
+          onClick={() => {
+            setIsApproved(true);
+            onPageChange(1);
+          }}
+          className={`pb-2 px-3 text-sm font-medium border-b-2 transition flex items-center ${
+            isApproved
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-blue-500"
+          }`}
+        >
+          Sản phẩm giảm giá
+        </button>
+        <button
+          onClick={() => {
+            setIsApproved(false);
+            onPageChange(1);
+          }}
+          className={`pb-2 px-3 text-sm font-medium border-b-2 transition flex items-center ${
+            !isApproved
+              ? "border-blue-500 text-blue-600"
+              : "border-transparent text-gray-500 hover:text-blue-500"
+          }`}
+        >
+          Chờ duyệt
+        </button>
       </div>
       <div className="bg-white shadow-sm rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
@@ -119,12 +106,12 @@ const TableManagementDiscount = ({
             </thead>
 
             <tbody className="space-x-2">
-              {currentProducts && currentProducts.length > 0 ? (
-                currentProducts.map((product: any, index: number) => (
+              {allProductDiscountAdmin && totalProductDiscountAdmin > 0 ? (
+                allProductDiscountAdmin.map((product: any, index: number) => (
                   <tr
                     key={product.product_id}
                     className={`text-sm hover:bg-gray-50 transition ${
-                      index !== currentProducts.length - 1
+                      index !== totalProductDiscountAdmin - 1
                         ? "border-b border-gray-200"
                         : ""
                     }`}
@@ -280,13 +267,13 @@ const TableManagementDiscount = ({
       </div>
       <div className="flex items-center justify-between mt-4">
         <span className="text-sm text-gray-700">
-          Hiện có {totalProducts} sản phẩm
+          Hiện có {totalProductDiscountAdmin} sản phẩm
         </span>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-700">
-            Hiển thị {indexOfFirstProduct + 1} đến{" "}
-            {Math.min(indexOfLastProduct, totalProducts)} trong số{" "}
-            {totalProducts} sản phẩm
+            Hiển thị {firstIndex} đến{" "}
+            {lastIndex} trong số{" "}
+            {totalProductDiscountAdmin} sản phẩm
           </span>
         </div>
       </div>
@@ -344,7 +331,7 @@ const TableManagementDiscount = ({
 
         <button
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={currentPage >= totalPages}
           className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
         >
           <MdNavigateNext className="text-xl" />

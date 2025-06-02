@@ -16,6 +16,8 @@ interface ProductState {
     fileImport: any[];
     totalFileImport: number;
     productDiscount: any[];
+    productDiscountAdmin: any[];
+    totalProductDiscountAdmin: number;
     loading: boolean;
     error: string | null;
     imageToProduct: any[];
@@ -38,6 +40,8 @@ const initialState: ProductState = {
     fileImport: [],
     totalFileImport: 0,
     productDiscount: [],
+    productDiscountAdmin: [],
+    totalProductDiscountAdmin: 0,
     loading: false,
     error: null,
     imageToProduct: [],
@@ -325,9 +329,8 @@ export const productSlice = createSlice({
         fetchDeleteImportProductFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
-        }
+        },
 
-        ,
         // fetch product discount 
         fetchProductDiscountStart(state, action: PayloadAction<any>) {
             state.loading = true;
@@ -338,6 +341,21 @@ export const productSlice = createSlice({
             state.error = null;
         },
         fetchProductDiscountFailed(state, action: PayloadAction<string>) {
+            state.loading = false;
+            state.error = action.payload;
+        },
+
+        // fetch product discount admin
+        fetchProductDiscountAdminStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchProductDiscountAdminSuccess(state, action: PayloadAction<any>) {
+            state.productDiscountAdmin = action.payload.products;
+            state.totalProductDiscountAdmin = action.payload.total_products;
+            state.loading = false;
+            state.error = null;
+        },
+        fetchProductDiscountAdminFailed(state, action: PayloadAction<string>) {
             state.loading = false;
             state.error = action.payload;
         },
@@ -466,8 +484,11 @@ export const {
 
     fetchProductLowStockStart,
     fetchProductLowStockSuccess,
-    fetchProductLowStockFailed
+    fetchProductLowStockFailed,
 
+    fetchProductDiscountAdminStart,
+    fetchProductDiscountAdminSuccess,
+    fetchProductDiscountAdminFailed,
 } = productSlice.actions;
 
 export default productSlice.reducer;
