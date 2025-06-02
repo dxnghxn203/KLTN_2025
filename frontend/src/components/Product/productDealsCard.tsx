@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import ProductDialog from "@/components/Dialog/productDialog";
 import Image from "next/image";
 import Link from "next/link";
-import { generateRandomId } from "@/utils/string";
-import { ProductData } from "@/types/product";
 import { FaStar } from "react-icons/fa6";
 
 const ProductDealsCard = ({ product }: { product: any }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const slug = product?.slug;
 
   return (
     <>
@@ -15,7 +14,7 @@ const ProductDealsCard = ({ product }: { product: any }) => {
         <div className="flex text-xs font-bold whitespace-normal">
           <div className="flex flex-col rounded-3xl border border-neutral-100 bg-slate-100 min-w-[100px] w-full hover:border-blue-600 hover:shadow-md transition-all duration-300">
             {/* Ảnh sản phẩm */}
-            <Link href="/chi-tiet-san-pham" legacyBehavior>
+            <Link href={`/chi-tiet-san-pham/${slug}`} legacyBehavior>
               <div className="py-6 flex flex-col items-center">
                 <div className="flex justify-end w-full">
                   {product?.prices[0]?.discount !== 0 ? (
@@ -57,31 +56,70 @@ const ProductDealsCard = ({ product }: { product: any }) => {
               <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] h-[48px]">
                 {product?.name_primary}
               </div>
-              <div className="mt-2">
-                <div
-                  className={`text-sm text-zinc-400 line-through ${
-                    product?.prices[0]?.original_price &&
-                    product?.prices[0]?.original_price !==
-                      product?.prices[0]?.price
-                      ? "opacity-100"
-                      : "opacity-0"
-                  }`}
-                >
-                  {product?.prices[0]?.original_price?.toLocaleString("vi-VN")}đ
+              {product?.prescription_required ? (
+                <div className="mt-2 ">
+                  <div
+                    className={`text-sm text-zinc-400 line-through opacity-0 select-none${
+                      product?.prices[0]?.original_price &&
+                      product?.prices[0]?.original_price !==
+                        product?.prices[0]?.price
+                        ? "opacity-100"
+                        : "opacity-0"
+                    }`}
+                  >
+                    {product?.prices[0]?.original_price?.toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
+                  </div>
+                  <p className="text-[#A7A8B0] text-sm font-medium">
+                    Cần tư vấn từ dược sĩ
+                  </p>
                 </div>
-                <div className="text-lg font-bold text-[#0053E2]">
-                  {product?.prices[0]?.price.toLocaleString("vi-VN")}đ/
-                  {product?.prices[0]?.unit}
+              ) : (
+                <div className="mt-2">
+                  <div
+                    className={`text-sm text-zinc-400 line-through ${
+                      product?.prices[0]?.original_price &&
+                      product?.prices[0]?.original_price !==
+                        product?.prices[0]?.price
+                        ? "opacity-100"
+                        : "opacity-0"
+                    }`}
+                  >
+                    {product?.prices[0]?.original_price?.toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
+                  </div>
+                  <div className="text-lg font-bold text-[#0053E2]">
+                    {product?.prices[0]?.price.toLocaleString("vi-VN")}đ/
+                    {product?.prices[0]?.unit}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="mt-2 flex justify-center">
-                <button
-                  className="w-full py-3.5 text-sm text-white bg-blue-700 rounded-3xl"
-                  onClick={() => setIsDialogOpen(true)} // Mở dialog khi nhấn
-                >
-                  + Chọn sản phẩm
-                </button>
+              {/* Nút chọn sản phẩm */}
+              <div className="mt-2 flex justify-center w-full">
+                {product?.prescription_required ? (
+                  <div className="flex flex-col justify-start w-full">
+                    <button
+                      className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
+                      onClick={() =>
+                        (window.location.href = `/chi-tiet-san-pham/${slug}`)
+                      }
+                    >
+                      Xem chi tiết
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="w-full py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 rounded-3xl font-semibold"
+                    onClick={() => setIsDialogOpen(true)}
+                  >
+                    + Chọn sản phẩm
+                  </button>
+                )}
               </div>
             </div>
           </div>

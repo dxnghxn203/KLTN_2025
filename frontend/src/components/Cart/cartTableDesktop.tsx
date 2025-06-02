@@ -1,6 +1,7 @@
 // components/CartTableDesktop.tsx
 import Image from "next/image";
 import { ImBin } from "react-icons/im";
+import { RiSearch2Line } from "react-icons/ri";
 
 export default function CartTableDesktop({
   cart,
@@ -26,8 +27,9 @@ export default function CartTableDesktop({
                 id="select-all"
                 checked={cart && selectedProducts.length === cart?.length}
                 onChange={handleSelectAll}
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded"
               />
-              <label htmlFor="select-all" className="ml-2 cursor-pointer">
+              <label htmlFor="select-all" className="ml-4 cursor-pointer">
                 Chọn tất cả ({selectedProducts.length}/{cart?.length})
               </label>
             </div>
@@ -42,19 +44,16 @@ export default function CartTableDesktop({
       <tbody className={loadingGetCart ? "pointer-events-none opacity-50" : ""}>
         {cart?.map((product: any, index: number) => (
           <tr
-            key={`product-${product.product.product_id}-${product.price_id}`}
+            key={`${product.product.product_id}-${product.price_id}`}
             className={`${
               index === cart.length - 1 ? "" : "border-b border-gray-200"
             }`}
           >
-            <td className="px-4 py-3">
-              <label
-                htmlFor={`product-${product.product.product_id}-${product.price_id}`}
-                className="inline-flex items-center cursor-pointer"
-              >
+            <td className="px-4 py-3 cursor-pointer">
+              <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id={`product-${product.product.product_id}-${product.price_id}`}
+                  id={`${product.product.product_id}-${product.price_id}`}
                   checked={selectedProducts.some(
                     (item: any) =>
                       item.product_id === product.product.product_id &&
@@ -66,20 +65,21 @@ export default function CartTableDesktop({
                       product.price_id
                     )
                   }
-                  className="h-6 w-6 text-blue-600 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded shrink-0"
                 />
                 <Image
                   src={product?.product?.images_primary}
                   alt={product.product?.product_name || "Product Image"}
                   width={55}
                   height={55}
-                  className="ml-2 p-1 rounded-lg border border-stone-300"
+                  className="ml-4 p-1 rounded-lg border border-stone-300"
                 />
                 <span className="ml-2 max-w-[180px] line-clamp-3">
                   {product?.product?.name_primary}
                 </span>
-              </label>
+              </div>
             </td>
+
             <td className="text-center px-4 py-3">
               {renderOriginalPrice(product, product.price_id)}
             </td>
@@ -109,9 +109,9 @@ export default function CartTableDesktop({
                 <button
                   title="Tìm sản phẩm tương tự"
                   onClick={() => handleShowSimilarProducts(product)}
-                  className="text-xs text-red-500 font-medium"
+                  className="text-sm text-blue-600 font-medium flex hover:text-blue-700"
                 >
-                  Tìm sản phẩm tương tự
+                  <RiSearch2Line className="text-2xl" /> Tìm sản phẩm tương tự
                 </button>
               </div>
             </td>

@@ -24,19 +24,23 @@ export default function CartTableMobile({
           checked={cart && selectedProducts.length === cart?.length}
           onChange={handleSelectAll}
         />
-        <label htmlFor="select-all-mobile" className="cursor-pointer">
+        <label htmlFor="select-all-mobile" className="cursor-pointer text-sm">
           Chọn tất cả ({selectedProducts.length}/{cart?.length})
         </label>
       </div>
+
       <div className={loadingGetCart ? "opacity-50 pointer-events-none" : ""}>
-        {cart?.map((product: any) => (
+        {cart?.map((product: any, index: number) => (
           <div
-            key={`mobile-${product.product.product_id}-${product.price_id}`}
-            className="border-b border-gray-200 p-4"
+            key={`${product.product.product_id}-${product.price_id}`}
+            className={`p-4 ${
+              index === cart.length - 1 ? "" : "border-b border-gray-200"
+            }`}
           >
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-start gap-3">
               <input
                 type="checkbox"
+                className="mt-2"
                 checked={selectedProducts.some(
                   (item: any) =>
                     item.product_id === product.product.product_id &&
@@ -49,54 +53,61 @@ export default function CartTableMobile({
                   )
                 }
               />
+
+              {/* Ảnh sản phẩm */}
               <Image
                 src={product?.product?.images_primary}
                 alt={product.product?.product_name || "Product"}
-                width={50}
-                height={50}
-                className="border border-gray-300 rounded-lg"
+                width={60}
+                height={60}
+                className="border border-gray-300 rounded-lg shrink-0 p-1"
               />
-              <span className="text-sm font-medium line-clamp-2">
-                {product?.product?.name_primary}
-              </span>
-              <div className="flex items-center justify-between mt-2 gap-2 ml-auto">
-                <button
-                  onClick={() =>
-                    handleDeleteClick(
-                      product.product.product_id,
-                      product.price_id
-                    )
-                  }
-                  className="text-gray-500 hover:text-red-600"
-                >
-                  <ImBin size={16} />
-                </button>
-                <button
-                  onClick={() => handleShowSimilarProducts(product)}
-                  className="text-xs text-red-500 underline"
-                >
-                  Tìm tương tự
-                </button>
+
+              {/* Nội dung bên phải ảnh */}
+              <div className="flex flex-col flex-1">
+                <div className="flex justify-between items-start">
+                  <span className="text-sm font-medium line-clamp-2">
+                    {product?.product?.name_primary}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleDeleteClick(
+                        product.product.product_id,
+                        product.price_id
+                      )
+                    }
+                    className="text-gray-500 hover:text-red-600"
+                  >
+                    <ImBin size={16} />
+                  </button>
+                </div>
+
+                {/* Giá */}
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-sm text-blue-600 font-semibold">
+                    {renderTotalPrice(product, product.price_id)}
+                  </span>
+                </div>
+
+                {/* Số lượng + đơn vị */}
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  {renderQuantityControls(product, product.price_id)}
+                  {renderUnit(product, product.price_id)}
+                </div>
               </div>
             </div>
 
-            <div className="text-sm text-gray-600 mt-4 space-y-4 mx-6">
-              <div className="flex items-center gap-2">
-                <strong>Giá thành:</strong>{" "}
-                {renderOriginalPrice(product, product.price_id)}
-              </div>
-              <div className="flex items-center gap-2">
-                <strong>Số lượng:</strong>{" "}
-                {renderQuantityControls(product, product.price_id)}
-              </div>
-              <div className="flex items-center gap-2">
-                <strong>Đơn vị:</strong> {renderUnit(product, product.price_id)}
-              </div>
-              <div className="flex items-center gap-2">
-                <strong>Thành tiền:</strong>{" "}
-                {renderTotalPrice(product, product.price_id)}
-              </div>
-            </div>
+            <button
+              onClick={() =>
+                handleShowSimilarProducts(
+                  product.product.product_id,
+                  product.price_id
+                )
+              }
+              className="text-blue-600 hover:underline mt-2 text-sm"
+            >
+              Tìm sản phẩm tương tự
+            </button>
           </div>
         ))}
       </div>

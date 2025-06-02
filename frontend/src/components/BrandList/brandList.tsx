@@ -9,56 +9,53 @@ interface BrandProps {
 }
 
 const BrandItem: React.FC<BrandProps> = ({ name, logo }) => (
-  <div className="flex flex-col justify-center items-center w-full max-md:w-1/2 max-lg:w-1/3">
-    <Link
-      href={`/thuong-hieu/${encodeURIComponent(name)}`}
-      className="flex flex-col "
-    >
-      <div className="flex flex-col justify-center items-center px-7 rounded-full bg-neutral-100 h-[170px] w-[170px] max-md:px-5 ">
-        <img
-          loading="lazy"
-          src={logo}
-          alt={`${name} logo`}
-          className="object-contain w-28 aspect-[1.12]"
-        />
-      </div>
-      <div className="self-center mt-1.5 text-lg font-semibold text-black">
-        {name}
-      </div>
-    </Link>
-  </div>
+  <Link
+    href={`/thuong-hieu/${encodeURIComponent(name)}`}
+    className="flex flex-col items-center"
+  >
+    <div className="flex justify-center items-center rounded-full bg-neutral-100 md:h-[170px] md:w-[170px] w-[120px] h-[120px] md:px-5">
+      <img
+        loading="lazy"
+        src={logo}
+        alt={`${name} logo`}
+        className="object-contain w-28 aspect-[1.12]"
+      />
+    </div>
+    <div className="mt-2 text-lg font-semibold text-black text-center">
+      {name}
+    </div>
+  </Link>
 );
 
 const BrandList: React.FC = () => {
   const { getAllBrandsUser, fetchGetAllBrandUser } = useBrand();
+
   useEffect(() => {
     fetchGetAllBrandUser(
       () => {},
       () => {}
     );
   }, []);
-  return (
-    getAllBrandsUser.length > 0 && (
-      <div className="flex flex-col w-full max-md:px-5 max-md:max-w-full">
-        <Link href="/thuong-hieu">
-          <div className="px-6 flex flex-wrap gap-5 justify-between items-start w-full text-black max-md:max-w-full">
-            <div className="flex gap-2 text-sm font-semibold ml-auto items-center mt-[-30px]">
-              <div>Xem tất cả</div>
-              <FaArrowRightLong />
-            </div>
-          </div>
-        </Link>
 
-        <div className="flex gap-5 justify-around items-center py-0.5 mt-7 w-full max-md:flex-wrap md:g">
-          {getAllBrandsUser &&
-            getAllBrandsUser
-              .slice(0, 6)
-              .map((brand: any, index: any) => (
-                <BrandItem key={index} {...brand} />
-              ))}
-        </div>
+  if (!getAllBrandsUser.length) return null;
+
+  return (
+    <div className="w-full">
+      <div className="flex justify-end text-sm font-semibold text-black mb-4">
+        <Link href="/thuong-hieu" className="flex items-center gap-2">
+          <span>Xem tất cả</span>
+          <FaArrowRightLong />
+        </Link>
       </div>
-    )
+
+      <div className="grid grid-cols-2 max-md:gap-x-4 gap-y-6 max-lg:grid-cols-3 md:flex md:justify-around">
+        {getAllBrandsUser.slice(0, 6).map((brand: any, index: number) => (
+          <div key={index} className="flex justify-center w-full">
+            <BrandItem {...brand} />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

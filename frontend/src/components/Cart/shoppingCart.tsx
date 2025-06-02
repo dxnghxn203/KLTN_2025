@@ -347,12 +347,10 @@ const ShoppingCart = forwardRef(
 
     const renderOriginalPrice = (product: any, price_id: any) => {
       const price = getPrice(product.product, price_id);
-      const productId = product.product.product_id;
-      const dropdownKey = `${productId}-${price_id}`;
 
       return (
         <>
-          <div className="text-center flex flex-col items-center">
+          <div className="text-center flex flex-col items-center ">
             <span className="text-lg font-semibold text-[#0053E2]">
               {price?.price.toLocaleString("vi-VN")}đ
             </span>
@@ -367,7 +365,6 @@ const ShoppingCart = forwardRef(
       );
     };
     const renderQuantityControls = (product: any, price_id: any) => {
-      const price = getPrice(product.product, price_id);
       const productId = product.product.product_id;
       const dropdownKey = `${productId}-${price_id}`;
       const available = availableQuantities[dropdownKey];
@@ -440,7 +437,7 @@ const ShoppingCart = forwardRef(
       return (
         <>
           <div
-            className="text-center relative flex flex-col sm:flex-row"
+            className="text-center relative flex flex-row md:flex-col items-center justify-center gap-2"
             ref={(el) => {
               dropdownRefs.current[dropdownKey] = el;
             }}

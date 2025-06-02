@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
 import ProductDealsCard from "./productDealsCard";
-import { ProductData } from "@/types/product";
-import medicine1 from "@/images/medicinee.png";
-import { generateRandomId } from "@/utils/string";
 import Link from "next/link";
 import { useProduct } from "@/hooks/useProduct";
 import { FaArrowRightLong } from "react-icons/fa6";
@@ -18,7 +15,7 @@ const ProductDealsList: React.FC = () => {
 
   return (
     productBestDeal.length > 0 && (
-      <div className="w-full max-md:px-5 max-md:max-w-full">
+      <div className="w-full">
         <Link href="/bo-suu-tap/deals-tot-nhat-danh-cho-ban">
           <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black mt-[-30px]">
             <div className="flex gap-4 text-sm font-semibold ml-auto items-center">
