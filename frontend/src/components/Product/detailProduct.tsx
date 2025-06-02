@@ -265,22 +265,26 @@ const DetailProduct = ({ product }: any) => {
               </span>
             </h2>
             <h1 className="text-3xl font-bold">{product?.name_primary}</h1>
-            <div className="flex items-center space-x-2 text-gray-600 text-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-2 space-y-1 sm:space-y-0 text-gray-600 text-sm">
               <span>{product?.product_id}</span>
-              <span>•</span>
-              <span>{Number(product?.rating).toFixed(1)}</span>
-              <span>
-                <FaStar className="text-[#FFD700] text-lg" />
+              <span className="hidden sm:inline">•</span>
+              <span className="flex items-center ">
+                {Number(product?.rating).toFixed(1)}
+                <span>
+                  <FaStar className="text-[#FFD700] text-lg ml-2" />
+                </span>
               </span>
-              <span>•</span>
+
+              <span className="hidden sm:inline">•</span>
               <a className="text-[#0053E2] hover:underline">
                 {product?.count_review} đánh giá
               </a>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <a className="text-[#0053E2] hover:underline">
                 {product?.count_comment} bình luận
               </a>
             </div>
+
             {product?.prescription_required !== true && (
               <div className="flex-col space-y-4 gap-2 mt-3 items-center">
                 {selectedPrice?.discount > 0 && (
@@ -524,17 +528,6 @@ const DetailProduct = ({ product }: any) => {
               >
                 Chọn mua
               </button>
-            )}
-
-            {product?.prescription_required !== true && (
-              <p className="mt-2 flex items-center whitespace-nowrap text-sm">
-                <span className="text-orange-500 font-bold flex items-center">
-                  ⚡Sản phẩm đang được chú ý,
-                </span>
-                <span className="text-black ml-1">
-                  có 7 người thêm vào giỏ hàng & 18 người đang xem
-                </span>
-              </p>
             )}
 
             <div className="mt-4 flex pb-4 font-medium items-center space-x-4">

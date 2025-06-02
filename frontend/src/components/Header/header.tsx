@@ -2,22 +2,16 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LuSearch } from "react-icons/lu";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { HiOutlineUserCircle } from "react-icons/hi2";
-import { FiClock, FiLogOut } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
 import { IoChevronDownOutline } from "react-icons/io5";
-import { BsCameraFill } from "react-icons/bs"; // Import camera icon
+import { BsCameraFill } from "react-icons/bs";
 import Image from "next/image";
 import { ImBin } from "react-icons/im";
-import textlogo from "@/images/medicare.png";
-import logoyellow from "@/images/MMM.jpg";
 import logo from "@/images/5.png";
 import text from "@/images/6.png";
-
-import LocationDelivery from "./locationDelivery";
 import MenuHeader from "./menuHeader";
-import LocationDialog from "@/components/Dialog/locationDialog"; // Import from correct path
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { getPriceFromProduct } from "@/utils/price";
@@ -713,37 +707,37 @@ export default function Header() {
                 className="w-full outline-none text-sm placeholder:text-gray-500"
               />
               <div className="relative mx-2">
-                  <button
-                    type="button"
-                    className="flex items-center justify-center shrink-0 transition text-[#0053E2] hover:text-blue-700 relative"
-                    onClick={handleScanMedication}
-                    onMouseEnter={() => {
-                      if (tooltipTimer.current)
-                        clearTimeout(tooltipTimer.current);
-                      setShowScanTooltip(true);
-                    }}
-                    onMouseLeave={() => {
-                      tooltipTimer.current = setTimeout(() => {
-                        setShowScanTooltip(false);
-                      }, 500);
+                <button
+                  type="button"
+                  className="flex items-center justify-center shrink-0 transition text-[#0053E2] hover:text-blue-700 relative"
+                  onClick={handleScanMedication}
+                  onMouseEnter={() => {
+                    if (tooltipTimer.current)
+                      clearTimeout(tooltipTimer.current);
+                    setShowScanTooltip(true);
+                  }}
+                  onMouseLeave={() => {
+                    tooltipTimer.current = setTimeout(() => {
+                      setShowScanTooltip(false);
+                    }, 500);
+                  }}
+                >
+                  <BsCameraFill className="text-xl" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
+                </button>
+                {isShowTooltip && (
+                  <div
+                    className="absolute -bottom-14 left-1/2 transform tooltip-animate bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs rounded-lg py-2 px-4 whitespace-nowrap z-50 border border-blue-400"
+                    style={{
+                      boxShadow: "0 4px 15px rgba(0, 83, 226, 0.3)",
                     }}
                   >
-                    <BsCameraFill className="text-xl" />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-ping"></span>
-                  </button>
-                  {isShowTooltip && (
-                    <div
-                      className="absolute -bottom-14 left-1/2 transform tooltip-animate bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs rounded-lg py-2 px-4 whitespace-nowrap z-50 border border-blue-400"
-                      style={{
-                        boxShadow: "0 4px 15px rgba(0, 83, 226, 0.3)",
-                      }}
-                    >
-                      <span className="font-medium">Chụp hình thuốc</span> để
-                      tìm kiếm
-                      <div className="absolute -top-1 left-1/2 tooltip-arrow w-2 h-2 bg-blue-700 rotate-45 border-t border-l border-blue-400"></div>
-                    </div>
-                  )}
-                </div>
+                    <span className="font-medium">Chụp hình thuốc</span> để tìm
+                    kiếm
+                    <div className="absolute -top-1 left-1/2 tooltip-arrow w-2 h-2 bg-blue-700 rotate-45 border-t border-l border-blue-400"></div>
+                  </div>
+                )}
+              </div>
               <button type="button" onClick={handleSearch}>
                 <RiSearch2Line className="text-blue-600 text-xl" />
               </button>
@@ -889,10 +883,6 @@ export default function Header() {
             }}
           />
         )}
-        <LocationDialog
-          isOpen={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-        />
       </div>
     </>
   );

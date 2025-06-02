@@ -104,7 +104,7 @@ const ProductCard = ({ product }: { product: any }) => {
                 {product?.prescription_required ? (
                   <div className="flex flex-col justify-start w-full">
                     <button
-                      className="mt-2 w-full py-2.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
+                      className="mt-2 w-full py-3.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
                       onClick={() =>
                         (window.location.href = `/chi-tiet-san-pham/${slug}`)
                       }
@@ -114,7 +114,7 @@ const ProductCard = ({ product }: { product: any }) => {
                   </div>
                 ) : (
                   <button
-                    className="w-full py-2.5 text-sm text-white bg-blue-700 hover:bg-blue-800 rounded-3xl font-semibold"
+                    className="w-full py-3.5 text-sm text-white bg-blue-700 hover:bg-blue-800 rounded-3xl font-bold"
                     onClick={() => setIsDialogOpen(true)}
                   >
                     + Chọn sản phẩm

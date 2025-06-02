@@ -25,8 +25,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       {loading ? (
         <Loading />
       ) : (
-        <main className="flex flex-col px-4 sm:px-6 md:px-10 pt-10 w-full max-w-screen-xl">
-          {/* Breadcrumb */}
+        <main className="flex flex-col px-4 sm:px-6 md:px-10 pt-14 w-full max-w-screen-xl">
           {productBySlug && (
             <div className="text-xs sm:text-sm text-[#0053E2] pb-5 flex flex-wrap gap-1">
               <Link href="/" className="hover:underline text-blue-600">

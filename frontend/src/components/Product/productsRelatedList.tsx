@@ -14,9 +14,9 @@ const ProductsRelatedList = ({ product }: any) => {
   }, []);
 
   return (
-    <div className="max-md:px-5 w-full mt-6">
+    <div className="w-full mt-6">
       <div className="flex flex-wrap gap-5 justify-between items-start w-full text-black mt-[-30px]">
-        <div className="flex gap-4 text-sm font-semibold ml-auto items-center">
+        <div className="flex gap-4 text-sm font-semibold ml-auto items-center mt-2">
           <div>Tất cả sản phẩm</div>
           <FaArrowRightLong />
         </div>

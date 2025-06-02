@@ -16,8 +16,8 @@ const calculateTotalOriginalPrice = (
 ) => {
   return original_price * quantity;
 };
-
 const ProductList: React.FC<ProductListProps> = ({ products }) => {
+  console.log("products", products);
   return (
     <div className="">
       <div className="flex-1 bg-[#F5F7F9] rounded-xl">
@@ -28,7 +28,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
               index !== products.length - 1 ? "border-b border-gray-300" : ""
             }`}
           >
-            <div className="w-[40%] flex items-center px-5 py-2">
+            <div className="w-[40%] flex items-center px-2 py-2">
               <Image
                 src={product.image}
                 alt={product.product_name}
@@ -59,7 +59,7 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
                 </span>
               </div>
             </div>
-            <div className="w-[15%] text-center">
+            <div className="w-[15%] text-center px-2">
               x{product.quantity} {product.unit}
             </div>
           </div>

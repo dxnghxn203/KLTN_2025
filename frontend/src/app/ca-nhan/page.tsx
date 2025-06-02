@@ -1,8 +1,7 @@
 "use client";
-import PersonalInformation from "./thong-tin-ca-nhan/page";
+
+import PersonalInfomation from "@/components/Profile/personalInfo";
 
 export default function Profile() {
-  return (
-    <PersonalInformation />
-  );
+  return <PersonalInfomation />;
 }

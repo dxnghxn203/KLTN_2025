@@ -2,11 +2,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useCategory } from "@/hooks/useCategory";
 import { usePathname, useRouter } from "next/navigation";
-import { HiMenu, HiOutlineUserCircle } from "react-icons/hi";
-import { IoChevronDownOutline, IoClose } from "react-icons/io5";
+import { HiOutlineUserCircle } from "react-icons/hi";
+import { IoMenu } from "react-icons/io5";
 import Link from "next/link";
-import { FiLogOut } from "react-icons/fi";
 import { useAuth } from "@/hooks/useAuth";
+import { IoMdLogOut } from "react-icons/io";
+import { X } from "lucide-react";
 
 export default function MobileSidebar() {
   const [open, setOpen] = useState(false);
@@ -65,9 +66,8 @@ export default function MobileSidebar() {
 
   return (
     <>
-      {/* Toggle Button only on Mobile */}
-      <div className="flex items-center bg-blue-700 px-4 py-3 text-white">
-        <HiMenu
+      <div className="flex items-center bg-blue-700 py-3 text-white">
+        <IoMenu
           size={28}
           onClick={() => setOpen(true)}
           className="cursor-pointer"
@@ -86,31 +86,56 @@ export default function MobileSidebar() {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between border-b">
           {isAuthenticated ? (
             <div>
               <div className="relative" ref={dropdownRef}>
-                <div className="relative flex items-center cursor-pointer px-3 py-1 rounded-full min-w-[150px] h-[48px] transition">
-                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                    {user?.image ? (
-                      <img
-                        src={user?.image}
-                        alt={"User"}
-                        className="text-2xl rounded-full object-cover"
-                      />
-                    ) : (
-                      <HiOutlineUserCircle className="text-2xl" />
-                    )}
-                  </div>
+                <Link
+                  href="ca-nhan/thong-tin-ca-nhan"
+                  className="focus:outline-none"
+                  onClick={() => setOpen(false)}
+                >
+                  <div className="relative flex items-center cursor-pointer px-3 py-1 rounded-full transition">
+                    <div className="rounded-full bg-white/20 flex items-center justify-center">
+                      {user?.image ? (
+                        <img
+                          src={user?.image}
+                          alt={"User"}
+                          className="text-2xl rounded-full object-cover"
+                        />
+                      ) : (
+                        <HiOutlineUserCircle className="text-2xl" />
+                      )}
+                    </div>
 
-                  <div className="ml-2 flex-1 overflow-hidden">
-                    <p className="text-sm font-medium truncate">
-                      {user?.name || user?.user_name || ""}
-                    </p>
-                    <p className="text-xs text-gray-600 truncate">
-                      {user?.email || ""}
-                    </p>
+                    <div className="ml-2 flex-1 overflow-hidden">
+                      <p className="text-sm font-medium truncate">
+                        {user?.name || user?.user_name || ""}
+                      </p>
+                      <p className="text-xs text-gray-600 truncate">
+                        {user?.email || ""}
+                      </p>
+                    </div>
                   </div>
+                </Link>
+                <div
+                  className="flex items-center cursor-pointer px-3 py-1 rounded-full hover:bg-blue-100 text-blue-700"
+                  onClick={() => {
+                    logout(
+                      "user",
+                      () => {
+                        console.log("Đăng xuất thành công");
+                      },
+                      (error) => {
+                        console.error("Đăng xuất thất bại!", error);
+                      }
+                    );
+                    setOpen(false);
+                    router.push("/");
+                  }}
+                >
+                  <IoMdLogOut className="text-2xl" />
+                  <span className="ml-2 text-[14px]">Đăng xuất</span>
                 </div>
               </div>
             </div>
@@ -132,9 +157,9 @@ export default function MobileSidebar() {
             </div>
           )}
 
-          <IoClose
-            size={24}
-            className="cursor-pointer"
+          <X
+            size={36}
+            className="cursor-pointer px-2 text-2xl"
             onClick={() => setOpen(false)}
           />
         </div>
