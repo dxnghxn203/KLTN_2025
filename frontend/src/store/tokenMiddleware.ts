@@ -22,8 +22,8 @@ export const tokenMiddleware: Middleware = store => next => action => {
     } else {
         token = getToken();
     }
-    console.log(token);
-
+    // console.log(token);
+    // console.log(actionType);
     if (token) {
         setClientToken(token);
     }

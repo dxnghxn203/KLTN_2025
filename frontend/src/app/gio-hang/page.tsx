@@ -128,9 +128,19 @@ export default function Cart() {
         }
     };
 
+    const addressDeps = JSON.stringify({
+        fullName: data?.ordererInfo?.fullName,
+        phone: data?.ordererInfo?.phone,
+        email: data?.ordererInfo?.email,
+        address: data?.addressInfo?.address,
+        cityCode: data?.addressInfo?.cityCode,
+        districtCode: data?.addressInfo?.districtCode,
+        wardCode: data?.addressInfo?.wardCode
+    });
+
     useEffect(() => {
         checkShippingFeeUI(false);
-    }, [data]);
+    }, [addressDeps]);
 
     useEffect(() => {
         if (vouchers) {
