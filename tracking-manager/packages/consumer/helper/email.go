@@ -2,125 +2,100 @@ package helper
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"log/slog"
-	"mime"
-	"net/smtp"
 	"os"
 	"path/filepath"
+
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-func SendEmail(toEmail, subject, htmlContent string, attachments map[string][]byte) error {
-	gmailUser := os.Getenv("GMAIL_USER")
-	gmailPassword := os.Getenv("GMAIL_PASS")
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
-	from := gmailUser
-	to := []string{toEmail}
-
-	header := make(map[string]string)
-	header["From"] = from
-	header["To"] = toEmail
-	header["Subject"] = subject
-	header["MIME-Version"] = "1.0"
-
-	var msg bytes.Buffer
-
-	boundary := "my-boundary-779"
-
-	if len(attachments) > 0 {
-		header["Content-Type"] = "multipart/mixed; boundary=" + boundary
-	} else {
-		header["Content-Type"] = "text/html; charset=\"UTF-8\""
-	}
-
-	// Write headers in order
-	for _, k := range []string{"From", "To", "Subject", "MIME-Version", "Content-Type"} {
-		if v, ok := header[k]; ok {
-			fmt.Fprintf(&msg, "%s: %s\r\n", k, v)
-		}
-	}
-	fmt.Fprint(&msg, "\r\n")
-
-	if len(attachments) > 0 {
-		// multipart/mixed with attachments
-		fmt.Fprintf(&msg, "--%s\r\n", boundary)
-		fmt.Fprint(&msg, "Content-Type: text/html; charset=\"UTF-8\"\r\n\r\n")
-		fmt.Fprint(&msg, htmlContent)
-		fmt.Fprint(&msg, "\r\n")
-
-		for filename, fileData := range attachments {
-			fmt.Fprintf(&msg, "--%s\r\n", boundary)
-
-			mimeType := mime.TypeByExtension(filepath.Ext(filename))
-			if mimeType == "" {
-				mimeType = "application/octet-stream"
-			}
-
-			fmt.Fprintf(&msg, "Content-Type: %s\r\n", mimeType)
-			fmt.Fprintf(&msg, "Content-Disposition: attachment; filename=\"%s\"\r\n", filename)
-			fmt.Fprintf(&msg, "Content-Transfer-Encoding: base64\r\n\r\n")
-
-			encoded := encodeBase64(fileData)
-			fmt.Fprint(&msg, encoded)
-			fmt.Fprint(&msg, "\r\n")
-		}
-		fmt.Fprintf(&msg, "--%s--\r\n", boundary)
-	} else {
-		// no attachments, just HTML
-		fmt.Fprint(&msg, htmlContent)
-	}
-
-	auth := smtp.PlainAuth("", gmailUser, gmailPassword, smtpHost)
-
-	// Connect to the SMTP server
-	client, err := smtp.Dial(smtpHost + ":" + smtpPort)
-	if err != nil {
-		return err
-	}
-	defer client.Quit()
-
-	// Start TLS
-	tlsconfig := &tls.Config{
-		ServerName: smtpHost,
-	}
-	if err = client.StartTLS(tlsconfig); err != nil {
-		return err
-	}
-
-	if err = client.Auth(auth); err != nil {
-		return err
-	}
-
-	if err = client.Mail(from); err != nil {
-		return err
-	}
-	for _, addr := range to {
-		if err = client.Rcpt(addr); err != nil {
-			return err
-		}
-	}
-
-	w, err := client.Data()
-	if err != nil {
-		return err
-	}
-	_, err = w.Write(msg.Bytes())
-	if err != nil {
-		return err
-	}
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Email sent to %s\n", toEmail)
-	return nil
+type SendEmailRequest struct {
+	ToEmails         []string
+	Subject          string
+	HtmlContent      string
+	PlainTextContent string
+	Attachments      map[string][]byte
 }
 
+func SendEmail(req SendEmailRequest) error {
+	apiKey := os.Getenv("SENDGRID_API_KEY")
+	fromEmail := os.Getenv("SENDGRID_GMAIL")
+
+	if apiKey == "" || fromEmail == "" {
+		return fmt.Errorf("missing SendGrid configuration: API key or sender email not found")
+	}
+
+	m := mail.NewV3Mail()
+
+	from := mail.NewEmail("Tracking Manager", fromEmail)
+	m.SetFrom(from)
+
+	m.Subject = req.Subject
+
+	p := mail.NewPersonalization()
+	for _, toEmail := range req.ToEmails {
+		to := mail.NewEmail("", toEmail)
+		p.AddTos(to)
+	}
+	m.AddPersonalizations(p)
+
+	if req.HtmlContent != "" {
+		m.AddContent(mail.NewContent("text/html", req.HtmlContent))
+	}
+
+	if req.PlainTextContent != "" {
+		m.AddContent(mail.NewContent("text/plain", req.PlainTextContent))
+	}
+
+	if len(req.Attachments) > 0 {
+		for filename, content := range req.Attachments {
+			attachment := mail.NewAttachment()
+			attachment.SetContent(encodeBase64(content))
+			attachment.SetType(getContentType(filename))
+			attachment.SetFilename(filename)
+			attachment.SetDisposition("attachment")
+			m.AddAttachment(attachment)
+		}
+	}
+
+	client := sendgrid.NewSendClient(apiKey)
+	response, err := client.Send(m)
+
+	if err != nil {
+		slog.Error("Failed to send email", "error", err)
+		return err
+	}
+
+	if response.StatusCode >= 400 {
+		slog.Error("SendGrid API error",
+			"status_code", response.StatusCode,
+			"body", response.Body)
+		return fmt.Errorf("failed to send email: status code %d", response.StatusCode)
+	}
+
+	slog.Info("Email sent successfully",
+		"to", req.ToEmails,
+		"status_code", response.StatusCode)
+	return nil
+}
+func getContentType(filename string) string {
+	ext := filepath.Ext(filename)
+	switch ext {
+	case ".pdf":
+		return "application/pdf"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".png":
+		return "image/png"
+	case ".txt":
+		return "text/plain"
+	default:
+		return "application/octet-stream"
+	}
+}
 func encodeBase64(data []byte) string {
 	const maxLineLength = 76
 	encoded := base64.StdEncoding.EncodeToString(data)
@@ -149,7 +124,11 @@ func SendOtpEmail(email, otpCode string) error {
         </body>
         </html>`, otpCode)
 
-	return SendEmail(email, subject, htmlContent, nil)
+	return SendEmail(SendEmailRequest{
+		ToEmails:    []string{email},
+		Subject:     subject,
+		HtmlContent: htmlContent,
+	})
 }
 
 func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
@@ -168,5 +147,10 @@ func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 		fmt.Sprintf("%s.pdf", orderID): pdfBytes,
 	}
 
-	return SendEmail(email, subject, htmlContent, attachments)
+	return SendEmail(SendEmailRequest{
+		ToEmails:    []string{email},
+		Subject:     subject,
+		HtmlContent: htmlContent,
+		Attachments: attachments,
+	})
 }
