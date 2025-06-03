@@ -78,7 +78,7 @@ export default function LoginPage() {
                     console.log("formData", pharmacist);
                     toast.showToast(message, "success");
                     setIsLoading(false);
-                    router.push("/dashboard-duoc-si");
+                    router.push("/kiem-duyet-thuoc");
                 },
                 (error: any) => {
                     console.log("gdefhe");

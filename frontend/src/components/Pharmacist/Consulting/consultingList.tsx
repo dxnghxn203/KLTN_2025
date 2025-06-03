@@ -82,7 +82,7 @@ const ConsultingList = () => {
                         Dashboard
                     </Link>
                     <span> / </span>
-                    <Link href="/order" className="text-gray-800">
+                    <Link href="/kiem-duyet-yeu-cau-tu-van-thuoc" className="text-gray-800">
                         Danh sách yêu cầu tư vấn thuốc
                     </Link>
                 </div>

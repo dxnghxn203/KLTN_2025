@@ -20,6 +20,24 @@ export const insertUser = async (params: any): Promise<any> => {
     }
 }
 
+export const updateUserInfo = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/users/profile";
+        const paramsReq = {
+            "phone_number": params.phoneNumber,
+            "user_name": params.username,
+            "gender": params.gender,
+            "birthday": params.dateOfBirth
+        }
+
+        const result = await axiosClient.put(url, paramsReq);
+        return result;
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const verifyOtp = async (params: any): Promise<any> => {
     try {
         const url = "/v1/users/verify-email";
@@ -126,6 +144,43 @@ export const forgotPasswordAdmin = async (params: any): Promise<any> => {
 
     }
 }
+
+export const updateAdminInfo = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/admin/profile";
+        const paramsReq = {
+            "phone_number": params.phoneNumber,
+            "user_name": params.username,
+            "gender": params.gender,
+            "birthday": params.dateOfBirth
+        }
+
+        const result = await axiosClient.put(url, paramsReq);
+        return result;
+
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const updatePharmacistInfo = async (params: any): Promise<any> => {
+    try {
+        const url = "/v1/pharmacist/profile";
+        const paramsReq = {
+            "phone_number": params.phoneNumber,
+            "user_name": params.username,
+            "gender": params.gender,
+            "birthday": params.dateOfBirth
+        }
+
+        const result = await axiosClient.put(url, paramsReq);
+        return result;
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 
 export const updateStatusUser = async (params: { user_id: string; status_user: boolean }): Promise<any> => {
     try {

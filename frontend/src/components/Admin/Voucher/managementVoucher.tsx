@@ -5,7 +5,6 @@ import {useToast} from "@/providers/toastProvider";
 import TableVoucher from "./tableVoucher";
 import {useVoucher} from "@/hooks/useVoucher";
 import AddVoucherDialog from "../Dialog/addVoucherDialog";
-
 const VoucherManagement = () => {
     const [isOpenDialog, setIsOpenDialog] = useState(false);
     const toast = useToast();

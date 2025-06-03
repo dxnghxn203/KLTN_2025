@@ -113,6 +113,27 @@ export const authSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+
+        updateUserInfo: (state, action) => {
+            state.user.user_name = action.payload.username;
+            state.user.phone_number = action.payload.phoneNumber;
+            state.user.gender = action.payload.gender;
+            state.user.birthday = action.payload.dateOfBirth;
+        },
+
+        updateAdminInfo: (state, action) => {
+            state.admin.user_name = action.payload.username;
+            state.admin.phone_number = action.payload.phoneNumber;
+            state.admin.gender = action.payload.gender;
+            state.admin.birthday = action.payload.dateOfBirth;
+        },
+
+        updatePharmacistInfo: (state, action) => {
+            state.pharmacist.user_name = action.payload.username;
+            state.pharmacist.phone_number = action.payload.phoneNumber;
+            state.pharmacist.gender = action.payload.gender;
+            state.pharmacist.birthday = action.payload.dateOfBirth;
+        },
     },
 });
 
@@ -142,6 +163,10 @@ export const {
     fetchLogoutPharmacistStart,
     fetchLogoutPharmacistSuccess,
     fetchLogoutPharmacistFailure,
+
+    updateUserInfo,
+    updateAdminInfo,
+    updatePharmacistInfo
 
 } = authSlice.actions;
 

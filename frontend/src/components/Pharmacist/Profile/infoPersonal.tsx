@@ -18,19 +18,18 @@ const formatDateInput = (isoString: string | undefined): string => {
   return isoString.split("T")[0];
 };
 
-
-export default function InfoPersonal() {
-  const { admin } = useAuth();
+export default function PharmacistInfoPersonal() {
+  const { pharmacist } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const adminInfo = [
-    { label: "Họ và tên", value: admin?.user_name },
-    { label: "Email", value: admin?.email },
-    { label: "Số điện thoại", value: admin?.phone_number },
-    { label: "Giới tính", value: admin?.gender },
+  const pharmacistInfo = [
+    { label: "Họ và tên", value: pharmacist?.user_name },
+    { label: "Email", value: pharmacist?.email },
+    { label: "Số điện thoại", value: pharmacist?.phone_number },
+    { label: "Giới tính", value: pharmacist?.gender },
     {
       label: "Ngày sinh",
-      value: formatDateInput(admin?.birthday),
-      displayValue: formatDateDisplay(admin?.birthday),
+      value: formatDateInput(pharmacist?.birthday),
+      displayValue: formatDateDisplay(pharmacist?.birthday),
     },
   ];
   return (
@@ -40,9 +39,9 @@ export default function InfoPersonal() {
       <div className="bg-white shadow rounded-xl p-6 flex items-center space-x-6">
         <div>
           <h3 className="text-lg font-semibold text-blue-700">
-            {admin?.user_name}
+            {pharmacist?.user_name}
           </h3>
-          <p className="text-sm text-gray-500">Admin</p>
+          <p className="text-sm text-gray-500">Dược sĩ</p>
         </div>
       </div>
 
@@ -64,13 +63,13 @@ export default function InfoPersonal() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700">
           <div>
             <p className="text-gray-500">Tên</p>
-            <p className="font-medium">{admin?.user_name}</p>
+            <p className="font-medium">{pharmacist?.user_name}</p>
           </div>
           <div>
             <p className="text-gray-500">Ngày sinh</p>
             <p className="font-medium">
-              {admin?.birthday &&
-                new Date(admin.birthday)
+              {pharmacist?.birthday &&
+                new Date(pharmacist.birthday)
                   .toLocaleDateString("en-GB")
                   .split("/")
                   .join("-")}
@@ -78,19 +77,19 @@ export default function InfoPersonal() {
           </div>
           <div>
             <p className="text-gray-500">Email</p>
-            <p className="font-medium">{admin?.email}</p>
+            <p className="font-medium">{pharmacist?.email}</p>
           </div>
           <div>
             <p className="text-gray-500">Số điện thoại</p>
-            <p className="font-medium">{admin?.phone_number}</p>
+            <p className="font-medium">{pharmacist?.phone_number}</p>
           </div>
         </div>
       </div>
       <EditProfileDialog
-        role_type={"admin"}
+        role_type={"pharmacist"}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        userInfo={adminInfo}
+        userInfo={pharmacistInfo}
       />
     </div>
   );

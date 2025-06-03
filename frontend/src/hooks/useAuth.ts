@@ -12,7 +12,10 @@ import {
     selectAdminAuth,
     selectAuth,
     selectPharmacistAuth,
-    selectUserAuth
+    selectUserAuth,
+    updateUserInfo,
+    updateAdminInfo,
+    updatePharmacistInfo
 } from '@/store';
 import {getToken} from "@/utils/cookie";
 
@@ -105,6 +108,24 @@ export function useAuth() {
         }));
     }
 
+    const fetchupdateUser = async (params: any): Promise<any> => {
+        console.log("param", params);
+        dispatch(updateUserInfo(params));
+        console.log("user", user);
+    }
+
+    const fetchupdateAdmin = async (params: any): Promise<any> => {
+        console.log("param", params);
+        dispatch(updateAdminInfo(params));
+        console.log("user", user);
+    }
+
+    const fetchupdatePharmacist = async (params: any): Promise<any> => {
+        console.log("param", params);
+        dispatch(updatePharmacistInfo(params));
+        console.log("user", user);
+    }
+
     return {
         user: user || session?.user || null,
         isAuthenticated: isAuthenticated || !!session?.user || getToken(),
@@ -117,5 +138,8 @@ export function useAuth() {
         admin: admin || null,
         loginPharmacist,
         pharmacist: pharmacist || null,
+        fetchupdateUser,
+        fetchupdateAdmin,
+        fetchupdatePharmacist
     };
 }

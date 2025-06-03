@@ -10,6 +10,9 @@ import {
     fetchGetAllUserAdminStart,
     fetchInsertPharmacistStart,
     fetchInsertUserStart,
+    fetchUpdateUserInfoStart,
+    fetchUpdateAdminInfoStart,
+    fetchUpdatePharmacistInfoStart,
     fetchRegisterAdminStart,
     fetchSendOtpAdminStart,
     fetchSendOtpStart,
@@ -101,6 +104,48 @@ export function useUser() {
         onFailure: (message: string) => void;
     }) => {
         dispatch(fetchInsertUserStart({
+            ...param,
+            onSuccess,
+            onFailure
+        }));
+    };
+
+    const fetchUpdateUserInfo = ({
+                                 param, onSuccess, onFailure
+                             }: {
+        param: any;
+        onSuccess: (message: string) => void;
+        onFailure: (message: string) => void;
+    }) => {
+        dispatch(fetchUpdateUserInfoStart({
+            ...param,
+            onSuccess,
+            onFailure
+        }));
+    };
+
+    const fetchUpdateAdminInfo = ({
+                                 param, onSuccess, onFailure
+                             }: {
+        param: any;
+        onSuccess: (message: string) => void;
+        onFailure: (message: string) => void;
+    }) => {
+        dispatch(fetchUpdateAdminInfoStart({
+            ...param,
+            onSuccess,
+            onFailure
+        }));
+    };
+
+    const fetchUpdatePharmacistInfo = ({
+                                 param, onSuccess, onFailure
+                             }: {
+        param: any;
+        onSuccess: (message: string) => void;
+        onFailure: (message: string) => void;
+    }) => {
+        dispatch(fetchUpdatePharmacistInfoStart({
             ...param,
             onSuccess,
             onFailure
@@ -318,6 +363,9 @@ export function useUser() {
     return {
         insertUser,
         fetchInsertUser,
+        fetchUpdateUserInfo,
+        fetchUpdateAdminInfo,
+        fetchUpdatePharmacistInfo,
         verifyOtp,
         sendOtp,
         // user,

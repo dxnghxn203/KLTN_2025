@@ -136,7 +136,7 @@ export default function LoginPage() {
 
             <div className="w-1/2 flex flex-col items-center justify-center p-12">
               <h2 className="text-3xl font-bold text-[#0053E2] mb-6">
-                Đăng ký
+                Đăng ký Admin
               </h2>
               <div className=" overflow-y-auto max-h-[90vh] w-full p-1">
                 <div className="mb-4">

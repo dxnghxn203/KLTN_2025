@@ -26,12 +26,6 @@ interface SidebarProps {
 
 const menuHomeItems = [
   {
-    id: "Dashboard",
-    icon: <FiPieChart />,
-    label: "Dashboard",
-    path: "/dashboard-duoc-si",
-  },
-  {
     id: "RequestCensorship",
     icon: <LuBadgeCheck />,
     label: "Kiểm duyệt thuốc",

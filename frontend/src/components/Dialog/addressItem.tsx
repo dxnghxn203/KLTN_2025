@@ -10,7 +10,7 @@ interface AddressItemProps {
 
 const AddressItem: React.FC<AddressItemProps> = ({ address, onClose }) => {
   return (
-    <div className="flex flex-wrap gap-5 justify-between mt-4 max-w-full text-base text-black w-[581px] text-sm">
+    <div className="flex flex-wrap gap-5 justify-between mt-4 max-w-full text-base text-black w-[581px]">
       <div className="flex gap-3 self-start">
         <Image
           src={iconHistory}

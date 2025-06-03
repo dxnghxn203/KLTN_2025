@@ -72,7 +72,7 @@ const MedicineCensorshipList = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-800">
+          <Link href="/kiem-duyet-thuoc" className="text-gray-800">
             Danh sách kiểm duyệt thuốc
           </Link>
         </div>

@@ -228,8 +228,8 @@ export default function RequestDetailPage() {
                     Dashboard
                 </Link>
                 <span> / </span>
-                <Link href="/create-single-product" className="text-gray-800">
-                    Chi tiết yêu cầu
+                <Link href="/kiem-duyet-yeu-cau-tu-van-thuoc" className="text-gray-800">
+                    Danh sách yêu cầu tư vấn thuốc
                 </Link>
             </div>
             <div className="grid grid-cols-2 gap-x-6">

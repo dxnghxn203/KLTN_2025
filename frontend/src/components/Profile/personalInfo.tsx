@@ -4,6 +4,20 @@ import { useAuth } from "@/hooks/useAuth";
 import EditProfileDialog from "@/components/Dialog/editProfileDialog";
 import { HiOutlineUserCircle } from "react-icons/hi";
 
+const formatDateDisplay = (isoString: string | undefined): string => {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const formatDateInput = (isoString: string | undefined): string => {
+  if (!isoString) return "";
+  return isoString.split("T")[0];
+};
+
 const PersonalInfomation = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -13,7 +27,11 @@ const PersonalInfomation = () => {
     { label: "Email", value: user?.email },
     { label: "Số điện thoại", value: user?.phone_number },
     { label: "Giới tính", value: user?.gender },
-    { label: "Ngày sinh", value: "" },
+    {
+      label: "Ngày sinh",
+      value: formatDateInput(user?.birthday),
+      displayValue: formatDateDisplay(user?.birthday),
+    },
   ];
 
   return (
@@ -43,7 +61,7 @@ const PersonalInfomation = () => {
               }`}
               onClick={() => setIsOpen(true)}
             >
-              {item.value || "Thêm thông tin"}
+              {item.displayValue || item.value || "Thêm thông tin"}
             </p>
           </div>
         ))}
@@ -59,6 +77,7 @@ const PersonalInfomation = () => {
       </div>
 
       <EditProfileDialog
+        role_type={"user"}
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         userInfo={userInfo}

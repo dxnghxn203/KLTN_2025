@@ -46,7 +46,41 @@ export const userSlice = createSlice({
             state.responseInsertUser = false
             state.loading = false;
         },
-        // verifyOtp: 
+
+        // update user info
+        fetchUpdateUserInfoStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchUpdateUserInfoSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchUpdateUserInfoFailure: (state) => {
+            state.loading = false;
+        },
+
+        // update admin info
+        fetchUpdateAdminInfoStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchUpdateAdminInfoSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchUpdateAdminInfoFailure: (state) => {
+            state.loading = false;
+        },
+
+        // update pharmacist info
+        fetchUpdatePharmacistInfoStart: (state, action) => {
+            state.loading = true;
+        },
+        fetchUpdatePharmacistInfoSuccess: (state) => {
+            state.loading = false;
+        },
+        fetchUpdatePharmacistInfoFailure: (state) => {
+            state.loading = false;
+        },
+
+        // verifyOtp 
         fetchVerifyOtpStart: (state, action) => {
             state.loading = true;
         },
@@ -291,6 +325,16 @@ export const {
     fetchInsertUserStart,
     fetchInsertUserSuccess,
     fetchInsertUserFailure,
+
+    fetchUpdateUserInfoStart,
+    fetchUpdateUserInfoSuccess,
+    fetchUpdateUserInfoFailure,
+    fetchUpdateAdminInfoStart,
+    fetchUpdateAdminInfoSuccess,
+    fetchUpdateAdminInfoFailure,
+    fetchUpdatePharmacistInfoStart,
+    fetchUpdatePharmacistInfoSuccess,
+    fetchUpdatePharmacistInfoFailure,
 
     fetchVerifyOtpStart,
     fetchVerifyOtpSuccess,

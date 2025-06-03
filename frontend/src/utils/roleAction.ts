@@ -51,7 +51,8 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchGetMonthlyCountOrderStatisticsStart',
     'fetchGetAllImportFileAddProductStart',
 
-    'fetchProductDiscountAdminStart'
+    'fetchProductDiscountAdminStart',
+    'fetchUpdateAdminInfoStart',    
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [
@@ -61,7 +62,8 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchApproveProductByPharmacistStart',
     'loginPharmacistStart',
     'fetchAcceptConversationStart',
-    'loginPharmacistSuccess'
+    'loginPharmacistSuccess',
+    'fetchUpdatePharmacistInfoStart',
 ]
 
 export const SYSTEM_ACTIONS = [

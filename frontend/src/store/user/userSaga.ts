@@ -1,10 +1,19 @@
-
 import { call, put, takeLatest } from "redux-saga/effects";
 
 import {
     fetchInsertUserFailure,
     fetchInsertUserStart,
     fetchInsertUserSuccess,
+
+    fetchUpdateUserInfoStart,
+    fetchUpdateUserInfoSuccess,
+    fetchUpdateUserInfoFailure,
+    fetchUpdateAdminInfoStart,
+    fetchUpdateAdminInfoSuccess,
+    fetchUpdateAdminInfoFailure,
+    fetchUpdatePharmacistInfoStart,
+    fetchUpdatePharmacistInfoSuccess,
+    fetchUpdatePharmacistInfoFailure,
 
     fetchVerifyOtpStart,
     fetchVerifyOtpSuccess,
@@ -107,7 +116,10 @@ import {
     verifyOTPAdmin, 
     getMonthlyLoginStatistics,
     getCountUserRoleStatistics, 
-    getTopRevenueCustomersStatistics } from "@/services/userService";
+    getTopRevenueCustomersStatistics, 
+    updateUserInfo,
+    updateAdminInfo,
+    updatePharmacistInfo} from "@/services/userService";
 import { getToken} from '@/utils/cookie';
 function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     const { payload } = action;
@@ -127,6 +139,69 @@ function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
         }
     } catch (error: any) {
         yield put(fetchInsertUserFailure());
+    }
+}
+
+function* userUpdateInfoSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    
+    try {
+        const response = yield call(updateUserInfo, payload);
+        if (response.status_code === 200) {
+            yield put(fetchUpdateUserInfoSuccess());
+            onSuccess(response.message);
+        } else {
+            yield put(fetchUpdateUserInfoFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchUpdateUserInfoFailure());
+    }
+}
+
+function* adminUpdateInfoSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    
+    try {
+        const response = yield call(updateAdminInfo, payload);
+        if (response.status_code === 200) {
+            yield put(fetchUpdateAdminInfoSuccess());
+            onSuccess(response.message);
+        } else {
+            yield put(fetchUpdateAdminInfoFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchUpdateAdminInfoFailure());
+    }
+}
+
+function* pharmacistUpdateInfoSaga(action: any): Generator<any, void, any> {
+    const { payload } = action;
+    const {
+        onSuccess =()=> {},
+        onFailure =()=> {},
+    } = payload;
+    
+    try {
+        const response = yield call(updatePharmacistInfo, payload);
+        if (response.status_code === 200) {
+            yield put(fetchUpdatePharmacistInfoSuccess());
+            onSuccess(response.message);
+        } else {
+            yield put(fetchUpdatePharmacistInfoFailure());
+            onFailure(response.message);
+        }
+    } catch (error: any) {
+        yield put(fetchUpdatePharmacistInfoFailure());
     }
 }
 
@@ -609,6 +684,9 @@ function* fetchGetTopRevenueCustomersStatistics(action: any): Generator<any, voi
 
 export function* userSaga() {
     yield takeLatest(fetchInsertUserStart.type, userInsertWorkerSaga);
+    yield takeLatest(fetchUpdateUserInfoStart.type, userUpdateInfoSaga);
+    yield takeLatest(fetchUpdateAdminInfoStart.type, adminUpdateInfoSaga);
+    yield takeLatest(fetchUpdatePharmacistInfoStart.type, pharmacistUpdateInfoSaga);
     yield takeLatest(fetchVerifyOtpStart.type, userVerifyOtpWorkerSaga);
     yield takeLatest(fetchSendOtpStart.type, userSendOtpWorkerSaga);
     yield takeLatest(fetchGetAllUserAdminStart.type, userGetAllUserAdminWorkerSaga);
