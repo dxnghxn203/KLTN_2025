@@ -21,6 +21,7 @@ import {
 } from "@/utils/orderStatusMapping";
 import { useToast } from "@/providers/toastProvider";
 import Image from "next/image";
+import { MdOutlineContentCopy } from "react-icons/md";
 // import { console } from "inspector";
 
 const HistoryOrder: React.FC = () => {
@@ -75,7 +76,7 @@ const HistoryOrder: React.FC = () => {
         link.remove();
         window.URL.revokeObjectURL(url); // thu hồi URL
 
-        toast.showToast("Tải hóa đơn thành công", "success");
+        // toast.showToast("Tải hóa đơn thành công", "success");
       },
       () => {
         toast.showToast("Tải hóa đơn thất bại", "error");
@@ -383,10 +384,10 @@ const HistoryOrder: React.FC = () => {
     return ordersUser.filter((order: any) => order.status === status).length;
   };
   return (
-    <div>
-      <div className="flex justify-between">
+    <div className="px-4 mb-8">
+      <div className="flex flex-col md:flex-row md:justify-between gap-4">
         <h2 className="font-semibold text-lg">Lịch sử đơn hàng</h2>
-        <div className="relative w-[410px]">
+        <div className="relative w-full md:w-[410px]">
           <input
             type="text"
             placeholder="Tìm kiếm theo mã đơn hàng hoặc tên sản phẩm..."
@@ -405,280 +406,169 @@ const HistoryOrder: React.FC = () => {
           )}
         </div>
       </div>
-      <div className="mt-4 flex space-x-4 border-b border-gray-300 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`py-2 px-4 text-sm font-medium whitespace-nowrap flex items-center ${
-              activeTab === tab.id
-                ? "border-b-2 border-blue-500 text-blue-500"
-                : " hover:text-blue-500"
-            }`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-            {tab.id !== "all" && (
-              <span className="ml-2 w-6 h-6 bg-blue-100 text-blue-600 text-xs font-semibold rounded-full flex items-center justify-center">
-                {countByStatus(tab.id)}
-              </span>
-            )}
 
-            {tab.id === "all" && (
+      <div className="mt-4 border-b border-gray-300 overflow-x-auto">
+        <div className="flex space-x-4 min-w-max">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`py-2 px-3 md:px-4 text-sm font-medium whitespace-nowrap flex items-center ${
+                activeTab === tab.id
+                  ? "border-b-2 border-blue-500 text-blue-500"
+                  : "hover:text-blue-500"
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
               <span className="ml-2 w-6 h-6 bg-blue-100 text-blue-600 text-xs font-semibold rounded-full flex items-center justify-center">
-                {ordersUser.length}
+                {tab.id === "all" ? ordersUser.length : countByStatus(tab.id)}
               </span>
-            )}
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </div>
+
       {viewMode === "list" && (
         <>
-          {filteredOrders &&
-            filteredOrders.map((order: any) => (
-              <div
-                key={order?.order_id}
-                className="bg-[#F5F7F9] rounded-lg p-4 mt-4 text-sm"
-              >
-                <div className="border-b last:border-0 pb-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <span
-                        onClick={() => showOrderDetail(order)}
-                        className="text-blue-600 hover:text-blue-800 font-semibold mr-2 cursor-pointer"
-                      >
-                        {order?.order_id}
-                      </span>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(order?.order_id);
-                        }}
-                        className="text-gray-500 hover:text-blue-600 cursor-pointer"
-                        title="Copy mã đơn hàng"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    {activeTab === "all" && (
-                      <span
-                        className={`text-sm font-semibold px-2 py-1 rounded-full ${
-                          getOrderStatusInfo(order.status).colors.bg
-                        } ${getOrderStatusInfo(order.status).colors.text}`}
-                      >
-                        ● {getOrderStatusInfo(order.status).displayName}
-                      </span>
-                    )}
+          {filteredOrders?.map((order: any) => (
+            <div
+              key={order?.order_id}
+              className="bg-[#F5F7F9] rounded-lg p-4 mt-4 text-sm"
+            >
+              <div className="pb-3">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <span
+                      onClick={() => showOrderDetail(order)}
+                      className="text-blue-600 hover:text-blue-800 font-semibold cursor-pointer"
+                    >
+                      {order?.order_id}
+                    </span>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(order?.order_id)
+                      }
+                      className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                      title="Copy mã đơn hàng"
+                    >
+                      <MdOutlineContentCopy />
+                    </button>
+                  </div>
 
-                    <span className="text-gray-500 text-sm">
-                      {formatDate(order.created_date) || "N/A"}
+                  {activeTab === "all" && (
+                    <span
+                      className={`text-sm font-semibold px-2 py-1 rounded-full ${
+                        getOrderStatusInfo(order.status).colors.bg
+                      } ${getOrderStatusInfo(order.status).colors.text}`}
+                    >
+                      ● {getOrderStatusInfo(order.status).displayName}
+                    </span>
+                  )}
+
+                  <span className="text-gray-500 text-sm">
+                    {formatDate(order.created_date) || "N/A"}
+                  </span>
+                </div>
+
+                <div className="border-t border-dashed border-gray-400 my-2"></div>
+
+                <div className="space-y-2.5">
+                  <div className="flex items-start flex-wrap gap-2">
+                    👤 Người nhận:{" "}
+                    <span className="font-medium">{order.pick_to.name}</span> |
+                    <span className="text-gray-700">
+                      {order.pick_to.phone_number}
                     </span>
                   </div>
-                  <div className="border-t border-dashed border-gray-400 w-full my-2"></div>
-                  <div className="mt-3 space-y-2.5 ">
-                    <div className="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-500 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                      <span className=" ">Người nhận:</span>
-                      <span className="font-medium ml-1">
-                        {order.pick_to.name}
-                      </span>
-                      <span className="mx-1">|</span>
-                      <span className="text-gray-700">
-                        {order.pick_to.phone_number}
-                      </span>
-                    </div>
-                    <div className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-gray-500 mr-2 mt-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                      <span className="">Nơi giao hàng:</span>
-                      <span className="font-medium block ml-1">
-                        {`${order.pick_to.address.address}, ${order.pick_to.address.ward}, ${order.pick_to.address.district}, ${order.pick_to.address.province}`}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-4 flex justify-between items-end">
-                    <div className="flex items-center">
-                      <div className="px-4 py-2 rounded-md">
-                        <span className="">Thành tiền:</span>
-                        <span className="font-bold text-lg ml-2 text-blue-700">
-                          {order?.estimated_total_fee?.toLocaleString("vi-VN")}đ
-                        </span>
-                      </div>
-                      <div className="flex items-center border-l pl-4 ml-4">
-                        <div className="flex items-center">
-                          {order?.payment_type === "COD" ? (
-                            <>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-amber-500 mr-2"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
-                                />
-                              </svg>
-                              <span className="">Phương thức: </span>
-                              <span className="ml-1.5 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-                                Thanh toán khi nhận hàng COD
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-green-500 mr-2"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                                />
-                              </svg>
-                              <span className="font-medium text-gray-700">
-                                Phương thức:{" "}
-                              </span>
-                              <span className="ml-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-sm font-medium">
-                                Thanh toán trước
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <div
-                        className="pl-4 ml-4 underline cursor-pointer text-blue-600"
-                        onClick={() => handleDownloadInvoice(order?.order_id)}
-                      >
-                        Tải hóa đơn
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    {canCancelOrder(order.status) && (
-                      <button
-                        onClick={() => openCancelDialog(order.order_id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-3 rounded-lg text-sm"
-                      >
-                        Hủy đơn hàng
-                      </button>
-                    )}
+                  <div className="flex items-start">
+                    📍 Nơi giao hàng:
+                    <span className="font-medium ml-1 block">
+                      {`${order.pick_to.address.address}, ${order.pick_to.address.ward}, ${order.pick_to.address.district}, ${order.pick_to.address.province}`}
+                    </span>
                   </div>
                 </div>
+
+                <div className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-2">
+                  <div className="flex items-start flex-col md:flex-row md:items-center">
+                    <div className="px-0 md:px-4 py-2">
+                      Thành tiền:
+                      <span className="font-bold text-lg ml-2 text-blue-700">
+                        {order?.estimated_total_fee?.toLocaleString("vi-VN")}đ
+                      </span>
+                    </div>
+                    <div className="flex items-center pl-0 md:pl-4 mt-2 md:mt-0">
+                      {order?.payment_type === "COD" ? (
+                        <>
+                          💵
+                          <span className="ml-1 items-center">
+                            Phương thức:
+                          </span>
+                          <span className="ml-2 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                            Thanh toán khi nhận hàng COD
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          💳
+                          <span className="ml-1">Phương thức:</span>
+                          <span className="ml-2 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                            Đã thanh toán
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={() => handleDownloadInvoice(order.order_id)}
+                    className="text-red-500 font-semibold py-1 px-3 rounded-lg underline hover:bg-red-100 transition-colors"
+                  >
+                    Tải hóa đơn
+                  </button>
+                  {canCancelOrder(order.status) && (
+                    <button
+                      onClick={() => openCancelDialog(order.order_id)}
+                      className="ml-4 mt-2 md:mt-0 bg-red-500 hover:bg-red-700 text-white font-semibold py-1 px-3 rounded-lg"
+                    >
+                      Hủy đơn
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
+            </div>
+          ))}
         </>
       )}
-      {viewMode === "detail" &&
-        selectedOrderDetail &&
-        renderOrderDetail(selectedOrderDetail)}
+      {/* Hiển thị chi tiết đơn hàng khi viewMode là "detail" */}
+      {viewMode === "detail" && selectedOrderDetail && (
+        <div>{renderOrderDetail(selectedOrderDetail)}</div>
+      )}
+
+      {/* Modal hủy đơn hàng */}
       {isCancelDialogOpen && (
-        <div className="fixed z-20 inset-0 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4 text-center">
-            <div
-              className="fixed inset-0 transition-opacity"
-              aria-hidden="true"
-            >
-              <div className="absolute inset-0 bg-gray-600 opacity-75"></div>
-            </div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <svg
-                      className="h-6 w-6 text-red-600"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Xác nhận hủy đơn hàng
-                    </h3>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        Bạn có chắc chắn muốn hủy đơn hàng {orderIdToCancel}?
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={handleCancelOrder}
-                >
-                  Xác nhận
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                  onClick={closeCancelDialog}
-                >
-                  Không
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4">
+              Xác nhận hủy đơn hàng
+            </h3>
+            <p>
+              Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không
+              thể hoàn tác.
+            </p>
+            <div className="flex justify-end mt-6 gap-2 text-sm">
+              <button
+                onClick={closeCancelDialog}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg"
+              >
+                Không
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg"
+              >
+                Hủy đơn hàng
+              </button>
             </div>
           </div>
         </div>

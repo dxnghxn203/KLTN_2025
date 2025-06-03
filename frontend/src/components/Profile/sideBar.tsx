@@ -6,7 +6,7 @@ import { LuFileClock } from "react-icons/lu";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { HiOutlineUserCircle } from "react-icons/hi";
-import { MdLockOutline } from "react-icons/md";
+import { MdLockOutline, MdNavigateBefore } from "react-icons/md";
 import { useToast } from "@/providers/toastProvider";
 import { FaRegFileAlt, FaArrowLeft } from "react-icons/fa";
 import { useState, useEffect } from "react";
@@ -153,13 +153,13 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
 
         {/* Children (nội dung bên phải) */}
         {(!isMobile || shouldShowChildrenOnly) && (
-          <div className="md:w-3/4 w-full px-5">
+          <div className="md:w-3/4 w-full md:px-5">
             {shouldShowChildrenOnly && (
               <button
                 onClick={handleBackToMenu}
                 className="flex items-center mb-4 text-blue-600 hover:underline"
               >
-                <FaArrowLeft className="mr-2" /> Quay lại menu
+                <MdNavigateBefore size={18} className="mr-1" /> Quay lại
               </button>
             )}
             {children}
