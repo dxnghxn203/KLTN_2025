@@ -1,4 +1,5 @@
 "use client";
+
 import { FiUser, FiLogOut } from "react-icons/fi";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { LuFileClock } from "react-icons/lu";
@@ -16,29 +17,16 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
   const toast = useToast();
-  const [showSidebar, setShowSidebar] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Kiểm tra thiết bị có phải là mobile hay không
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
     checkMobile();
     window.addEventListener("resize", checkMobile);
-
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
-  // Nếu đang ở một trang con cụ thể trên mobile, ẩn sidebar
-  useEffect(() => {
-    if (isMobile && pathname !== "/ca-nhan") {
-      setShowSidebar(false);
-    } else if (!isMobile) {
-      setShowSidebar(true);
-    }
-  }, [pathname, isMobile]);
 
   const handleLogout = async () => {
     try {
@@ -51,7 +39,6 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
           toast.showToast(error, "error");
         }
       );
-
       toast.showToast("Đăng xuất thành công", "success");
     } catch (error) {
       console.error("Logout error:", error);
@@ -59,15 +46,17 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
   };
 
   const handleMenuClick = (path: string) => {
-    if (isMobile) {
-      setShowSidebar(false);
-    }
     router.push(path);
   };
 
   const handleBackToMenu = () => {
-    setShowSidebar(true);
+    router.push("/ca-nhan");
   };
+
+  const isRootProfilePage = pathname === "/ca-nhan";
+
+  const shouldShowSidebarOnly = isMobile && isRootProfilePage;
+  const shouldShowChildrenOnly = isMobile && !isRootProfilePage;
 
   return (
     <div className="flex flex-col w-full">
@@ -75,8 +64,9 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
         <Breadcrumb />
       </div>
 
-      <div className="flex flex-col md:flex-row w-full">
-        {(showSidebar || !isMobile) && (
+      <div className="flex flex-col md:flex-row w-full mt-2">
+        {/* Sidebar */}
+        {(!isMobile || shouldShowSidebarOnly) && (
           <div className="md:w-1/4 w-full">
             <div className="bg-[#F5F7F9] w-full h-40 rounded-lg flex flex-col items-center justify-center">
               {user?.image ? (
@@ -93,17 +83,18 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
               </h2>
               <p className="text-gray-500 text-sm">{user?.email}</p>
             </div>
+
             <div className="bg-[#F5F7F9] w-full mt-2 rounded-lg">
               <div>
                 <button
                   onClick={() => handleMenuClick("/ca-nhan/thong-tin-ca-nhan")}
                   className={`font-medium px-4 py-4 w-full text-left flex items-center rounded-lg cursor-pointer 
-                  ${
-                    pathname === "/ca-nhan" ||
-                    pathname === "/ca-nhan/thong-tin-ca-nhan"
-                      ? "bg-[#F0F5FF] text-[#0053E2]"
-                      : "text-gray-800 hover:bg-[#EBEBEB]"
-                  }`}
+                    ${
+                      pathname === "/ca-nhan" ||
+                      pathname === "/ca-nhan/thong-tin-ca-nhan"
+                        ? "bg-[#F0F5FF] text-[#0053E2]"
+                        : "text-gray-800 hover:bg-[#EBEBEB]"
+                    }`}
                 >
                   <FaRegCircleUser className="mr-2 text-xl" />
                   Thông tin cá nhân
@@ -112,11 +103,11 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
                 <button
                   onClick={() => handleMenuClick("/ca-nhan/lich-su-don-hang")}
                   className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
-                  ${
-                    pathname === "/ca-nhan/lich-su-don-hang"
-                      ? "bg-[#F0F5FF] text-[#0053E2]"
-                      : "text-gray-800 hover:bg-[#EBEBEB]"
-                  }`}
+                    ${
+                      pathname === "/ca-nhan/lich-su-don-hang"
+                        ? "bg-[#F0F5FF] text-[#0053E2]"
+                        : "text-gray-800 hover:bg-[#EBEBEB]"
+                    }`}
                 >
                   <LuFileClock className="mr-2 text-xl" />
                   Lịch sử đơn hàng
@@ -125,11 +116,11 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
                 <button
                   onClick={() => handleMenuClick("/ca-nhan/don-thuoc-cua-toi")}
                   className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
-                  ${
-                    pathname === "/ca-nhan/don-thuoc-cua-toi"
-                      ? "bg-[#F0F5FF] text-[#0053E2]"
-                      : "text-gray-800 hover:bg-[#EBEBEB]"
-                  }`}
+                    ${
+                      pathname === "/ca-nhan/don-thuoc-cua-toi"
+                        ? "bg-[#F0F5FF] text-[#0053E2]"
+                        : "text-gray-800 hover:bg-[#EBEBEB]"
+                    }`}
                 >
                   <FaRegFileAlt className="mr-2 text-xl" />
                   Đơn thuốc của tôi
@@ -138,11 +129,11 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
                 <button
                   onClick={() => handleMenuClick("/ca-nhan/doi-mat-khau")}
                   className={`px-4 py-4 font-medium w-full text-left flex items-center rounded-lg cursor-pointer 
-                  ${
-                    pathname === "/ca-nhan/doi-mat-khau"
-                      ? "bg-[#F0F5FF] text-[#0053E2]"
-                      : "text-gray-800 hover:bg-[#EBEBEB]"
-                  }`}
+                    ${
+                      pathname === "/ca-nhan/doi-mat-khau"
+                        ? "bg-[#F0F5FF] text-[#0053E2]"
+                        : "text-gray-800 hover:bg-[#EBEBEB]"
+                    }`}
                 >
                   <MdLockOutline className="mr-2 text-xl" />
                   Đổi mật khẩu
@@ -160,12 +151,17 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
           </div>
         )}
 
-        {/* Content Area - Hiển thị khi không hiển thị sidebar trên mobile hoặc luôn hiển thị trên desktop */}
-        {(!showSidebar || !isMobile) && (
-          <div className="md:w-3/4 w-full p-5">
-            {/* Back button hiển thị trên mobile khi đang xem nội dung */}
-
-            {/* Nội dung chính */}
+        {/* Children (nội dung bên phải) */}
+        {(!isMobile || shouldShowChildrenOnly) && (
+          <div className="md:w-3/4 w-full px-5">
+            {shouldShowChildrenOnly && (
+              <button
+                onClick={handleBackToMenu}
+                className="flex items-center mb-4 text-blue-600 hover:underline"
+              >
+                <FaArrowLeft className="mr-2" /> Quay lại menu
+              </button>
+            )}
             {children}
           </div>
         )}

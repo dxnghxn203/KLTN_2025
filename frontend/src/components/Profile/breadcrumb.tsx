@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 const Breadcrumb = () => {
   const pathname = usePathname();
 
-  // Xác định tiêu đề trang dựa trên đường dẫn
   const getPageTitle = () => {
     switch (pathname) {
       case "/ca-nhan":
@@ -35,22 +34,19 @@ const Breadcrumb = () => {
         </li>
 
         <li className="flex items-center">
+          <span className="text-gray-500 mx-2">/</span>
           <Link
             href="/ca-nhan"
             className="text-blue-700 hover:text-blue-600 transition-colors"
           >
-            / Cá nhân
+            Cá nhân
           </Link>
-          {pathname !== "/ca-nhan" && (
-            <ChevronRightIcon className="h-4 w-4 mx-1 text-gray-400" />
-          )}
         </li>
 
         {pathname !== "/ca-nhan" && (
           <li className="flex items-center">
-            <span className="text-blue-600 font-semibold">
-              / {getPageTitle()}
-            </span>
+            <span className="text-gray-500 mx-2">/</span>
+            <span className="text-gray-600">{getPageTitle()}</span>
           </li>
         )}
       </ol>

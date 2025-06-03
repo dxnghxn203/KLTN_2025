@@ -91,7 +91,7 @@ export default function MobileSidebar() {
             <div>
               <div className="relative" ref={dropdownRef}>
                 <Link
-                  href="ca-nhan/thong-tin-ca-nhan"
+                  href="/ca-nhan"
                   className="focus:outline-none"
                   onClick={() => setOpen(false)}
                 >

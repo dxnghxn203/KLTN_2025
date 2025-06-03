@@ -35,7 +35,7 @@ const PersonalInfomation = () => {
   ];
 
   return (
-    <div className="bg-[#F5F7F9] rounded-lg">
+    <div className="bg-[#F5F7F9] rounded-lg p-4">
       <h2 className="font-semibold text-lg">Thông tin cá nhân</h2>
       <div className="bg-[#F5F7F9] h-40 p-4 md:p-6 rounded-lg flex items-center justify-center">
         {user?.image ? (
