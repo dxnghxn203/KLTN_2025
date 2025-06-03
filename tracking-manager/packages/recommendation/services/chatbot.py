@@ -144,7 +144,7 @@ def _interpret_user_request_with_llm(user_input: str, chat_history_messages: lis
         "'intent' (string, một trong các giá trị: 'find_product_by_symptom', 'find_specific_product', 'ask_about_suggested_product', 'general_question', 'greeting', 'farewell', 'clarification_needed'). "
         "'target_product_ref_id' (string or null, ID tham chiếu của sản phẩm người dùng đang hỏi (thường là product_id từ MongoDB), nếu có, ưu tiên ID nếu xác định được từ ngữ cảnh gợi ý). "
         "'target_product_name' (string or null, tên sản phẩm người dùng có thể đã đề cập). "
-        "'question_details' (string or null, chi tiết câu hỏi về sản phẩm, ví dụ: 'giá', 'cách dùng', 'thành phần', 'công dụng', 'inventory_status' (cho câu hỏi còn hàng không)). "  # Thêm inventory_status
+        "'question_details' (string or null, chi tiết câu hỏi về sản phẩm, ví dụ: 'giá', 'cách dùng', 'thành phần', 'công dụng', 'inventory_status' (cho câu hỏi còn hàng không)). "
         "'symptoms' (list of strings or null, danh sách các triệu chứng người dùng mô tả, nếu intent là 'find_product_by_symptom'). "
         "'search_keywords' (string or null, chuỗi từ khóa để tìm sản phẩm nếu người dùng yêu cầu tìm sản phẩm cụ thể hoặc mô tả triệu chứng). "
         "Nếu người dùng hỏi về giá của một sản phẩm cụ thể, ví dụ 'Sản phẩm X giá bao nhiêu?', hãy đặt intent là 'find_specific_product', search_keywords là 'Sản phẩm X', và question_details là 'giá'. "
@@ -221,9 +221,11 @@ def generate_response(session_id: str, user_input: str) -> str:
                 p_name = p_item.get('product_name', 'N/A')
                 prices_list = p_item.get('prices', [])
                 price_info_str = _format_price_info(ref_id, prices_list)
-
+                image_url = p_item.get('images_primary', '')
                 formatted_products.append(
                     f"- Tên: {p_name}\n  Công dụng: {p_item.get('uses', 'N/A')}\n  Giá: {price_info_str}\n  ")
+                if image_url:
+                    formatted_products.append(f"  Hình ảnh: {image_url}")
                 if ref_id and not product_found_for_storing:
                     product_found_for_storing = {"id": ref_id, "name": p_name}
             final_context_for_response_prompt = "Dựa trên mô tả của bạn, đây là một số sản phẩm phù hợp:\n" + "\n\n".join(
@@ -238,7 +240,10 @@ def generate_response(session_id: str, user_input: str) -> str:
             p_item = products_found[0]
             ref_id = p_item.get('product_id')
             p_name = p_item.get('product_name', 'N/A')
+            image_url = p_item.get('images_primary', '')
             context_parts = [f"Thông tin về sản phẩm '{p_name}':"]
+            if image_url:
+                context_parts.append(f"- Hình ảnh: {image_url}")
             basic_info_map = {
                 "Công dụng": p_item.get("uses"),
                 "Thành phần chính": ", ".join([ing.get('ingredient_name', '') for ing in
@@ -304,9 +309,12 @@ def generate_response(session_id: str, user_input: str) -> str:
             p_name = product_details.get('product_name', target_product_ref_id)
             ref_id = product_details.get('product_id')
             details_str_parts = [f"Thông tin chi tiết về sản phẩm '{p_name}':"]
+            image_url = product_details.get('images_primary', '')
             prices_list = product_details.get('prices', [])
             price_info_str = _format_price_info(ref_id, prices_list)
             inventory_status_str = ""
+            if image_url:
+                details_str_parts.append(f"- Hình ảnh: {image_url}")
 
             if "inventory_status" in question_details:
                 details_str_parts.append(
