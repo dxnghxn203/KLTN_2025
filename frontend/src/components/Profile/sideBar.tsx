@@ -10,7 +10,7 @@ import { MdLockOutline } from "react-icons/md";
 import { useToast } from "@/providers/toastProvider";
 import { FaRegFileAlt, FaArrowLeft } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import Breadcrumb from "./Breadcrumb";
+import Breadcrumb from "@/components/Profile/breadcrumb";
 
 const Sidebar = ({ children }: { children?: React.ReactNode }) => {
   const { user, logout } = useAuth();
