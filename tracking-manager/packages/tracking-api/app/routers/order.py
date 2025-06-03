@@ -248,7 +248,9 @@ async def request_prescription(item: ItemOrderForPTInReq = BodyDepends(ItemOrder
         )
 
 @router.get("/order/approve-prescription", response_model=response.BaseResponse)
-async def get_approve_prescription(token: str = Depends(middleware.verify_token_pharmacist)):
+async def get_approve_prescription(
+        page: int = 1, page_size: int = 10,
+        token: str = Depends(middleware.verify_token_pharmacist)):
     try:
         pharmacist_info = await pharmacist.get_current(token)
         if not pharmacist_info:
@@ -256,7 +258,7 @@ async def get_approve_prescription(token: str = Depends(middleware.verify_token_
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Dược sĩ không tồn tại"
             )
-        result = await order.get_approve_order(pharmacist_info.email)
+        result = await order.get_approve_order(pharmacist_info.email, page, page_size)
         return response.SuccessResponse(
             data=result
         )
