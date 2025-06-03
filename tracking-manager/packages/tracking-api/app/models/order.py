@@ -765,11 +765,15 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
         logger.error(f"Failed [request_order_prescription]: {e}")
         raise e
 
-async def get_approve_order(email: str):
+async def get_approve_order(email: str, page: int, page_size: int):
     try:
         collection = database.db[request_collection_name]
-        order_list = collection.find({"verified_by": {"$in": [None, "", email]}})
-        return (ItemOrderForPTRes(**order) for order in order_list)
+        skip_count = (page - 1) * page_size
+        order_list = collection.find({"verified_by": {"$in": [None, "", email]}}).skip(skip_count).limit(page_size)
+        return {
+            "total_orders": collection.count_documents({"verified_by": {"$in": [None, "", email]}}),
+            "orders": [ItemOrderForPTRes(**order) for order in order_list]
+        }
     except Exception as e:
         logger.error(f"Failed [get_approve_order]: {e}")
         raise e

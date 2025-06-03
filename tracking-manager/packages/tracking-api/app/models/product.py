@@ -856,12 +856,17 @@ async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes
         logger.error(f"Error approving product: {str(e)}")
         raise e
 
-async def get_approved_product(email: str):
+async def get_approved_product(email: str, page: int = 1, page_size: int = 10):
     try:
         collection = db[collection_name]
-        product_list = collection.find({"verified_by": {"$in": [None, "", email]}})
+        skip_count = (page - 1) * page_size
+        product_list = collection.find({"verified_by": {"$in": [None, "", email]}}).skip(skip_count).limit(page_size)
+
         logger.info(f"{product_list}")
-        return [ItemProductDBRes(**product) for product in product_list]
+        return {
+            "total_products":  collection.count_documents({"verified_by": {"$in": [None, "", email]}}),
+            "products": [ItemProductDBRes(**product) for product in product_list]
+        }
     except Exception as e:
         logger.error(f"Failed [get_approved_product]: {e}")
         raise e
