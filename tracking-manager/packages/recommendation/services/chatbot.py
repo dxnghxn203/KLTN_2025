@@ -351,11 +351,10 @@ def generate_response(session_id: str, user_input: str) -> str:
 
     elif intent == "clarification_needed":
         error_detail_from_intent = user_request_info.get("question_details", "")
-        if "Lỗi" in error_detail_from_intent:
+        if error_detail_from_intent and  "Lỗi" in error_detail_from_intent:
             final_context_for_response_prompt = f"Tôi gặp một chút trục trặc khi xử lý yêu cầu của bạn ({error_detail_from_intent}). Bạn có thể thử lại hoặc diễn đạt khác được không?"
         else:
             final_context_for_response_prompt = "Tôi chưa hiểu rõ ý của bạn. Bạn có thể diễn đạt lại hoặc cung cấp thêm thông tin được không?"
-
     if product_found_for_storing and product_found_for_storing.get("id") and product_found_for_storing.get("name"):
         _store_suggested_product(session_id, product_found_for_storing["id"], product_found_for_storing["name"])
 
