@@ -82,7 +82,7 @@ export const getAllProductAdmin = async (
     best_seller: any = null
 ) => {
     try {
-         const params = new URLSearchParams();
+        const params = new URLSearchParams();
 
         params.append("page", page);
         params.append("page_size", pageSize);
@@ -210,9 +210,11 @@ export const deleteProduct = async (product_id: any) => {
 
 }
 
-export const getAllProductApproved = async () => {
+export const getAllProductApproved = async (
+    page: any, pageSize: any,
+) => {
     try {
-        const response: any = await axiosClient.get("/v1/products/get-approve-product");
+        const response: any = await axiosClient.get("/v1/products/get-approve-product?page=" + page + "&page_size=" + pageSize);
         return {
             status_code: response.status_code,
             message: response.message,

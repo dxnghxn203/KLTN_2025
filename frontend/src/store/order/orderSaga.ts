@@ -575,12 +575,13 @@ function* fetchGetApproveRequestOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
         const {
+            data,
             onSuccess = (message: any) => {
             },
             onFailed = (message: any) => {
             },
         } = payload;
-        const rs = yield call(orderService.getApproveRequestOrder);
+        const rs = yield call(orderService.getApproveRequestOrder, data);
         if (rs.status_code === 200) {
             yield put(fetchGetApproveRequestOrderSuccess(rs.data));
             onSuccess(rs.data);

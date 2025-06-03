@@ -11,7 +11,7 @@ import {
     selectTotalOrderAdmin,
     selectCountStatusOrder
 } from "@/store/order";
-import { useState } from "react";
+import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 
 
@@ -119,9 +119,12 @@ export function useOrder() {
             onFailed: onFailed
         }));
     }
-    const fetchGetApproveRequestOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+    const fetchGetApproveRequestOrder = async (
+        data: any,
+        onSuccess: (message: any) => void,
+        onFailed: (message: any) => void) => {
         dispatch(fetchGetApproveRequestOrderStart({
-
+            data: data,
             onSuccess: onSuccess,
             onFailed: onFailed
         }));

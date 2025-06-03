@@ -52,7 +52,7 @@ export const ROLE_ACTIONS_ADMIN = [
     'fetchGetAllImportFileAddProductStart',
 
     'fetchProductDiscountAdminStart',
-    'fetchUpdateAdminInfoStart',    
+    'fetchUpdateAdminInfoStart',
 ]
 
 export const ROLE_ACTIONS_PHARMACIST = [
@@ -64,6 +64,7 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchAcceptConversationStart',
     'loginPharmacistSuccess',
     'fetchUpdatePharmacistInfoStart',
+    'fetchProductApprovedStart'
 ]
 
 export const SYSTEM_ACTIONS = [

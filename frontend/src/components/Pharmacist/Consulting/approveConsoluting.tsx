@@ -24,6 +24,11 @@ export default function RequestDetailPage() {
         getDocumentByRequestId
     } = useDocument();
 
+    const [pages, setPages] = useState<any>({
+        page: 1,
+        page_size: 10,
+    });
+
     const searchParams = useSearchParams();
     const detailId = searchParams.get("chi-tiet");
     const editId = searchParams.get("edit");
@@ -45,30 +50,41 @@ export default function RequestDetailPage() {
 
     const router = useRouter();
     useEffect(() => {
-        if (requestItem) return;
+        const checkIfRequestItemExists = () => {
+            if (requestItem) return;
 
-        const item = allRequestOrderApprove.find(
-            (item: any) => item.request_id === requestId
-        );
-        if (item) {
-            setRequestItem(item);
-            fetchGetApproveRequestOrder(
-                () => {
-                },
-                () => {
-                }
+            // Check if allRequestOrderApprove and orders array exist
+            if (!allRequestOrderApprove || !allRequestOrderApprove.orders) {
+                return;
+            }
+
+            // Access the orders array from the object
+            const item = allRequestOrderApprove.orders.find(
+                (item: any) => item.request_id === requestId
             );
-            getDocumentByRequestId(
-                item.request_id,
-                (data: any) => {
-                    setDocument(data);
-                },
-                (error: any) => {
-                    console.error("Error fetching document:", error);
-                }
-            )
-        }
-    }, [allRequestOrderApprove, detailId, requestItem]);
+            if (item) {
+                setRequestItem(item);
+                fetchGetApproveRequestOrder(
+                    pages,
+                    () => {
+                    },
+                    () => {
+                    }
+                );
+                getDocumentByRequestId(
+                    item.request_id,
+                    (data: any) => {
+                        setDocument(data);
+                    },
+                    (error: any) => {
+                        console.error("Error fetching document:", error);
+                    }
+                )
+            }
+        };
+
+        checkIfRequestItemExists();
+    }, [requestId, allRequestOrderApprove, requestItem]);
 
     if (!requestItem) return <div>Loading...</div>;
 

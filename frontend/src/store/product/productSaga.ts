@@ -373,8 +373,14 @@ function* handlerDeleteProduct(action: any): Generator<any, void, any> {
 
 function* getAllProductApproved(action: any): Generator<any, void, any> {
     try {
-        const {payload} = action;
-        const product = yield call(productService.getAllProductApproved);
+        const {
+            payload
+        } = action;
+        const {
+            page,
+            page_size,
+        } = payload;
+        const product = yield call(productService.getAllProductApproved, page, page_size);
         if (product.status_code === 200) {
             yield put(fetchProductApprovedSuccess(product.data));
             return;
