@@ -218,12 +218,15 @@ def generate_response(session_id: str, user_input: str) -> str:
             formatted_products = []
             for p_item in products:
                 ref_id = p_item.get('product_id')
+                slug = p_item.get('slug', '')
                 p_name = p_item.get('product_name', 'N/A')
                 prices_list = p_item.get('prices', [])
                 price_info_str = _format_price_info(ref_id, prices_list)
                 image_url = p_item.get('images_primary', '')
                 formatted_products.append(
                     f"- Tên: {p_name}\n  Công dụng: {p_item.get('uses', 'N/A')}\n  Giá: {price_info_str}\n  ")
+                if slug:
+                    formatted_products.append(f"  Slug: {slug}")
                 if image_url:
                     formatted_products.append(f"  Hình ảnh: {image_url}")
                 if ref_id and not product_found_for_storing:
@@ -239,9 +242,12 @@ def generate_response(session_id: str, user_input: str) -> str:
         if products_found:
             p_item = products_found[0]
             ref_id = p_item.get('product_id')
+            slug = p_item.get('slug', '')
             p_name = p_item.get('product_name', 'N/A')
             image_url = p_item.get('images_primary', '')
             context_parts = [f"Thông tin về sản phẩm '{p_name}':"]
+            if slug:
+                context_parts.append(f"- Slug: {slug}")
             if image_url:
                 context_parts.append(f"- Hình ảnh: {image_url}")
             basic_info_map = {
@@ -308,11 +314,14 @@ def generate_response(session_id: str, user_input: str) -> str:
         if product_details:
             p_name = product_details.get('product_name', target_product_ref_id)
             ref_id = product_details.get('product_id')
+            slug = product_details.get('slug', '')
             details_str_parts = [f"Thông tin chi tiết về sản phẩm '{p_name}':"]
             image_url = product_details.get('images_primary', '')
             prices_list = product_details.get('prices', [])
             price_info_str = _format_price_info(ref_id, prices_list)
             inventory_status_str = ""
+            if slug:
+                details_str_parts.append(f"- Slug: {slug}")
             if image_url:
                 details_str_parts.append(f"- Hình ảnh: {image_url}")
 
@@ -367,6 +376,8 @@ def generate_response(session_id: str, user_input: str) -> str:
         "Nếu không chắc chắn hoặc không có thông tin, hãy nói rõ và đề nghị hỗ trợ thêm hoặc hỏi lại cho rõ. "
         "Sử dụng tiếng Việt. Trả lời ngắn gọn, đi thẳng vào vấn đề nếu có thể. "
         "Khi cung cấp giá hoặc tình trạng hàng, hãy liệt kê rõ ràng. Ví dụ: 'Sản phẩm X giá 100.000 VND/Hộp và hiện còn hàng.' hoặc 'Sản phẩm Y giá 200.000 VND/Vĩ và hiện đã hết hàng.'\n"
+        "Nếu bạn nhận được URL hình ảnh sản phẩm (thường sau cụm 'Hình ảnh:'), hãy hiển thị hình ảnh đó bằng thẻ <img src=\"URL_HÌNH_ẢNH\" alt=\"Hình ảnh sản phẩm\" style=\"max-width: 300px; border-radius: 8px;\">\n"
+        "Khi bạn thấy thông tin 'Slug' của sản phẩm, hãy tạo liên kết đến trang chi tiết sản phẩm bằng cách sử dụng: <a href=\"process.env.NEXT_PUBLIC_API_URL/chi-tiet-san-pham/SLUG\" target=\"_blank\">Xem chi tiết sản phẩm</a>\n"
         "Thông tin hỗ trợ cho câu trả lời của bạn (nếu có): {context_for_response_generation}\n"
         "Sản phẩm bạn (AI) đã gợi ý hoặc đang thảo luận gần đây (để bạn nhớ ngữ cảnh): {latest_suggested_products_context}"
         "Trả về dạng html với các thẻ <p>, <ul>, <li> <url>, <img>, ... cho câu trả lời. "
