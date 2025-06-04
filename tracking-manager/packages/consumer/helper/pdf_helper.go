@@ -124,37 +124,37 @@ func ExportInvoiceToPDF(order models.Orders) ([]byte, error) {
 
 	htmlContent := fmt.Sprintf(`
 	<html>
-      	<body>
-        <h2>INVOICE</h2>
-        <p><strong>Pharmacy:</strong> MEDICARE PHARMACY</p>
-        <p><strong>Address:</strong> No.1 Vo Van Ngan, Linh Chieu Ward, Thu Duc, Ho Chi Minh City</p>
-        <p><strong>Website:</strong> https://kltn-2025.vercel.app</p>
-        <p><strong>Hotline:</strong> 18006928</p>
-        <hr>
-        <p><strong>Date:</strong> %s - <strong>Time:</strong> %s</p>
-        <p><strong>Order:</strong> %s</p>
-        <p><strong>Customer:</strong> %s</p>
-        <hr>
-        <h4>Product Details</h4>
-        <table border="1" cellpadding="5" cellspacing="0" width="100%%">
-          <tr>
-            <th>Product Name</th>
-            <th>Qty</th>
-			<th>Unit</th>
-            <th>Unit Price</th>
-            <th>Discount</th>
-            <th>Total</th>
-          </tr>
-          %s
-        </table>
+		<body>
+		<h2>HÓA ĐƠN</h2>
+		<p><strong>Nhà thuốc:</strong> CÔNG TY TNHH MEDICARE</p>
+		<p><strong>Địa chỉ:</strong> Số 1 Võ Văn Ngân, Phường Linh Chiểu, Thủ Đức, TP. Hồ Chí Minh</p>
+		<p><strong>Website:</strong> https://kltn-2025.vercel.app</p>
+		<p><strong>Đường dây nóng:</strong> 18006928</p>
+		<hr>
+		<p><strong>Ngày:</strong> %s - <strong>Giờ:</strong> %s</p>
+		<p><strong>Mã đơn hàng:</strong> %s</p>
+		<p><strong>Khách hàng:</strong> %s</p>
+		<hr>
+		<h4>Chi tiết sản phẩm</h4>
+		<table border="1" cellpadding="5" cellspacing="0" width="100%%">
+		  <tr>
+			<th>Tên sản phẩm</th>
+			<th>Số lượng</th>
+			<th>Đơn vị</th>
+			<th>Đơn giá (VNĐ)</th>
+			<th>Giảm giá</th>
+			<th>Thành tiền (VNĐ)</th>
+		  </tr>
+		  %s
+		</table>
 		<br>
-		<p style="text-align: right;"><strong>Product Price:</strong> %.0f</p>
-		<p style="text-align: right;"><strong>Shipping Fee:</strong> %s</p>
-		<p style="text-align: right;"><strong>Total Amount:</strong> %.0f</p>
-		<p style="text-align: right;"><strong>Product Discount:</strong> %.0f</p>
-		<p style="text-align: right;"><strong>Order Voucher Discount:</strong> %.0f</p>
-		<p style="text-align: right;"><strong>Shipping Voucher Discount:</strong> %.0f</p>
-		<p style="text-align: right;"><strong>Amount Due:</strong> %.0f</p>
+		<p style="text-align: right;"><strong>Giá sản phẩm:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Phí vận chuyển:</strong> %s VNĐ</p>
+		<p style="text-align: right;"><strong>Tổng cộng:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Giảm giá sản phẩm:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Giảm giá từ voucher đơn hàng:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Giảm giá từ voucher vận chuyển:</strong> %.0f VNĐ</p>
+		<p style="text-align: right;"><strong>Số tiền thanh toán:</strong> %.0f VNĐ</p>
 	  </body>
 	</html>`,
 		currentDate, currentTime, order.OrderId, order.PickTo.Name,

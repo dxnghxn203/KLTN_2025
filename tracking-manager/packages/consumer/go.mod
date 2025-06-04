@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/opensearch-project/opensearch-go v1.1.0 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	golang.org/x/sys v0.23.0 // indirect
 )

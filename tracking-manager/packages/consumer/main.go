@@ -1,7 +1,6 @@
 package main
 
 import (
-	"consumer/helper"
 	"consumer/pkg/database"
 	"consumer/queue"
 	"context"
@@ -37,13 +36,11 @@ func main() {
 		slog.Info(err.Error())
 	}
 
-	file, err := helper.ExportSampleInvoiceToPDF()
-
-	helper.SendInvoiceEmail(
-		"dxnghxn203@gmail.com",
-		file,
-		"Hóa đơn mẫu",
-	)
+	err = database.ConnectES()
+	if err != nil {
+		slog.Error("Không thể kết nối đến elastic.")
+		slog.Info(err.Error())
+	}
 
 	err = database.ConnectRedis()
 	if err != nil {

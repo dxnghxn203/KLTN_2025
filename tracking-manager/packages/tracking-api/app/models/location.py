@@ -28,13 +28,13 @@ async def delete_regions():
     delete_index(REGION_INDEX)
 
 async def insert_cities_into_elasticsearch():
-    await insert_es_common(CITY_INDEX, 'cities.xlsx')
+    await insert_es_common(CITY_INDEX, 'ghn_cities.xlsx')
 
 async def insert_districts_into_elasticsearch():
-    await insert_es_common(DISTRICT_INDEX, 'districts.xlsx')
+    await insert_es_common(DISTRICT_INDEX, 'ghn_districts.xlsx')
 
 async def insert_wards_into_elasticsearch():
-    await insert_es_common(WARD_INDEX, 'wards.xlsx')
+    await insert_es_common(WARD_INDEX, 'ghn_wards.xlsx')
 
 async def insert_regions_into_elasticsearch():
     await insert_es_common(REGION_INDEX, 'regions.xlsx')

@@ -34,7 +34,9 @@ def get_all_cities(df): return extract_location(df, {
     'Cấp': 'unit_name',
     'Mã TP': 'code',
     'Miền': 'domestic_name',
-    'Miền Tiếng Anh': 'domestic_name_en'
+    'Miền Tiếng Anh': 'domestic_name_en',
+    'GHN Mã TP': 'ghn_code',
+    'GHN Tỉnh Thành Phố': 'ghn_name'
 }, City)
 
 def get_all_districts(df): return extract_location(df, {
@@ -45,7 +47,10 @@ def get_all_districts(df): return extract_location(df, {
     'Mã Đơn Vị': 'unit_id',
     'Cấp': 'unit_name',
     'Mã QH': 'code',
-    'Mã TP': 'city_code'
+    'Mã TP': 'city_code',
+    'GHN Mã QH': 'ghn_code',
+    'GHN Quận Huyện': 'ghn_name',
+    'GHN Mã TP': 'ghn_province_code',
 }, District)
 
 def get_all_wards(df):
@@ -59,7 +64,11 @@ def get_all_wards(df):
         'Cấp': 'unit_name',
         'Mã PX': 'code',
         'Mã QH': 'district_code',
-        'Mã TP': 'city_code'
+        'Mã TP': 'city_code',
+        'GHN Mã PX': 'ghn_code',
+        'GHN Phường Xã': 'ghn_name',
+        'GHN Mã QH': 'ghn_district_code',
+        'GHN Mã TP': 'ghn_province_code',
     }, Ward)
 
 def get_all_regions(df): return extract_location(df, {

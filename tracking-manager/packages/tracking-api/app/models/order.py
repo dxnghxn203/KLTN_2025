@@ -17,6 +17,7 @@ from app.core import logger, response, rabbitmq, database, ghn
 from app.core.file import create_image_json_payload
 from app.core.mail import send_invoice_email
 from app.core.s3 import upload_file
+from app.entities.fee.request import FeeGHNReq
 from app.entities.order.request import ItemOrderInReq, ItemOrderReq, OrderRequest, ItemUpdateStatusReq, \
     ItemOrderForPTInReq, ItemOrderForPTReq, ItemOrderApproveReq, ItemOrderImageReq, InfoAddressOrderReq, \
     ShippingOrderGHN
@@ -24,22 +25,23 @@ from app.entities.order.response import ItemOrderRes, ItemOrderForPTRes
 from app.entities.pharmacist.response import ItemPharmacistRes
 from app.entities.product.request import ItemProductInReq, ItemProductReq
 from app.entities.product.response import ItemProductRes
+from app.entities.time.request import TimeGHNReq
 from app.entities.user.response import ItemUserRes
 from app.entities.voucher.request import ItemVoucherReq
 from app.helpers import redis
 from app.helpers.constant import get_create_order_queue, generate_id, PAYMENT_COD, BANK_IDS, \
     FEE_INDEX, get_update_status_queue, WAREHOUSE_ADDRESS, SENDER_PROVINCE_CODE, SENDER_DISTRICT_CODE, \
-    SENDER_COMMUNE_CODE, get_extract_document_queue
+    SENDER_COMMUNE_CODE, get_extract_document_queue, WARD_INDEX
 from app.helpers.time_utils import get_current_time
 from app.helpers.es_helpers import search_es
 from app.helpers.pdf_helpers import export_invoice_to_pdf
 from app.helpers.redis import remove_cart_item
 from app.models.cart import remove_product_from_cart
-from app.models.fee import calculate_shipping_fee
+from app.models.fee import calculate_shipping_fee, get_fee_ghn
 from app.models.location import determine_route
 from app.models.product import restore_product_sell, check_all_product_discount_expired, \
     get_product_inventory, get_product_by_id
-from app.models.time import get_range_time
+from app.models.time import get_range_time, get_delivery_time_ghn
 from app.models.user import get_by_id
 from app.models.voucher import get_voucher_by_id, restore_voucher
 
@@ -310,7 +312,10 @@ async def process_order_voucher(
         raise e
 
 async def check_shipping_fee(
+        product_items: List[ItemProductReq],
         receiver_province_code: int,
+        receiver_district_code: int,
+        receiver_commune_code: int,
         product_price: float,
         weight: float,
         voucher: Optional[List[ItemVoucherReq]] = None,
@@ -348,21 +353,101 @@ async def check_shipping_fee(
                 "voucher_error": voucher_error or []
             }
 
-        route_code = await determine_route(
-                sender_code=SENDER_PROVINCE_CODE,
-                receiver_code=receiver_province_code
-            )
+        # route_code = await determine_route(
+        #         sender_code=SENDER_PROVINCE_CODE,
+        #         receiver_code=receiver_province_code
+        #     )
+        #
+        # delivery_time = await get_range_time(route_code)
+        #
+        # if product_price > 500_000:
+        #     shipping_fee = 0
+        # else:
+        #     fee_data = await search_es(index=FEE_INDEX, conditions={"route_code": route_code})
+        #     if isinstance(fee_data, response.JsonException):
+        #         raise fee_data
+        #
+        #     shipping_fee = calculate_shipping_fee(fee_data, weight)
 
-        delivery_time = await get_range_time(route_code)
+        from_result = await search_es(WARD_INDEX, {"code": str(SENDER_COMMUNE_CODE)})
+        if isinstance(from_result, response.JsonException):
+            raise from_result
+        from_ward = from_result.get("ghn_code")
+        from_district = from_result.get("ghn_district_code")
+        logger.info(f"from_ward: {from_ward}, from_district: {from_district}")
 
-        if product_price > 500_000:
-            shipping_fee = 0
+        to_result = await search_es(WARD_INDEX, {"code": str(receiver_commune_code)})
+        if isinstance(to_result, response.JsonException):
+            raise to_result
+        to_ward = to_result.get("ghn_code")
+        to_district = to_result.get("ghn_district_code")
+        logger.info(f"to_ward: {to_ward}, to_district: {to_district}")
+
+        total_quantity = sum(item.quantity for item in product_items)
+
+        if total_quantity == 1:
+            length, width, height = 1, 1, 1
+        elif total_quantity < 10:
+            length, width, height = 20, 5, 5
         else:
-            fee_data = await search_es(index=FEE_INDEX, conditions={"route_code": route_code})
-            if isinstance(fee_data, response.JsonException):
-                raise fee_data
+            length, width, height = 20, 30, 20
 
-            shipping_fee = calculate_shipping_fee(fee_data, weight)
+        shipping_data = FeeGHNReq(**{
+            "service_type_id": 2,
+            "from_district_id": int(from_district),
+            "from_ward_code": str(from_ward),
+            "to_district_id": int(to_district),
+            "to_ward_code": str(to_ward),
+            "length": length,
+            "width": width,
+            "height": height,
+            "weight": int(weight * 1000),
+            "insurance_value": int(product_price),
+            "coupon": None,
+            "items": [
+                {
+                    "name": item.product_name or "Product",
+                    "quantity": item.quantity,
+                    "length": length,
+                    "width": width,
+                    "height": height,
+                    "weight": int(item.weight*1000),
+                } for item in product_items
+            ]
+        })
+
+        logger.info(f"shipping_data: {shipping_data}")
+
+        ghn_response = get_fee_ghn(shipping_data)
+        logger.info(f"ghn_response: {ghn_response}")
+
+        if isinstance(ghn_response, str):
+            ghn_response = json.loads(ghn_response)
+
+        if isinstance(ghn_response, response.JsonException):
+            raise ghn_response
+
+        shipping_fee = ghn_response["data"]["total"]
+        logger.info(f"shipping_fee: {shipping_fee}")
+
+        time_response = get_delivery_time_ghn(TimeGHNReq(**{
+            "from_district_id": from_district,
+            "from_ward_code": from_ward,
+            "to_district_id": to_district,
+            "to_ward_code": to_ward,
+            "service_id": 53320  # nhẹ
+        }))
+
+        logger.info(f"time_response: {time_response}")
+
+        if isinstance(time_response, response.JsonException):
+            raise time_response
+
+        if isinstance(time_response, str):
+            time_response = json.loads(time_response)
+
+        delivery_time = time_response["data"]["leadtime_order"]["to_estimate_date"]
+        logger.info(f"delivery_time: {delivery_time}")
 
         order_discount_amount = 0
         delivery_discount_amount = 0
@@ -418,7 +503,10 @@ async def check_order(item: ItemOrderInReq, user_id: str):
             )
 
         fee_data = await check_shipping_fee(
+            product_items=product_items,
             receiver_province_code=item.receiver_province_code,
+            receiver_district_code=item.receiver_district_code,
+            receiver_commune_code=item.receiver_commune_code,
             product_price=product_price,
             weight=weight,
             voucher=voucher_items,
@@ -571,7 +659,7 @@ async def add_order(item: OrderRequest):
                 message="Không thể tạo file PDF"
             )
 
-        send_invoice_email(order_item.pick_to.email, pdf_bytes, order_item.order_id)
+        # send_invoice_email(order_item.pick_to.email, pdf_bytes, order_item.order_id)
 
         return item.order_id
     except Exception as e:

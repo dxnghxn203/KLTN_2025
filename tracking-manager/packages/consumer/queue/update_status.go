@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"consumer/helper"
 	"consumer/models"
 	"consumer/statics"
 	"context"
@@ -85,6 +86,12 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 		return false, err
 	}
 	slog.Info("Successfully updated order from hook", "order_id", id, "status", trackingReq.Status)
+
+	err = helper.SendOrderStatusUpdateEmail(orderRes.PickTo.Email, orderRes.OrderId, trackingReq.Status)
+	if err != nil {
+		slog.Error("Failed to send order status update email", "orderId", orderRes.OrderId, "err", err)
+	}
+
 	return res, err
 }
 

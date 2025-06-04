@@ -3,6 +3,7 @@ package queue
 import (
 	"consumer/helper"
 	"consumer/models"
+	"consumer/pkg/database"
 	"consumer/statics"
 	"context"
 	"encoding/json"
@@ -31,6 +32,16 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 	err = models.CheckInventoryAndUpdateOrder(ctx, &orderRaw)
 	if err != nil {
 		slog.Warn("Lỗi sản phẩm, vẫn tạo đơn với trạng thái canceled", "err", err)
+	}
+
+	ghnPayload := models.ConvertOrderToGHNPayload(orderRaw, ctx)
+	responseBody, err := database.CreateOrderGHN(ghnPayload)
+	if err != nil {
+		slog.Error("Lỗi tạo đơn hàng GHN", "err", err)
+		orderRaw.Status = "canceled"
+		orderRaw.DeliveryInstruction = "Lỗi tạo đơn hàng GHN: " + err.Error()
+	} else {
+		slog.Info("Đã tạo đơn GHN thành công", "response", string(responseBody))
 	}
 
 	res, _id, err := orderRaw.Create(ctx)

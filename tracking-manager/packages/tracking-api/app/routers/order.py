@@ -24,7 +24,7 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None, token: st
             user_id = user_info.id
             is_session_user = False
 
-        _, total_price, weight, out_of_stock, out_of_date = await order.process_order_products(item.product)
+        product_items, total_price, weight, out_of_stock, out_of_date = await order.process_order_products(item.product)
         if out_of_stock or out_of_date:
             return response.BaseResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -48,7 +48,10 @@ async def check_shipping_fee(item: ItemOrderInReq, session: str= None, token: st
 
         return response.SuccessResponse(
             data=await order.check_shipping_fee(
+                product_items,
                 item.receiver_province_code or 0,
+                item.receiver_district_code or 0,
+                item.receiver_commune_code or 0,
                 total_price,
                 weight,
                 voucher_list, voucher_error

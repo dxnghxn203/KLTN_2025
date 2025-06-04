@@ -11,6 +11,8 @@ class City(BaseModel):
     unit_name: str
     domestic_name: str
     domestic_name_en: str
+    ghn_code: int
+    ghn_name: str
 
 class District(BaseModel):
     name: str
@@ -21,6 +23,9 @@ class District(BaseModel):
     unit_id: int
     unit_name: str
     city_code: int
+    ghn_code: int
+    ghn_name: str
+    ghn_province_code: int
 
 class Ward(BaseModel):
     name: str
@@ -32,6 +37,10 @@ class Ward(BaseModel):
     unit_name: str
     district_code: int
     city_code: int
+    ghn_code: str
+    ghn_name: str
+    ghn_district_code: int
+    ghn_province_code: int
 
 class Region(BaseModel):
     id: int

@@ -9,4 +9,5 @@ var (
 	ExtractDocumentQueueNameRetry       = "EXTRACT_DOCUMENT_RETRY"
 	MaxRetry                      int64 = 3
 	RetryInSeconds                      = "5"
+	WardIndex                           = "stg_wards"
 )

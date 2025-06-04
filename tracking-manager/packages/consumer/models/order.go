@@ -1,15 +1,19 @@
 package models
 
 import (
+	"bytes"
 	"consumer/pkg/database"
+	"consumer/statics"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/opensearch-project/opensearch-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -56,6 +60,12 @@ type Orders struct {
 	ReceiverProvinceCode    int                 `json:"receiver_province_code" bson:"receiver_province_code"`
 	ReceiverDistrictCode    int                 `json:"receiver_district_code" bson:"receiver_district_code"`
 	ReceiverCommuneCode     int                 `json:"receiver_commune_code" bson:"receiver_commune_code"`
+	GHNSenderProvinceCode   int                 `json:"ghn_sender_province_code" bson:"ghn_sender_province_code"`
+	GHNSenderDistrictCode   int                 `json:"ghn_sender_district_code" bson:"ghn_sender_district_code"`
+	GHNSenderCommuneCode    string              `json:"ghn_sender_commune_code" bson:"ghn_sender_commune_code"`
+	GHNReceiverProvinceCode int                 `json:"ghn_receiver_province_code" bson:"ghn_receiver_province_code"`
+	GHNReceiverDistrictCode int                 `json:"ghn_receiver_district_code" bson:"ghn_receiver_district_code"`
+	GHNReceiverCommuneCode  string              `json:"ghn_receiver_commune_code" bson:"ghn_receiver_commune_code"`
 	CreatedDate             time.Time           `json:"created_date" bson:"created_date"`
 	UpdatedDate             time.Time           `json:"updated_date" bson:"updated_date"`
 	CreatedBy               string              `json:"created_by" bson:"created_by"`
@@ -255,6 +265,17 @@ func batchGetVoucherInventory(ctx context.Context, vouchers []VoucherInfo) (map[
 	return result, nil
 }
 
+func stringJoin(items []string, sep string) string {
+	if len(items) == 0 {
+		return ""
+	}
+	result := items[0]
+	for i := 1; i < len(items); i++ {
+		result += sep + items[i]
+	}
+	return result
+}
+
 func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 	var (
 		insufficientProducts []string
@@ -267,12 +288,6 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 	productMap, err := batchGetProductInventory(ctx, order.Product)
 	if err != nil {
 		slog.Error("Không thể batch get product inventory", "err", err)
-		return err
-	}
-
-	voucherMap, err := batchGetVoucherInventory(ctx, order.Voucher)
-	if err != nil {
-		slog.Error("Không thể batch get voucher inventory", "err", err)
 		return err
 	}
 
@@ -295,28 +310,38 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 			continue
 		}
 	}
-	for i := range order.Voucher {
-		v := &order.Voucher[i]
-		result, ok := voucherMap[v.VoucherId]
-		if !ok {
-			slog.Error("Không tìm thấy voucher", "voucher_id", v.VoucherId)
-			continue
+
+	if len(order.Voucher) > 0 {
+		voucherMap, err := batchGetVoucherInventory(ctx, order.Voucher)
+		if err != nil {
+			slog.Error("Không thể batch get voucher inventory", "err", err)
+			return err
 		}
 
-		if result.Inventory-result.Used < 1 {
-			insufficientVouchers = append(insufficientVouchers, v.VoucherName)
-			continue
-		}
-		if !v.ExpiredDate.IsZero() && v.ExpiredDate.Before(GetCurrentTime()) && v.Discount > 0 {
-			expiredVouchers = append(expiredVouchers, v.VoucherName)
-			continue
-		}
-		usedBySet := buildSet(result.UsedBy)
-		if _, ok := usedBySet[order.CreatedBy]; ok {
-			alreadyUsedVouchers = append(alreadyUsedVouchers, v.VoucherName)
-			continue
+		for i := range order.Voucher {
+			v := &order.Voucher[i]
+			result, ok := voucherMap[v.VoucherId]
+			if !ok {
+				slog.Error("Không tìm thấy voucher", "voucher_id", v.VoucherId)
+				continue
+			}
+
+			if result.Inventory-result.Used < 1 {
+				insufficientVouchers = append(insufficientVouchers, v.VoucherName)
+				continue
+			}
+			if !v.ExpiredDate.IsZero() && v.ExpiredDate.Before(GetCurrentTime()) && v.Discount > 0 {
+				expiredVouchers = append(expiredVouchers, v.VoucherName)
+				continue
+			}
+			usedBySet := buildSet(result.UsedBy)
+			if _, ok := usedBySet[order.CreatedBy]; ok {
+				alreadyUsedVouchers = append(alreadyUsedVouchers, v.VoucherName)
+				continue
+			}
 		}
 	}
+
 	if len(insufficientProducts)+len(expiredProducts)+len(insufficientVouchers)+len(expiredVouchers)+len(alreadyUsedVouchers) > 0 {
 		order.Status = "canceled"
 		var reasons []string
@@ -344,17 +369,6 @@ func CheckInventoryAndUpdateOrder(ctx context.Context, order *Orders) error {
 	}
 
 	return nil
-}
-
-func stringJoin(items []string, sep string) string {
-	if len(items) == 0 {
-		return ""
-	}
-	result := items[0]
-	for i := 1; i < len(items); i++ {
-		result += sep + items[i]
-	}
-	return result
 }
 
 func GetOrderByOrderId(ctx context.Context, order_id string) (*OrderRes, error) {
@@ -567,4 +581,203 @@ func RemoveProductFromCart(ctx context.Context, userID string, productID string,
 	}
 
 	return nil
+}
+
+func searchES(ctx context.Context, client *opensearch.Client, index string, conditions map[string]interface{}) (map[string]interface{}, error) {
+	mustConditions := make([]map[string]interface{}, 0, len(conditions))
+	for key, value := range conditions {
+		mustConditions = append(mustConditions, map[string]interface{}{
+			"match": map[string]interface{}{key: value},
+		})
+	}
+
+	query := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{"must": mustConditions},
+		},
+		"size": 1,
+	}
+
+	queryJSON, err := json.Marshal(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal query: %w", err)
+	}
+
+	res, err := client.Search(
+		client.Search.WithContext(ctx),
+		client.Search.WithIndex(index),
+		client.Search.WithBody(bytes.NewReader(queryJSON)),
+		client.Search.WithTrackTotalHits(true),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute search request: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		return nil, fmt.Errorf("error in search response: %s", res.Status())
+	}
+
+	var result map[string]interface{}
+	if err := json.NewDecoder(res.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode search response: %w", err)
+	}
+
+	hits, ok := result["hits"].(map[string]interface{})["hits"].([]interface{})
+	if !ok || len(hits) == 0 {
+		return nil, fmt.Errorf("no data found with conditions %v in index %s", conditions, index)
+	}
+
+	source, _ := hits[0].(map[string]interface{})["_source"].(map[string]interface{})
+	return source, nil
+}
+
+func GetWardDistrict(ctx context.Context, client *opensearch.Client, ward int) (int, string, error) {
+	conditions := map[string]interface{}{"code": ward}
+	source, err := searchES(ctx, client, statics.WardIndex, conditions)
+	if err != nil {
+		slog.Warn("No results found", "ward", ward)
+		return 0, "", fmt.Errorf("data location not found for ward: %d", ward)
+	}
+	if wardData, ok := source["ghn_code"].(string); ok {
+		if districtData, ok := source["ghn_district_code"].(float64); ok {
+			return int(districtData), wardData, nil
+		}
+	}
+	return 0, "", fmt.Errorf("domestic_name not found for ward: %d", ward)
+}
+
+type ShiftData struct {
+	ID       int    `json:"id"`
+	Title    string `json:"title"`
+	FromTime int    `json:"from_time"`
+	ToTime   int    `json:"to_time"`
+}
+
+type ShiftResponse struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    []ShiftData `json:"data"`
+}
+
+func GetFirstShiftID() (int, error) {
+	data, err := database.GetShiftGHN()
+	if err != nil {
+		return 0, err
+	}
+
+	var shiftResp ShiftResponse
+	if err := json.Unmarshal(data, &shiftResp); err != nil {
+		return 0, fmt.Errorf("failed to parse shift response: %w", err)
+	}
+
+	if len(shiftResp.Data) == 0 {
+		return 0, errors.New("no shift data returned")
+	}
+
+	return shiftResp.Data[0].ID, nil
+}
+
+func ConvertOrderToGHNPayload(order Orders, ctx context.Context) map[string]interface{} {
+	client := database.GetESClient()
+	fromDistrict, fromWard, err := GetWardDistrict(ctx, client, order.SenderCommuneCode)
+	if err != nil {
+		slog.Error("Cannot get from district and ward", "ward", order.SenderCommuneCode, "err", err)
+		return nil
+	}
+	slog.Info("Get from district and ward", "fromDistrict", fromDistrict, "fromWard", fromWard)
+	toDistrict, toWard, err := GetWardDistrict(ctx, client, order.SenderCommuneCode)
+	if err != nil {
+		slog.Error("Cannot get to district and ward", "ward", order.SenderCommuneCode, "err", err)
+		return nil
+	}
+	slog.Info("Get to district and ward", "toDistrict", toDistrict, "toWard", toWard)
+
+	totalQuantity := 0
+	for _, p := range order.Product {
+		totalQuantity += p.Quantity
+	}
+	length := 1
+	width := 1
+	height := 1
+	if totalQuantity > 1 && totalQuantity <= 10 {
+		length = 20
+		width = 5
+		height = 5
+	}
+	if totalQuantity > 10 {
+		length = 30
+		width = 20
+		height = 20
+	}
+
+	shiftID, err := GetFirstShiftID()
+	if err != nil {
+		slog.Error("Cannot get shift ID from GHN", "err", err)
+		return nil
+	}
+
+	items := make([]map[string]interface{}, 0, len(order.Product))
+	for _, p := range order.Product {
+		item := map[string]interface{}{
+			"name":     p.ProductName,
+			"code":     p.ProductId,
+			"quantity": p.Quantity,
+			"price":    int(p.Price),
+			"length":   10,
+			"width":    10,
+			"height":   10,
+			"weight":   int(p.Weight * 1000),
+			"category": map[string]interface{}{
+				"level1": p.Unit,
+			},
+		}
+		items = append(items, item)
+	}
+
+	return map[string]interface{}{
+		"payment_type_id": 2,
+		"note":            order.DeliveryInstruction,
+		"required_note":   "KHONGCHOXEMHANG",
+		"from_name":       order.PickFrom.Name,
+		"from_phone":      order.PickFrom.PhoneNumber,
+		"from_address": fmt.Sprintf("%s, %s, %s, %s",
+			order.PickFrom.Address.Address,
+			order.PickFrom.Address.Ward,
+			order.PickFrom.Address.District,
+			order.PickFrom.Address.Province,
+		),
+		"from_ward_name":     order.PickFrom.Address.Ward,
+		"from_district_name": order.PickFrom.Address.District,
+		"from_province_name": order.PickFrom.Address.Province,
+		"return_phone":       order.PickFrom.PhoneNumber,
+		"return_address":     order.PickFrom.Address.Address,
+		"return_district_id": fromDistrict,
+		"return_ward_code":   fromWard,
+		"client_order_code":  order.OrderId,
+		"to_name":            order.PickTo.Name,
+		"to_phone":           order.PickTo.PhoneNumber,
+		"to_address": fmt.Sprintf("%s, %s, %s, %s",
+			order.PickTo.Address.Address,
+			order.PickTo.Address.Ward,
+			order.PickTo.Address.District,
+			order.PickTo.Address.Province,
+		),
+		"to_ward_code":   toWard,
+		"to_district_id": toDistrict,
+		"cod_amount":     order.EstimatedTotalFee,
+		"content":        fmt.Sprintf("Đơn hàng %s", order.OrderId),
+		"weight":         int(order.Weight * 1000), // Convert kg to gram
+		"length":         length,
+		"width":          width,
+		"height":         height,
+		// "pick_station_id":    fromWard,
+		"deliver_station_id": nil,
+		"insurance_value":    order.ProductFee - order.VoucherOrderDiscount,
+		"service_id":         0,
+		"service_type_id":    2,
+		"coupon":             nil,
+		"pick_shift":         []int{shiftID},
+		"items":              items,
+	}
 }

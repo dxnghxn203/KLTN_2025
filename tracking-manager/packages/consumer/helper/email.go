@@ -129,12 +129,12 @@ func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 	slog.Info("Gửi email hóa đơn đến:", "email", email)
 	slog.Info("Hóa đơn ID:", "orderID", orderID)
 	htmlContent := `
-        <html>
-        <body>
-            <h3>Thank you for shopping at Medicare!</h3>
-            <p>Your purchase invoice is attached to this email.</p>
-        </body>
-        </html>`
+		<html>
+		<body>
+			<h3>Cảm ơn bạn đã mua hàng tại Medicare!</h3>
+			<p>Hóa đơn mua hàng của bạn được đính kèm trong email này.</p>
+		</body>
+		</html>`
 
 	attachments := map[string][]byte{
 		fmt.Sprintf("%s.pdf", orderID): pdfBytes,
@@ -145,6 +145,25 @@ func SendInvoiceEmail(email string, pdfBytes []byte, orderID string) error {
 		Subject:     subject,
 		HtmlContent: htmlContent,
 		Attachments: attachments,
+	})
+}
+
+func SendOrderStatusUpdateEmail(email, orderID, status string) error {
+	subject := fmt.Sprintf("Cập nhật trạng thái đơn hàng #%s", orderID)
+	slog.Info("Gửi email cập nhật trạng thái đơn hàng", "email", email, "orderID", orderID, "status", status)
+	htmlContent := fmt.Sprintf(`
+		<html>
+		<body>
+			<h3>Đơn hàng #%s của bạn đã được cập nhật trạng thái:</h3>
+			<p><strong>%s</strong></p>
+			<p>Cảm ơn bạn đã mua sắm tại Medicare!</p>
+		</body>
+		</html>`, orderID, status)
+
+	return SendEmail(SendEmailRequest{
+		ToEmail:     email,
+		Subject:     subject,
+		HtmlContent: htmlContent,
 	})
 }
 
