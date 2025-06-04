@@ -392,10 +392,10 @@ const HistoryOrder: React.FC = () => {
   };
 
   return (
-    <div className="px-4 mb-8">
+    <div className="mb-8">
       <div className="flex flex-col md:flex-row md:justify-between gap-4">
         <h2 className="font-semibold text-lg">Lịch sử đơn hàng</h2>
-        <div className="relative w-full md:w-[410px]">
+        <div className="relative w-full md:w-[440px]">
           <input
             type="text"
             placeholder="Tìm kiếm theo mã đơn hàng hoặc tên sản phẩm..."

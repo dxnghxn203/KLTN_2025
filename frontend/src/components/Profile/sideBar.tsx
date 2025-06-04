@@ -65,9 +65,8 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
       </div>
 
       <div className="flex flex-col md:flex-row w-full mt-2">
-        {/* Sidebar */}
         {(!isMobile || shouldShowSidebarOnly) && (
-          <div className="md:w-1/4 w-full">
+          <div className="md:w-1/4 w-full md:mb-8">
             <div className="bg-[#F5F7F9] w-full h-40 rounded-lg flex flex-col items-center justify-center">
               {user?.image ? (
                 <img
@@ -153,17 +152,7 @@ const Sidebar = ({ children }: { children?: React.ReactNode }) => {
 
         {/* Children (nội dung bên phải) */}
         {(!isMobile || shouldShowChildrenOnly) && (
-          <div className="md:w-3/4 w-full md:px-5">
-            {shouldShowChildrenOnly && (
-              <button
-                onClick={handleBackToMenu}
-                className="flex items-center mb-4 text-blue-600 hover:underline"
-              >
-                <MdNavigateBefore size={18} className="mr-1" /> Quay lại
-              </button>
-            )}
-            {children}
-          </div>
+          <div className="md:w-3/4 w-full md:px-5">{children}</div>
         )}
       </div>
     </div>
