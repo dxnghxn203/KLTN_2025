@@ -145,20 +145,6 @@ export default function MenuHeader() {
             onClick={() => router.push("/bai-viet")}
           >
             Góc sức khỏe
-            <GoChevronDown className="w-4 h-4 ml-1 text-white" />
-          </div>
-
-          <div className="absolute left-0 top-full bg-white shadow rounded-lg hidden group-hover:block z-10">
-            <ul className="text-sm text-gray-700 py-2">
-              <li className="flex items-center gap-2 hover:bg-blue-100 px-4 py-2 whitespace-nowrap">
-                <FaHandHoldingHeart className="w-4 h-4 text-blue-700" />
-                <Link href="/goc-suc-khoe/bai-viet-y-te">Bài viết y tế</Link>
-              </li>
-              <li className="flex items-center gap-2 hover:bg-blue-100 px-4 py-2 whitespace-nowrap">
-                <TbStarsFilled className="w-4 h-4 text-blue-700" />
-                <Link href="/goc-suc-khoe/truyen-thong">Truyền thông</Link>
-              </li>
-            </ul>
           </div>
         </li>
 

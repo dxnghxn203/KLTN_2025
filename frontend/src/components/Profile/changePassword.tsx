@@ -66,12 +66,10 @@ const ChangePasswordComponent = () => {
   };
 
   return (
-    <div className="bg-[#F5F7F9] p-6 rounded-lg w-full">
-      <h2 className="font-bold text-2xl justify-center w-full flex items-center">
-        Đổi mật khẩu
-      </h2>
+    <div className="mb-8 bg-[#F5F7F9] p-4 sm:p-6 rounded-lg w-full max-w-md mx-auto">
+      <h2 className="font-bold text-2xl text-center">Đổi mật khẩu</h2>
       <form onSubmit={handleSubmit}>
-        <div className="space-y-4 mt-4 px-52">
+        <div className="space-y-4 mt-4">
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
               Mật khẩu cũ

@@ -88,7 +88,13 @@ export default function MobileSidebar() {
       >
         <div className="flex items-center justify-between border-b">
           {isAuthenticated ? (
-            <div>
+            <div className="relative py-3">
+              <X
+                size={24}
+                className="absolute top-0 right-2 cursor-pointer text-gray-500 hover:text-black"
+                onClick={() => setOpen(false)}
+              />
+
               <div className="relative" ref={dropdownRef}>
                 <Link
                   href="/ca-nhan"
@@ -101,7 +107,7 @@ export default function MobileSidebar() {
                         <img
                           src={user?.image}
                           alt={"User"}
-                          className="text-2xl rounded-full object-cover"
+                          className="text-2xl rounded-full object-cover w-10 h-10"
                         />
                       ) : (
                         <HiOutlineUserCircle className="text-2xl" />
@@ -118,8 +124,9 @@ export default function MobileSidebar() {
                     </div>
                   </div>
                 </Link>
+
                 <div
-                  className="flex items-center cursor-pointer px-3 py-1 rounded-full hover:bg-blue-100 text-blue-700"
+                  className="flex items-center cursor-pointer px-3 py-1 rounded-full hover:bg-red-100 text-red-500"
                   onClick={() => {
                     logout(
                       "user",
@@ -186,14 +193,9 @@ export default function MobileSidebar() {
             </li>
           ))}
 
-          <li className="pt-4 border-t">
-            <Link href="/goc-suc-khoe/bai-viet-y-te" className="text-blue-700">
-              Bài viết y tế
-            </Link>
-          </li>
-          <li>
-            <Link href="/goc-suc-khoe/truyen-thong" className="text-blue-700">
-              Truyền thông
+          <li className="">
+            <Link href="/goc-suc-khoe" className="text-blue-700 font-semibold">
+              Góc sức khỏe
             </Link>
           </li>
         </ul>

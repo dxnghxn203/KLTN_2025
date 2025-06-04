@@ -5,11 +5,7 @@ const SubscribeNewsletter: React.FC = () => {
     <div className="flex flex-col items-center self-stretch pt-7 pb-14 w-full text-sm text-black bg-blue-50 max-md:px-5 max-md:max-w-full">
       <div className="flex flex-col items-center max-w-full w-[634px]">
         <div className="text-2xl font-extrabold">Đăng ký nhận bản tin</div>
-        <div className="self-stretch mt-8 font-medium max-md:max-w-full">
-          Tham gia cùng hơn 60.000 người đăng ký và nhận phiếu giảm giá mới vào
-          thứ bảy hàng tuần
-          <br />
-        </div>
+
         <form className="flex gap-5 justify-between pl-7 mt-5 ml-5 max-w-full text-black bg-white rounded-[30px] w-[401px] max-md:pl-5">
           <input
             type="email"
@@ -19,7 +15,7 @@ const SubscribeNewsletter: React.FC = () => {
           />
           <button
             type="submit"
-            className="px-6 py-4 font-semibold bg-[#0053E2] rounded-[30px] max-md:px-5 text-white"
+            className="px-6 py-4 font-semibold bg-blue-700 rounded-[30px] max-md:px-5 text-white"
           >
             Đăng ký
           </button>

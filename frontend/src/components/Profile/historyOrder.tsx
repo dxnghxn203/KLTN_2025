@@ -22,6 +22,9 @@ import {
 import { useToast } from "@/providers/toastProvider";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
+import { FaRegUser } from "react-icons/fa6";
+import { FaMapMarkerAlt } from "react-icons/fa";
+import { GrLocation } from "react-icons/gr";
 // import { console } from "inspector";
 
 const HistoryOrder: React.FC = () => {
@@ -375,14 +378,19 @@ const HistoryOrder: React.FC = () => {
       </div>
     );
   };
-  const filteredOrders =
-    activeTab === "all"
-      ? ordersUser
-      : ordersUser.filter((order: any) => order.status === activeTab);
+  const filteredOrders = ordersUser.filter((order: any) => {
+    const search = searchText.toLowerCase();
+    const orderIdMatch = order.order_id.toLowerCase().includes(search);
+    const productNameMatch = order.product.some((product: any) =>
+      product.product_name.toLowerCase().includes(search)
+    );
+    return orderIdMatch || productNameMatch;
+  });
 
   const countByStatus = (status: string) => {
     return ordersUser.filter((order: any) => order.status === status).length;
   };
+
   return (
     <div className="px-4 mb-8">
       <div className="flex flex-col md:flex-row md:justify-between gap-4">
@@ -417,7 +425,10 @@ const HistoryOrder: React.FC = () => {
                   ? "border-b-2 border-blue-500 text-blue-500"
                   : "hover:text-blue-500"
               }`}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setViewMode("list");
+              }}
             >
               {tab.label}
               <span className="ml-2 w-6 h-6 bg-blue-100 text-blue-600 text-xs font-semibold rounded-full flex items-center justify-center">
@@ -473,16 +484,16 @@ const HistoryOrder: React.FC = () => {
                 <div className="border-t border-dashed border-gray-400 my-2"></div>
 
                 <div className="space-y-2.5">
-                  <div className="flex items-start flex-wrap gap-2">
-                    👤 Người nhận:{" "}
+                  <div className="flex items-center flex-wrap gap-2">
+                    <FaRegUser /> Người nhận:{" "}
                     <span className="font-medium">{order.pick_to.name}</span> |
                     <span className="text-gray-700">
                       {order.pick_to.phone_number}
                     </span>
                   </div>
-                  <div className="flex items-start">
-                    📍 Nơi giao hàng:
-                    <span className="font-medium ml-1 block">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <GrLocation /> Nơi giao hàng:
+                    <span className="font-medium block">
                       {`${order.pick_to.address.address}, ${order.pick_to.address.ward}, ${order.pick_to.address.district}, ${order.pick_to.address.province}`}
                     </span>
                   </div>
@@ -503,7 +514,7 @@ const HistoryOrder: React.FC = () => {
                           <span className="ml-1 items-center">
                             Phương thức:
                           </span>
-                          <span className="ml-2 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                          <span className="ml-2 px-2.5 py-1 bg-amber-100 text-amber-600 rounded-full text-sm font-medium">
                             Thanh toán khi nhận hàng COD
                           </span>
                         </>
