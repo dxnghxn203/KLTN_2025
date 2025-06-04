@@ -1,98 +1,92 @@
-import { useState } from "react";
-
-type FilterType = {
-  status: string;
-  date: string;
-  price: string;
-};
+import React, {useState, useEffect} from 'react';
 
 interface FilterBarProps {
-  onFilterChange: (filters: FilterType) => void;
+    onFilterChange: (filters: any) => void;
 }
 
-export default function FilterBar({ onFilterChange }: FilterBarProps) {
-  const [filters, setFilters] = useState<FilterType>({
-    status: "",
-    date: "",
-    price: "",
-  });
+const FilterBar: React.FC<FilterBarProps> = ({onFilterChange}) => {
+    const [filters, setFilters] = useState({
+        prescription: '',
+        category: ''
+    });
 
-  const handleChange = (key: keyof FilterType, value: string) => {
-    setFilters({ ...filters, [key]: value });
-  };
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const {name, value} = e.target;
+        setFilters(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
-  const handleClearStatus = () => {
-    setFilters((prev) => ({ ...prev, status: "" }));
-  };
-  const handleClearDate = () => {
-    setFilters((prev) => ({ ...prev, date: "" }));
-  };
-  const handleClearPrice = () => {
-    setFilters((prev) => ({ ...prev, price: "" }));
-  };
+    const handleApplyFilters = () => {
+        onFilterChange({
+            prescription: filters.prescription === 'true' ? true :
+                filters.prescription === 'false' ? false : '',
+            category: filters.category
+        });
+    };
 
-  return (
-    <div className="flex gap-4 justify-between">
-      {/* Bộ lọc */}
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Filter by Status</span>
-          <span
-            className="text-xs cursor-pointer font-normal"
-            onClick={handleClearStatus}
-          >
-            Clear
-          </span>
+    const handleResetFilters = () => {
+        setFilters({
+            prescription: '',
+            category: ''
+        });
+        onFilterChange({
+            prescription: '',
+            category: ''
+        });
+    };
+
+    return (
+        <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Thuốc kê toa</label>
+                    <select
+                        name="prescription"
+                        value={filters.prescription}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">Tất cả</option>
+                        <option value="true">Có</option>
+                        <option value="false">Không</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+                    <select
+                        name="category"
+                        value={filters.category}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">Tất cả</option>
+                        <option value="thuoc-khang-sinh">Thuốc kháng sinh</option>
+                        <option value="thuoc-giam-dau">Thuốc giảm đau</option>
+                        <option value="vitamin-tpcn">Vitamin & TPCN</option>
+                        {/* Thêm các danh mục khác nếu cần */}
+                    </select>
+                </div>
+            </div>
+
+            <div className="flex justify-end mt-4 space-x-2">
+                <button
+                    onClick={handleResetFilters}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Đặt lại
+                </button>
+                <button
+                    onClick={handleApplyFilters}
+                    className="px-4 py-2 bg-blue-600 rounded-md text-sm text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Áp dụng
+                </button>
+            </div>
         </div>
-        <select
-          className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.status}
-          onChange={(e) => handleChange("status", e.target.value)}
-        >
-          <option>Select status</option>
-          <option value="in-stock">Completed</option>
-          <option value="out-of-stock">Cancel</option>
-        </select>
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Filter by Order Date</span>
-          <span
-            className="text-xs cursor-pointer font-normal"
-            onClick={handleClearDate}
-          >
-            Clear
-          </span>
-        </div>
+    );
+};
 
-        <input
-          type="date"
-          className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.date}
-          onChange={(e) => handleChange("date", e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between items-center font-semibold text-sm">
-          <span>Filter by Price</span>
-          <span
-            className="text-xs cursor-pointer font-normal"
-            onClick={handleClearPrice}
-          >
-            Clear
-          </span>
-        </div>
-
-        <select
-          className="border border-gray-300 px-4 py-2 rounded-lg text-sm w-64"
-          value={filters.price}
-          onChange={(e) => handleChange("price", e.target.value)}
-        >
-          <option value="">Select order</option>
-          <option value="rise">Rise</option>
-          <option value="desc">Decrease</option>
-        </select>
-      </div>
-    </div>
-  );
-}
+export default FilterBar;

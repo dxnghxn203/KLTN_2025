@@ -5,8 +5,8 @@ import Link from "next/link";
 import {X} from "lucide-react";
 import Image from "next/image";
 import {RiMore2Fill} from "react-icons/ri";
-import {IoFilter, IoImage} from "react-icons/io5";
-import FilterBar from "./filterBar";
+// Remove FilterBar import
+import {IoImage} from "react-icons/io5";
 import {useProduct} from "@/hooks/useProduct";
 import {
     MdNavigateBefore,
@@ -23,32 +23,45 @@ import {useRouter} from "next/navigation";
 const ConsultingList = () => {
     const {fetchGetApproveRequestOrder, allRequestOrderApprove} = useOrder();
 
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const orderRequestPerPage = 10; // Số đơn hàng hiển thị trên mỗi trang
+    // Combine currentPage into pages state for cleaner state management
+    const [pages, setPages] = useState<any>({
+        page: 1,
+        page_size: 10,
+    });
 
-    // Tính toán dữ liệu hiển thị theo trang
-    const totalProducts = allRequestOrderApprove
-        ? allRequestOrderApprove.length
+    // Get data from API response
+    const totalOrders = allRequestOrderApprove
+        ? allRequestOrderApprove.total_orders
         : 0;
-    const indexOfLastOrderRequest = currentPage * orderRequestPerPage;
-    const indexOfFirstOrderRequest =
-        indexOfLastOrderRequest - orderRequestPerPage;
-    const currentOrderRequest = allRequestOrderApprove
-        ? allRequestOrderApprove.slice(
-            indexOfFirstOrderRequest,
-            indexOfLastOrderRequest
-        )
+    const ordersList = allRequestOrderApprove
+        ? allRequestOrderApprove.orders || []
         : [];
-    const totalPages = Math.ceil(totalProducts / orderRequestPerPage);
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalOrders / pages.page_size);
+
     const [selectedOrderRequest, setSelectedOrderRequest] = useState<any>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
-    const [showFilter, setShowFilter] = useState(false);
+    // Remove showFilter state
     const [isDialogOpen, setDialogOpen] = useState(false);
     const router = useRouter();
 
+    // Update onPageChange to modify pages state
     const onPageChange = (page: number) => {
-        setCurrentPage(page);
+        setPages((prevPages: any) => ({
+            ...prevPages,
+            page: page
+        }));
+    };
+
+    // Add page size change handler
+    const handlePageSizeChange = (size: number) => {
+        setPages((prevPages: any) => ({
+            ...prevPages,
+            page_size: size,
+            page: 1 // Reset to first page when changing page size
+        }));
     };
 
     useEffect(() => {
@@ -64,12 +77,15 @@ const ConsultingList = () => {
 
     useEffect(() => {
         fetchGetApproveRequestOrder(
+            pages,
             () => {
+                console.log("Successfully fetched orders for page", pages.page);
             },
-            () => {
+            (error: any) => {
+                console.error("Error fetching orders:", error);
             }
         );
-    }, []);
+    }, [pages]); // Dependency on pages ensures fetch happens when page changes
 
     return (
         <div>
@@ -87,18 +103,7 @@ const ConsultingList = () => {
                     </Link>
                 </div>
 
-                <div className="flex justify-between">
-                    <button
-                        className="justify-start border border-gray-300 px-2 py-2 rounded-lg hover:text-[#1E4DB7] hover:border-[#1E4DB7] text-sm flex items-center gap-1"
-                        onClick={() => setShowFilter(!showFilter)}
-                    >
-                        <IoFilter className="text-lg"/>
-                        Filter
-                    </button>
-                </div>
-                {showFilter && (
-                    <FilterBar onFilterChange={(filters) => console.log(filters)}/>
-                )}
+                {/* Remove filter button and FilterBar component */}
 
                 <div className="bg-white shadow-sm rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
@@ -115,12 +120,12 @@ const ConsultingList = () => {
                             </thead>
 
                             <tbody>
-                            {currentOrderRequest && currentOrderRequest.length > 0 ? (
-                                currentOrderRequest.map((request: any, index: number) => (
+                            {ordersList && ordersList.length > 0 ? (
+                                ordersList.map((request: any, index: number) => (
                                     <tr
                                         key={request.request_id}
                                         className={`text-sm hover:bg-gray-50 transition ${
-                                            index !== currentOrderRequest.length - 1
+                                            index !== ordersList.length - 1
                                                 ? "border-b border-gray-200"
                                                 : ""
                                         }`}
@@ -192,69 +197,96 @@ const ConsultingList = () => {
                         </table>
                     </div>
                 </div>
-                {/* CustomPagination */}
-                <div className="flex items-center justify-center space-x-2 py-4">
-                    {/* Nút previous */}
-                    <button
-                        onClick={() => onPageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
-                    >
-                        <MdNavigateBefore className="text-xl"/>
-                    </button>
 
-                    {/* Các nút số trang */}
-                    {Array.from({length: totalPages}, (_, index) => {
-                        const pageNumber = index + 1;
+                {/* Pagination controls */}
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-4">
+                    {/* Page size selector */}
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <span>Hiển thị:</span>
+                        <select
+                            value={pages.page_size}
+                            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                            className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                        <span>/ trang</span>
+                    </div>
 
-                        // Quy tắc ẩn bớt số
-                        if (
-                            pageNumber === 1 ||
-                            pageNumber === totalPages ||
-                            (pageNumber >= currentPage - 1 &&
-                                pageNumber <= currentPage + 1) ||
-                            (currentPage <= 3 && pageNumber <= 5) ||
-                            (currentPage >= totalPages - 2 && pageNumber >= totalPages - 4)
-                        ) {
-                            return (
-                                <button
-                                    key={pageNumber}
-                                    onClick={() => onPageChange(pageNumber)}
-                                    className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
-                                        currentPage === pageNumber
-                                            ? "bg-blue-700 text-white"
-                                            : "text-black hover:bg-gray-200"
-                                    }`}
-                                >
-                                    {pageNumber}
-                                </button>
-                            );
-                        }
+                    {/* Current page display */}
+                    <div className="text-sm text-gray-600">
+                        Hiển
+                        thị {ordersList.length > 0 ? (pages.page - 1) * pages.page_size + 1 : 0} - {Math.min(pages.page * pages.page_size, totalOrders)} trong
+                        tổng số {totalOrders} yêu cầu
+                    </div>
 
-                        // Hiển thị dấu ...
-                        if (
-                            (pageNumber === currentPage - 2 && currentPage > 4) ||
-                            (pageNumber === currentPage + 2 && currentPage < totalPages - 3)
-                        ) {
-                            return (
-                                <span key={pageNumber} className="px-2 text-gray-500">
-                  ...
-                </span>
-                            );
-                        }
+                    {/* Page navigation */}
+                    <div className="flex items-center justify-center space-x-2">
+                        {/* Previous button */}
+                        <button
+                            onClick={() => onPageChange(pages.page - 1)}
+                            disabled={pages.page === 1}
+                            className="text-gray-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <MdNavigateBefore className="text-xl"/>
+                        </button>
 
-                        return null;
-                    })}
+                        {/* Page numbers */}
+                        {Array.from({length: totalPages}, (_, index) => {
+                            const pageNumber = index + 1;
 
-                    {/* Nút next */}
-                    <button
-                        onClick={() => onPageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
-                    >
-                        <MdNavigateNext className="text-xl"/>
-                    </button>
+                            // Show page numbers with smart ellipsis
+                            if (
+                                pageNumber === 1 ||
+                                pageNumber === totalPages ||
+                                (pageNumber >= pages.page - 1 && pageNumber <= pages.page + 1) ||
+                                (pages.page <= 3 && pageNumber <= 5) ||
+                                (pages.page >= totalPages - 2 && pageNumber >= totalPages - 4)
+                            ) {
+                                return (
+                                    <button
+                                        key={pageNumber}
+                                        onClick={() => onPageChange(pageNumber)}
+                                        className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
+                                            pages.page === pageNumber
+                                                ? "bg-blue-700 text-white"
+                                                : "text-black hover:bg-gray-200"
+                                        }`}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                );
+                            }
+
+                            // Show ellipsis where needed
+                            if (
+                                (pageNumber === pages.page - 2 && pages.page > 4) ||
+                                (pageNumber === pages.page + 2 && pages.page < totalPages - 3)
+                            ) {
+                                return (
+                                    <span key={pageNumber} className="px-2 text-gray-500">
+                                        ...
+                                    </span>
+                                );
+                            }
+
+                            return null;
+                        })}
+
+                        {/* Next button */}
+                        <button
+                            onClick={() => onPageChange(pages.page + 1)}
+                            disabled={pages.page === totalPages || totalPages === 0}
+                            className="text-gray-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <MdNavigateNext className="text-xl"/>
+                        </button>
+                    </div>
                 </div>
+
                 {/* Drawer (Chi tiết đơn hàng) */}
             </div>
             {isDialogOpen && selectedOrderRequest && (
@@ -269,3 +301,4 @@ const ConsultingList = () => {
 };
 
 export default ConsultingList;
+

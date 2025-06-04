@@ -154,8 +154,13 @@ export function useProduct() {
         }))
     }
 
-    const fetchProductApproved = () => {
-        dispatch(fetchProductApprovedStart({}))
+    const fetchProductApproved = (
+        data: any,
+    ) => {
+        dispatch(fetchProductApprovedStart({
+            page: data.page,
+            page_size: data.page_size,
+        }))
     }
 
     const fetchApproveProductByPharmacist = async (

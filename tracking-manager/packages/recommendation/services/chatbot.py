@@ -144,7 +144,7 @@ def _interpret_user_request_with_llm(user_input: str, chat_history_messages: lis
         "'intent' (string, một trong các giá trị: 'find_product_by_symptom', 'find_specific_product', 'ask_about_suggested_product', 'general_question', 'greeting', 'farewell', 'clarification_needed'). "
         "'target_product_ref_id' (string or null, ID tham chiếu của sản phẩm người dùng đang hỏi (thường là product_id từ MongoDB), nếu có, ưu tiên ID nếu xác định được từ ngữ cảnh gợi ý). "
         "'target_product_name' (string or null, tên sản phẩm người dùng có thể đã đề cập). "
-        "'question_details' (string or null, chi tiết câu hỏi về sản phẩm, ví dụ: 'giá', 'cách dùng', 'thành phần', 'công dụng', 'inventory_status' (cho câu hỏi còn hàng không)). "  # Thêm inventory_status
+        "'question_details' (string or null, chi tiết câu hỏi về sản phẩm, ví dụ: 'giá', 'cách dùng', 'thành phần', 'công dụng', 'inventory_status' (cho câu hỏi còn hàng không)). "
         "'symptoms' (list of strings or null, danh sách các triệu chứng người dùng mô tả, nếu intent là 'find_product_by_symptom'). "
         "'search_keywords' (string or null, chuỗi từ khóa để tìm sản phẩm nếu người dùng yêu cầu tìm sản phẩm cụ thể hoặc mô tả triệu chứng). "
         "Nếu người dùng hỏi về giá của một sản phẩm cụ thể, ví dụ 'Sản phẩm X giá bao nhiêu?', hãy đặt intent là 'find_specific_product', search_keywords là 'Sản phẩm X', và question_details là 'giá'. "
@@ -218,12 +218,17 @@ def generate_response(session_id: str, user_input: str) -> str:
             formatted_products = []
             for p_item in products:
                 ref_id = p_item.get('product_id')
+                slug = p_item.get('slug', '')
                 p_name = p_item.get('product_name', 'N/A')
                 prices_list = p_item.get('prices', [])
                 price_info_str = _format_price_info(ref_id, prices_list)
-
+                image_url = p_item.get('images_primary', '')
                 formatted_products.append(
                     f"- Tên: {p_name}\n  Công dụng: {p_item.get('uses', 'N/A')}\n  Giá: {price_info_str}\n  ")
+                if slug:
+                    formatted_products.append(f"  Slug: {slug}")
+                if image_url:
+                    formatted_products.append(f"  Hình ảnh: {image_url}")
                 if ref_id and not product_found_for_storing:
                     product_found_for_storing = {"id": ref_id, "name": p_name}
             final_context_for_response_prompt = "Dựa trên mô tả của bạn, đây là một số sản phẩm phù hợp:\n" + "\n\n".join(
@@ -237,8 +242,14 @@ def generate_response(session_id: str, user_input: str) -> str:
         if products_found:
             p_item = products_found[0]
             ref_id = p_item.get('product_id')
+            slug = p_item.get('slug', '')
             p_name = p_item.get('product_name', 'N/A')
+            image_url = p_item.get('images_primary', '')
             context_parts = [f"Thông tin về sản phẩm '{p_name}':"]
+            if slug:
+                context_parts.append(f"- Slug: {slug}")
+            if image_url:
+                context_parts.append(f"- Hình ảnh: {image_url}")
             basic_info_map = {
                 "Công dụng": p_item.get("uses"),
                 "Thành phần chính": ", ".join([ing.get('ingredient_name', '') for ing in
@@ -303,10 +314,16 @@ def generate_response(session_id: str, user_input: str) -> str:
         if product_details:
             p_name = product_details.get('product_name', target_product_ref_id)
             ref_id = product_details.get('product_id')
+            slug = product_details.get('slug', '')
             details_str_parts = [f"Thông tin chi tiết về sản phẩm '{p_name}':"]
+            image_url = product_details.get('images_primary', '')
             prices_list = product_details.get('prices', [])
             price_info_str = _format_price_info(ref_id, prices_list)
             inventory_status_str = ""
+            if slug:
+                details_str_parts.append(f"- Slug: {slug}")
+            if image_url:
+                details_str_parts.append(f"- Hình ảnh: {image_url}")
 
             if "inventory_status" in question_details:
                 details_str_parts.append(
@@ -343,11 +360,10 @@ def generate_response(session_id: str, user_input: str) -> str:
 
     elif intent == "clarification_needed":
         error_detail_from_intent = user_request_info.get("question_details", "")
-        if "Lỗi" in error_detail_from_intent:
+        if error_detail_from_intent and  "Lỗi" in error_detail_from_intent:
             final_context_for_response_prompt = f"Tôi gặp một chút trục trặc khi xử lý yêu cầu của bạn ({error_detail_from_intent}). Bạn có thể thử lại hoặc diễn đạt khác được không?"
         else:
             final_context_for_response_prompt = "Tôi chưa hiểu rõ ý của bạn. Bạn có thể diễn đạt lại hoặc cung cấp thêm thông tin được không?"
-
     if product_found_for_storing and product_found_for_storing.get("id") and product_found_for_storing.get("name"):
         _store_suggested_product(session_id, product_found_for_storing["id"], product_found_for_storing["name"])
 
@@ -360,6 +376,14 @@ def generate_response(session_id: str, user_input: str) -> str:
         "Nếu không chắc chắn hoặc không có thông tin, hãy nói rõ và đề nghị hỗ trợ thêm hoặc hỏi lại cho rõ. "
         "Sử dụng tiếng Việt. Trả lời ngắn gọn, đi thẳng vào vấn đề nếu có thể. "
         "Khi cung cấp giá hoặc tình trạng hàng, hãy liệt kê rõ ràng. Ví dụ: 'Sản phẩm X giá 100.000 VND/Hộp và hiện còn hàng.' hoặc 'Sản phẩm Y giá 200.000 VND/Vĩ và hiện đã hết hàng.'\n"
+         "HƯỚNG DẪN HIỂN THỊ HÌNH ẢNH:\n"
+        "Khi bạn nhận được URL hình ảnh sản phẩm (thường sau cụm 'Hình ảnh:'), hiển thị hình ảnh đó bằng thẻ HTML như sau:\n"
+        "<img src=\"URL_HÌNH_ẢNH\" alt=\"Hình ảnh sản phẩm\" style=\"max-width: 250px; min-width: 150px; width: 100%; height: auto; border-radius: 8px; object-fit: contain; margin: 10px 0;\">\n\n"
+        
+        "HƯỚNG DẪN TẠO LIÊN KẾT SẢN PHẨM:\n"
+        "Khi bạn thấy thông tin 'Slug' của sản phẩm, hãy tạo liên kết đến trang chi tiết sản phẩm BẮT BUỘC phải sử dụng CHÍNH XÁC mẫu sau:\n"
+        "<a href=\"/chi-tiet-san-pham/SLUG\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"window.open('/chi-tiet-san-pham/SLUG', '_blank'); return false;\">Xem chi tiết sản phẩm</a>\n\n"
+
         "Thông tin hỗ trợ cho câu trả lời của bạn (nếu có): {context_for_response_generation}\n"
         "Sản phẩm bạn (AI) đã gợi ý hoặc đang thảo luận gần đây (để bạn nhớ ngữ cảnh): {latest_suggested_products_context}"
         "Trả về dạng html với các thẻ <p>, <ul>, <li> <url>, <img>, ... cho câu trả lời. "
