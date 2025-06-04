@@ -17,8 +17,6 @@ export const PriceForm = ({
   hasError,
   isViewOnly,
 }: PriceFormProps) => {
-  const unitOptions: string[] = ["Gói", "Hộp", "Viên", "Vỉ", "Chai", "Tuýp"];
-
   const addPriceItem = () => {
     updatePrices([
       ...prices,
@@ -107,7 +105,7 @@ export const PriceForm = ({
                 </label>
                 <input
                   type="date"
-                  value={price.expired_date?.split("T")[0]}
+                  value={price.expired_date}
                   onChange={(e) =>
                     updatePriceItem(index, "expired_date", e.target.value)
                   }

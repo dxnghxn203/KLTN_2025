@@ -24,7 +24,6 @@ const CreateSingleProduct = () => {
   const isViewOnly = !!detailId;
   const productId = editId || detailId;
 
-
   const {
     addProduct,
     fetchUpdateProduct,
@@ -135,7 +134,10 @@ const CreateSingleProduct = () => {
   // Load product data if editing
   useEffect(() => {
     if (!productId) return;
-    getAllProductsAdmin(() => {}, () => {});
+    getAllProductsAdmin(
+      () => {},
+      () => {}
+    );
   }, [productId]);
 
   useEffect(() => {
@@ -384,7 +386,9 @@ const CreateSingleProduct = () => {
           const inputDate = price.expired_date.split("T")[0];
           if (inputDate < today) {
             priceErrors.push(
-              `Tùy chọn ${index + 1}: Ngày hết hạn phải là hôm nay hoặc sau hôm nay`
+              `Tùy chọn ${
+                index + 1
+              }: Ngày hết hạn phải là hôm nay hoặc sau hôm nay`
             );
           }
         }
@@ -452,42 +456,6 @@ const CreateSingleProduct = () => {
       }
       return;
     }
-
-    const formDataObj = new FormData(e.currentTarget);
-    formDataObj.delete("images");
-    formDataObj.delete("images_primary");
-
-    images.forEach((image) => {
-      formDataObj.append("images", image);
-    });
-
-    if (primaryImage) {
-      formDataObj.append("images_primary", primaryImage);
-    }
-
-    if (certificate_file) {
-      formDataObj.append("certificate_file", certificate_file);
-    }
-
-    formDataObj.set(
-      "ingredients",
-      JSON.stringify({ ingredients: formData.ingredients })
-    );
-    formDataObj.set("prices", JSON.stringify({ prices: formData.prices }));
-    formDataObj.set("manufacturer", JSON.stringify(formData.manufacturer));
-    formDataObj.set("category", JSON.stringify(formData.category));
-    formDataObj.set("uses", formData.uses);
-    formDataObj.set("dosage_form", formData.dosage_form);
-    formDataObj.set("registration_number", formData.registration_number);
-    formDataObj.set("dosage", formData.dosage);
-    formDataObj.set("side_effects", formData.side_effects);
-    formDataObj.set("precautions", formData.precautions);
-    formDataObj.set("storage", formData.storage);
-    formDataObj.set("full_descriptions", formData.full_descriptions);
-    formDataObj.set(
-      "prescription_required",
-      JSON.stringify(formData.prescription_required)
-    );
 
     const dataToSend = {
       product_id: editId,
@@ -610,6 +578,49 @@ const CreateSingleProduct = () => {
         toast.showToast("Lỗi khi cập nhật: " + error.message, "error");
       }
     } else {
+      const formDataObj = new FormData(e.currentTarget);
+      formDataObj.delete("images");
+      formDataObj.delete("images_primary");
+
+      images.forEach((image) => {
+        formDataObj.append("images", image);
+      });
+
+      if (primaryImage) {
+        formDataObj.append("images_primary", primaryImage);
+      }
+
+      if (certificate_file) {
+        formDataObj.append("certificate_file", certificate_file);
+      }
+
+      formDataObj.set(
+        "ingredients",
+        JSON.stringify({ ingredients: formData.ingredients })
+      );
+      const today = new Date().toISOString().split("T")[0];
+
+      const sanitizedPrices = formData.prices.map((item: any) => ({
+        ...item,
+        expired_date: item.expired_date === "" ? today : item.expired_date,
+      }));
+
+      formDataObj.set("prices", JSON.stringify({ prices: sanitizedPrices }));
+      formDataObj.set("manufacturer", JSON.stringify(formData.manufacturer));
+      formDataObj.set("category", JSON.stringify(formData.category));
+      formDataObj.set("uses", formData.uses);
+      formDataObj.set("dosage_form", formData.dosage_form);
+      formDataObj.set("registration_number", formData.registration_number);
+      formDataObj.set("dosage", formData.dosage);
+      formDataObj.set("side_effects", formData.side_effects);
+      formDataObj.set("precautions", formData.precautions);
+      formDataObj.set("storage", formData.storage);
+      formDataObj.set("full_descriptions", formData.full_descriptions);
+      formDataObj.set(
+        "prescription_required",
+        JSON.stringify(formData.prescription_required)
+      );
+
       setLoading(true);
       await addProduct(
         formDataObj,
@@ -759,7 +770,7 @@ const CreateSingleProduct = () => {
         <Link href="/san-pham" className="text-gray-800">
           Sản phẩm
         </Link>
-         <span> / </span>
+        <span> / </span>
         <Link href="/san-pham/them-san-pham-don" className="text-gray-800">
           {editId
             ? "Cập nhật sản phẩm"
@@ -897,11 +908,12 @@ const CreateSingleProduct = () => {
                   d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
                 ></path>
               </svg>
-              <span className="text-sm font-medium text-gray-700">Đang xử lý...</span>
+              <span className="text-sm font-medium text-gray-700">
+                Đang xử lý...
+              </span>
             </div>
           </div>
         )}
-
 
         {formSubmitted && Object.keys(errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">

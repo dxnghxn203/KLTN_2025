@@ -28,7 +28,8 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
 }) => {
   if (!isOpen) return null;
   //   console.log("productSelected", productSelected);
-  const { fetchApproveProductByPharmacist } = useProduct();
+  const { fetchApproveProductByPharmacist, fetchProductApproved } =
+    useProduct();
   const [rejectedNote, setRejectedNote] = useState("");
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
   const toast = useToast();
@@ -53,6 +54,7 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
       payload,
       (message) => {
         toast.showToast(message, "success");
+        fetchProductApproved(() => {});
         setRejectedNote("");
         setErrors({});
         onClose();
@@ -73,6 +75,7 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
       },
       (message) => {
         toast.showToast(message, "success");
+        fetchProductApproved(() => {});
         onClose();
       },
       (message) => {

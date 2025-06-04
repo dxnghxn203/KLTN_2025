@@ -116,7 +116,7 @@ const TableBrand = ({ allBrandAdmin }: TableBrandProps) => {
                 <th className="py-4 text-center">Logo</th>
                 <th className="py-4 text-center">Tên thương hiệu</th>
                 <th className="py-4 text-center">Mô tả</th>
-                <th className="py-4 text-center">Trạng thái</th>
+
                 <th className="py-4 text-center"></th>
               </tr>
             </thead>
@@ -157,21 +157,6 @@ const TableBrand = ({ allBrandAdmin }: TableBrandProps) => {
                         }}
                         dangerouslySetInnerHTML={{ __html: brand.description }}
                       />
-                    </td>
-
-                    <td className="py-4 text-center">
-                      <div className="flex justify-center items-center">
-                        <button
-                          // onClick={() => handleToggleStatus(voucher)}
-                          className={`w-14 h-8 flex items-center p-1 rounded-full transition-colors duration-300 ${
-                            brand.active
-                              ? "bg-blue-600 justify-end"
-                              : "bg-gray-400 justify-start"
-                          }`}
-                        >
-                          <div className="w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300" />
-                        </button>
-                      </div>
                     </td>
 
                     <td className="py-4 text-center">

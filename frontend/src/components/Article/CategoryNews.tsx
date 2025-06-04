@@ -19,7 +19,7 @@ export default function CategoryNews({
               </a>
             </nav>
             <a
-              href="#"
+              href={`/bai-viet/danh-muc/${encodeURIComponent(category)}`}
               className="text-blue-600 text-sm sm:text-base flex items-center space-x-1"
             >
               <span className="text-sm">Xem tất cả</span>
@@ -40,26 +40,12 @@ export default function CategoryNews({
           {/* Main content */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-4 sm:space-y-0">
-              {/* Left big image */}
-              <div className="rounded-md w-[300px] h-[200px] overflow-hidden flex-shrink-0">
-                <img
-                  src="https://storage.googleapis.com/a1aa/image/ae8b1995-c9b6-432f-b758-3fd1580e9758.jpg"
-                  alt={""}
-                  className="object-cover rounded-md"
-                  width={300}
-                  height={200}
-                />
-              </div>
-
               <div className="flex flex-col flex-grow space-y-4 h-full">
                 {getAllArticles.slice(0, 3).map((article: any, idx: any) => (
                   <article
                     key={idx}
                     className="bg-gray-100 rounded-md p-3 h-full"
                   >
-                    <span className="inline-block bg-gray-300 text-gray-700 text-xs rounded-full px-3 py-1 mb-1 select-none">
-                      {article.category}
-                    </span>
                     <div
                       className="prose max-w-none"
                       dangerouslySetInnerHTML={{

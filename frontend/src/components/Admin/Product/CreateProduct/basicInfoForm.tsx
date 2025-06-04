@@ -161,8 +161,8 @@ export const BasicInfoForm = ({
         </div>
       </div>
 
-      <div className="flex grid-cols-2 gap-4">
-        <div className="items-center gap-2">
+      <div className="flex grid-cols-2 gap-4 w-full mt-3">
+        <div className="items-center gap-2 w-full flex">
           <input
             type="checkbox"
             id="prescription_required"
@@ -178,7 +178,7 @@ export const BasicInfoForm = ({
             Thuốc kê toa
           </label>
         </div>
-        <div>
+        <div className="w-full">
           <label className="block text-sm font-medium mb-1">
             Số đăng ký <span className="text-red-500"></span>
           </label>

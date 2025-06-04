@@ -12,16 +12,15 @@ import categories5 from "@/images/5.jpg";
 import categories6 from "@/images/category6.jpg";
 import categories7 from "@/images/7.jpg";
 import categories8 from "@/images/categories8.png";
-// import slider1 from "@/images/83.png";
-import slider2 from "@/images/slider2.png";
 import slider3 from "@/images/slider3.webp";
-import slider4 from "@/images/slider.png";
 import tracuuthuoc from "@/images/tracuuthuoc.png";
 import duocmypham from "@/images/duocmypham.png";
 import bannerVoucher from "@/images/bannerVoucher.png";
+import bannerCovid from "@/images/banner.png";
+import bannerhe from "@/images/bannerhe.png";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
-const images = [slider2, slider3, bannerVoucher, duocmypham];
+const images = [slider3, bannerVoucher, duocmypham, bannerhe];
 
 const ProductCatalog: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -169,7 +168,7 @@ const ProductCatalog: React.FC = () => {
             className="w-full h-1/2 object-cover rounded-xl"
           />
           <Image
-            src={duocmypham}
+            src={bannerCovid}
             alt="Dược mỹ phẩm"
             className="w-full h-1/2 object-cover rounded-xl"
           />
