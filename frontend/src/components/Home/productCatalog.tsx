@@ -93,14 +93,14 @@ const ProductCatalog: React.FC = () => {
       description: "An thần, Ngủ ngon...",
       imageSrc: categories7,
       bgColor: "bg-amber-100",
-      path: "/ho-tro-giac-ngu",
+      path: "/thuc-pham-chuc-nang/than-kinh-nao/ho-tro-giac-ngu-ngon",
     },
     {
       title: "Phong độ bền lâu",
       description: "Hỗ trợ sinh lý...",
       imageSrc: categories8,
       bgColor: "bg-orange-200",
-      path: "/phong-do-ben-lau",
+      path: "/thuc-pham-chuc-nang/sinh-ly-noi-tiet-to",
     },
   ];
   const canGoNext = currentIndex < images.length - 1;
@@ -109,7 +109,8 @@ const ProductCatalog: React.FC = () => {
   return (
     <div className="pt-20">
       {/* Slider */}
-      <div className="flex flex-col lg:flex-row gap-4 max-w-screen-2xl mx-auto group">
+      <div className="flex flex-col lg:flex-row gap-4 max-w-full">
+        {/* Carousel chính */}
         <div className="relative w-full overflow-hidden rounded-xl">
           <div
             className="flex transition-transform duration-700 ease-in-out"
@@ -120,30 +121,34 @@ const ProductCatalog: React.FC = () => {
                 <Image
                   src={image}
                   alt={`Slide ${index}`}
-                  className="w-full h-[300px] object-cover rounded-xl"
+                  className="w-full h-[200px] sm:h-[250px] md:h-[300px] object-cover rounded-xl"
                 />
               </div>
             ))}
           </div>
 
+          {/* Nút điều hướng bên trái */}
           {canGoPrev && (
             <button
               onClick={goToPrev}
-              className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 hidden group-hover:flex items-center justify-center rounded-full shadow-md bg-black/20 text-white hover:scale-110 transition"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full shadow-md bg-black/30 text-white hover:scale-110 transition"
             >
-              <FaChevronLeft size={18} />
-            </button>
-          )}
-          {canGoNext && (
-            <button
-              onClick={goToNext}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 hidden group-hover:flex items-center justify-center rounded-full shadow-md bg-black/20 text-white hover:scale-110 transition"
-            >
-              <FaChevronRight size={18} />
+              <FaChevronLeft size={16} />
             </button>
           )}
 
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {/* Nút điều hướng bên phải */}
+          {canGoNext && (
+            <button
+              onClick={goToNext}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full shadow-md bg-black/30 text-white hover:scale-110 transition"
+            >
+              <FaChevronRight size={16} />
+            </button>
+          )}
+
+          {/* Chấm trượt */}
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
             {images.map((_, idx) => (
               <button
                 key={idx}
@@ -156,7 +161,7 @@ const ProductCatalog: React.FC = () => {
           </div>
         </div>
 
-        {/* Small right images */}
+        {/* Hình ảnh nhỏ chỉ hiện trên desktop */}
         <div className="hidden lg:flex flex-col w-[450px] gap-4">
           <Image
             src={tracuuthuoc}
