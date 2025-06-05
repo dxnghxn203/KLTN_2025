@@ -378,11 +378,11 @@ def generate_response(session_id: str, user_input: str) -> str:
         "Khi cung cấp giá hoặc tình trạng hàng, hãy liệt kê rõ ràng. Ví dụ: 'Sản phẩm X giá 100.000 VND/Hộp và hiện còn hàng.' hoặc 'Sản phẩm Y giá 200.000 VND/Vĩ và hiện đã hết hàng.'\n"
          "HƯỚNG DẪN HIỂN THỊ HÌNH ẢNH:\n"
         "Khi bạn nhận được URL hình ảnh sản phẩm (thường sau cụm 'Hình ảnh:'), hiển thị hình ảnh đó bằng thẻ HTML như sau:\n"
-        "<img src=\"URL_HÌNH_ẢNH\" alt=\"Hình ảnh sản phẩm\" style=\"max-width: 250px; min-width: 150px; width: 100%; height: auto; border-radius: 8px; object-fit: contain; margin: 10px 0;color: #FF5722; text-decoration: underline; font-weight: bold;\">\n\n"
+        "<img src=\"URL_HÌNH_ẢNH\" alt=\"Hình ảnh sản phẩm\" style=\"max-width: 250px; min-width: 150px; width: 100%; height: auto; border-radius: 8px; object-fit: contain; margin: 10px 0;\">\n\n"
         
         "HƯỚNG DẪN TẠO LIÊN KẾT SẢN PHẨM:\n"
         "Khi bạn thấy thông tin 'Slug' của sản phẩm, hãy tạo liên kết đến trang chi tiết sản phẩm BẮT BUỘC phải sử dụng CHÍNH XÁC mẫu sau:\n"
-        "<a href=\"/chi-tiet-san-pham/SLUG\" target=\"_blank\" rel=\"noopener noreferrer\" onclick=\"window.open('/chi-tiet-san-pham/SLUG', '_blank'); return false;\">Xem chi tiết sản phẩm</a>\n\n"
+        "<a href=\"/chi-tiet-san-pham/SLUG\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color: #FF5722; text-decoration: underline; font-weight: bold;\" onclick=\"window.open('/chi-tiet-san-pham/SLUG', '_blank'); return false;\">Xem chi tiết sản phẩm</a>\n\n"
 
         "Thông tin hỗ trợ cho câu trả lời của bạn (nếu có): {context_for_response_generation}\n"
         "Sản phẩm bạn (AI) đã gợi ý hoặc đang thảo luận gần đây (để bạn nhớ ngữ cảnh): {latest_suggested_products_context}"
