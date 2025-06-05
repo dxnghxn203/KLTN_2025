@@ -10,23 +10,23 @@ interface EditProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
   userInfo: { label: string; value: string; type?: string }[];
-  role_type: string
+  role_type: string;
 }
 
 const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   isOpen,
   onClose,
   userInfo,
-  role_type
+  role_type,
 }) => {
   const toast = useToast();
   const [formDataUpdate, setFormDataUpdate] = useState({
-      username: "",
-      phoneNumber: "",
-      gender: "",
-      dateOfBirth: "",
-    });
-    const [formData, setFormData] = useState(
+    username: "",
+    phoneNumber: "",
+    gender: "",
+    dateOfBirth: "",
+  });
+  const [formData, setFormData] = useState(
     Object.fromEntries(
       userInfo
         .filter((item) => item.label !== "Email")
@@ -34,32 +34,41 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
     )
   );
 
-  const { fetchupdateUser, fetchupdateAdmin, fetchupdatePharmacist } = useAuth();
-  const {fetchUpdateUserInfo, fetchUpdateAdminInfo, fetchUpdatePharmacistInfo} = useUser();
+  const { fetchupdateUser, fetchupdateAdmin, fetchupdatePharmacist } =
+    useAuth();
+  const {
+    fetchUpdateUserInfo,
+    fetchUpdateAdminInfo,
+    fetchUpdatePharmacistInfo,
+  } = useUser();
 
   useEffect(() => {
     if (isOpen) {
-      const filteredInfo = userInfo.filter(item => item.label !== "Email");
+      const filteredInfo = userInfo.filter((item) => item.label !== "Email");
       setFormData(
         Object.fromEntries(filteredInfo.map((item) => [item.label, item.value]))
       );
       setFormDataUpdate({
-        username: userInfo.find((item) => item.label === "Họ và tên")?.value || "",
-        phoneNumber: userInfo.find((item) => item.label === "Số điện thoại")?.value || "",
-        gender: userInfo.find((item) => item.label === "Giới tính")?.value || "",
-        dateOfBirth: userInfo.find((item) => item.label === "Ngày sinh")?.value || "",
+        username:
+          userInfo.find((item) => item.label === "Họ và tên")?.value || "",
+        phoneNumber:
+          userInfo.find((item) => item.label === "Số điện thoại")?.value || "",
+        gender:
+          userInfo.find((item) => item.label === "Giới tính")?.value || "",
+        dateOfBirth:
+          userInfo.find((item) => item.label === "Ngày sinh")?.value || "",
       });
     }
   }, [isOpen, userInfo]);
 
-
   const handleSubmit = async () => {
     try {
-      if (formDataUpdate.username === "" ||
-      formDataUpdate.phoneNumber === "" ||
-      formDataUpdate.gender === "" ||
-      formDataUpdate.dateOfBirth === "")
-      {
+      if (
+        formDataUpdate.username === "" ||
+        formDataUpdate.phoneNumber === "" ||
+        formDataUpdate.gender === "" ||
+        formDataUpdate.dateOfBirth === ""
+      ) {
         toast.showToast("Vui lòng nhập đầy đủ thông tin", "error");
         return;
       }
@@ -145,7 +154,10 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
 
         <div className="space-y-4">
           {userInfo
-            .filter((item) => !["Giới tính", "Ngày sinh", "Email"].includes(item.label))
+            .filter(
+              (item) =>
+                !["Giới tính", "Ngày sinh", "Email"].includes(item.label)
+            )
             .map((item, index) => (
               <div key={index} className="flex flex-col space-y-2">
                 <label className="text-sm font-semibold">{item.label}</label>

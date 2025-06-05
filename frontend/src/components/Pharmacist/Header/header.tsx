@@ -9,7 +9,6 @@ import { MdOutlineAccountCircle } from "react-icons/md";
 import { CiSearch } from "react-icons/ci";
 import { useAuth } from "@/hooks/useAuth";
 import { IoMdLogOut } from "react-icons/io";
-import { useEffect, useRef } from "react";
 import { useToast } from "@/providers/toastProvider";
 import { useRouter } from "next/navigation";
 
