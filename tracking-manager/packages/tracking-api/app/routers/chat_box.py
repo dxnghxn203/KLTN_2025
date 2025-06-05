@@ -96,13 +96,13 @@ async def get_waiting_chats(
     try:
         conversations = await get_waiting_conversations(page, page_size)
 
-
         return response.BaseResponse(
             message="Lấy thành công!",
             data=conversations
         )
 
     except Exception as e:
+        logger.error(f"Error fetching waiting conversations: {e}")
         return response.BaseResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
