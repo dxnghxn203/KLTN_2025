@@ -6,6 +6,7 @@ import (
 	"consumer/statics"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 
 	"github.com/streadway/amqp"
@@ -28,16 +29,18 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 		return false, err
 	}
 
+	oldStatus := orderRes.Status
+
 	validStatuses := []string{"canceled", "delivery_success", "returned"}
 	isValidStatus := false
 	for _, status := range validStatuses {
-		if orderRes.Status == status {
+		if oldStatus == status {
 			isValidStatus = true
 			break
 		}
 	}
 	if isValidStatus {
-		slog.Info("Order already processed", "orderId", orderRes.OrderId, "status", orderRes.Status)
+		slog.Info("Order already processed", "orderId", orderRes.OrderId, "status", oldStatus)
 		return false, nil
 	}
 
@@ -87,7 +90,17 @@ func (e *UpdateStatusQueue) process(msg []byte, ch *amqp.Channel, ctx context.Co
 	}
 	slog.Info("Successfully updated order from hook", "order_id", id, "status", trackingReq.Status)
 
-	err = helper.SendOrderStatusUpdateEmail(orderRes.PickTo.Email, orderRes.OrderId, trackingReq.Status)
+	if oldStatus == trackingReq.Status {
+		slog.Info("Order status is the same as before, no need to send email", "orderId", orderRes.OrderId, "status", oldStatus)
+		return res, nil
+	}
+
+	displayStatus, ok := statics.StatusDisplayMapping[trackingReq.Status]
+	if !ok {
+		return res, fmt.Errorf("unknown GHN status: %s", trackingReq.Status)
+	}
+
+	err = helper.SendOrderStatusUpdateEmail(orderRes.PickTo.Email, orderRes.OrderId, displayStatus)
 	if err != nil {
 		slog.Error("Failed to send order status update email", "orderId", orderRes.OrderId, "err", err)
 	}

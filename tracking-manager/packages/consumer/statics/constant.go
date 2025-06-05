@@ -10,4 +10,13 @@ var (
 	MaxRetry                      int64 = 3
 	RetryInSeconds                      = "5"
 	WardIndex                           = "stg_wards"
+	StatusDisplayMapping                = map[string]string{
+		"waiting_to_pick":   "Chờ lấy hàng",
+		"picking":           "Đang lấy hàng",
+		"delivering":        "Đang giao hàng",
+		"delivery_success":  "Giao hàng thành công",
+		"delivery_fail":     "Giao hàng thất bại",
+		"waiting_to_return": "Chờ hoàn hàng",
+		"returned":          "Đã hoàn hàng",
+	}
 )
