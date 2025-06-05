@@ -89,9 +89,12 @@ async def create_user_chat(
 
 
 @router.get("/conversations/waiting", response_model=response.BaseResponse)
-async def get_waiting_chats(limit: int = Query(20, ge=1, le=100)):
+async def get_waiting_chats(
+        page: int = 1,
+        page_size: int = 10,
+):
     try:
-        conversations = await get_waiting_conversations(limit)
+        conversations = await get_waiting_conversations(page, page_size)
 
         for conv in conversations:
             if "_id" in conv:
