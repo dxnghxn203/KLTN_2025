@@ -64,7 +64,8 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'fetchAcceptConversationStart',
     'loginPharmacistSuccess',
     'fetchUpdatePharmacistInfoStart',
-    'fetchProductApprovedStart'
+    'fetchProductApprovedStart',
+    'fetchGetAllConversationWaitingStart'
 ]
 
 export const SYSTEM_ACTIONS = [

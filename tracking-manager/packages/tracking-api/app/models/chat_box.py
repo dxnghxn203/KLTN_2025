@@ -57,12 +57,14 @@ async def get_waiting_conversations(page, page_size):
     skip_count = (page - 1) * page_size
     cursor = conversations.find({"status": "waiting"}).sort("created_at", 1)
 
+    conversations_list = await cursor.skip(skip_count).limit(page_size).to_list(length=page_size)
+
     return {
-        "total": conversations.count_documents({"status": "waiting"}),
+        "total": await conversations.count_documents({"status": "waiting"}),
         "conversations": [{
             "_id": str(conv["_id"]),
-            **conv
-        } for conv in  cursor.skip(skip_count).limit(page_size).to_list(length=page_size)]
+            **{key: value for key, value in conv.items() if key != "_id"}
+        } for conv in conversations_list]
     }
 
 async def get_conversation(conversation_id: str) -> Optional[Dict[str, Any]]:
