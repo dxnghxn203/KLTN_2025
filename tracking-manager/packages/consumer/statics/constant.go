@@ -18,5 +18,6 @@ var (
 		"delivery_fail":     "Giao hàng thất bại",
 		"waiting_to_return": "Chờ hoàn hàng",
 		"returned":          "Đã hoàn hàng",
+		"canceled":          "Hủy đơn",
 	}
 )
