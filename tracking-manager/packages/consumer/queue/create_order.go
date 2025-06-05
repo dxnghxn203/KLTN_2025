@@ -34,6 +34,7 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 		slog.Warn("Lỗi sản phẩm, vẫn tạo đơn với trạng thái canceled", "err", err)
 	}
 
+	var ghnResp models.CreateOrderGHNResponse
 	ghnPayload := models.ConvertOrderToGHNPayload(orderRaw, ctx)
 	responseBody, err := database.CreateOrderGHN(ghnPayload)
 	if err != nil {
@@ -41,7 +42,15 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 		orderRaw.Status = "canceled"
 		orderRaw.DeliveryInstruction = "Lỗi tạo đơn hàng GHN: " + err.Error()
 	} else {
-		slog.Info("Đã tạo đơn GHN thành công", "response", string(responseBody))
+		err = json.Unmarshal(responseBody, &ghnResp)
+		if err != nil {
+			slog.Error("GHN response parse error", "err", err)
+			orderRaw.Status = "canceled"
+			orderRaw.DeliveryInstruction = "GHN response parse error: " + err.Error()
+		} else {
+			orderRaw.Order3PLCode = ghnResp.Data.OrderCode
+			slog.Info("Đã tạo đơn GHN thành công", "order_code", ghnResp.Data.OrderCode)
+		}
 	}
 
 	res, _id, err := orderRaw.Create(ctx)

@@ -47,6 +47,7 @@ type Orders struct {
 	// Id            primitive.ObjectID  `json:"_id" bson:"_id"`
 	OrderId                 string              `json:"order_id" bson:"order_id"`
 	TrackingId              string              `json:"tracking_id" bson:"tracking_id"`
+	Order3PLCode            string              `json:"order_3pl_code" bson:"order_3pl_code"`
 	Status                  string              `json:"status" bson:"status"`
 	ShipperId               string              `json:"shipper_id" bson:"shipper_id"`
 	ShipperName             string              `json:"shipper_name" bson:"shipper_name"`
@@ -161,6 +162,19 @@ type OrderToUpdate struct {
 	ShipperName         string `json:"shipper_name" bson:"shipper_name"`
 	PaymentStatus       string `json:"payment_status" bson:"payment_status"`
 	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
+}
+
+type CreateOrderGHNResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    struct {
+		OrderCode      string  `json:"order_code"`
+		SortCode       string  `json:"sort_code"`
+		Return         int32   `json:"return"`
+		CodFailedFee   float64 `json:"cod_failed_fee"`
+		TotalFee       float64 `json:"total_fee"`
+		MessageDisplay string  `json:"message_display"`
+	} `json:"data"`
 }
 
 func (o *Orders) Create(ctx context.Context) (bool, string, error) {
