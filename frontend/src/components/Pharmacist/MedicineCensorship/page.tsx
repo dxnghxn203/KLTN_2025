@@ -178,7 +178,7 @@ const MedicineCensorshipList = () => {
               onClick={() => setShowFilter(!showFilter)}
             >
               <IoFilter className="text-lg" />
-              Filter
+              Bộ lọc
             </button>
 
             <div className="relative">

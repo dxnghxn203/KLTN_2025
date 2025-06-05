@@ -26,6 +26,7 @@ const ProductCardInCart: React.FC<ProductCardInCartProps> = ({
   const discount = selectedPrice?.discount || 0;
   const hasDiscount = selectedPrice?.price < selectedPrice?.original_price;
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const slug = product?.slug;
 
   return (
     <>
@@ -74,32 +75,69 @@ const ProductCardInCart: React.FC<ProductCardInCartProps> = ({
               <div className="mt-2 text-[16px] font-semibold text-black line-clamp-2 break-words leading-[1.5] h-[48px]">
                 {product?.name_primary}
               </div>
-              <div className="mt-2">
-                <div
-                  className={`text-sm text-zinc-400 line-through ${
-                    product?.prices[0]?.original_price &&
-                    product?.prices[0]?.original_price !==
-                      product?.prices[0]?.price
-                      ? "opacity-100"
-                      : "opacity-0"
-                  }`}
-                >
-                  {product?.prices[0]?.original_price?.toLocaleString("vi-VN")}đ
+              {product?.prescription_required ? (
+                <div className="mt-2 ">
+                  <div
+                    className={`text-sm text-zinc-400 line-through opacity-0 select-none${
+                      product?.prices[0]?.original_price &&
+                      product?.prices[0]?.original_price !==
+                        product?.prices[0]?.price
+                        ? "opacity-100"
+                        : "opacity-0"
+                    }`}
+                  >
+                    {product?.prices[0]?.original_price?.toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
+                  </div>
+                  <p className="text-[#A7A8B0] text-sm font-medium">
+                    Cần tư vấn từ dược sĩ
+                  </p>
                 </div>
-                <div className="text-lg font-bold text-[#0053E2]">
-                  {product?.prices[0]?.price.toLocaleString("vi-VN")}đ/
-                  {product?.prices[0]?.unit}
+              ) : (
+                <div className="mt-2">
+                  <div
+                    className={`text-sm text-zinc-400 line-through ${
+                      product?.prices[0]?.original_price &&
+                      product?.prices[0]?.original_price !==
+                        product?.prices[0]?.price
+                        ? "opacity-100"
+                        : "opacity-0"
+                    }`}
+                  >
+                    {product?.prices[0]?.original_price?.toLocaleString(
+                      "vi-VN"
+                    )}
+                    đ
+                  </div>
+                  <div className="text-lg font-bold text-[#0053E2]">
+                    {product?.prices[0]?.price.toLocaleString("vi-VN")}đ/
+                    {product?.prices[0]?.unit}
+                  </div>
                 </div>
-              </div>
-
-              <div className="mt-2 flex justify-center items-center">
-                <button
-                  className="w-full py-3.5 text-sm text-white bg-blue-700 rounded-3xl items-center font-semibold hover:bg-blue-800 transition-colors duration-200 flex justify-center"
-                  onClick={onAddToCart}
-                >
-                  <BsCart className="inline-block mr-1 items-center font-semibold" />
-                  Thêm vào giỏ hàng
-                </button>
+              )}
+              <div className="mt-2 flex justify-center w-full">
+                {product?.prescription_required ? (
+                  <div className="flex flex-col justify-start w-full">
+                    <button
+                      className="mt-2 w-full py-3.5 text-sm text-[#0053E2] bg-[#EAEFFA] rounded-3xl font-bold"
+                      onClick={() =>
+                        (window.location.href = `/chi-tiet-san-pham/${slug}`)
+                      }
+                    >
+                      Xem chi tiết
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="w-full py-3.5 text-sm text-white bg-blue-700 hover:bg-blue-800 rounded-3xl font-bold"
+                    onClick={onAddToCart}
+                  >
+                    <BsCart className="inline-block mr-1 items-center font-semibold" />
+                    Thêm vào giỏ hàng
+                  </button>
+                )}
               </div>
             </div>
           </div>
