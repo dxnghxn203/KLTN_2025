@@ -53,10 +53,17 @@ async def create_user_conversation(user_id: str, guest_name: str, guest_email: O
     return conversation_data
 
 
-async def get_waiting_conversations(page, page_size) -> List[Dict[str, Any]]:
+async def get_waiting_conversations(page, page_size):
     skip_count = (page - 1) * page_size
-    cursor = conversations.find({"status": "waiting"}).sort("created_at", 1).skip(skip_count).limit(page_size)
-    return cursor.to_list()
+    cursor = conversations.find({"status": "waiting"}).sort("created_at", 1)
+
+    return {
+        "total": conversations.count_documents({"status": "waiting"}),
+        "conversations": [{
+            "_id": str(conv["_id"]),
+            **conv
+        } for conv in  cursor.skip(skip_count).limit(page_size).to_list(length=page_size)]
+    }
 
 async def get_conversation(conversation_id: str) -> Optional[Dict[str, Any]]:
     if not ObjectId.is_valid(conversation_id):

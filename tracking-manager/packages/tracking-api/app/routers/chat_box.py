@@ -96,9 +96,6 @@ async def get_waiting_chats(
     try:
         conversations = await get_waiting_conversations(page, page_size)
 
-        for conv in conversations:
-            if "_id" in conv:
-                conv["_id"] = str(conv["_id"])
 
         return response.BaseResponse(
             message="Lấy thành công!",
