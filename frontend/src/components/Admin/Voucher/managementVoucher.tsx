@@ -5,6 +5,7 @@ import {useToast} from "@/providers/toastProvider";
 import TableVoucher from "./tableVoucher";
 import {useVoucher} from "@/hooks/useVoucher";
 import AddVoucherDialog from "../Dialog/addVoucherDialog";
+
 const VoucherManagement = () => {
     const [isOpenDialog, setIsOpenDialog] = useState(false);
     const toast = useToast();
@@ -18,17 +19,19 @@ const VoucherManagement = () => {
         setPageSize
     } = useVoucher();
     const [loading, setLoading] = useState(false);
-    
+
     useEffect(() => {
         setLoading(true);
         try {
-            fetchAllVouchers(page, pageSize, () => {}, () => {});
+            fetchAllVouchers(page, pageSize, () => {
+            }, () => {
+            });
             setLoading(false);
         } catch (error) {
             setLoading(false);
             console.error("Error fetching data:", error);
         }
-    }, [page, pageSize, allVouchers]);
+    }, [page, pageSize]);
 
     return (
         <div>
@@ -76,13 +79,13 @@ const VoucherManagement = () => {
                             </svg>
                         </div>
                     ) : <TableVoucher
-                            allVouchers={allVouchers}
-                            totalVouchers={totalVouchers}
-                            currentPage={page}
-                            pageSize={pageSize}
-                            onPageChange={setPage}
-                            onPageSizeChange={setPageSize}
-                        />
+                        allVouchers={allVouchers}
+                        totalVouchers={totalVouchers}
+                        currentPage={page}
+                        pageSize={pageSize}
+                        onPageChange={setPage}
+                        onPageSizeChange={setPageSize}
+                    />
 
                 }
 

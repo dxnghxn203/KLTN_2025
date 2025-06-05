@@ -33,6 +33,7 @@ try:
     logger.info("MongoDB connection successful!")
 
     existing_collections = db.list_collection_names()
+    logger.info("Existing collections: " + str(existing_collections))
     collections = [
         'admin', 'categories', 'orders',
         'comments', 'products', 'reviews',

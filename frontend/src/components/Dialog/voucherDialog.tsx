@@ -236,7 +236,7 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                 voucher.voucher_type === "delivery" && (
                                     <label
                                         key={voucher.voucher_id}
-                                        className={`flex justify-between border rounded-lg mb-2 ${
+                                        className={`flex justify-between items-center border rounded-lg mb-2 ${
                                             isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher) ? "border-red-300 bg-red-50" : ""
                                         } ${
                                             orderCheck && isVoucherEligible(voucher) && !hasUserUsedVoucher(voucher)
@@ -301,15 +301,12 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                 {getVoucherStatusMessage(voucher)}
                                             </div>
                                         </div>
-
-                                        <input
-                                            type="radio"
-                                            name="selectedVoucher"
-                                            value={voucher.voucher_id}
-                                            checked={selectedVoucher?.voucher_id === voucher.voucher_id}
-                                            onChange={() => {
+                                        <div
+                                            onClick={() => {
+                                                // Only allow interaction if voucher is eligible
                                                 if (orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)) {
                                                     if (selectedVoucher?.voucher_id === voucher.voucher_id) {
+                                                        // Deselect if already selected
                                                         setSelectedVoucher(null);
                                                         if (setVouchers) {
                                                             setVouchers({
@@ -318,6 +315,7 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                             });
                                                         }
                                                     } else {
+                                                        // Select if not already selected
                                                         setSelectedVoucher(voucher);
                                                         if (setVouchers) {
                                                             setVouchers({
@@ -328,13 +326,49 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                     }
                                                 }
                                             }}
-                                            className={`mr-3 flex items-center ${
+                                            className={`mr-3 w-5 h-5 rounded-full border flex items-center justify-center ${
                                                 orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)
-                                                    ? "cursor-pointer"
-                                                    : "cursor-not-allowed"
+                                                    ? "cursor-pointer border-blue-600"
+                                                    : "cursor-not-allowed border-gray-300 opacity-50"
                                             }`}
-                                            disabled={!orderCheck || !isVoucherEligible(voucher) || isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher)}
-                                        />
+                                        >
+                                            {selectedVoucher?.voucher_id === voucher.voucher_id && (
+                                                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                                            )}
+                                        </div>
+                                        {/*<input*/}
+                                        {/*    type="radio"*/}
+                                        {/*    name="selectedVoucher"*/}
+                                        {/*    value={voucher.voucher_id}*/}
+                                        {/*    checked={selectedVoucher?.voucher_id === voucher.voucher_id}*/}
+                                        {/*    onChange={() => {*/}
+                                        {/*        if (orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)) {*/}
+                                        {/*            if (selectedVoucher?.voucher_id === voucher.voucher_id) {*/}
+                                        {/*                setSelectedVoucher(null);*/}
+                                        {/*                if (setVouchers) {*/}
+                                        {/*                    setVouchers({*/}
+                                        {/*                        selectedVoucher: null,*/}
+                                        {/*                        selectedVoucherOrder: selectedVoucherOrder,*/}
+                                        {/*                    });*/}
+                                        {/*                }*/}
+                                        {/*            } else {*/}
+                                        {/*                setSelectedVoucher(voucher);*/}
+                                        {/*                if (setVouchers) {*/}
+                                        {/*                    setVouchers({*/}
+                                        {/*                        selectedVoucher: voucher,*/}
+                                        {/*                        selectedVoucherOrder: selectedVoucherOrder,*/}
+                                        {/*                    });*/}
+                                        {/*                }*/}
+                                        {/*            }*/}
+                                        {/*        }*/}
+                                        {/*    }}*/}
+                                        {/*    className={`mr-3 flex items-center ${*/}
+                                        {/*        orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)*/}
+                                        {/*            ? "cursor-pointer"*/}
+                                        {/*            : "cursor-not-allowed"*/}
+                                        {/*    }`}*/}
+                                        {/*    disabled={!orderCheck || !isVoucherEligible(voucher) || isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher)}*/}
+                                        {/*/>*/}
                                     </label>
                                 )
                         )}
@@ -358,7 +392,7 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                 voucher.voucher_type === "order" && (
                                     <label
                                         key={voucher.voucher_id}
-                                        className={`flex justify-between border rounded-lg mb-2 ${
+                                        className={`flex justify-between items-center border rounded-lg mb-2 ${
                                             isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher) ? "border-red-300 bg-red-50" : ""
                                         } ${
                                             orderCheck && isVoucherEligible(voucher) && !hasUserUsedVoucher(voucher)
@@ -426,12 +460,8 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                             </div>
                                         </div>
 
-                                        <input
-                                            type="radio"
-                                            name="selectedVoucherOrder"
-                                            value={voucher.voucher_id}
-                                            checked={selectedVoucherOrder?.voucher_id === voucher.voucher_id}
-                                            onChange={() => {
+                                        <div
+                                            onClick={() => {
                                                 if (orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)) {
                                                     if (selectedVoucherOrder?.voucher_id === voucher.voucher_id) {
                                                         setSelectedVoucherOrder(null);
@@ -452,13 +482,49 @@ const VoucherDialog: React.FC<VoucherDialogProps> = ({
                                                     }
                                                 }
                                             }}
-                                            className={`mr-3 flex items-center ${
+                                            className={`mr-3 w-5 h-5 rounded-full border flex items-center justify-center ${
                                                 orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)
-                                                    ? "cursor-pointer"
-                                                    : "cursor-not-allowed"
+                                                    ? "cursor-pointer border-blue-600"
+                                                    : "cursor-not-allowed border-gray-300 opacity-50"
                                             }`}
-                                            disabled={!orderCheck || !isVoucherEligible(voucher) || isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher)}
-                                        />
+                                        >
+                                            {selectedVoucherOrder?.voucher_id === voucher.voucher_id && (
+                                                <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                                            )}
+                                        </div>
+                                        {/*<input*/}
+                                        {/*    type="radio"*/}
+                                        {/*    name="selectedVoucherOrder"*/}
+                                        {/*    value={voucher.voucher_id}*/}
+                                        {/*    checked={selectedVoucherOrder?.voucher_id === voucher.voucher_id}*/}
+                                        {/*    onChange={() => {*/}
+                                        {/*        if (orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)) {*/}
+                                        {/*            if (selectedVoucherOrder?.voucher_id === voucher.voucher_id) {*/}
+                                        {/*                setSelectedVoucherOrder(null);*/}
+                                        {/*                if (setVouchers) {*/}
+                                        {/*                    setVouchers({*/}
+                                        {/*                        selectedVoucher: selectedVoucher,*/}
+                                        {/*                        selectedVoucherOrder: null,*/}
+                                        {/*                    });*/}
+                                        {/*                }*/}
+                                        {/*            } else {*/}
+                                        {/*                setSelectedVoucherOrder(voucher);*/}
+                                        {/*                if (setVouchers) {*/}
+                                        {/*                    setVouchers({*/}
+                                        {/*                        selectedVoucher: selectedVoucher,*/}
+                                        {/*                        selectedVoucherOrder: voucher,*/}
+                                        {/*                    });*/}
+                                        {/*                }*/}
+                                        {/*            }*/}
+                                        {/*        }*/}
+                                        {/*    }}*/}
+                                        {/*    className={`mr-3 flex items-center ${*/}
+                                        {/*        orderCheck && isVoucherEligible(voucher) && !isVoucherError(voucher.voucher_id) && !hasUserUsedVoucher(voucher)*/}
+                                        {/*            ? "cursor-pointer"*/}
+                                        {/*            : "cursor-not-allowed"*/}
+                                        {/*    }`}*/}
+                                        {/*    disabled={!orderCheck || !isVoucherEligible(voucher) || isVoucherError(voucher.voucher_id) || hasUserUsedVoucher(voucher)}*/}
+                                        {/*/>*/}
                                     </label>
                                 )
                         )}
