@@ -4,12 +4,23 @@ var (
 	StatusQueueName      = "UPDATE_STATUS"
 	StatusQueueNameRetry = "UPDATE_STATUS_RETRY"
 	StatusMapping        = map[string]string{
-		"1": "waiting_to_pick",
-		"2": "picking",
-		"3": "delivering",
-		"4": "delivery_success",
-		"5": "delivery_fail",
-		"6": "waiting_to_return",
-		"7": "returned",
+		"ready_to_pick":            "waiting_to_pick",
+		"picking":                  "picking",
+		"cancel":                   "canceled",
+		"money_collect_picking":    "picking",
+		"picked":                   "picking",
+		"storing":                  "picking",
+		"transporting":             "delivering",
+		"sorting":                  "delivering",
+		"delivering":               "delivering",
+		"money_collect_delivering": "delivering",
+		"delivered":                "delivery_success",
+		"delivery_fail":            "delivery_fail",
+		"waiting_to_return":        "waiting_to_return",
+		"return":                   "waiting_to_return",
+		"return_transporting":      "waiting_to_return",
+		"return_sorting":           "waiting_to_return",
+		"returning":                "returned",
+		"return_fail":              "returned",
 	}
 )

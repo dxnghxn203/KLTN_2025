@@ -6,34 +6,30 @@ import (
 )
 
 type UpdateOrderStatusReq struct {
-	OrderId             string `json:"order_id" binding:"required"`
-	Status              string `json:"status" binding:"required"`
-	StatusCode          string `json:"status_code" binding:"required"`
-	ShipperId           string `json:"shipper_id"`
-	ShipperName         string `json:"shipper_name"`
-	DeliveryInstruction string `json:"delivery_instruction"`
+	OrderId             string `json:"ClientOrderCode" binding:"required"`
+	Status              string `json:"Status" binding:"required"`
+	ShipperName         string `json:"ShipperName"`
+	DeliveryInstruction string `json:"Description"`
 }
 
 type UpdateOrderStatusMReq struct {
 	OrderId             string `json:"order_id" bson:"order_id"`
 	Status              string `json:"status" bson:"status"`
-	ShipperId           string `json:"shipper_id" bson:"shipper_id"`
 	ShipperName         string `json:"shipper_name" bson:"shipper_name"`
 	DeliveryInstruction string `json:"delivery_instruction" bson:"delivery_instruction"`
 }
 
 func (req *UpdateOrderStatusReq) Mapping() (*UpdateOrderStatusMReq, error) {
+	internalStatus, ok := statics.StatusMapping[req.Status]
+	if !ok {
+		return nil, fmt.Errorf("unknown GHN status: %s", req.Status)
+	}
+
 	model := &UpdateOrderStatusMReq{
 		OrderId:             req.OrderId,
-		DeliveryInstruction: req.DeliveryInstruction,
-		ShipperId:           req.ShipperId,
+		Status:              internalStatus,
 		ShipperName:         req.ShipperName,
+		DeliveryInstruction: req.DeliveryInstruction,
 	}
-	status := statics.StatusMapping[req.StatusCode]
-	if status != req.Status {
-		return nil, fmt.Errorf("status_code %s does not match status %s", req.StatusCode, req.Status)
-	}
-	model.Status = status
-
 	return model, nil
 }

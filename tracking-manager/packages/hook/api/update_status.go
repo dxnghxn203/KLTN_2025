@@ -1,9 +1,11 @@
 package api
 
 import (
+	"bytes"
 	"encoding/json"
 	"hook/models"
 	"hook/pkg/rabbitmq"
+	"io"
 	"log/slog"
 	"net/http"
 	"time"
@@ -24,6 +26,8 @@ func (spx *MedicareAPI) UpdateStatus(c *gin.Context) {
 	}
 
 	slog.Info("receive raw body SC", "body", string(bodyBytes), "time", time.Now().Format(time.RFC3339Nano))
+
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	var model models.UpdateOrderStatusReq
 	if err := c.ShouldBindJSON(&model); err != nil {
