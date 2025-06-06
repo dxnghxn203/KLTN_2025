@@ -151,6 +151,10 @@ const EditArticle = () => {
                     Dashboard
                 </Link>
                 <span> / </span>
+                <Link href="/quan-ly-bai-viet" className="text-gray-850">
+                    Quản lý Bài viết
+                </Link>
+                <span> / </span>
                 <span className="text-gray-850">Cập nhật bài viết</span>
             </div>
 

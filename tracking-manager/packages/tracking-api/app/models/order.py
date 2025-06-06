@@ -1208,7 +1208,7 @@ async def get_category_monthly_revenue(month: int, year: int):
         data = collection.aggregate(pipeline).to_list(length=None)
         default_categories = {
             "thuc_pham_chuc_nang": "Thực phẩm chức năng",
-            "duoc_my_pham": "Dức mỹ phẩm",
+            "duoc_my_pham": "Dược mỹ phẩm",
             "thuoc_ke_don": "Thuốc kê đơn",
             "thuoc_khong_ke_don": "Thuốc không kê đơn",
             "cham_soc_ca_nhan": "Chăm sốc cá nhân",

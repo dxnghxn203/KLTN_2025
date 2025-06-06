@@ -385,6 +385,10 @@ async def pharmacist_approve_product(item: ApproveProductReq, token: str = Depen
 @router.get("/products/get-approve-product", response_model=response.BaseResponse)
 async def pharmacist_get_product(
         page: int = 1, page_size: int = 10,
+        keyword: Optional[str] = None,
+        main_category: Optional[str] = None,
+        prescription_required: Optional[bool] = None,
+        status: Optional[str] = None,
         token: str = Depends(middleware.verify_token_pharmacist)):
     try:
         pharmacist_info = await pharmacist.get_current(token)
@@ -394,7 +398,7 @@ async def pharmacist_get_product(
                 message="Dược sĩ không tồn tại."
             )
         return SuccessResponse(
-            data=await get_approved_product(pharmacist_info.email, page, page_size)
+            data=await get_approved_product(pharmacist_info.email, page, page_size, keyword,main_category, prescription_required, status)
         )
     except JsonException as je:
         raise je

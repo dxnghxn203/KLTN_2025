@@ -18,6 +18,7 @@ interface TableVoucherProps {
     pageSize: number;
     onPageChange: (page: number) => void;
     onPageSizeChange: (pageSize: number) => void;
+    fetchVoucher: () => void;
 }
 
 const TableVoucher = ({
@@ -27,6 +28,7 @@ const TableVoucher = ({
     pageSize,
     onPageChange,
     onPageSizeChange,
+    fetchVoucher
 }: TableVoucherProps) => {
     const [isOpenDialog, setIsOpenDialog] = useState(false);
     const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false);
@@ -261,6 +263,7 @@ const TableVoucher = ({
                     page={currentPage}
                     pageSize={pageSize}
                     setPageSize={onPageSizeChange}
+                    fetchVoucher={fetchVoucher}
                 />
                 <DeleteProductDialog
                     isOpen={isOpenDialog}

@@ -20,7 +20,7 @@ const VoucherManagement = () => {
     } = useVoucher();
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
+    const fetchVoucher = () => {
         setLoading(true);
         try {
             fetchAllVouchers(page, pageSize, () => {
@@ -31,6 +31,10 @@ const VoucherManagement = () => {
             setLoading(false);
             console.error("Error fetching data:", error);
         }
+    };
+
+    useEffect(() => {
+        fetchVoucher();
     }, [page, pageSize]);
 
     return (
@@ -85,6 +89,7 @@ const VoucherManagement = () => {
                         pageSize={pageSize}
                         onPageChange={setPage}
                         onPageSizeChange={setPageSize}
+                        fetchVoucher={fetchVoucher}
                     />
 
                 }

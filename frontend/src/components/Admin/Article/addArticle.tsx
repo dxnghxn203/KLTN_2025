@@ -104,7 +104,11 @@ const AddArticle = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-850">
+          <Link href="/quan-ly-bai-viet" className="text-gray-850">
+          Quản lý Bài viết
+          </Link>
+          <span> / </span>
+          <Link href="/quan-ly-bai-viet/them-bai-viet" className="text-gray-850">
             Thêm bài viết
           </Link>
         </div>

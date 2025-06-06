@@ -856,16 +856,46 @@ async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes
         logger.error(f"Error approving product: {str(e)}")
         raise e
 
-async def get_approved_product(email: str, page: int = 1, page_size: int = 10):
+async def get_approved_product(
+        email: str, page: int = 1, page_size: int = 10,
+        keyword: str = None,
+        main_category: str = None,
+        prescription_required: bool = None,
+        status: str = None  # "approved", "pending", or None for all
+):
     try:
         collection = db[collection_name]
         skip_count = (page - 1) * page_size
-        product_list = collection.find({"verified_by": {"$in": [None, "", email]}}).skip(skip_count).limit(page_size)
 
-        logger.info(f"{product_list}")
+        query = {}
+
+        pattern = re.escape(keyword)
+
+        if keyword:
+            query["name_primary"] = {"$regex": pattern, "$options": "i"}
+
+        if status == "approved":
+            query["is_approved"] = True
+            query["verified_by"] = email
+        elif status == "pending":
+            query["is_approved"] = False
+        else:
+            query["verified_by"] = {"$in": [None, "", email]}
+
+        if main_category:
+            query["category.main_category_id"] = main_category
+
+        if prescription_required is not None:
+            query["prescription_required"] = prescription_required
+
+        logger.info(f"Query: {query}")
+
+        product_list = collection.find(query).sort("created_at", -1).skip(skip_count).limit(page_size).to_list(length=page_size)
+        total = collection.count_documents(query)
+
         return {
-            "total_products":  collection.count_documents({"verified_by": {"$in": [None, "", email]}}),
-            "products": [ItemProductDBRes(**product) for product in product_list]
+            "total_products": total,
+            "products": [ItemProductDBRes.from_mongo(p) for p in product_list]
         }
     except Exception as e:
         logger.error(f"Failed [get_approved_product]: {e}")

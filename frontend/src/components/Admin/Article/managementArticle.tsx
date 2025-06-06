@@ -31,13 +31,13 @@ const ArticleManagement = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-850">
+          <Link href="/quan-ly-bai-viet" className="text-gray-850">
             Quản lý Bài viết
           </Link>
         </div>
         <div className="flex justify-end items-center">
           <div
-            className="flex gap-2 px-2 py-2 rounded-lg text-sm flex items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
+            className="flex gap-2 px-2 py-2 rounded-lg text-sm items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
             onClick={() => router.push("/quan-ly-bai-viet/them-bai-viet")}
           >
             + Thêm bài viết

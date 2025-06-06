@@ -13,6 +13,7 @@ interface Props {
   setPage: (page: number) => void;
   pageSize: number;
   setPageSize: (pageSize: number) => void;
+  fetchVoucher: () => void;
 }
 
 function formatDateToInput(dateStr: string) {
@@ -31,6 +32,7 @@ export default function UpdateVoucherDialog({
   setPageSize,
   page,
   pageSize,
+  fetchVoucher
 }: Props) {
   const toast = useToast();
   const { fetchUpdateVoucher, fetchAllVouchers } = useVoucher();
@@ -136,12 +138,13 @@ export default function UpdateVoucherDialog({
           voucher_type: "",
           expired_date: "",
         });
+        fetchVoucher();
       },
       () => {
         toast.showToast("Cập nhật voucher thất bại", "error");
       }
     );
-    fetchAllVouchers(page, pageSize, () => {}, () => {});  
+    // fetchAllVouchers(page, pageSize, () => {}, () => {});  
     setIsOpen(false);
   };
 

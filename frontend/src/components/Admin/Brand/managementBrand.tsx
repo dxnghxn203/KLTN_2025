@@ -1,15 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useToast } from "@/providers/toastProvider";
 import TableBrand from "./tableBrand";
 import { useBrand } from "@/hooks/useBrand";
 import AddBrandDialog from "../Dialog/addBrandDialog";
 
 const BrandManagement = () => {
   const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
-  const toast = useToast();
   const { getAllBrandsAdmin, fetchAllBrandsAdmin } = useBrand();
   useEffect(() => {
     fetchAllBrandsAdmin(
@@ -30,13 +27,13 @@ const BrandManagement = () => {
             Dashboard
           </Link>
           <span> / </span>
-          <Link href="/order" className="text-gray-850">
+          <Link href="/quan-ly-thuong-hieu" className="text-gray-850">
             Quản lý Thương hiệu
           </Link>
         </div>
         <div className="flex justify-end items-center">
           <div
-            className="flex gap-2 px-2 py-2 rounded-lg text-sm flex items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
+            className="flex gap-2 px-2 py-2 rounded-lg text-sm items-center bg-blue-700 text-white cursor-pointer hover:bg-blue-800"
             onClick={() => setIsOpenDialog(true)}
           >
             + Thêm thương hiệu
