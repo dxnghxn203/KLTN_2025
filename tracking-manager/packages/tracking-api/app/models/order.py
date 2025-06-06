@@ -1004,7 +1004,7 @@ async def get_order_overview_statistics():
                         {
                             "$group": {
                                 "_id": None,
-                                "total": {"$sum": "estimated_total_fee"}
+                                "total": {"$sum": "$estimated_total_fee"}
                             }
                         }
                     ],
@@ -1073,7 +1073,7 @@ async def get_monthly_revenue(year: int):
                 {
                     "$group": {
                         "_id": None,
-                        "total": {"$sum": "estimated_total_fee"}
+                        "total": {"$sum": "$estimated_total_fee"}
                     }
                 }
             ]
@@ -1256,7 +1256,7 @@ async def get_payment_type_monthly_revenue(month: int, year: int):
             {
                 "$group": {
                     "_id": "$payment_type",
-                    "total_revenue": {"$sum": "estimated_total_fee"}
+                    "total_revenue": {"$sum": "$estimated_total_fee"}
                 }
             },
         ]
