@@ -869,8 +869,6 @@ async def get_approved_product(
 
         query = {}
 
-
-
         if keyword:
             pattern = re.escape(keyword)
             query["name_primary"] = {"$regex": pattern, "$options": "i"}

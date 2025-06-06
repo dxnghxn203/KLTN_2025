@@ -1,13 +1,22 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 
 interface FilterBarProps {
-    onFilterChange: (filters: any) => void;
+    onFilterChange: (filters: {
+        categoryFilter: string;
+        prescriptionFilter: string;
+        statusFilter: string;
+    }) => void;
+    allCategory: any[];
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({onFilterChange}) => {
+const FilterBar: React.FC<FilterBarProps> = ({
+    onFilterChange,
+    allCategory
+}) => {
     const [filters, setFilters] = useState({
-        prescription: '',
-        category: ''
+        categoryFilter: '',
+        prescriptionFilter: '',
+        statusFilter: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -20,31 +29,33 @@ const FilterBar: React.FC<FilterBarProps> = ({onFilterChange}) => {
 
     const handleApplyFilters = () => {
         onFilterChange({
-            prescription: filters.prescription === 'true' ? true :
-                filters.prescription === 'false' ? false : '',
-            category: filters.category
+        categoryFilter: filters.categoryFilter,
+        prescriptionFilter: filters.prescriptionFilter,
+        statusFilter: filters.statusFilter,
         });
     };
 
     const handleResetFilters = () => {
         setFilters({
-            prescription: '',
-            category: ''
+        categoryFilter: '',
+        prescriptionFilter: '',
+        statusFilter: '',
         });
         onFilterChange({
-            prescription: '',
-            category: ''
+        categoryFilter: '',
+        prescriptionFilter: '',
+        statusFilter: '',
         });
     };
 
     return (
         <div className="bg-white p-4 rounded-lg border border-gray-200 mb-4 shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Thuốc kê toa</label>
                     <select
-                        name="prescription"
-                        value={filters.prescription}
+                        name="prescriptionFilter"
+                        value={filters.prescriptionFilter}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
@@ -57,16 +68,30 @@ const FilterBar: React.FC<FilterBarProps> = ({onFilterChange}) => {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
                     <select
-                        name="category"
-                        value={filters.category}
+                        name="categoryFilter"
+                        value={filters.categoryFilter}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="">Tất cả</option>
-                        <option value="thuoc-khang-sinh">Thuốc kháng sinh</option>
-                        <option value="thuoc-giam-dau">Thuốc giảm đau</option>
-                        <option value="vitamin-tpcn">Vitamin & TPCN</option>
-                        {/* Thêm các danh mục khác nếu cần */}
+                        <option value="">Tất cả danh mục</option>
+                        {allCategory.map((category) => (
+                            <option key={category.main_category_id} value={category.main_category_id}>
+                            {category.main_category_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái duyệt</label>
+                    <select
+                        name="statusFilter"
+                        value={filters.statusFilter}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option key="" value="">Tất cả</option>
+                        <option key="approved" value="approved">Đã duyệt</option>
+                        <option key="pending" value="pending">Đang chờ</option>
                     </select>
                 </div>
             </div>
@@ -80,7 +105,7 @@ const FilterBar: React.FC<FilterBarProps> = ({onFilterChange}) => {
                 </button>
                 <button
                     onClick={handleApplyFilters}
-                    className="px-4 py-2 bg-blue-600 rounded-md text-sm text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
                 >
                     Áp dụng
                 </button>

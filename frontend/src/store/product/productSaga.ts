@@ -378,9 +378,15 @@ function* getAllProductApproved(action: any): Generator<any, void, any> {
         } = action;
         const {
             page,
-            page_size,
+            pageSize,
+            keyword,
+            mainCategory,
+            prescriptionRequired,
+            status
         } = payload;
-        const product = yield call(productService.getAllProductApproved, page, page_size);
+        const product = yield call(
+            productService.getAllProductApproved, page, pageSize, keyword, mainCategory, prescriptionRequired, status
+        );
         if (product.status_code === 200) {
             yield put(fetchProductApprovedSuccess(product.data));
             return;

@@ -1,143 +1,47 @@
 "use client";
 import { useState, useEffect } from "react";
-import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
 import Link from "next/link";
 import { X } from "lucide-react";
 import Image from "next/image";
-import { RiMore2Fill } from "react-icons/ri";
 import { IoFilter, IoImage } from "react-icons/io5";
 import FilterBar from "./filterBar";
 import { useProduct } from "@/hooks/useProduct";
 import {
   MdNavigateBefore,
   MdNavigateNext,
-  MdOutlineModeEdit,
 } from "react-icons/md";
 import ApproveProductDialog from "../Dialog/approveProductDialog";
 import { FiEye } from "react-icons/fi";
-import { LuBadgeCheck, LuEye } from "react-icons/lu";
+import { LuBadgeCheck } from "react-icons/lu";
 import { FaSearch } from "react-icons/fa";
+import { useCategory } from "@/hooks/useCategory";
 
 const MedicineCensorshipList = () => {
-  const { productApproved, fetchProductApproved } = useProduct();
-
-  // Tính toán dữ liệu hiển thị theo trang
-  const [pages, setPages] = useState<any>({
-    page: 1,
-    page_size: 10,
+  const { productApproved, totalProductApproved,fetchProductApproved } = useProduct();
+  const { fetchAllCategory, allCategory } = useCategory();
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 10 });
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    categoryFilter: "",
+    prescriptionFilter: "",
+    statusFilter: "",
   });
-
-  // Separate filter states for client-side filtering
-  const [searchTerm, setSearchTerm] = useState("");
-  const [prescriptionFilter, setPrescriptionFilter] = useState<
-    boolean | string
-  >("");
-  const [categoryFilter, setCategoryFilter] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [searchInput, setSearchInput] = useState("");
 
-  const totalProducts = productApproved ? productApproved.total_products : 0;
-  const allProducts = productApproved ? productApproved.products || [] : [];
-
-  // Apply client-side filtering
-  const filteredProducts = allProducts.filter((product: any) => {
-    // Search filter
-    const matchesSearch =
-      !searchTerm ||
-      product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.product_id.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Prescription filter
-    const matchesPrescription =
-      prescriptionFilter === "" ||
-      product.prescription_required === prescriptionFilter;
-
-    // Category filter
-    const matchesCategory =
-      !categoryFilter ||
-      product.category?.main_category_id === categoryFilter ||
-      product.category?.sub_category_id === categoryFilter ||
-      product.category?.child_category_id === categoryFilter;
-
-    return matchesSearch && matchesPrescription && matchesCategory;
-  });
-
-  // Calculate visible products for current page
-  const indexOfFirstProduct = (pages.page - 1) * pages.page_size;
-  const indexOfLastProduct = indexOfFirstProduct + pages.page_size;
-  const products = filteredProducts.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
-  );
-
-  const totalPages = Math.ceil(filteredProducts.length / pages.page_size);
+  const totalPages = Math.ceil(totalProductApproved / pagination.pageSize);
+  const currentPageData = (pagination.page - 1) * pagination.pageSize;
+  const firstIndex = currentPageData + 1;
+  const lastIndex = Math.min(currentPageData + pagination.pageSize, totalProductApproved);
 
   const [selectedProductApproved, setSelectedProductApproved] =
     useState<any>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
   const [showFilter, setShowFilter] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
 
-  const onPageChange = (page: number) => {
-    setPages((prev: any) => ({ ...prev, page }));
-  };
-
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newPageSize = parseInt(e.target.value);
-    setPages((prev: any) => ({ ...prev, page_size: newPageSize, page: 1 }));
-  };
-
-  const handleFilterChange = (filters: any) => {
-    console.log("Applying filters:", filters);
-    // Update client-side filter states
-    setPrescriptionFilter(filters.prescription);
-    setCategoryFilter(filters.category);
-    // Reset to first page when filters change
-    setPages((prev: any) => ({ ...prev, page: 1 }));
-
-    const newActiveFilters = [];
-    if (filters.prescription !== "") {
-      newActiveFilters.push(
-        `Kê toa: ${filters.prescription === true ? "Có" : "Không"}`
-      );
-    }
-    if (filters.category) {
-      newActiveFilters.push(`Danh mục: ${filters.category}`);
-    }
-    setActiveFilters(newActiveFilters);
-  };
-
-  const handleSearch = () => {
-    // Set the search term for client-side filtering
-    setSearchTerm(searchTerm);
-    // Reset to first page when search changes
-    setPages((prev: any) => ({ ...prev, page: 1 }));
-  };
-
-  const clearFilter = (filter: string) => {
-    const filterKey = filter.split(":")[0].trim().toLowerCase();
-
-    if (filterKey === "tìm kiếm") {
-      setSearchTerm("");
-    }
-    if (filterKey === "kê toa") {
-      setPrescriptionFilter("");
-    }
-    if (filterKey === "danh mục") {
-      setCategoryFilter("");
-    }
-
-    setActiveFilters(activeFilters.filter((f) => f !== filter));
-  };
-
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    setPrescriptionFilter("");
-    setCategoryFilter("");
-    setActiveFilters([]);
-  };
-
   useEffect(() => {
+    fetchAllCategory();
     const handleClickOutside = (event: MouseEvent) => {
       if (!(event.target as HTMLElement).closest(".menu-container")) {
         setMenuOpen(null);
@@ -148,11 +52,92 @@ const MedicineCensorshipList = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  // Only send pagination parameters to API
   useEffect(() => {
-    console.log("Fetching products with pagination:", pages);
-    fetchProductApproved(pages);
-  }, [pages]);
+    console.log("filters", filters);
+    const data = {
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      keyword: filters.searchTerm,
+      mainCategory: filters.categoryFilter,
+      prescriptionRequired: filters.prescriptionFilter === "" ? null : filters.prescriptionFilter === "true",
+      status: filters.statusFilter
+    };
+    fetchProductApproved(data);
+  }, [pagination, filters]);
+
+  useEffect(() => {
+    const updatedFilters: string[] = [];
+
+    if (filters.searchTerm) {
+      updatedFilters.push(`Tìm kiếm: "${filters.searchTerm}"`);
+    }
+
+    if (filters.categoryFilter) {
+      const categoryName = allCategory.find(
+        (cat: any) => cat.main_category_id === filters.categoryFilter
+      )?.main_category_name;
+      if (categoryName) {
+        updatedFilters.push(`Danh mục: ${categoryName}`);
+      }
+    }
+
+    if (filters.prescriptionFilter) {
+      updatedFilters.push(
+        `Thuốc kê toa: ${filters.prescriptionFilter === "true" ? "Có" : "Không"}`
+      );
+    }
+
+    if (filters.statusFilter) {
+      filters.statusFilter === "approved" ? updatedFilters.push(`Trang thái: Đã duyệt`) : updatedFilters.push(`Trang thái: Đang chờ`);
+      
+    }
+
+    setActiveFilters(updatedFilters);
+  }, [filters]);
+
+
+  const handlePageChange = (newPage: number) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
+  };
+
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(e.target.value);
+    setPagination({ page: 1, pageSize: newSize });
+  };
+
+  const handleFilterChange = (newFilters: Partial<typeof filters>) => {
+    setFilters((prev) => ({ ...prev, ...newFilters }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handleSearch = () => {
+    handleFilterChange({ searchTerm: searchInput });
+  };
+
+  const clearFilter = (filterLabel: string) => {
+    if (filterLabel.startsWith("Tìm kiếm:")) {
+      handleFilterChange({ searchTerm: "" });
+      setSearchInput("");
+    }
+    if (filterLabel.startsWith("Danh mục:")) {
+      handleFilterChange({ categoryFilter: "" });
+    } else if (filterLabel.startsWith("Thuốc kê toa:")) {
+      handleFilterChange({ prescriptionFilter: "" });
+    } else if (filterLabel.startsWith("Trang thái:")) {
+      handleFilterChange({ statusFilter: "" });
+    }
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      searchTerm: "",
+      categoryFilter: "",
+      prescriptionFilter: "",
+      statusFilter: "",
+    });
+    setSearchInput("");
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
   return (
     <div>
@@ -185,13 +170,13 @@ const MedicineCensorshipList = () => {
               <input
                 type="text"
                 placeholder="Tìm theo tên sản phẩm..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="border border-gray-300 rounded-lg py-2 px-3 text-sm w-full md:w-60 pr-10"
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
               <button
-                onClick={handleSearch}
+                onClick={() => handleSearch()}
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#1E4DB7]"
               >
                 <FaSearch />
@@ -202,7 +187,7 @@ const MedicineCensorshipList = () => {
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Hiển thị:</span>
             <select
-              value={pages.page_size}
+              value={pagination.pageSize}
               onChange={handlePageSizeChange}
               className="border border-gray-300 rounded-lg py-1 px-2 text-sm"
             >
@@ -215,23 +200,9 @@ const MedicineCensorshipList = () => {
         </div>
 
         {/* Active Filters Display */}
-        {(activeFilters.length > 0 || searchTerm) && (
+        {(activeFilters.length > 0 || filters.searchTerm) && (
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
-
-            {searchTerm && (
-              <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                <span>Tìm kiếm: {searchTerm}</span>
-                <button
-                  onClick={() => {
-                    setSearchTerm("");
-                  }}
-                  className="hover:text-blue-900"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            )}
 
             {activeFilters.map((filter, index) => (
               <div
@@ -257,7 +228,12 @@ const MedicineCensorshipList = () => {
           </div>
         )}
 
-        {showFilter && <FilterBar onFilterChange={handleFilterChange} />}
+        {showFilter &&
+          <FilterBar 
+            onFilterChange={handleFilterChange} 
+            allCategory={allCategory}
+          />
+        }
 
         <div className="bg-white shadow-sm rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
@@ -276,12 +252,12 @@ const MedicineCensorshipList = () => {
               </thead>
 
               <tbody>
-                {products && products.length > 0 ? (
-                  products.map((product: any, index: number) => (
+                {productApproved && totalProductApproved > 0 ? (
+                  productApproved.map((product: any, index: number) => (
                     <tr
                       key={product.product_id}
                       className={`text-sm hover:bg-gray-50 transition ${
-                        index !== products.length - 1
+                        index !== totalProductApproved - 1
                           ? "border-b border-gray-200"
                           : ""
                       }`}
@@ -392,15 +368,15 @@ const MedicineCensorshipList = () => {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-4">
           <div className="text-sm text-gray-600">
-            Hiển thị {filteredProducts.length > 0 ? indexOfFirstProduct + 1 : 0}{" "}
-            - {Math.min(indexOfLastProduct, filteredProducts.length)} trong tổng
-            số {filteredProducts.length} sản phẩm
+            Hiển thị {firstIndex}{" "}
+            - {lastIndex} trong tổng
+            số {totalProductApproved} sản phẩm
           </div>
 
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => onPageChange(pages.page - 1)}
-              disabled={pages.page === 1}
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
               className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
             >
               <MdNavigateBefore className="text-xl" />
@@ -412,17 +388,17 @@ const MedicineCensorshipList = () => {
               if (
                 pageNumber === 1 ||
                 pageNumber === totalPages ||
-                (pageNumber >= pages.page - 1 &&
-                  pageNumber <= pages.page + 1) ||
-                (pages.page <= 3 && pageNumber <= 5) ||
-                (pages.page >= totalPages - 2 && pageNumber >= totalPages - 4)
+                (pageNumber >= pagination.page - 1 &&
+                  pageNumber <= pagination.page + 1) ||
+                (pagination.page <= 3 && pageNumber <= 5) ||
+                (pagination.page >= totalPages - 2 && pageNumber >= totalPages - 4)
               ) {
                 return (
                   <button
                     key={pageNumber}
-                    onClick={() => onPageChange(pageNumber)}
+                    onClick={() => handlePageChange(pageNumber)}
                     className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
-                      pages.page === pageNumber
+                      pagination.page === pageNumber
                         ? "bg-blue-700 text-white"
                         : "text-black hover:bg-gray-200"
                     }`}
@@ -433,8 +409,8 @@ const MedicineCensorshipList = () => {
               }
 
               if (
-                (pageNumber === pages.page - 2 && pages.page > 4) ||
-                (pageNumber === pages.page + 2 && pages.page < totalPages - 3)
+                (pageNumber === pagination.page - 2 && pagination.page > 4) ||
+                (pageNumber === pagination.page + 2 && pagination.page < totalPages - 3)
               ) {
                 return (
                   <span key={pageNumber} className="px-2 text-gray-500">
@@ -447,8 +423,8 @@ const MedicineCensorshipList = () => {
             })}
 
             <button
-              onClick={() => onPageChange(pages.page + 1)}
-              disabled={pages.page === totalPages}
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={pagination.page === totalPages}
               className="text-gray-400 hover:text-black disabled:cursor-not-allowed"
             >
               <MdNavigateNext className="text-xl" />

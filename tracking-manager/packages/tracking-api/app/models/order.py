@@ -898,6 +898,12 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
                 message="Không có quyền duyệt yêu cầu này"
             )
 
+        if item.status not in ["approved", "rejected", "uncontacted"]:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Trang thái không hợp lệ"
+            )
+
         if not item.product:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,

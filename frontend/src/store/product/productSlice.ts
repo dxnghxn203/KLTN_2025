@@ -10,6 +10,7 @@ interface ProductState {
     productProductFeatured: any[];
     productsBestDeal: any[];
     productApproved: any[];
+    totalProductApproved: number;
     product: any;
     allBrand: any[];
     searchResult: any[];
@@ -34,6 +35,7 @@ const initialState: ProductState = {
     productsRelated: [],
     productsBestDeal: [],
     productApproved: [],
+    totalProductApproved: 0,
     product: null,
     allBrand: [],
     searchResult: [],
@@ -175,8 +177,9 @@ export const productSlice = createSlice({
         fetchProductApprovedStart(state, action: PayloadAction<any>) {
             state.loading = true;
         },
-        fetchProductApprovedSuccess(state, action: PayloadAction<any[]>) {
-            state.productApproved = action.payload;
+        fetchProductApprovedSuccess(state, action: PayloadAction<any>) {
+            state.productApproved = action.payload.products;
+            state.totalProductApproved = action.payload.total_products;
             state.loading = false;
             state.error = null;
         },

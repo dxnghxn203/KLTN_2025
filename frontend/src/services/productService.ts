@@ -212,9 +212,29 @@ export const deleteProduct = async (product_id: any) => {
 
 export const getAllProductApproved = async (
     page: any, pageSize: any,
+    keyword: any = null,
+    mainCategory: any = null,
+    prescriptionRequired: any = null,
+    status: any = null
 ) => {
     try {
-        const response: any = await axiosClient.get("/v1/products/get-approve-product?page=" + page + "&page_size=" + pageSize);
+        const params = new URLSearchParams();
+        params.append("page", page);
+        params.append("page_size", pageSize);
+        if (keyword) {
+            params.append("keyword", keyword);
+        }
+        if (mainCategory) {
+            params.append("main_category", mainCategory);
+        }
+        if (prescriptionRequired !== null && prescriptionRequired !== undefined) {
+            params.append("prescription_required", prescriptionRequired);
+        }
+        if (status) {
+            params.append("status", status);
+        }
+
+        const response: any = await axiosClient.get(`/v1/products/get-approve-product?${params.toString()}`);
         return {
             status_code: response.status_code,
             message: response.message,
@@ -228,6 +248,7 @@ export const getAllProductApproved = async (
         }
     }
 }
+
 export const getAvailableProduct = async (product_id: string, price_id: string) => {
     try {
         const response: any = await axiosClient.get("/v1/products/getAvailableQuantity", {

@@ -38,7 +38,8 @@ import {
     selectTotalFileImport,
     selectAllProductDiscountAdmin,
     selectTotalProductDiscountAdmin,
-    fetchProductDiscountAdminStart
+    fetchProductDiscountAdminStart,
+    selectTotalProductApproved
 } from "@/store";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -55,6 +56,7 @@ export function useProduct() {
     const productGetFeatured = useSelector(selectProductRelated);
     const productBestDeal = useSelector(selectProductBestDeal);
     const productApproved = useSelector(selectProductApproved);
+    const totalProductApproved = useSelector(selectTotalProductApproved);
     const searchResult = useSelector(selectSearchProduct);
     const allBrands = useSelector(selectAllBrands);
     const allFileImport = useSelector(selectAllFileImport);
@@ -159,7 +161,11 @@ export function useProduct() {
     ) => {
         dispatch(fetchProductApprovedStart({
             page: data.page,
-            page_size: data.page_size,
+            pageSize: data.pageSize,
+            keyword: data.keyword,
+            mainCategory: data.mainCategory,
+            prescriptionRequired: data.prescriptionRequired,
+            status: data.status
         }))
     }
 
@@ -382,6 +388,7 @@ export function useProduct() {
         deleteProduct,
         fetchProductApproved,
         productApproved,
+        totalProductApproved,
         fetchApproveProductByPharmacist,
 
         fetchUpdateProduct,
