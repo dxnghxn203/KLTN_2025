@@ -34,7 +34,7 @@ const TableVoucher = ({
     const [isOpenUpdateDialog, setIsOpenUpdateDialog] = useState(false);
 
     const [selectedVoucher, setSelectedVoucher] = useState<any>(null);
-    const {fetchDeleteVoucher, fetchUpdateStatusVoucher, fetchAllVouchers} =
+    const {fetchDeleteVoucher, fetchUpdateStatusVoucher} =
         useVoucher();
     const toast = useToast();
     const onDelete = () => {
@@ -42,7 +42,7 @@ const TableVoucher = ({
             selectedVoucher.voucher_id,
             () => {
                 toast.showToast("Xóa voucher thành công", "success");
-                fetchAllVouchers(currentPage, pageSize, () => {}, () => {});
+                fetchVoucher();
                 setIsOpenDialog(false);
             },
             () => {

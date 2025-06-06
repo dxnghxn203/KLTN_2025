@@ -19,16 +19,22 @@ interface ApproveProductDialogProps {
   productSelected: any;
   isOpen: boolean;
   onClose: () => void;
+  pagination: any;
+  filters: any;
+  handleFetchProductApproved: (data: any) => void;
 }
 
 const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
   productSelected,
   isOpen,
   onClose,
+  pagination,
+  filters,
+  handleFetchProductApproved,
 }) => {
   if (!isOpen) return null;
   //   console.log("productSelected", productSelected);
-  const { fetchApproveProductByPharmacist, fetchProductApproved } =
+  const { fetchApproveProductByPharmacist } =
     useProduct();
   const [rejectedNote, setRejectedNote] = useState("");
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
@@ -54,7 +60,16 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
       payload,
       (message) => {
         toast.showToast(message, "success");
-        fetchProductApproved(() => {});
+        handleFetchProductApproved(
+          {
+            page: pagination.page,
+            pageSize: pagination.pageSize,
+            keyword: filters.searchTerm,
+            mainCategory: filters.categoryFilter,
+            prescriptionRequired: filters.prescriptionFilter === "" ? null : filters.prescriptionFilter === "true",
+            status: filters.statusFilter
+          }
+        )
         setRejectedNote("");
         setErrors({});
         onClose();
@@ -75,7 +90,6 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
       },
       (message) => {
         toast.showToast(message, "success");
-        fetchProductApproved(() => {});
         onClose();
       },
       (message) => {

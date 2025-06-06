@@ -17,7 +17,7 @@ import ApproveProductDialog from "../Dialog/approveProductDialog";
 import {FiEye} from "react-icons/fi";
 import {LuBadgeCheck, LuEye} from "react-icons/lu";
 import {useOrder} from "@/hooks/useOrder";
-import ApproveRequestDialog from "../Dialog/approveRequestDialog";
+// import ApproveRequestDialog from "../Dialog/approveRequestDialog";
 import {useRouter} from "next/navigation";
 
 const ConsultingList = () => {
@@ -286,16 +286,8 @@ const ConsultingList = () => {
                         </button>
                     </div>
                 </div>
-
-                {/* Drawer (Chi tiết đơn hàng) */}
             </div>
-            {isDialogOpen && selectedOrderRequest && (
-                <ApproveRequestDialog
-                    isOpen={isDialogOpen}
-                    onClose={() => setDialogOpen(false)}
-                    requestSelected={selectedOrderRequest}
-                />
-            )}
+            
         </div>
     );
 };

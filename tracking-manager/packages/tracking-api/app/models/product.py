@@ -846,7 +846,8 @@ async def approve_product(item: ApproveProductReq, pharmacist: ItemPharmacistRes
                 "is_approved": item.is_approved,
                 "verified_by": pharmacist.email,
                 "rejected_note": item.rejected_note,
-                "pharmacist_name": pharmacist.user_name
+                "pharmacist_name": pharmacist.user_name,
+                "pharmacist_gender": pharmacist.gender,
             }
         })
         logger.info(f"Product approved successfully for {item.product_id} by {pharmacist.email} with: {item.is_approved}")

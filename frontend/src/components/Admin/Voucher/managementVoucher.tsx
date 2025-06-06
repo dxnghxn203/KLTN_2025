@@ -102,6 +102,7 @@ const VoucherManagement = () => {
                 page={page}
                 pageSize={pageSize}
                 setPageSize={setPageSize}
+                fetchVoucher={fetchVoucher}
             />
         </div>
     );

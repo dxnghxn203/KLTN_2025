@@ -12,6 +12,7 @@ interface Props {
   setPage: (page: number) => void;
   pageSize: number;
   setPageSize: (pageSize: number) => void;
+  fetchVoucher: () => void;
 }
 
 export default function AddVoucherDialog({
@@ -21,9 +22,10 @@ export default function AddVoucherDialog({
   setPageSize,
   page,
   pageSize,
+  fetchVoucher,
 }: Props) {
   const toast = useToast();
-  const { fetchAddVoucher, fetchAllVouchers } = useVoucher();
+  const { fetchAddVoucher } = useVoucher();
 
   const [voucherData, setVoucherData] = useState({
     voucher_name: "",
@@ -108,13 +110,12 @@ export default function AddVoucherDialog({
           voucher_type: "",
           expired_date: "",
         });
+        fetchVoucher();
       },
       () => {
         toast.showToast("Thêm voucher thất bại", "error");
       }
     );
-    console.log("body", body);
-    fetchAllVouchers(page, pageSize, () => {}, () => {});  
     setIsOpen(false);
   };
 

@@ -52,6 +52,10 @@ const MedicineCensorshipList = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const handleFetchProductApproved = (data: any) => {
+    fetchProductApproved(data);
+  };
+
   useEffect(() => {
     console.log("filters", filters);
     const data = {
@@ -62,7 +66,7 @@ const MedicineCensorshipList = () => {
       prescriptionRequired: filters.prescriptionFilter === "" ? null : filters.prescriptionFilter === "true",
       status: filters.statusFilter
     };
-    fetchProductApproved(data);
+    handleFetchProductApproved(data);
   }, [pagination, filters]);
 
   useEffect(() => {
@@ -437,6 +441,9 @@ const MedicineCensorshipList = () => {
           isOpen={isDialogOpen}
           onClose={() => setDialogOpen(false)}
           productSelected={selectedProductApproved}
+          pagination={pagination}
+          filters={filters}
+          handleFetchProductApproved={handleFetchProductApproved}
         />
       )}
     </div>
