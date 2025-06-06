@@ -882,7 +882,7 @@ async def get_requested_order(user_id: str):
     try:
         collection = database.db[request_collection_name]
         order_list = collection.find({"created_by": user_id})
-        return (ItemOrderForPTRes(**order) for order in order_list)
+        return (ItemOrderForPTRes.from_mongo(order) for order in order_list)
     except Exception as e:
         logger.error(f"Failed [get_requested_order]: {e}")
         raise e
