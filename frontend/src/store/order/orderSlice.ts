@@ -8,6 +8,7 @@ interface OrderState {
     statistics365Days: any[];
     allRequestOrder: any[];
     allRequestOrderApprove: any[];
+    totalRequestOrderApprove: number;
     overviewStatisticsOrder: any;
     loading: boolean;
     error: string | null;
@@ -21,6 +22,7 @@ const initialState: OrderState = {
     statistics365Days: [],
     allRequestOrder: [],
     allRequestOrderApprove: [],
+    totalRequestOrderApprove: 0,
     overviewStatisticsOrder: null,
     loading: false,
     error: null,
@@ -179,7 +181,8 @@ export const orderSlice = createSlice({
         },
         fetchGetApproveRequestOrderSuccess(state, action: PayloadAction<any>) {
             console.log('fetchGetApproveRequestOrderSuccess')
-            state.allRequestOrderApprove = action.payload;
+            state.allRequestOrderApprove = action.payload.orders;
+            state.totalRequestOrderApprove = action.payload.total_orders;
             state.loading = false;
             state.error = null;
 

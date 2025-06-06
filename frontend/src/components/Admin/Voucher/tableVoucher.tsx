@@ -50,18 +50,6 @@ const TableVoucher = ({
             }
         );
     };
-    const handleToggleStatus = (voucher: any) => {
-        const newStatus = !voucher.active;
-        fetchUpdateStatusVoucher(
-            {voucher_id: voucher.voucher_id, status_voucher: newStatus},
-            () => {
-                toast.showToast("Cập nhật trạng thái thành công", "success");
-            },
-            () => {
-                toast.showToast("Cập nhật trạng thái tphcm", "error");
-            }
-        );
-    };
 
     const totalPages = Math.ceil(totalVouchers / pageSize);
     const currentPageData = (currentPage - 1) * pageSize;

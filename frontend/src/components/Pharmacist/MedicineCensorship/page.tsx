@@ -17,7 +17,7 @@ import { FaSearch } from "react-icons/fa";
 import { useCategory } from "@/hooks/useCategory";
 
 const MedicineCensorshipList = () => {
-  const { productApproved, totalProductApproved,fetchProductApproved } = useProduct();
+  const { productApproved, totalProductApproved, fetchProductApproved } = useProduct();
   const { fetchAllCategory, allCategory } = useCategory();
   const [pagination, setPagination] = useState({ page: 1, pageSize: 10 });
   const [filters, setFilters] = useState({

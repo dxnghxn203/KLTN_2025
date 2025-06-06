@@ -9,7 +9,12 @@ import {
     fetchGetTypeMonthlyRevenueStatisticsOrderStart, fetchGetMonthlyProductSoldStatisticsStart,
     fetchGetMonthlyTopSellingProductStatisticsStart, fetchGetMonthlyCountOrderStatisticsStart,
     selectTotalOrderAdmin,
-    selectCountStatusOrder
+    selectCountStatusOrder,
+    selectTotalRequestOrderApprove,
+    selectStatistics365Days,
+    selectAllRequestOrder,
+    selectAllRequestOrderApprove,
+    selectOverviewStatisticOrder
 } from "@/store/order";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -21,10 +26,11 @@ export function useOrder() {
     const totalOrderAdmin = useSelector(selectTotalOrderAdmin);
     const countStatusOrder = useSelector(selectCountStatusOrder);
     const ordersUser = useSelector(selectOrdersByUser);
-    const statistics365Days = useSelector((state: any) => state.order.statistics365Days);
-    const allRequestOrder = useSelector((state: any) => state.order.allRequestOrder);
-    const allRequestOrderApprove = useSelector((state: any) => state.order.allRequestOrderApprove);
-    const overviewStatisticsOrder = useSelector((state: any) => state.order.overviewStatisticsOrder);
+    const statistics365Days = useSelector(selectStatistics365Days);
+    const allRequestOrder = useSelector(selectAllRequestOrder);
+    const allRequestOrderApprove = useSelector(selectAllRequestOrderApprove);
+    const totalRequestOrderApprove = useSelector(selectTotalRequestOrderApprove);
+    const overviewStatisticsOrder = useSelector(selectOverviewStatisticOrder);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
 
@@ -224,6 +230,7 @@ export function useOrder() {
 
         fetchGetApproveRequestOrder,
         allRequestOrderApprove,
+        totalRequestOrderApprove,
         fetchApproveRequestOrder,
 
         fetchGetOverviewSatisticsOrder,

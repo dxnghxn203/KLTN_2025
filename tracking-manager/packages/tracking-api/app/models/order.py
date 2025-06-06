@@ -866,13 +866,15 @@ async def get_approve_order(email: str, page: int, page_size: int, status: str =
             query["status"] = status
             query["verified_by"] = email
         elif status == "pending":
-            query["is_approved"] = False
+            query["verified_by"] = {"$in": [None, ""]}
         else:
             query["verified_by"] = {"$in": [None, "", email]}
 
+        order_iist = collection.find(query).skip(skip_count).limit(page_size)
+
         return {
             "total_orders": collection.count_documents(query),
-            "orders": collection.find(query).skip(skip_count).limit(page_size)
+            "orders": (ItemOrderForPTRes(**order) for order in order_iist)
         }
     except Exception as e:
         logger.error(f"Failed [get_approve_order]: {e}")
@@ -882,7 +884,7 @@ async def get_requested_order(user_id: str):
     try:
         collection = database.db[request_collection_name]
         order_list = collection.find({"created_by": user_id})
-        return (ItemOrderForPTRes.from_mongo(order) for order in order_list)
+        return (ItemOrderForPTRes(**order) for order in order_list)
     except Exception as e:
         logger.error(f"Failed [get_requested_order]: {e}")
         raise e

@@ -6,4 +6,5 @@ export const selectOrdersByUser = (state: any) => state.order.ordersByUser;
 export const selectStatistics365Days = (state: any) => state.order.statistics365Days;
 export const selectAllRequestOrder = (state: any) => state.order.allRequestOrder;
 export const selectAllRequestOrderApprove = (state: any) => state.order.allRequestOrderApprove;
+export const selectTotalRequestOrderApprove = (state: any) => state.order.totalRequestOrderApprove;
 export const selectOverviewStatisticOrder = (state: any) => state.order.overviewStatisticOrder;

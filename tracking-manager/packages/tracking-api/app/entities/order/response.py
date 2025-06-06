@@ -63,7 +63,6 @@ class ItemOrderImageRes(BaseModel):
     images_url: Optional[Union[str, None]] = None
 
 class ItemOrderForPTRes(BaseModel):
-    id: Optional[str] = Field(None, alias="_id")
     request_id: Optional[Union[str, None]] = None
     status: Optional[Union[str, None]] = None
     product: List[ItemProductRes]
@@ -76,9 +75,3 @@ class ItemOrderForPTRes(BaseModel):
     pharmacist_name: Optional[Union[str, None]] = None
     note : Optional[Union[str, None]] = None
     images: List[Optional[Union[ItemOrderImageRes, None]]] = None
-
-    @classmethod
-    def from_mongo(cls, data):
-        if '_id' in data:
-            data['_id'] = str(data.get('_id'))
-        return cls(**data)

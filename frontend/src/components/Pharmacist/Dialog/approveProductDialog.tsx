@@ -39,6 +39,17 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
   const [rejectedNote, setRejectedNote] = useState("");
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
   const toast = useToast();
+
+  const buildFetchPayload = () => ({
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    keyword: filters.searchTerm,
+    mainCategory: filters.categoryFilter,
+    prescriptionRequired: filters.prescriptionFilter === "" ? null : filters.prescriptionFilter === "true",
+    status: filters.statusFilter,
+  });
+
+
   const handleReject = () => {
     const emptyFieldErrors = validateEmptyFields({
       rejected_note: rejectedNote,
@@ -56,20 +67,12 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
       is_approved: false,
     };
 
+
     fetchApproveProductByPharmacist(
       payload,
       (message) => {
         toast.showToast(message, "success");
-        handleFetchProductApproved(
-          {
-            page: pagination.page,
-            pageSize: pagination.pageSize,
-            keyword: filters.searchTerm,
-            mainCategory: filters.categoryFilter,
-            prescriptionRequired: filters.prescriptionFilter === "" ? null : filters.prescriptionFilter === "true",
-            status: filters.statusFilter
-          }
-        )
+        handleFetchProductApproved(buildFetchPayload());
         setRejectedNote("");
         setErrors({});
         onClose();
@@ -90,6 +93,8 @@ const ApproveProductDialog: React.FC<ApproveProductDialogProps> = ({
       },
       (message) => {
         toast.showToast(message, "success");
+        handleFetchProductApproved(buildFetchPayload());
+        setRejectedNote("");
         onClose();
       },
       (message) => {

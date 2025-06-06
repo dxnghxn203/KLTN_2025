@@ -1,55 +1,32 @@
 "use client";
 import {useState, useEffect} from "react";
-import CustomPagination from "@/components/Admin/CustomPagination/customPagination";
 import Link from "next/link";
-import {X} from "lucide-react";
-import Image from "next/image";
-import {RiMore2Fill} from "react-icons/ri";
-// Remove FilterBar import
-import {IoImage} from "react-icons/io5";
-import {useProduct} from "@/hooks/useProduct";
 import {
     MdNavigateBefore,
     MdNavigateNext,
-    MdOutlineModeEdit,
 } from "react-icons/md";
-import ApproveProductDialog from "../Dialog/approveProductDialog";
 import {FiEye} from "react-icons/fi";
-import {LuBadgeCheck, LuEye} from "react-icons/lu";
+import {LuBadgeCheck} from "react-icons/lu";
 import {useOrder} from "@/hooks/useOrder";
-// import ApproveRequestDialog from "../Dialog/approveRequestDialog";
 import {useRouter} from "next/navigation";
+import FilterBar from "./filterBar";
 
 const ConsultingList = () => {
-    const {fetchGetApproveRequestOrder, allRequestOrderApprove} = useOrder();
-
-    // Combine currentPage into pages state for cleaner state management
-    const [pages, setPages] = useState<any>({
-        page: 1,
-        page_size: 10,
-    });
-
-    // Get data from API response
-    const totalOrders = allRequestOrderApprove
-        ? allRequestOrderApprove.total_orders
-        : 0;
-    const ordersList = allRequestOrderApprove
-        ? allRequestOrderApprove.orders || []
-        : [];
+    const {fetchGetApproveRequestOrder, allRequestOrderApprove, totalRequestOrderApprove} = useOrder();
+    const [pagination, setPagination] = useState({ page: 1, page_size: 10 });
+    const [status, setStatus] = useState("");
 
     // Calculate total pages
-    const totalPages = Math.ceil(totalOrders / pages.page_size);
-
-    const [selectedOrderRequest, setSelectedOrderRequest] = useState<any>(null);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const totalPages = Math.ceil(totalRequestOrderApprove / pagination.page_size);
+    const currentPageData = (pagination.page - 1) * pagination.page_size;
+    const firstIndex = currentPageData + 1;
+    const lastIndex = Math.min(currentPageData + pagination.page_size, totalRequestOrderApprove);
     const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
-    // Remove showFilter state
-    const [isDialogOpen, setDialogOpen] = useState(false);
     const router = useRouter();
 
     // Update onPageChange to modify pages state
     const onPageChange = (page: number) => {
-        setPages((prevPages: any) => ({
+        setPagination((prevPages: any) => ({
             ...prevPages,
             page: page
         }));
@@ -57,7 +34,7 @@ const ConsultingList = () => {
 
     // Add page size change handler
     const handlePageSizeChange = (size: number) => {
-        setPages((prevPages: any) => ({
+        setPagination((prevPages: any) => ({
             ...prevPages,
             page_size: size,
             page: 1 // Reset to first page when changing page size
@@ -77,15 +54,17 @@ const ConsultingList = () => {
 
     useEffect(() => {
         fetchGetApproveRequestOrder(
-            pages,
-            () => {
-                console.log("Successfully fetched orders for page", pages.page);
+            {
+                page: pagination.page,
+                page_size: pagination.page_size,
+                status: status
             },
+            () => {},
             (error: any) => {
                 console.error("Error fetching orders:", error);
             }
         );
-    }, [pages]); // Dependency on pages ensures fetch happens when page changes
+    }, [pagination, status]);
 
     return (
         <div>
@@ -104,7 +83,11 @@ const ConsultingList = () => {
                 </div>
 
                 {/* Remove filter button and FilterBar component */}
-
+                <
+                    FilterBar
+                    status={status}
+                    onStatusChange={(status: string) => setStatus(status)} 
+                />
                 <div className="bg-white shadow-sm rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full table-auto border-collapse">
@@ -120,12 +103,12 @@ const ConsultingList = () => {
                             </thead>
 
                             <tbody>
-                            {ordersList && ordersList.length > 0 ? (
-                                ordersList.map((request: any, index: number) => (
+                            {allRequestOrderApprove && totalRequestOrderApprove> 0 ? (
+                                allRequestOrderApprove.map((request: any, index: number) => (
                                     <tr
                                         key={request.request_id}
                                         className={`text-sm hover:bg-gray-50 transition ${
-                                            index !== ordersList.length - 1
+                                            index !== totalRequestOrderApprove - 1
                                                 ? "border-b border-gray-200"
                                                 : ""
                                         }`}
@@ -134,29 +117,27 @@ const ConsultingList = () => {
                                         <td className="py-4 ">{request.pick_to.name}</td>
                                         <td className="py-4 ">{request.pick_to.phone_number}</td>
                                         <td className="py-4">{request.pick_to.email}</td>
-
                                         <td className="py-4 text-center">
-                        <span
-                            className={`px-2 py-1 rounded-full ${
-                                request.status === "rejected"
-                                    ? "bg-red-100 text-red-600"
-                                    : request.status === "pending"
-                                        ? "bg-yellow-100 text-yellow-600"
-                                        : request.status === "approved"
-                                            ? "bg-green-100 text-green-600"
-                                            : "bg-blue-100 text-blue-600"
-                            }`}
-                        >
-                          {request.status === "rejected"
-                              ? "Đã từ chối"
-                              : request.status === "pending"
-                                  ? "Chờ duyệt"
-                                  : request.status === "approved"
-                                      ? "Đã duyệt"
-                                      : "Chưa liên lạc được"}
-                        </span>
+                                            <span
+                                                className={`px-2 py-1 rounded-full ${
+                                                    request.status === "rejected"
+                                                        ? "bg-red-100 text-red-600"
+                                                        : request.status === "pending"
+                                                            ? "bg-yellow-100 text-yellow-600"
+                                                            : request.status === "approved"
+                                                                ? "bg-green-100 text-green-600"
+                                                                : "bg-blue-100 text-blue-600"
+                                                }`}
+                                            >
+                                            {request.status === "rejected"
+                                                ? "Đã từ chối"
+                                                : request.status === "pending"
+                                                    ? "Chờ duyệt"
+                                                    : request.status === "approved"
+                                                        ? "Đã duyệt"
+                                                        : "Chưa liên lạc được"}
+                                            </span>
                                         </td>
-
                                         <td className="py-4 pl-4 text-center relative">
                                             {["approved", "rejected"].includes(request.status) ? (
                                                 <button
@@ -204,7 +185,7 @@ const ConsultingList = () => {
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                         <span>Hiển thị:</span>
                         <select
-                            value={pages.page_size}
+                            value={pagination.page_size}
                             onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                             className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
@@ -219,16 +200,16 @@ const ConsultingList = () => {
                     {/* Current page display */}
                     <div className="text-sm text-gray-600">
                         Hiển
-                        thị {ordersList.length > 0 ? (pages.page - 1) * pages.page_size + 1 : 0} - {Math.min(pages.page * pages.page_size, totalOrders)} trong
-                        tổng số {totalOrders} yêu cầu
+                        thị {firstIndex} - {lastIndex} trong
+                        tổng số {totalRequestOrderApprove} yêu cầu
                     </div>
 
                     {/* Page navigation */}
                     <div className="flex items-center justify-center space-x-2">
                         {/* Previous button */}
                         <button
-                            onClick={() => onPageChange(pages.page - 1)}
-                            disabled={pages.page === 1}
+                            onClick={() => onPageChange(pagination.page - 1)}
+                            disabled={pagination.page === 1}
                             className="text-gray-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <MdNavigateBefore className="text-xl"/>
@@ -242,16 +223,16 @@ const ConsultingList = () => {
                             if (
                                 pageNumber === 1 ||
                                 pageNumber === totalPages ||
-                                (pageNumber >= pages.page - 1 && pageNumber <= pages.page + 1) ||
-                                (pages.page <= 3 && pageNumber <= 5) ||
-                                (pages.page >= totalPages - 2 && pageNumber >= totalPages - 4)
+                                (pageNumber >= pagination.page - 1 && pageNumber <= pagination.page + 1) ||
+                                (pagination.page <= 3 && pageNumber <= 5) ||
+                                (pagination.page >= totalPages - 2 && pageNumber >= totalPages - 4)
                             ) {
                                 return (
                                     <button
                                         key={pageNumber}
                                         onClick={() => onPageChange(pageNumber)}
                                         className={`w-8 h-8 rounded-full text-sm flex items-center justify-center ${
-                                            pages.page === pageNumber
+                                            pagination.page === pageNumber
                                                 ? "bg-blue-700 text-white"
                                                 : "text-black hover:bg-gray-200"
                                         }`}
@@ -263,8 +244,8 @@ const ConsultingList = () => {
 
                             // Show ellipsis where needed
                             if (
-                                (pageNumber === pages.page - 2 && pages.page > 4) ||
-                                (pageNumber === pages.page + 2 && pages.page < totalPages - 3)
+                                (pageNumber === pagination.page - 2 && pagination.page > 4) ||
+                                (pageNumber === pagination.page + 2 && pagination.page < totalPages - 3)
                             ) {
                                 return (
                                     <span key={pageNumber} className="px-2 text-gray-500">
@@ -278,8 +259,8 @@ const ConsultingList = () => {
 
                         {/* Next button */}
                         <button
-                            onClick={() => onPageChange(pages.page + 1)}
-                            disabled={pages.page === totalPages || totalPages === 0}
+                            onClick={() => onPageChange(pagination.page + 1)}
+                            disabled={pagination.page === totalPages || totalPages === 0}
                             className="text-gray-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <MdNavigateNext className="text-xl"/>

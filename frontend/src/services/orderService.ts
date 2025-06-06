@@ -220,7 +220,13 @@ export const getApproveRequestOrder = async (
     data: any  // Default parameters
 ) => {
     try {
-        const response: any = await axiosClient.get(`/v1/order/approve-prescription?page=${data.page}&page_size=${data.page_size}`);
+        const params = new URLSearchParams();
+        params.append("page", data.page);
+        params.append("page_size", data.page_size);
+        if (data.status) {
+            params.append("status", data.status);
+        }
+        const response: any = await axiosClient.get(`/v1/order/approve-prescription?${params.toString()}`);
         return {
             status_code: response?.status_code,
             message: response?.message,
