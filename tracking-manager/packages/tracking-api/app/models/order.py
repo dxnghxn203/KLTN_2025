@@ -311,48 +311,15 @@ async def process_order_voucher(
         logger.error(f"Failed [process_order_voucher]: {e}")
         raise e
 
-async def check_shipping_fee(
-        product_items: List[ItemProductReq],
-        receiver_province_code: int,
-        receiver_district_code: int,
-        receiver_commune_code: int,
-        product_price: float,
-        weight: float,
-        voucher: Optional[List[ItemVoucherReq]] = None,
-        voucher_error: Optional[List[Dict[str, str]]] = None
-    ):
+async def get_shipping_fee(
+    product_items: List[ItemProductReq],
+    receiver_province_code: int,
+    receiver_district_code: int,
+    receiver_commune_code: int,
+    product_price: float,
+    weight: float
+) -> Tuple[float, str]:
     try:
-        if receiver_province_code == 0:
-            now = get_current_time()
-            shipping_fee = 0
-            order_discount_amount = 0
-            delivery_discount_amount = 0
-
-            if voucher:
-                for v in voucher:
-                    if v.voucher_type == "order" and product_price >= v.min_order_value:
-                        discount = min(product_price * v.discount / 100, v.max_discount_value)
-                        order_discount_amount += discount
-                    elif v.voucher_type == "delivery":
-                        # Vì shipping_fee = 0 => không giảm
-                        continue
-
-            total_fee = product_price
-
-            return {
-                "product_fee": product_price,
-                "shipping_fee": 0,
-                "delivery_time": now,
-                "weight": weight,
-                "voucher_order_discount": order_discount_amount,
-                "voucher_delivery_discount": delivery_discount_amount,
-                "basic_total_fee": total_fee,
-                "estimated_total_fee": total_fee - order_discount_amount - delivery_discount_amount,
-                "out_of_stock": [],
-                "out_of_date": [],
-                "voucher_error": voucher_error or []
-            }
-
         # route_code = await determine_route(
         #         sender_code=SENDER_PROVINCE_CODE,
         #         receiver_code=receiver_province_code
@@ -428,7 +395,6 @@ async def check_shipping_fee(
             raise ghn_response
 
         shipping_fee = ghn_response["data"]["total"]
-        logger.info(f"shipping_fee: {shipping_fee}")
 
         time_response = get_delivery_time_ghn(TimeGHNReq(**{
             "from_district_id": from_district,
@@ -447,7 +413,54 @@ async def check_shipping_fee(
             time_response = json.loads(time_response)
 
         delivery_time = time_response["data"]["leadtime_order"]["to_estimate_date"]
-        logger.info(f"delivery_time: {delivery_time}")
+        return shipping_fee, delivery_time
+    except Exception as e:
+        logger.error(f"Failed [get_shipping_fee]: {e}")
+        raise e
+
+async def check_shipping_fee(
+        product_items: List[ItemProductReq],
+        receiver_province_code: int,
+        receiver_district_code: int,
+        receiver_commune_code: int,
+        product_price: float,
+        weight: float,
+        voucher: Optional[List[ItemVoucherReq]] = None,
+        voucher_error: Optional[List[Dict[str, str]]] = None,
+        shipping_fee: Optional[float] = None,
+        delivery_time: Optional[str] = None
+    ):
+    try:
+        if receiver_province_code == 0:
+            now = get_current_time()
+            shipping_fee = 0
+            order_discount_amount = 0
+            delivery_discount_amount = 0
+
+            if voucher:
+                for v in voucher:
+                    if v.voucher_type == "order" and product_price >= v.min_order_value:
+                        discount = min(product_price * v.discount / 100, v.max_discount_value)
+                        order_discount_amount += discount
+                    elif v.voucher_type == "delivery":
+                        # Vì shipping_fee = 0 => không giảm
+                        continue
+
+            total_fee = product_price
+
+            return {
+                "product_fee": product_price,
+                "shipping_fee": 0,
+                "delivery_time": now,
+                "weight": weight,
+                "voucher_order_discount": order_discount_amount,
+                "voucher_delivery_discount": delivery_discount_amount,
+                "basic_total_fee": total_fee,
+                "estimated_total_fee": total_fee - order_discount_amount - delivery_discount_amount,
+                "out_of_stock": [],
+                "out_of_date": [],
+                "voucher_error": voucher_error or []
+            }
 
         order_discount_amount = 0
         delivery_discount_amount = 0
@@ -459,6 +472,16 @@ async def check_shipping_fee(
                 elif v.voucher_type == "delivery" and shipping_fee >= v.min_order_value:
                     discount = min(shipping_fee * v.discount / 100, v.max_discount_value)
                     delivery_discount_amount += discount
+
+        if not shipping_fee and not delivery_time:
+            shipping_fee, delivery_time = await get_shipping_fee(
+                product_items=product_items,
+                receiver_province_code=receiver_province_code,
+                receiver_district_code=receiver_district_code,
+                receiver_commune_code=receiver_commune_code,
+                product_price=product_price,
+                weight=weight
+            )
 
         total_fee = product_price + shipping_fee
 
@@ -475,7 +498,6 @@ async def check_shipping_fee(
             "out_of_date": [],
             "voucher_error": voucher_error or []
         }
-
     except Exception as e:
         logger.error(f"Failed [check_shipping_fee]: {e}")
         raise e
@@ -1006,14 +1028,23 @@ async def check_fee_approve_order(item: ItemOrderApproveReq, pharmacist: ItemPha
                and order_request.created_by not in v.used_by
         ]
 
-        order_voucher = next((v for v in valid_vouchers if v.voucher_type == "order"), None)
-        delivery_voucher = next((v for v in valid_vouchers if v.voucher_type == "delivery"), None)
+        shipping_fee, delivery_time = await get_shipping_fee(
+            product_items=product_items,
+            receiver_province_code=order_request.receiver_province_code,
+            receiver_district_code=order_request.receiver_district_code,
+            receiver_commune_code=order_request.receiver_commune_code,
+            product_price=total_price,
+            weight=weight
+        )
+        logger.info(f"shipping_fee: {shipping_fee}, delivery_time: {delivery_time}")
+
+        order_voucher = next((v for v in valid_vouchers if v.voucher_type == "order" and v.max_discount_value <= total_price), None)
+        delivery_voucher = next((v for v in valid_vouchers if v.voucher_type == "delivery" and v.max_discount_value <= shipping_fee), None)
 
         order_voucher_id = order_voucher.voucher_id if order_voucher else None
         delivery_voucher_id = delivery_voucher.voucher_id if delivery_voucher else None
 
         voucher_list, voucher_error = await process_order_voucher(order_voucher_id, delivery_voucher_id, order_request.created_by)
-
         return await check_shipping_fee(
             product_items=product_items,
             receiver_province_code=order_request.receiver_province_code,
@@ -1022,7 +1053,9 @@ async def check_fee_approve_order(item: ItemOrderApproveReq, pharmacist: ItemPha
             product_price=total_price,
             weight=weight,
             voucher=voucher_list,
-            voucher_error=voucher_error
+            voucher_error=voucher_error,
+            shipping_fee=shipping_fee,
+            delivery_time=delivery_time
         )
 
     except Exception as e:

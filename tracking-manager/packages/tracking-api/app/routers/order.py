@@ -331,7 +331,7 @@ async def check_fee_approve_order(item: ItemOrderApproveReq, token: str = Depend
     except response.JsonException as je:
         raise je
     except Exception as e:
-        logger.error(f"Error accepting request prescription: {e}")
+        logger.error(f"Error checking fee request prescription: {e}")
         raise response.JsonException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             message="Internal server error"
