@@ -43,7 +43,7 @@ from app.models.product import restore_product_sell, check_all_product_discount_
     get_product_inventory, get_product_by_id
 from app.models.time import get_range_time, get_delivery_time_ghn
 from app.models.user import get_by_id
-from app.models.voucher import get_voucher_by_id, restore_voucher
+from app.models.voucher import get_voucher_by_id, restore_voucher, get_all_vouchers_for_users
 
 PAYMENT_API_URL = os.getenv("PAYMENT_API_URL")
 
@@ -965,6 +965,68 @@ async def approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes
 
     except Exception as e:
         logger.error(f"Failed [approve_order]: {e}")
+        raise e
+
+async def check_fee_approve_order(item: ItemOrderApproveReq, pharmacist: ItemPharmacistRes):
+    try:
+        collection = database.db[request_collection_name]
+        order_request = collection.find_one({"request_id": item.request_id})
+        if not order_request:
+            raise response.JsonException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                message="Không tìm thấy yêu cầu"
+            )
+        order_request = ItemOrderForPTRes(**order_request)
+
+
+        if not item.product:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Không tìm thấy sản phẩm"
+            )
+        product_items, total_price, weight, out_of_stock, out_of_date = await process_order_products(item.product)
+
+        if out_of_stock or out_of_date:
+            return response.BaseResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
+                data={
+                    "out_of_stock": out_of_stock,
+                    "out_of_date": out_of_date
+                }
+            )
+
+        voucher_list_all = await get_all_vouchers_for_users()
+
+        now = get_current_time()
+        valid_vouchers = [
+            v for v in voucher_list_all
+            if v.used < v.inventory
+               and v.expired_date > now
+               and order_request.created_by not in v.used_by
+        ]
+
+        order_voucher = next((v for v in valid_vouchers if v.voucher_type == "order"), None)
+        delivery_voucher = next((v for v in valid_vouchers if v.voucher_type == "delivery"), None)
+
+        order_voucher_id = order_voucher.voucher_id if order_voucher else None
+        delivery_voucher_id = delivery_voucher.voucher_id if delivery_voucher else None
+
+        voucher_list, voucher_error = await process_order_voucher(order_voucher_id, delivery_voucher_id, order_request.created_by)
+
+        return await check_shipping_fee(
+            product_items=product_items,
+            receiver_province_code=order_request.receiver_province_code,
+            receiver_district_code=order_request.receiver_district_code,
+            receiver_commune_code=order_request.receiver_commune_code,
+            product_price=total_price,
+            weight=weight,
+            voucher=voucher_list,
+            voucher_error=voucher_error
+        )
+
+    except Exception as e:
+        logger.error(f"Failed [check_fee_approve_order]: {e}")
         raise e
 
 async def reset_dev_system():

@@ -315,6 +315,28 @@ async def approve_order(item: ItemOrderApproveReq, token: str = Depends(middlewa
             message="Internal server error"
         )
 
+@router.post("/order/approve-fee", response_model=response.BaseResponse)
+async def check_fee_approve_order(item: ItemOrderApproveReq, token: str = Depends(middleware.verify_token_pharmacist)):
+    try:
+        pharmacist_info = await pharmacist.get_current(token)
+        if not pharmacist_info:
+            raise response.JsonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                message="Pharmacist not found"
+            )
+        result = await order.check_fee_approve_order(item, pharmacist_info)
+        return response.SuccessResponse(
+            data=result
+        )
+    except response.JsonException as je:
+        raise je
+    except Exception as e:
+        logger.error(f"Error accepting request prescription: {e}")
+        raise response.JsonException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            message="Internal server error"
+        )
+
 @router.delete("/order/reset-system", response_model=response.BaseResponse)
 async def reset_system_api(token: str = Depends(middleware.verify_token_admin)):
     try:
