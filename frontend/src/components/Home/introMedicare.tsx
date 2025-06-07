@@ -48,7 +48,7 @@ const IntroMedicare: React.FC = () => {
           </div>
           <div>
             <h3 className="text-blue-700 font-bold">TƯ VẤN MIỄN PHÍ</h3>
-            <a className="text-sm text-blue-600">Với dược sĩ chuyên môn</a>
+            <a className="text-sm">với dược sĩ chuyên môn</a>
           </div>
         </div>
       </div>

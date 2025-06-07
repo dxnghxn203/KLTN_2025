@@ -6,12 +6,23 @@ import { useReview } from "@/hooks/useReview";
 import { useProduct } from "@/hooks/useProduct";
 import ReviewContent from "./reviewContent";
 import CommentContent from "./commentContent";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/providers/toastProvider";
 const FeedBack = ({ product, productId }: { product: any; productId: any }) => {
   const [isDialogRatingOpen, setIsDialogRatingOpen] = useState(false);
   const { allReview, fetchGetAllReview } = useReview();
   const { fetchProductBySlug } = useProduct();
   const [selected, setSelected] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const { user } = useAuth();
+  const toast = useToast();
+  const handleWriteReviewClick = () => {
+    if (!user) {
+      toast.showToast("Vui lòng đăng nhập trước khi đánh giá", "warning");
+    } else {
+      setIsDialogRatingOpen(true);
+    }
+  };
 
   return (
     <div className="">
@@ -41,7 +52,7 @@ const FeedBack = ({ product, productId }: { product: any; productId: any }) => {
           <RatingBar allReviews={allReview} />
           <button
             className="bg-[#0053E2] text-white px-4 rounded-full h-[50px] font-bold"
-            onClick={() => setIsDialogRatingOpen(true)}
+            onClick={handleWriteReviewClick}
           >
             Viết đánh giá
           </button>

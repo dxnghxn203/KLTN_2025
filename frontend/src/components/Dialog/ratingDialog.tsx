@@ -330,7 +330,7 @@ const RatingDialog: React.FC<RatingDialogProps> = ({
 
             <div>
               <button className="bg-[#0053E2] text-white rounded-full h-[50px] font-bold w-full">
-                Gửi bình luận
+                Gửi
               </button>
             </div>
           </form>

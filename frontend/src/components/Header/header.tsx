@@ -666,6 +666,11 @@ export default function Header() {
                               Lịch sử đơn hàng
                             </div>
                           </Link>
+                          <Link href="/ca-nhan/don-thuoc-cua-toi">
+                            <div className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer">
+                              Đơn thuốc của tôi
+                            </div>
+                          </Link>
                           <div
                             className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer flex items-center"
                             onClick={handleLogout}
