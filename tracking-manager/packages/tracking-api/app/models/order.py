@@ -462,6 +462,16 @@ async def check_shipping_fee(
                 "voucher_error": voucher_error or []
             }
 
+        if not shipping_fee and not delivery_time:
+            shipping_fee, delivery_time = await get_shipping_fee(
+                product_items=product_items,
+                receiver_province_code=receiver_province_code,
+                receiver_district_code=receiver_district_code,
+                receiver_commune_code=receiver_commune_code,
+                product_price=product_price,
+                weight=weight
+            )
+
         order_discount_amount = 0
         delivery_discount_amount = 0
         if voucher:
@@ -472,16 +482,6 @@ async def check_shipping_fee(
                 elif v.voucher_type == "delivery" and shipping_fee >= v.min_order_value:
                     discount = min(shipping_fee * v.discount / 100, v.max_discount_value)
                     delivery_discount_amount += discount
-
-        if not shipping_fee and not delivery_time:
-            shipping_fee, delivery_time = await get_shipping_fee(
-                product_items=product_items,
-                receiver_province_code=receiver_province_code,
-                receiver_district_code=receiver_district_code,
-                receiver_commune_code=receiver_commune_code,
-                product_price=product_price,
-                weight=weight
-            )
 
         total_fee = product_price + shipping_fee
 
