@@ -207,6 +207,18 @@ export const orderSlice = createSlice({
             state.loading = false;
             state.error = null;
         },
+        // fetch check fee approve request-order
+        fetchCheckFeeApproveRequestOrderStart(state, action: PayloadAction<any>) {
+            state.loading = true;
+        },
+        fetchCheckFeeApproveRequestOrderSuccess(state, action: PayloadAction<any>) {
+            state.loading = false;
+            state.error = null;
+        },
+        fetchCheckFeeApproveRequestOrderFailed(state) {
+            state.loading = false;
+            state.error = null;
+        },
 
         // fetch get overview statistics order
         fetchGetOverviewStatisticsOrderStart(state, action: PayloadAction<any>) {
@@ -383,6 +395,10 @@ export const {
     fetchApproveRequestOrderFailed,
     fetchApproveRequestOrderStart,
     fetchApproveRequestOrderSuccess,
+
+    fetchCheckFeeApproveRequestOrderFailed,
+    fetchCheckFeeApproveRequestOrderStart,
+    fetchCheckFeeApproveRequestOrderSuccess,
 
     fetchGetOverviewStatisticsOrderFailed,
     fetchGetOverviewStatisticsOrderStart,

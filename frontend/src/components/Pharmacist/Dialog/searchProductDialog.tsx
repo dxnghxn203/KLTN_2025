@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import Image from "next/image";
 import { useProduct } from "@/hooks/useProduct";
-import { useToast } from "@/providers/toastProvider";
 
 interface Props {
   isOpen: boolean;
@@ -21,7 +20,6 @@ export default function SearchProductDialog({
   const [search, setSearch] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false); // Thêm state để kiểm tra trạng thái loading
-  const toast = useToast();
 
   if (!isOpen) return null;
 
@@ -134,7 +132,6 @@ export default function SearchProductDialog({
                       className="bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 py-1 rounded-full text-sm font-medium"
                       onClick={() => {
                         handleAddProduct(product);
-                        setSelectedProduct(product.product_id);
                       }}
                     >
                       Thêm

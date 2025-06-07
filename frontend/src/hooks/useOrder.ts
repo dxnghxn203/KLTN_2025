@@ -14,7 +14,8 @@ import {
     selectStatistics365Days,
     selectAllRequestOrder,
     selectAllRequestOrderApprove,
-    selectOverviewStatisticOrder
+    selectOverviewStatisticOrder,
+    fetchCheckFeeApproveRequestOrderStart
 } from "@/store/order";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
@@ -144,6 +145,14 @@ export function useOrder() {
         }));
     }
 
+    const fetchCheckFeeApproveRequestOrder = async (data: any, onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
+        dispatch(fetchCheckFeeApproveRequestOrderStart({
+            body: data,
+            onSuccess: onSuccess,
+            onFailed: onFailed
+        }));
+    }
+
     const fetchGetOverviewSatisticsOrder = async (onSuccess: (message: any) => void, onFailed: (message: any) => void) => {
         dispatch(fetchGetOverviewStatisticsOrderStart({
 
@@ -232,6 +241,7 @@ export function useOrder() {
         allRequestOrderApprove,
         totalRequestOrderApprove,
         fetchApproveRequestOrder,
+        fetchCheckFeeApproveRequestOrder,
 
         fetchGetOverviewSatisticsOrder,
         overviewStatisticsOrder,

@@ -65,6 +65,8 @@ export const ROLE_ACTIONS_PHARMACIST = [
     'loginPharmacistSuccess',
     'fetchUpdatePharmacistInfoStart',
     'fetchProductApprovedStart',
+    'fetchApproveRequestOrderStart',
+    'fetchCheckFeeApproveRequestOrderStart',
     'fetchGetAllConversationWaitingStart'
 ]
 

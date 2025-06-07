@@ -4,87 +4,136 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import React, {useEffect, useState} from "react";
 import Image from "next/image";
-import {X, ZoomIn} from "lucide-react";
+import {X} from "lucide-react";
 import {GoZoomIn} from "react-icons/go";
 import SearchProductDialog from "../Dialog/searchProductDialog";
 import {FiMinus, FiPlus} from "react-icons/fi";
 import {ImBin} from "react-icons/im";
 import {useToast} from "@/providers/toastProvider";
-import {validateEmptyFields} from "@/utils/validation";
-import {original} from "@reduxjs/toolkit";
 import {useDocument} from "@/hooks/useDocument";
+import { da } from "date-fns/locale";
+
+const STATUS_LABEL_MAP: Record<
+  string,
+  { text: string; className: string }
+> = {
+  pending: {
+    text: "Đang chờ duyệt",
+    className: "text-yellow-500 bg-yellow-100",
+  },
+  approved: {
+    text: "Đã duyệt",
+    className: "text-green-500 bg-green-100",
+  },
+  rejected: {
+    text: "Đã từ chối",
+    className: "text-red-500 bg-red-100",
+  },
+  uncontacted: {
+    text: "Chưa liên lạc được",
+    className: "text-blue-500 bg-blue-100",
+  },
+};
 
 export default function RequestDetailPage() {
+    const router = useRouter();
+    const toast = useToast();
+    const searchParams = useSearchParams();
+
     const {
         fetchGetApproveRequestOrder,
         allRequestOrderApprove,
+        totalRequestOrderApprove,
         fetchApproveRequestOrder,
+        fetchCheckFeeApproveRequestOrder
     } = useOrder();
     const {
         getDocumentByRequestId
     } = useDocument();
-
-    const [pages, setPages] = useState<any>({
-        page: 1,
-        page_size: 10,
-    });
-
-    const searchParams = useSearchParams();
+    
     const detailId = searchParams.get("chi-tiet");
     const editId = searchParams.get("edit");
     const requestId = detailId || editId;
+    
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [requestItem, setRequestItem] = useState<any>(null);
-    const [isOpen, setIsOpen] = useState(false);
-    const [quantity, setQuantity] = useState<number>(1);
     const [selectedProduct, setSelectedProduct] = useState<any[]>([]);
-    const toast = useToast();
     const [document, setDocument] = useState<any>(null);
+    const [shippingFee, setShippingFee] = useState<any>({});
+    
+    const [isOpen, setIsOpen] = useState(false);
     const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
+
     const [statusApprove, setStatusApprove] = useState<string>("pending");
     const [noteApprove, setNoteApprove] = useState<string>("");
-    const [original_price, setOriginalPrice] = useState<number>(0);
-    const [price, setPrice] = useState<number>(0);
+
     const [editingProductIndex, setEditingProductIndex] = useState<number | null>(null);
     const [editedProducts, setEditedProducts] = useState<any[]>([]);
 
-    const router = useRouter();
-    useEffect(() => {
-        const checkIfRequestItemExists = () => {
-            if (requestItem) return;
+    const [statusInfo, setStatusInfo] = useState<{ text: string; className: string }>({
+        text: "",
+        className: "",
+    });
 
-            // Check if allRequestOrderApprove and orders array exist
-            if (!allRequestOrderApprove || !allRequestOrderApprove.orders) {
-                return;
-            }
-
-            // Access the orders array from the object
-            const item = allRequestOrderApprove.orders.find(
+    const checkIfRequestItemExists = () => {
+        if (requestItem) return;
+        if (allRequestOrderApprove && totalRequestOrderApprove > 0) {
+            const item = allRequestOrderApprove.find(
                 (item: any) => item.request_id === requestId
             );
             if (item) {
                 setRequestItem(item);
-                fetchGetApproveRequestOrder(
-                    pages,
-                    () => {
-                    },
-                    () => {
-                    }
-                );
+                if (item.status) {
+                    const info = STATUS_LABEL_MAP[item.status] || {
+                        text: "Không rõ trạng thái",
+                        className: "text-gray-500 bg-gray-100",
+                    };
+                    setStatusInfo(info);
+                }
+                
+                setSelectedProduct((prev) => [
+                    ...prev,
+                    ...item.product.map((prod: any) => ({
+                        prices: [
+                            {
+                                price_id: prod.price_id,
+                                original_price: prod.original_price,
+                                price: prod.price,
+                                unit: prod.unit,
+                            },
+                        ],
+                        product_id: prod.product_id,
+                        product_name: prod.product_name,
+                        images_primary: prod.images_primary,
+                        quantity: prod.quantity,
+                        price_id: prod.price_id,
+                        original_price: prod.original_price,
+                        price: prod.price,
+                        unit: prod.unit,
+                    })),
+                ]);
+
                 getDocumentByRequestId(
                     item.request_id,
-                    (data: any) => {
-                        setDocument(data);
-                    },
-                    (error: any) => {
-                        console.error("Error fetching document:", error);
-                    }
-                )
+                    (data: any) => setDocument(data),
+                    (error: any) => console.error("Error fetching document:", error)
+                );
             }
-        };
+        } else {
+            fetchGetApproveRequestOrder(
+                {
+                    page: 1,
+                    page_size: totalRequestOrderApprove,
+                },
+                () => {},
+                () => {}
+            );
+        }
+    };
 
+    useEffect(() => {
         checkIfRequestItemExists();
-    }, [requestId, allRequestOrderApprove, requestItem]);
+    }, [requestId, allRequestOrderApprove, requestItem, totalRequestOrderApprove]);
 
     if (!requestItem) return <div>Loading...</div>;
 
@@ -97,11 +146,13 @@ export default function RequestDetailPage() {
             )
         );
     };
+
     const handleRemove = (productId: string) => {
         setSelectedProduct((prev) =>
             prev.filter((product) => product.product_id !== productId)
         );
     };
+
     const updateUnit = (
         productId: string,
         e: React.ChangeEvent<HTMLSelectElement>
@@ -111,24 +162,24 @@ export default function RequestDetailPage() {
             .find((product) => product.product_id === productId)
             ?.prices.find((price: any) => price.unit === selectedUnit);
         if (selectedPrice) {
-            setOriginalPrice(selectedPrice.original_price);
-            setPrice(selectedPrice.price);
-        }
-        setSelectedProduct((prev) =>
-            prev.map((product) =>
-                product.product_id === productId
-                    ? {
-                        ...product,
+            setSelectedProduct((prev) =>
+                prev.map((product) =>
+                    product.product_id === productId
+                        ? {
+                            ...product,
 
-                        price_id: selectedPrice.price_id,
-                        original_price: selectedPrice.original_price,
-                        price: selectedPrice.price,
-                        unit: selectedUnit,
-                    }
-                    : product
-            )
-        );
+                            price_id: selectedPrice.price_id,
+                            original_price: selectedPrice.original_price,
+                            price: selectedPrice.price,
+                            unit: selectedUnit,
+                        }
+                        : product
+                )
+            );
+        }
+        
     };
+
     const body = {
         request_id: requestItem.request_id,
         status: statusApprove,
@@ -159,7 +210,7 @@ export default function RequestDetailPage() {
                 return;
             }
             fetchApproveRequestOrder(
-                {bodyReject},
+                {bodyReject}, 
                 () => {
                     toast.showToast("Từ chối yêu cầu thành công", "success");
                     router.push("/kiem-duyet-yeu-cau-tu-van-thuoc");
@@ -185,27 +236,47 @@ export default function RequestDetailPage() {
                     setErrors({});
                 }
             );
+        } else {
+            fetchApproveRequestOrder(
+                {body},
+                () => {
+                    toast.showToast("Duyệt yêu cầu thành công", "success");
+                    setErrors({});
+                    router.push("/kiem-duyet-yeu-cau-tu-van-thuoc");
+                },
+                () => {
+                    toast.showToast("Duyệt yêu cầu thất bại", "error");
+                    setErrors({});
+                }
+            );
         }
     };
 
-    const productUnit = selectedProduct.map((product) =>
-        product.prices.map((item: any) => item.unit)
-    );
-    // console.log("productUnit", productUnit);
+    const handleCheckFee = () => {
+        fetchCheckFeeApproveRequestOrder(
+                body,
+                (data: any) => {
+                    console.log("data fee", data)
+                    toast.showToast("Kiểm tra phí yêu cầu thành công", "success");
+                    setErrors({});
+                    setShippingFee(data);
+                },
+                () => {
+                    toast.showToast("Kiểm tra phí yêu cầu thất bại", "error");
+                    setErrors({});
+                }
+            );
+    }
+
     const totalOriginPrice = selectedProduct.reduce(
-        (total, product) => total + product.price * product.quantity,
+        (total, product) => total + product.original_price * product.quantity,
         0
     );
-    // totalDiscount = original_price - price
-    const totalDiscount = selectedProduct.reduce(
+    const productDiscount = selectedProduct.reduce(
         (total, product) =>
             total + (product.original_price - product.price) * product.quantity,
         0
     );
-    const totalSave = totalDiscount;
-    const shippingFee = requestItem.shipping_fee;
-    const totalAmount = totalDiscount + shippingFee?.shipping_fee || 0;
-
 
     const startEditing = (index: number) => {
         setEditingProductIndex(index);
@@ -269,27 +340,10 @@ export default function RequestDetailPage() {
                                 <label className="block text-sm font-medium mb-3 text-gray-600">
                                     Trạng thái yêu cầu
                                 </label>
-                                {requestItem.status === "pending" ? (
-                                    <span
-                                        className="text-yellow-500 font-semibold text-sm bg-yellow-100 rounded-full px-2 py-1">
-                    Đang chờ duyệt
-                  </span>
-                                ) : requestItem.status === "approved" ? (
-                                    <span
-                                        className="text-green-500 font-semibold text-sm bg-green-100 rounded-full px-2 py-1">
-                    Đã duyệt
-                  </span>
-                                ) : requestItem.status === "rejected" ? (
-                                    <span
-                                        className="text-red-500 font-semibold text-sm bg-red-100 rounded-full px-2 py-1">
-                    Đã từ chối
-                  </span>
-                                ) : (
-                                    <span
-                                        className="text-blue-500 font-semibold text-sm bg-blue-100 rounded-full px-2 py-1">
-                    Chưa liên lạc được
-                  </span>
-                                )}
+                                
+                                <span className={`font-semibold text-sm rounded-full px-2 py-1 ${statusInfo.className}`}>
+                                    {statusInfo.text}
+                                </span>
                             </div>
                         </div>
 
@@ -352,12 +406,12 @@ export default function RequestDetailPage() {
                                         className="rounded-lg object-cover"
                                     />
                                     <div className="flex flex-col text-sm">
-                    <span className="font-semibold text-gray-800">
-                      {product.product_name}
-                    </span>
+                                        <span className="font-semibold text-gray-800">
+                                            {product.product_name}
+                                        </span>
                                         <span className="text-gray-500 text-sm">
-                      {product.product_id}
-                    </span>
+                                            {product.product_id}
+                                        </span>
                                         <span>Đơn vị: {product.unit}</span>
                                         <span>Số lượng: {product.quantity}</span>
                                     </div>
@@ -403,15 +457,13 @@ export default function RequestDetailPage() {
                                                     />
                                                     <span
                                                         className="text-sm line-clamp-3 overflow-hidden text-ellipsis">
-                            {product?.name_primary}
-                          </span>
+                                                        {product.product_name}
+                                                    </span>
                                                 </div>
 
                                                 <div className="flex">
                                                     <button
-                                                        onClick={() =>
-                                                            updateQuantity(product.product_id, -1)
-                                                        }
+                                                        onClick={() => updateQuantity(product.product_id, -1)}
                                                         className="p-1 border rounded text-gray-700 hover:bg-gray-100"
                                                     >
                                                         <FiMinus/>
@@ -422,9 +474,7 @@ export default function RequestDetailPage() {
                                                         className="text-center w-8"
                                                     />
                                                     <button
-                                                        onClick={() =>
-                                                            updateQuantity(product.product_id, 1)
-                                                        }
+                                                        onClick={() => updateQuantity(product.product_id, 1)}
                                                         className="p-1 border rounded text-gray-700 hover:bg-gray-100"
                                                     >
                                                         <FiPlus/>
@@ -435,7 +485,7 @@ export default function RequestDetailPage() {
                                                     onChange={(e) => updateUnit(product.product_id, e)}
                                                     className="border rounded px-2 py-1 text-sm"
                                                 >
-                                                    {product?.prices.map((item: any) => (
+                                                    {product?.prices?.map((item: any) => (
                                                         <option key={item.price_id} value={item.unit}>
                                                             {item.unit}
                                                         </option>
@@ -443,9 +493,7 @@ export default function RequestDetailPage() {
                                                 </select>
 
                                                 <div className="text-black/50 hover:text-black transition-colors">
-                                                    <button
-                                                        onClick={() => handleRemove(product.product_id)}
-                                                    >
+                                                    <button onClick={() => handleRemove(product.product_id)}>
                                                         <ImBin size={18}/>
                                                     </button>
                                                 </div>
@@ -481,8 +529,8 @@ export default function RequestDetailPage() {
                                                     className="rounded-lg object-cover border p-2"
                                                 />
                                                 <span className="text-sm line-clamp-3 overflow-hidden text-ellipsis">
-                          {product?.name_primary}
-                        </span>
+                                                    {product?.product_name}
+                                                </span>
                                             </div>
 
                                             {/* Cột 2: Giá gốc và giá khuyến mãi */}
@@ -492,14 +540,12 @@ export default function RequestDetailPage() {
                                                         {product.original_price !== product.price && (
                                                             <span
                                                                 className="text-gray-500 line-through font-semibold text-sm">
-                                {product.original_price.toLocaleString("vi-VN")}
-                                                                đ
-                              </span>
+                                                                {product.original_price.toLocaleString("vi-VN")}đ
+                                                            </span>
                                                         )}
-
                                                         <span className="text-base font-semibold text-[#0053E2]">
-                              {product.price.toLocaleString("vi-VN")}đ
-                            </span>
+                                                            {product.price.toLocaleString("vi-VN")}đ
+                                                        </span>
                                                     </div>
                                                 </div>
 
@@ -514,105 +560,76 @@ export default function RequestDetailPage() {
                                 <div className="flex justify-between text-black mt-5">
                                     <div>Tổng tiền</div>
                                     <div>{totalOriginPrice.toLocaleString("vi-VN")}đ</div>
-                                </div>
+                                </div> 
                                 <div className="flex justify-between text-black mt-5">
                                     <div>Giảm giá trực tiếp</div>
                                     <div className="text-amber-500">
-                                        - {totalDiscount.toLocaleString("vi-VN")}đ
+                                        - {(productDiscount).toLocaleString("vi-VN")}đ
                                     </div>
                                 </div>
                                 <div className="flex justify-between text-black mt-5">
                                     <div>Giảm giá voucher</div>
-                                    <div className="text-amber-500">0đ</div>
+                                    <div className="text-amber-500">- {(shippingFee?.voucher_order_discount || 0).toLocaleString("vi-VN")}đ</div>
                                 </div>
-                                <div className="flex justify-between text-black mt-5">
-                                    <div>Tiết kiệm được</div>
-                                    <div className="text-amber-500">
-                                        {totalSave.toLocaleString("vi-VN")}đ
-                                    </div>
-                                </div>
+                                
                             </div>
 
                             <div className="shrink-0 mt-5 max-w-full border-b"/>
                             <div className="flex justify-between items-center mt-3 max-w-full text-sm text-black ">
                                 <div>Phí vận chuyển</div>
                                 <div className="flex items-center gap-2">
-                                    {shippingFee?.shipping_fee === 0 ? (
-                                        <div
-                                            className="flex px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 shadow-sm items-center">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4 text-blue-500 mr-1.5"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                                <path
-                                                    d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-5h2.05a2.5 2.5 0 014.9 0H18a1 1 0 001-1v-4a1 1 0 00-1-1h-8a1 1 0 00-.8.4L8 4H3z"/>
-                                            </svg>
-                                            <span className="text-xs font-medium text-blue-600">
-                        Miễn phí vận chuyển
-                      </span>
-                                        </div>
-                                    ) : (
+                                    {(
                                         <div className="text-amber-500">
-                                            {shippingFee?.shipping_fee?.toLocaleString("vi-VN")}đ
+                                            {(shippingFee?.shipping_fee || 0).toLocaleString("vi-VN")}đ
                                         </div>
                                     )}
                                 </div>
                             </div>
+
+                            <div className="flex justify-between items-center mt-3 max-w-full text-sm text-black ">
+                                <div>Giảm giá phí vận chuyển</div>
+                                <div className="flex items-center gap-2">
+                                    {(
+                                        <div className="text-amber-500">
+                                            - {(shippingFee?.voucher_delivery_discount || 0).toLocaleString("vi-VN")}đ
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="shrink-0 mt-3 max-w-full border-b "/>
                             <div className="flex justify-between items-center mt-3  max-w-full text-sm text-black">
-                                <div>Thời gian giao hàng dự kiến</div>
-                                {shippingFee?.delivery_time ? (
-                                    <div className="flex items-center gap-2">
-                                        <div
-                                            className="flex px-3 py-1.5 rounded-full bg-green-50 shadow-sm items-center">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4 text-green-500 mr-1.5"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-
-                                            <span className="text-xs font-medium text-green-600">
-                        {new Date(shippingFee.delivery_time).toLocaleDateString(
-                            "vi-VN",
-                            {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                            }
-                        )}
-                      </span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    ""
-                                )}
+                                Voucher có thể bị thay đổi tùy theo thời gian thực
                             </div>
+
+                            <div className="flex gap-5 justify-between items-center mt-3  max-w-full">
+                                <div className="text-xl text-black">Tiết kiệm được</div>
+                                <div className="flex gap-2 whitespace-nowrap items-center">
+                                    <div className="text-xl font-semibold text-blue-700">
+                                        {(productDiscount+(shippingFee?.voucher_order_discount || 0)+(shippingFee?.voucher_delivery_discount || 0))
+                                        .toLocaleString("vi-VN")}đ
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="flex gap-5 justify-between items-center mt-3  max-w-full">
                                 <div className="text-xl text-black">Thành tiền</div>
                                 <div className="flex gap-2 whitespace-nowrap items-center">
-                                    {totalDiscount > 0 && (
-                                        <div className="text-lg text-gray-500 line-through mt-0.5">
-                                            {totalOriginPrice.toLocaleString("vi-VN")}đ
-                                        </div>
-                                    )}
                                     <div className="text-xl font-semibold text-blue-700">
-                                        {(totalAmount + shippingFee?.shipping_fee).toLocaleString(
+                                        {((shippingFee?.estimated_total_fee || totalOriginPrice - productDiscount)).toLocaleString(
                                             "vi-VN"
                                         )}
                                         đ
                                     </div>
                                 </div>
+                            </div>
+                            <div className="mt-4 flex justify-end gap-4 w-full">
+                                <button
+                                    className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 font-medium"
+                                    onClick={handleCheckFee}
+                                >
+                                    Kiểm tra phí
+                                </button>
                             </div>
                         </div>
                     )}
@@ -923,21 +940,17 @@ export default function RequestDetailPage() {
                         return;
                     }
                     const defaultPrice = product.prices?.[0];
-                    const defaultUnit = defaultPrice?.price_id;
-                    // const selectedPrice = product.prices.find(
-                    //   (price: any) => price.price_id === defaultUnit
-                    // );
-                    // if (!selectedPrice) return;
 
                     setSelectedProduct((prev) => [
                         ...prev,
                         {
                             ...product,
-                            quantity: quantity,
-                            price_id: defaultUnit,
+                            quantity: 1,
+                            price_id: defaultPrice.price_id,
                             original_price: defaultPrice.original_price,
                             price: defaultPrice.price,
                             unit: defaultPrice.unit,
+
                         },
                     ]);
                 }}

@@ -257,6 +257,24 @@ export const approveRequestOrder = async (data: any) => {
     }
 }
 
+
+export const checkFeeApproveRequestOrder = async (data: any) => {
+    try {
+        const response: any = await axiosClient.post("/v1/order/approve-fee", data);
+        console.log("service", data)
+        return {
+            status_code: response?.status_code,
+            message: response?.message,
+            data: response.data
+        };
+    } catch (error) {
+        return {
+            status_code: false,
+            message: 'Lỗi kiểm tra phí đơn tư vấn',
+        }
+    }
+}
+
 export const getOverviewStatisticsOrder = async () => {
     try {
         const response: any = await axiosClient.get("/v1/order/overview-statistics");
