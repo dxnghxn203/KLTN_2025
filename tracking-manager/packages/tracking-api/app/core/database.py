@@ -1,4 +1,7 @@
+import json
 from urllib.parse import quote_plus
+
+from bson import json_util
 from dotenv import load_dotenv
 from app.core import logger
 import pymongo
@@ -40,12 +43,14 @@ try:
         'users','trackings', 'pharmacists',
         'orders_requests', 'products_imports',
         'vouchers', 'products_inventory',]
+
     for collection in collections:
         if collection not in existing_collections:
             db.create_collection(collection)
             logger.info(f"Collection '{collection}' đã được tạo.")
         else:
             logger.info(f"Collection '{collection}' đã tồn tại.")
+
 
 except Exception as e:
     logger.error("Lỗi khi kết nối MongoDB!", error=e)

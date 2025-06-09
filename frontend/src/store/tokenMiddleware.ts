@@ -12,7 +12,6 @@ export const tokenMiddleware: Middleware = store => next => action => {
     if (SYSTEM_ACTIONS.includes(actionType) || actionType.startsWith('@@')) {
         return next(action);
     }
-
     let token: string | undefined = undefined;
 
     if (ROLE_ACTIONS_ADMIN.includes(actionType)) {
@@ -22,8 +21,7 @@ export const tokenMiddleware: Middleware = store => next => action => {
     } else {
         token = getToken();
     }
-    // console.log(token);
-    // console.log(actionType);
+    console.log(actionType, "----", token);
     if (token) {
         setClientToken(token);
     }

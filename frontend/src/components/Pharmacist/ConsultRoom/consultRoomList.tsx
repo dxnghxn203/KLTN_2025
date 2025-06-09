@@ -17,19 +17,17 @@ const ConsultRoomList = () => {
     const [error, setError] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentUTCTime, setCurrentUTCTime] = useState('');
-
-    const [currentPage, setCurrentPage] = useState<number>(1);
     const [conversation, setConversation] = useState<Conversation | null>(null);
+    const [totalItems, setTotalItems] = useState<number>(0);
 
-    const itemsPerPage = 10;
-    const totalItems = allConversationWaiting ? allConversationWaiting.length : 0;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    // Use pages state for server-side pagination
+    const [pages, setPages] = useState<any>({
+        page: 1,
+        page_size: 10,
+    });
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentConversations = allConversationWaiting ?
-        allConversationWaiting.slice(indexOfFirstItem, indexOfLastItem) :
-        [];
+    // Calculate total pages based on total items and page size
+    const totalPages = Math.ceil(totalItems / pages.page_size);
 
     useEffect(() => {
         const updateUTCTime = () => {
@@ -48,7 +46,7 @@ const ConsultRoomList = () => {
         setIsRefreshing(true);
         try {
             fetchGetAllConversationWaiting(
-                100,
+                pages,
                 () => {
                     setIsRefreshing(false);
                     setError(null);
@@ -66,7 +64,13 @@ const ConsultRoomList = () => {
 
     useEffect(() => {
         loadConversations();
-    }, []);
+    }, [pages]);
+
+    useEffect(() => {
+        if (allConversationWaiting && typeof allConversationWaiting.total === 'number') {
+            setTotalItems(allConversationWaiting.total);
+        }
+    }, [allConversationWaiting]);
 
     const handlerAcceptConversation = async (id: string) => {
         setLoadingAcceptConversation(true);
@@ -92,7 +96,10 @@ const ConsultRoomList = () => {
     };
 
     const onPageChange = (page: number) => {
-        setCurrentPage(page);
+        setPages((prev: any) => ({
+            ...prev,
+            page: page
+        }));
     };
 
     const renderTableContent = () => {
@@ -111,7 +118,7 @@ const ConsultRoomList = () => {
             );
         }
 
-        if (currentConversations.length === 0) {
+        if (!allConversationWaiting || !allConversationWaiting.conversations || allConversationWaiting.conversations.length === 0) {
             return (
                 <tr>
                     <td colSpan={6} className="p-8 text-center text-gray-500">
@@ -121,11 +128,11 @@ const ConsultRoomList = () => {
             );
         }
 
-        return currentConversations.map((cvs: any, index: number) => (
+        return allConversationWaiting.conversations.map((cvs: any, index: number) => (
             <tr
                 key={cvs._id}
                 className={`text-sm hover:bg-gray-50 transition ${
-                    index !== currentConversations.length - 1
+                    index !== allConversationWaiting.conversations.length - 1
                         ? "border-b border-gray-200"
                         : ""
                 }`}
@@ -215,7 +222,7 @@ const ConsultRoomList = () => {
                     </div>
                     <div className="flex flex-col items-end text-sm text-gray-500">
                         <div>UTC: {currentUTCTime}</div>
-                        <div>Local: {format(new Date(), 'HH:mm:ss - dd/MM/yyyy', {locale: vi})}</div>
+                        <div>Trang: {pages.page}/{totalPages || 1}</div>
                     </div>
                 </div>
 
@@ -258,10 +265,10 @@ const ConsultRoomList = () => {
                 {totalPages > 1 && (
                     <div className="flex items-center justify-center space-x-2 py-4">
                         <button
-                            onClick={() => onPageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
+                            onClick={() => onPageChange(pages.page - 1)}
+                            disabled={pages.page === 1}
                             className={`p-2 rounded-lg transition-colors ${
-                                currentPage === 1
+                                pages.page === 1
                                     ? 'text-gray-400 cursor-not-allowed'
                                     : 'text-gray-600 hover:bg-gray-100'
                             }`}
@@ -274,7 +281,7 @@ const ConsultRoomList = () => {
                                 key={page}
                                 onClick={() => onPageChange(page)}
                                 className={`w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors ${
-                                    currentPage === page
+                                    pages.page === page
                                         ? 'bg-blue-600 text-white'
                                         : 'text-gray-600 hover:bg-gray-100'
                                 }`}
@@ -284,10 +291,10 @@ const ConsultRoomList = () => {
                         ))}
 
                         <button
-                            onClick={() => onPageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
+                            onClick={() => onPageChange(pages.page + 1)}
+                            disabled={pages.page === totalPages}
                             className={`p-2 rounded-lg transition-colors ${
-                                currentPage === totalPages
+                                pages.page === totalPages
                                     ? 'text-gray-400 cursor-not-allowed'
                                     : 'text-gray-600 hover:bg-gray-100'
                             }`}
@@ -310,3 +317,4 @@ const ConsultRoomList = () => {
 };
 
 export default ConsultRoomList;
+

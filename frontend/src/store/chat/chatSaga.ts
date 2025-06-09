@@ -46,14 +46,14 @@ function* handlerAcceptConversation(action: any): Generator<any, void, any> {
 function* getAllConversationWaiting(action: any): Generator<any, void, any> {
     const {payload} = action;
     const {
-        limit,
+        data,
         onSuccess = () => {
         },
         onFailure = () => {
         },
     } = payload;
     try {
-        const response = yield call(chatService.getAllConversationWaiting, limit);
+        const response = yield call(chatService.getAllConversationWaiting, data);
         if (response.status_code === 200) {
             onSuccess()
             yield put(fetchGetAllConversationWaitingSuccess(response.data));

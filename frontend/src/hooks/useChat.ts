@@ -38,11 +38,11 @@ export function useChat() {
     const [pageSize, setPageSize] = useState(10);
     const allConversationWaiting = useSelector(selectAllConversationWaiting);
     //  const categoryAdmin: any = useSelector(selectCategoryAdmin);selectAllConversationWaiting
-    const fetchGetAllConversationWaiting = (limit: any,
+    const fetchGetAllConversationWaiting = (data: any,
                                             onSuccess: () => void,
                                             onFailure: () => void) => {
         dispatch(fetchGetAllConversationWaitingStart({
-            limit: limit,
+            data: data,
             onSuccess: onSuccess,
             onFailure: onFailure,
         }));

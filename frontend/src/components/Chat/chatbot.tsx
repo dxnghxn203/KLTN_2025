@@ -34,7 +34,7 @@ const ChatBot: React.FC<Props> = ({setShowChatbot}) => {
         null
     );
 
-    const messagesEndRef = useRef<null | HTMLDivElement>(null); // Để scroll xuống tin nhắn mới nhất
+    const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
