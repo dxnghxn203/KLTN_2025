@@ -141,6 +141,10 @@ const HistoryOrder: React.FC = () => {
       label: ORDER_STATUS_NAMES[status as keyof typeof ORDER_STATUS_NAMES],
     })),
   ];
+  // lọc theo trạng thái đơn hàng
+  const filteredOrdersByStatus = ordersUser.filter((order: any) => {
+    return activeTab === "all" || order.status === activeTab;
+  });
 
   const renderOrderDetail = (order: any) => {
     const statusInfo = getOrderStatusInfo(order.status);
@@ -378,14 +382,32 @@ const HistoryOrder: React.FC = () => {
       </div>
     );
   };
+  // Replace the filteredOrders implementation with this:
+
   const filteredOrders = ordersUser.filter((order: any) => {
+    // First, filter by status
+    const statusMatch = activeTab === "all" || order.status === activeTab;
+
+    // If status doesn't match, exclude this order
+    if (!statusMatch) return false;
+
+    // If search text is empty, include all orders that match the status
+    if (!searchText) return true;
+
+    // If there's search text, apply search filtering
     const search = searchText.toLowerCase();
     const orderIdMatch = order.order_id.toLowerCase().includes(search);
     const productNameMatch = order.product.some((product: any) =>
       product.product_name.toLowerCase().includes(search)
     );
+
     return orderIdMatch || productNameMatch;
   });
+
+  // Remove or comment out this since we've integrated it into filteredOrders
+  // const filteredOrdersByStatus = ordersUser.filter((order: any) => {
+  //   return activeTab === "all" || order.status === activeTab;
+  // });
 
   const countByStatus = (status: string) => {
     return ordersUser.filter((order: any) => order.status === status).length;
@@ -549,6 +571,41 @@ const HistoryOrder: React.FC = () => {
               </div>
             </div>
           ))}
+          {filteredOrders.length === 0 && (
+            <div className="bg-gray-50 rounded-lg p-8 mt-4 text-center">
+              <Package className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                Không tìm thấy đơn hàng
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {searchText
+                  ? `Không tìm thấy đơn hàng phù hợp với từ khóa "${searchText}" ở trạng thái ${
+                      activeTab === "all"
+                        ? "bất kỳ"
+                        : ORDER_STATUS_NAMES[
+                            activeTab as keyof typeof ORDER_STATUS_NAMES
+                          ]
+                    }`
+                  : `Bạn chưa có đơn hàng nào${
+                      activeTab !== "all"
+                        ? ` ở trạng thái ${
+                            ORDER_STATUS_NAMES[
+                              activeTab as keyof typeof ORDER_STATUS_NAMES
+                            ]
+                          }`
+                        : ""
+                    }`}
+              </p>
+              {searchText && (
+                <button
+                  onClick={() => setSearchText("")}
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                >
+                  Xóa bộ lọc tìm kiếm
+                </button>
+              )}
+            </div>
+          )}
         </>
       )}
       {/* Hiển thị chi tiết đơn hàng khi viewMode là "detail" */}
