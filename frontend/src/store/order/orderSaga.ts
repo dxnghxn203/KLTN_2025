@@ -52,6 +52,10 @@ import {
     fetchApproveRequestOrderStart,
     fetchApproveRequestOrderSuccess,
 
+    fetchCheckFeeApproveRequestOrderFailed,
+    fetchCheckFeeApproveRequestOrderStart,
+    fetchCheckFeeApproveRequestOrderSuccess,
+
     fetchGetOverviewStatisticsOrderStart,
     fetchGetOverviewStatisticsOrderSuccess,
     fetchGetOverviewStatisticsOrderFailed,
@@ -302,7 +306,6 @@ function* fetchCheckShippingFee(action: any): Generator<any, void, any> {
         };
         const rs = yield call(orderService.checkShippingFee, apiPayload);
         if (rs.status_code === 200) {
-            onSuccess(rs.data);
             yield put(fetchCheckShippingFeeSuccess(rs.data));
             onSuccess(rs.data);
             return;
@@ -623,6 +626,31 @@ function* fetchApproveRequestOrder(action: any): Generator<any, void, any> {
     }
 }
 
+function* fetchCheckFeeApproveRequestOrder(action: any): Generator<any, void, any> {
+    try {
+        const {payload} = action;
+        const {
+            body,
+            onSuccess = () => {
+            },
+            onFailed = () => {
+            },
+        } = payload;
+        const rs = yield call(orderService.checkFeeApproveRequestOrder, body);
+        console.log("sagaa", body)
+        if (rs.status_code === 200) {
+            yield put(fetchCheckFeeApproveRequestOrderSuccess(rs.data));
+            onSuccess(rs.data);
+            return;
+        }
+        onFailed(rs.message);
+        yield put(fetchCheckFeeApproveRequestOrderFailed());
+    } catch (error) {
+        console.log(error);
+        yield put(fetchCheckFeeApproveRequestOrderFailed());
+    }
+}
+
 function* fetchGetOverviewStatisticsOrder(action: any): Generator<any, void, any> {
     try {
         const {payload} = action;
@@ -808,6 +836,7 @@ export function* orderSaga() {
     yield takeLatest(fetchGetRequestOrderStart.type, fetchGetRequestOrder);
     yield takeLatest(fetchGetApproveRequestOrderStart.type, fetchGetApproveRequestOrder);
     yield takeLatest(fetchApproveRequestOrderStart.type, fetchApproveRequestOrder);
+    yield takeLatest(fetchCheckFeeApproveRequestOrderStart.type, fetchCheckFeeApproveRequestOrder);
     yield takeLatest(fetchGetOverviewStatisticsOrderStart.type, fetchGetOverviewStatisticsOrder);
     yield takeLatest(fetchGetMonthlyRevenueStatisticsOrderStart.type, fetchGetMonthlyRevenueStatisticsOrder);
     yield takeLatest(fetchGetCategoryMonthlyRevenueStatisticsOrderStart.type, fetchGetCategoryMonthlyRevenueStatisticsOrder);

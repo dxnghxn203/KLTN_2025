@@ -16,7 +16,6 @@ const ConsultingList = () => {
     const [pagination, setPagination] = useState({ page: 1, page_size: 10 });
     const [status, setStatus] = useState("");
 
-    // Calculate total pages
     const totalPages = Math.ceil(totalRequestOrderApprove / pagination.page_size);
     const currentPageData = (pagination.page - 1) * pagination.page_size;
     const firstIndex = currentPageData + 1;
@@ -24,7 +23,6 @@ const ConsultingList = () => {
     const [menuOpen, setMenuOpen] = useState<string | number | null>(null);
     const router = useRouter();
 
-    // Update onPageChange to modify pages state
     const onPageChange = (page: number) => {
         setPagination((prevPages: any) => ({
             ...prevPages,
@@ -32,12 +30,11 @@ const ConsultingList = () => {
         }));
     };
 
-    // Add page size change handler
     const handlePageSizeChange = (size: number) => {
         setPagination((prevPages: any) => ({
             ...prevPages,
             page_size: size,
-            page: 1 // Reset to first page when changing page size
+            page: 1
         }));
     };
 
@@ -81,8 +78,6 @@ const ConsultingList = () => {
                         Danh sách yêu cầu tư vấn thuốc
                     </Link>
                 </div>
-
-                {/* Remove filter button and FilterBar component */}
                 <
                     FilterBar
                     status={status}
