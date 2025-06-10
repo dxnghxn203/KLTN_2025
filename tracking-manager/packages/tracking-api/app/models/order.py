@@ -814,8 +814,11 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
         if item.product and item.product.product:
             logger.info(f"product: {item.product.product}")
             product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
+            logger.info(f"product_items: {product_items}")
+            logger.info(f"out_of_stock: {out_of_stock}")
+            logger.info(f"out_of_date: {out_of_date}")
             if out_of_stock or out_of_date:
-                raise response.JsonException(
+                return response.BaseResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     message="Một số sản phẩm không khả dụng, vui lòng làm mới lại trang",
                     data={
