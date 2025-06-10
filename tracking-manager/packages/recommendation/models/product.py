@@ -33,7 +33,7 @@ def get_product_by_id(product_id: str):
 def get_all_products():
     product_docs = []
     try:
-        for product in products_collection.find():
+        for product in products_collection.find({"is_approved": True, "active": True}, {"_id": 0}):
             product_docs.append(product_helper(product))
     except Exception as e:
         print(f"Error getting all products: {e}")
