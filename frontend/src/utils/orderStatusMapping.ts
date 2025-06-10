@@ -5,7 +5,6 @@
 
 // Define string-based status codes
 export enum OrderStatusCode {
-    CREATED = "created",
     WAITING_TO_PICK = "waiting_to_pick",
     PICKING = "picking",
     DELIVERING = "delivering",
@@ -30,7 +29,6 @@ export const NUMERIC_STATUS_MAP = {
 };
 
 export const ORDER_STATUS_NAMES = {
-    "created": "Tạo đơn hàng",
     "waiting_to_pick": "Chờ lấy hàng",
     "picking": "Đang lấy hàng",
     "delivering": "Đang giao hàng",
@@ -167,7 +165,7 @@ export function getOrderStatusInfo(statusName: string) {
  * (Only possible when order is in "created" status)
  */
 export function canCancelOrder(statusName: string): boolean {
-    return statusName === OrderStatusCode.CREATED;
+    return statusName === OrderStatusCode.WAITING_TO_PICK;
 }
 
 /**
@@ -175,7 +173,6 @@ export function canCancelOrder(statusName: string): boolean {
  */
 export function isOrderPending(statusName: string): boolean {
     return [
-        OrderStatusCode.CREATED,
         OrderStatusCode.WAITING_TO_PICK,
         OrderStatusCode.PICKING,
         OrderStatusCode.DELIVERING
