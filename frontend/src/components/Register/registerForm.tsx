@@ -73,7 +73,6 @@ const RegisterForm: React.FC = () => {
         fetchInsertUser({
           param: formData,
           onSuccess: (message: string) => {
-            console.log(message);
             toast.showToast(message, "success");
             router.push(`/dang-ky/${formData.email}`);
           },

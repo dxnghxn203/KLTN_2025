@@ -130,6 +130,8 @@ function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
     
     try {
         const response = yield call(insertUser, payload);
+        console.log("response", response.message);
+
         if (response.status_code === 201) {
             yield put(fetchInsertUserSuccess());
             onSuccess(response.message);
@@ -139,6 +141,7 @@ function* userInsertWorkerSaga(action: any): Generator<any, void, any> {
         }
     } catch (error: any) {
         yield put(fetchInsertUserFailure());
+        onFailure(error?.response?.data?.message);
     }
 }
 
