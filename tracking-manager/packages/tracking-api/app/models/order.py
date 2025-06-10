@@ -812,11 +812,7 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
     try:
         product_items = []
         if item.product and item.product.product:
-            logger.info(f"product: {item.product.product}")
             product_items, _, _, out_of_stock, out_of_date = await process_order_products(item.product.product)
-            logger.info(f"product_items: {product_items}")
-            logger.info(f"out_of_stock: {out_of_stock}")
-            logger.info(f"out_of_date: {out_of_date}")
             if out_of_stock or out_of_date:
                 return response.BaseResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -830,28 +826,29 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
         request_sku = generate_id("REQUEST")
         image_list = []
 
-        for img in images:
-            try:
-                await img.seek(0)
-                json_image = await create_image_json_payload(img)
-                await img.seek(0)
-                file_url = await upload_file(img, "images_orders")
+        if images:
+            for img in images:
+                try:
+                    await img.seek(0)
+                    json_image = await create_image_json_payload(img)
+                    await img.seek(0)
+                    file_url = await upload_file(img, "images_orders")
 
-                data_queue = json.dumps({
-                    "request_id": request_sku,
-                    **json_image
-                })
+                    data_queue = json.dumps({
+                        "request_id": request_sku,
+                        **json_image
+                    })
 
-                rabbitmq.send_message(get_extract_document_queue(), data_queue)
-                logger.info(f"Sent to extract document queue: {request_sku}")
-                if file_url:
-                    image_obj = ItemOrderImageReq(
-                        images_id=generate_id("IMAGES_ORDERS"),
-                        images_url=file_url,
-                    )
-                    image_list.append(image_obj)
-            except Exception as e:
-                logger.error(f"Failed to upload image: {e}")
+                    rabbitmq.send_message(get_extract_document_queue(), data_queue)
+                    logger.info(f"Sent to extract document queue: {request_sku}")
+                    if file_url:
+                        image_obj = ItemOrderImageReq(
+                            images_id=generate_id("IMAGES_ORDERS"),
+                            images_url=file_url,
+                        )
+                        image_list.append(image_obj)
+                except Exception as e:
+                    logger.error(f"Failed to upload image: {e}")
 
         logger.info(f"{image_list}")
 
