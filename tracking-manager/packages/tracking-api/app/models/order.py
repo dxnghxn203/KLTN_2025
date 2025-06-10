@@ -626,7 +626,7 @@ async def save_order_to_redis(
             voucher=voucher_items or [],
             order_id=order_id,
             tracking_id=tracking_id,
-            status="created",
+            status="waiting_to_pick",
             created_by=user_id,
             delivery_time=fee_data["delivery_time"],
             shipping_fee=fee_data["shipping_fee"],
