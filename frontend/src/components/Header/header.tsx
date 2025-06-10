@@ -24,7 +24,6 @@ import { RiSearch2Line } from "react-icons/ri";
 import MobileSidebar from "./headerMenuMobile";
 
 export default function Header() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCartDropdown, setShowCartDropdown] = useState(false);
   const pathname = usePathname();
@@ -46,10 +45,7 @@ export default function Header() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchResultProduct, setSearchResultProduct] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-  const [searchHistory, setSearchHistory] = useState([
-    "Thuốc nhỏ mắt",
-    "Canxi",
-  ]);
+  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const topSearches = [
     "Omega 3",
     "Canxi",
@@ -64,8 +60,84 @@ export default function Header() {
 
   const [showScanTooltip, setShowScanTooltip] = useState(false);
   const isShowTooltip = pathname === "/";
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const toggleMobileSearch = () => setShowMobileSearch((prev) => !prev);
+
+  useEffect(() => {
+    const savedHistory = localStorage.getItem("searchHistory");
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory);
+        if (Array.isArray(parsedHistory)) {
+          setSearchHistory(parsedHistory);
+        }
+      } catch (error) {
+        console.error("Error parsing search history:", error);
+        localStorage.removeItem("searchHistory");
+      }
+    }
+  }, []);
+  const saveToSearchHistory = (term: string) => {
+    if (!term.trim()) return;
+
+    // Create new history with the new term at the beginning and remove duplicates
+    setSearchHistory((prevHistory) => {
+      const newHistory = [term, ...prevHistory.filter((item) => item !== term)];
+
+      // Limit to 10 most recent searches
+      const limitedHistory = newHistory.slice(0, 10);
+
+      // Save to localStorage
+      localStorage.setItem("searchHistory", JSON.stringify(limitedHistory));
+
+      return limitedHistory;
+    });
+  };
+  const handleClearHistory = () => {
+    setSearchHistory([]);
+    localStorage.removeItem("searchHistory");
+  };
+  const removeItem = (item: string) => {
+    setSearchHistory((prev) => {
+      const newHistory = prev.filter((term) => term !== item);
+      localStorage.setItem("searchHistory", JSON.stringify(newHistory));
+      return newHistory;
+    });
+  };
+  function handleSearch() {
+    if (search.trim() === "") return;
+
+    // Save search term to history
+    saveToSearchHistory(search);
+
+    setIsLoading(true);
+    fetchSearchProduct(
+      {
+        query: search,
+      },
+      (responseData: any) => {
+        setSearchResultProduct(false);
+        setShowSuggestions(false);
+        setIsLoading(false);
+        router.push(`/tim-kiem?search=${encodeURIComponent(search)}`);
+      },
+      () => {
+        setIsLoading(false);
+      }
+    );
+  }
+  useEffect(() => {
+    // Kiểm tra nếu không còn ở trang tìm kiếm nữa
+    if (!pathname.startsWith("/tim-kiem") && search !== "") {
+      // Xóa từ khóa tìm kiếm khi rời khỏi trang tìm kiếm
+      setSearch("");
+      // Đồng thời xóa kết quả tìm kiếm và đề xuất
+      setSearchResultProduct(false);
+      setShowSuggestions(false);
+      // Xóa kết quả tìm kiếm nếu cần
+      if (searchResult && searchResult.length > 0) {
+        fetchClearSearch();
+      }
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -125,28 +197,6 @@ export default function Header() {
   const handleScanMedication = () => {
     router.push("/tim-kiem-hinh-anh");
   };
-
-  const handleClearHistory = () => setSearchHistory([]);
-  const removeItem = (item: string) =>
-    setSearchHistory((prev) => prev.filter((term) => term !== item));
-
-  function handleSearch() {
-    setIsLoading(true);
-    fetchSearchProduct(
-      {
-        query: search,
-      },
-      (responseData: any) => {
-        setSearchResultProduct(false);
-        setShowSuggestions(false);
-        setIsLoading(false);
-        router.push(`/tim-kiem?search=${encodeURIComponent(search)}`);
-      },
-      () => {
-        setIsLoading(false);
-      }
-    );
-  }
 
   const handleSuggestionClick = (term: string) => {
     setSearch(term);
