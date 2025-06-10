@@ -17,7 +17,7 @@ export enum OrderStatusCode {
 
 // Reverse mapping for legacy code that might still use numeric codes
 export const NUMERIC_STATUS_MAP = {
-    "created": "0",
+    // "created": "0",
     "waiting_to_pick": "1",
     "picking": "2",
     "delivering": "3",
@@ -29,6 +29,7 @@ export const NUMERIC_STATUS_MAP = {
 };
 
 export const ORDER_STATUS_NAMES = {
+    "created": "Đã tạo đơn hàng",
     "waiting_to_pick": "Chờ lấy hàng",
     "picking": "Đang lấy hàng",
     "delivering": "Đang giao hàng",
@@ -40,7 +41,7 @@ export const ORDER_STATUS_NAMES = {
 };
 
 export const ORDER_STATUS_DESCRIPTIONS = {
-    "created": "Hệ thống tạo đơn thành công",
+    // "created": "Hệ thống tạo đơn thành công",
     "waiting_to_pick": "Đơn hàng đã sẵn sàng, đang chờ shipper lấy hàng từ kho giao",
     "picking": "Shipper đang lấy hàng ở kho",
     "delivering": "Shipper đang giao hàng tới điểm nhận",
@@ -54,16 +55,16 @@ export const ORDER_STATUS_DESCRIPTIONS = {
 // Color scheme for status visualization
 export const ORDER_STATUS_COLORS = {
     // Tailwind CSS color classes
-    "created": {
-        bg: "bg-blue-100",
-        text: "text-blue-700",
-        border: "border-blue-300"
-    },
+    // "created": {
+    //     bg: "bg-blue-100",
+    //     text: "text-blue-700",
+    //     border: "border-blue-300"
+    // },
     "waiting_to_pick": {
-        bg: "bg-sky-100",
-        text: "text-sky-800",
-        border: "border-sky-300"
-    },
+  bg: "bg-blue-100",
+  text: "text-blue-800",
+  border: "border-blue-300"
+},
     "picking": {
         bg: "bg-indigo-100",
         text: "text-indigo-800",
@@ -76,7 +77,7 @@ export const ORDER_STATUS_COLORS = {
     },
     "delivery_success": {
         bg: "bg-green-100",
-        text: "text-green-800",
+        text: "text-green-600",
         border: "border-green-300"
     },
     "delivery_fail": {
@@ -95,15 +96,15 @@ export const ORDER_STATUS_COLORS = {
         border: "border-amber-300"
     },
     "canceled": {
-        bg: "bg-rose-100",
-        text: "text-rose-700",
-        border: "border-rose-300"
+        bg: "bg-red-100",
+        text: "text-red-700",
+        border: "border-red-300"
     },
 };
 
 // HEX color values (for non-Tailwind contexts)
 export const ORDER_STATUS_HEX_COLORS = {
-    "created": "#dbeafe", // blue-100
+    // "created": "#dbeafe", // blue-100
     "waiting_to_pick": "#e0f2fe", // sky-100
     "picking": "#e0e7ff", // indigo-100
     "delivering": "#fef9c3", // yellow-100
@@ -117,7 +118,7 @@ export const ORDER_STATUS_HEX_COLORS = {
 // Icon mapping
 export const ORDER_STATUS_ICONS = {
     // Replace these with actual icon components from your icon library
-    "created": "PackageIcon", // FiPackage - Created
+    // "created": "PackageIcon", // FiPackage - Created
     "waiting_to_pick": "ClockIcon", // FiClock - Waiting to pick
     "picking": "LoaderIcon", // FiLoader - Picking
     "delivering": "TruckIcon", // FiTruck - Delivering
@@ -150,11 +151,7 @@ export function getOrderStatusInfo(statusName: string) {
         name: statusName,
         displayName: ORDER_STATUS_NAMES[statusName as keyof typeof ORDER_STATUS_NAMES] || "Unknown Status",
         description: ORDER_STATUS_DESCRIPTIONS[statusName as keyof typeof ORDER_STATUS_DESCRIPTIONS] || "No description available",
-        colors: ORDER_STATUS_COLORS[statusName as keyof typeof ORDER_STATUS_COLORS] || {
-            bg: "bg-gray-100",
-            text: "text-gray-800",
-            border: "border-gray-300"
-        },
+        colors: ORDER_STATUS_COLORS[statusName as keyof typeof ORDER_STATUS_COLORS] ,
         hexColor: ORDER_STATUS_HEX_COLORS[statusName as keyof typeof ORDER_STATUS_HEX_COLORS] || "#f3f4f6",
         icon: ORDER_STATUS_ICONS[statusName as keyof typeof ORDER_STATUS_ICONS] || "QuestionIcon",
     };
