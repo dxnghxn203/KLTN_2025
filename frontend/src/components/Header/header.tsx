@@ -472,23 +472,6 @@ export default function Header() {
                       </div>
                     )}
                   </div>
-
-                  <div className="mt-4">
-                    <div className="text-sm font-semibold mb-2">
-                      Tra cứu hàng đầu
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {topSearches.map((item, i) => (
-                        <button
-                          key={i}
-                          className="border px-3 py-1 rounded-full text-sm text-gray-800 hover:bg-gray-100"
-                          onClick={() => handleSuggestionClick(item)}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               )}
               {searchResultProduct && searchResult !== null && !isLoading && (
@@ -826,23 +809,6 @@ export default function Header() {
                       Không có lịch sử
                     </div>
                   )}
-                </div>
-
-                <div className="mt-4">
-                  <div className="text-sm font-semibold mb-2">
-                    Tra cứu hàng đầu
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {topSearches.map((item, i) => (
-                      <button
-                        key={i}
-                        className="border px-3 py-1 rounded-full text-sm text-gray-800 hover:bg-gray-100"
-                        onClick={() => handleSuggestionClick(item)}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </div>
             )}

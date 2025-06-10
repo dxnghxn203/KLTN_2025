@@ -41,6 +41,14 @@ const RegisterForm: React.FC = () => {
 
     const validationErrors = validateEmptyFields(formData);
     setErrors(validationErrors);
+    const today = new Date().toISOString().split("T")[0];
+    if (formData.dateOfBirth > today) {
+      setErrors((prev) => ({
+        ...prev,
+        dateOfBirth: "Ngày sinh không được vượt quá ngày hiện tại",
+      }));
+      return;
+    }
 
     if (Object.keys(validationErrors).length === 0) {
       try {
@@ -129,6 +137,7 @@ const RegisterForm: React.FC = () => {
             type="date"
             value={formData.dateOfBirth}
             onChange={handleChange}
+            max={new Date().toISOString().split("T")[0]}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
           />
           {isSubmitted && errors.dateOfBirth && (

@@ -162,11 +162,13 @@ const HistoryOrder: React.FC = () => {
       returned: Archive,
     };
 
+    // Thay đổi trong hàm renderOrderDetail
     const processedTrackingHistory = (trackingHistory || [])
       .sort(
         (a: any, b: any) =>
-          new Date(b.created_date).getTime() -
-          new Date(a.created_date).getTime()
+          // Đảo thứ tự sắp xếp từ cũ đến mới (tăng dần theo thời gian)
+          new Date(a.created_date).getTime() -
+          new Date(b.created_date).getTime()
       )
       .map((event: any) => {
         const statusKey = event.status as keyof typeof ORDER_STATUS_NAMES;
@@ -182,6 +184,54 @@ const HistoryOrder: React.FC = () => {
           icon: statusIcon,
         };
       });
+
+    // Sau đó, cập nhật phần hiển thị lịch sử để bôi đậm và làm nổi bật mục mới nhất (cuối cùng)
+    <div className="p-4 border rounded-lg min-h-[150px]">
+      <h4 className="font-semibold mb-3 text-gray-800">Lịch sử vận đơn</h4>
+      {loadingTracking ? (
+        <div className="flex items-center justify-center text-gray-500 py-4">
+          <Loader2 className="animate-spin mr-2 h-5 w-5" />
+          <span>Đang tải lịch sử...</span>
+        </div>
+      ) : processedTrackingHistory.length > 0 ? (
+        <div className="relative pl-6">
+          <div className="absolute left-5.5 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+          <ul className="space-y-6">
+            {processedTrackingHistory.map((item: any, index: number) => (
+              <li key={index} className="relative flex items-start">
+                <div
+                  className={`absolute left-0 transform -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center ${
+                    index === processedTrackingHistory.length - 1
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-300"
+                  }`}
+                >
+                  <item.icon size={16} />
+                </div>
+                <div className="ml-6 pl-4">
+                  <p
+                    className={`font-medium ${
+                      index === processedTrackingHistory.length - 1
+                        ? "text-green-700"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {item.status}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDate(item.time)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="text-gray-500 text-center py-4">
+          Chưa có thông tin vận đơn.
+        </p>
+      )}
+    </div>;
 
     return (
       <div className="mt-2">
@@ -331,33 +381,36 @@ const HistoryOrder: React.FC = () => {
               </div>
             ) : processedTrackingHistory.length > 0 ? (
               <div className="relative pl-6">
-                <div className="absolute left-5.5 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                <div className="absolute left-5.5 top-0 bottom-[12px] w-0.5 bg-gray-200"></div>
                 <ul className="space-y-6">
-                  {processedTrackingHistory.map((item: any, index: number) => (
-                    <li key={index} className="relative flex items-start">
-                      <div
-                        className={`absolute left-0 transform -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center ${
-                          index === 0
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-300 "
-                        }`}
-                      >
-                        <item.icon size={16} />
-                      </div>
-                      <div className="ml-6 pl-4">
-                        <p
-                          className={`font-medium ${
-                            index === 0 ? "text-green-700" : "text-gray-700"
+                  {processedTrackingHistory.map((item: any, index: number) => {
+                    const isLatest = index === 0;
+                    return (
+                      <li key={index} className="relative flex items-start">
+                        <div
+                          className={`absolute left-0 transform -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center ${
+                            isLatest
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-300 text-gray-600"
                           }`}
                         >
-                          {item.status}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatDate(item.time)}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
+                          <item.icon size={16} />
+                        </div>
+                        <div className="ml-6 pl-4">
+                          <p
+                            className={`font-medium ${
+                              isLatest ? "text-green-700" : "text-gray-700"
+                            }`}
+                          >
+                            {item.status}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(item.time)}
+                          </p>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : (
@@ -366,6 +419,7 @@ const HistoryOrder: React.FC = () => {
               </p>
             )}
           </div>
+
           <div className="flex justify-end">
             {canCancelOrder(order.status) && (
               <div className="mt-4">

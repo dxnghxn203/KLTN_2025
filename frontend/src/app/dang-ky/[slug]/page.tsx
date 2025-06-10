@@ -14,19 +14,19 @@ const OtpVerificationPage: React.FC = () => {
   const { verifyOtp, sendOtp } = useUser();
   const router = useRouter();
 
-  const maskEmail = (email: string) => {
-    const [name, domain] = email.split("@");
-    if (!name || name.length < 3) return email;
-
-    const visibleStart = name[0];
-    const visibleEnd = name.slice(-2);
-    const maskedMiddle = "*".repeat(name.length - 3);
-
-    return `${visibleStart}${maskedMiddle}${visibleEnd}@${domain}`;
-  };
   const getEmail = (email: string) => {
     const [name, domain] = email.split("%40");
     return `${name}@${domain}`;
+  };
+  // đổi email thành dạng có dấu sao, @gmail.com vẫn giữ nguyên
+  // chuyển email thành getEmail
+  // ví dụ: abc@gmail.com => a***c@gmail.com
+
+  const maskEmail = (email: string) => {
+    const [name, domain] = email.split("@");
+    const maskedName =
+      name.length > 2 ? `${name[0]}***${name[name.length - 1]}` : name;
+    return `${maskedName}@${domain}`;
   };
 
   const handleResendOtp = () => {
@@ -72,7 +72,9 @@ const OtpVerificationPage: React.FC = () => {
         <h2 className="text-2xl font-bold text-center mb-4">Xác nhận mã OTP</h2>
         <p className="text-gray-600 text-center mb-4">
           Vui lòng nhập mã OTP đã được gửi đến{" "}
-          <span className="tracking-widest">{maskEmail(email)}</span>.
+          <span className="tracking-widest">
+            {maskEmail(getEmail(email || ""))}
+          </span>
         </p>
 
         <form className="space-y-4" onSubmit={submitData}>

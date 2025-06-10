@@ -13,6 +13,7 @@ const tabs = [
   { label: "Đang chờ duyệt", value: "pending" },
   { label: "Chưa thể liên lạc", value: "unconnect" },
   { label: "Từ chối", value: "rejected" },
+  { label: "Đã được duyệt", value: "approved" },
 ];
 
 const MyPrescriptionComponent: React.FC = () => {

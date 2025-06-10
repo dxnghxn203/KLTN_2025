@@ -25,7 +25,6 @@ export default function LoginPage() {
   const [isResending, setIsResending] = useState(false);
   const searchParams = useSearchParams();
   const emailPath = searchParams.get("xac-thuc-email");
-  console.log(emailPath);
 
   const maskEmail = (email: string) => {
     const [name, domain] = email.split("@");
@@ -38,7 +37,7 @@ export default function LoginPage() {
     return `${visibleStart}${maskedMiddle}${visibleEnd}@${domain}`;
   };
 
-  console.log("mark", maskEmail("lethithuyduyen230803@gmail.com"));
+  console.log("maskEmail", maskEmail(emailPath || ""));
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const dataToValidate = {
