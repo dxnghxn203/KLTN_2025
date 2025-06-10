@@ -17,19 +17,20 @@ const ConsultRoomList = () => {
     const [error, setError] = useState<string | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentUTCTime, setCurrentUTCTime] = useState('');
-
-    const [currentPage, setCurrentPage] = useState<number>(1);
     const [conversation, setConversation] = useState<Conversation | null>(null);
+    const [totalItems, setTotalItems] = useState<number>(0);
 
-    const itemsPerPage = 10;
-    const totalItems = allConversationWaiting ? allConversationWaiting.length : 0;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    // Use pages state for server-side pagination
+    const [pages, setPages] = useState<any>({
+        page: 1,
+        page_size: 10,
+    });
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentConversations = allConversationWaiting ?
-        allConversationWaiting.slice(indexOfFirstItem, indexOfLastItem) :
-        [];
+    // Calculate total pages based on total items and page size
+    const totalPages = Math.ceil(totalItems / pages.page_size);
+    const currentPageData = (pages.page - 1) * pages.page_size;
+    const firstIndex = totalItems > 0 ? currentPageData + 1 : 0;
+    const lastIndex = Math.min(currentPageData + pages.page_size, totalItems);
 
     useEffect(() => {
         const updateUTCTime = () => {
@@ -48,7 +49,7 @@ const ConsultRoomList = () => {
         setIsRefreshing(true);
         try {
             fetchGetAllConversationWaiting(
-                100,
+                pages,
                 () => {
                     setIsRefreshing(false);
                     setError(null);
@@ -66,7 +67,13 @@ const ConsultRoomList = () => {
 
     useEffect(() => {
         loadConversations();
-    }, []);
+    }, [pages]);
+
+    useEffect(() => {
+        if (allConversationWaiting && typeof allConversationWaiting.total === 'number') {
+            setTotalItems(allConversationWaiting.total);
+        }
+    }, [allConversationWaiting]);
 
     const handlerAcceptConversation = async (id: string) => {
         setLoadingAcceptConversation(true);
@@ -92,7 +99,18 @@ const ConsultRoomList = () => {
     };
 
     const onPageChange = (page: number) => {
-        setCurrentPage(page);
+        setPages((prev: any) => ({
+            ...prev,
+            page: page
+        }));
+    };
+
+    const handlePageSizeChange = (size: number) => {
+        setPages((prev: any) => ({
+            ...prev,
+            page_size: size,
+            page: 1 // Reset to first page when page size changes
+        }));
     };
 
     const renderTableContent = () => {
@@ -111,7 +129,7 @@ const ConsultRoomList = () => {
             );
         }
 
-        if (currentConversations.length === 0) {
+        if (!allConversationWaiting || !allConversationWaiting.conversations || allConversationWaiting.conversations.length === 0) {
             return (
                 <tr>
                     <td colSpan={6} className="p-8 text-center text-gray-500">
@@ -121,11 +139,11 @@ const ConsultRoomList = () => {
             );
         }
 
-        return currentConversations.map((cvs: any, index: number) => (
+        return allConversationWaiting.conversations.map((cvs: any, index: number) => (
             <tr
                 key={cvs._id}
                 className={`text-sm hover:bg-gray-50 transition ${
-                    index !== currentConversations.length - 1
+                    index !== allConversationWaiting.conversations.length - 1
                         ? "border-b border-gray-200"
                         : ""
                 }`}
@@ -215,7 +233,7 @@ const ConsultRoomList = () => {
                     </div>
                     <div className="flex flex-col items-end text-sm text-gray-500">
                         <div>UTC: {currentUTCTime}</div>
-                        <div>Local: {format(new Date(), 'HH:mm:ss - dd/MM/yyyy', {locale: vi})}</div>
+                        <div>Trang: {pages.page}/{totalPages || 1}</div>
                     </div>
                 </div>
 
@@ -255,45 +273,93 @@ const ConsultRoomList = () => {
                     </div>
                 </div>
 
-                {totalPages > 1 && (
-                    <div className="flex items-center justify-center space-x-2 py-4">
-                        <button
-                            onClick={() => onPageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className={`p-2 rounded-lg transition-colors ${
-                                currentPage === 1
-                                    ? 'text-gray-400 cursor-not-allowed'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            <MdNavigateBefore className="text-xl"/>
-                        </button>
-
-                        {Array.from({length: totalPages}, (_, i) => i + 1).map((page) => (
-                            <button
-                                key={page}
-                                onClick={() => onPageChange(page)}
-                                className={`w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors ${
-                                    currentPage === page
-                                        ? 'bg-blue-600 text-white'
-                                        : 'text-gray-600 hover:bg-gray-100'
-                                }`}
+                {/* Pagination controls */}
+                {totalItems > 0 && totalPages > 0 && (
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-4">
+                        {/* Page size selector */}
+                        <div className="flex items-center space-x-2 text-sm text-gray-600">
+                            <span>Hiển thị:</span>
+                            <select
+                                value={pages.page_size}
+                                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                className="border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                {page}
-                            </button>
-                        ))}
+                                <option value={5}>5</option>
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                            </select>
+                            <span>/ trang</span>
+                        </div>
 
-                        <button
-                            onClick={() => onPageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className={`p-2 rounded-lg transition-colors ${
-                                currentPage === totalPages
-                                    ? 'text-gray-400 cursor-not-allowed'
-                                    : 'text-gray-600 hover:bg-gray-100'
-                            }`}
-                        >
-                            <MdNavigateNext className="text-xl"/>
-                        </button>
+                        {/* Current page display */}
+                        <div className="text-sm text-gray-600">
+                            Hiển thị {firstIndex} - {lastIndex} trong
+                            tổng số {totalItems} cuộc tư vấn
+                        </div>
+
+                        {/* Page navigation */}
+                        <div className="flex items-center justify-center space-x-2">
+                            {/* Previous button */}
+                            <button
+                                onClick={() => onPageChange(pages.page - 1)}
+                                disabled={pages.page === 1}
+                                className="p-2 rounded-lg transition-colors text-gray-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <MdNavigateBefore className="text-xl"/>
+                            </button>
+
+                            {/* Page numbers */}
+                            {Array.from({length: totalPages}, (_, index) => {
+                                const pageNumber = index + 1;
+
+                                // Show page numbers with smart ellipsis
+                                if (
+                                    pageNumber === 1 ||
+                                    pageNumber === totalPages ||
+                                    (pageNumber >= pages.page - 1 && pageNumber <= pages.page + 1) ||
+                                    (pages.page <= 3 && pageNumber <= 5) ||
+                                    (pages.page >= totalPages - 2 && pageNumber >= totalPages - 4)
+                                ) {
+                                    return (
+                                        <button
+                                            key={pageNumber}
+                                            onClick={() => onPageChange(pageNumber)}
+                                            className={`w-8 h-8 rounded-full text-sm flex items-center justify-center transition-colors ${
+                                                pages.page === pageNumber
+                                                    ? "bg-blue-600 text-white"
+                                                    : "text-black hover:bg-gray-200"
+                                            }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    );
+                                }
+
+                                // Show ellipsis where needed
+                                if (
+                                    (pageNumber === pages.page - 2 && pages.page > 4) ||
+                                    (pageNumber === pages.page + 2 && pages.page < totalPages - 3)
+                                ) {
+                                    return (
+                                        <span key={pageNumber} className="px-2 text-gray-500">
+                                            ...
+                                        </span>
+                                    );
+                                }
+
+                                return null;
+                            })}
+
+                            {/* Next button */}
+                            <button
+                                onClick={() => onPageChange(pages.page + 1)}
+                                disabled={pages.page === totalPages || totalPages === 0}
+                                className="p-2 rounded-lg transition-colors text-gray-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <MdNavigateNext className="text-xl"/>
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>

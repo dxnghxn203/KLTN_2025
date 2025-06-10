@@ -12,7 +12,7 @@ import {Eye, EyeOff} from "lucide-react";
 import {signIn} from "next-auth/react";
 
 const LoginForm = () => {
-    const {signInWithGoogle, login} = useAuth();
+    const {login} = useAuth();
     const [localLoading, setLocalLoading] = useState(false);
     const [localLoadingGG, setLocalLoadingGG] = useState(false);
     const [isLoading, setIsLoading] = useState(false);

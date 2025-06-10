@@ -24,7 +24,7 @@ export const startChatBoxGuest = async (params: any) => {
 
 export const getAllConversationWaiting = async (limit: any): Promise<any> => {
     try {
-        const params = `/v1/conversations/waiting?limit=${limit}`;
+        const params = `/v1/conversations/waiting?page=${limit.page}&page_size=${limit.page_size}`;
         return await axiosClient.get(params);
     } catch (error) {
         throw error;
