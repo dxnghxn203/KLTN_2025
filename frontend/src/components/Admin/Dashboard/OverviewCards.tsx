@@ -51,6 +51,7 @@ export default function OverviewCards() {
   const currentDate = `${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
 
   const updateCardsFromOverviewData = (data: any) => {
+    console.log("data", data);
     const { total_orders, total_revenue, total_customers, total_products_sold } = data || {};
     setCards([
       {
@@ -87,8 +88,8 @@ export default function OverviewCards() {
   useEffect(() => {
     setIsLoading(true);
     fetchGetOverviewSatisticsOrder(
-      () => {
-        updateCardsFromOverviewData(overviewStatisticsOrder);
+      (data) => {
+        updateCardsFromOverviewData(data);
         setIsLoading(false);
       },
       () => {
@@ -96,6 +97,12 @@ export default function OverviewCards() {
       }
     );
   }, []);
+
+  useEffect(() => {
+    if (overviewStatisticsOrder) {
+      updateCardsFromOverviewData(overviewStatisticsOrder);
+    }
+  }, [overviewStatisticsOrder]);
 
   const selectedCard = cards[selectedIndex];
 
