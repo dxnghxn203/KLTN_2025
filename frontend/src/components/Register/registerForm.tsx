@@ -40,7 +40,25 @@ const RegisterForm: React.FC = () => {
     setIsSubmitted(true);
 
     const validationErrors = validateEmptyFields(formData);
+    const emailError = validateEmail(formData.email);
     setErrors(validationErrors);
+    // validate password
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setErrors((prev) => ({ ...prev, password: passwordError }));
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword: "Mật khẩu xác nhận không khớp",
+      }));
+      return;
+    }
+    if (emailError) {
+      setErrors((prev) => ({ ...prev, email: emailError }));
+      return;
+    }
     const today = new Date().toISOString().split("T")[0];
     if (formData.dateOfBirth > today) {
       setErrors((prev) => ({
@@ -152,7 +170,6 @@ const RegisterForm: React.FC = () => {
           </label>
           <input
             id="email"
-            type="email"
             value={formData.email}
             onChange={handleChange}
             className="w-full h-[55px] rounded-3xl px-4 border border-black/10 focus:border-[#0053E2]"
@@ -196,7 +213,6 @@ const RegisterForm: React.FC = () => {
           )}
         </div>
 
-        {/* Nút chuyển trang */}
         <div className="pt-4">
           <div className="pt-4">
             <button
