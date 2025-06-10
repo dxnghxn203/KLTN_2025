@@ -1411,7 +1411,7 @@ async def get_sold_quantity_by_month(year: int):
                         "$gte": start_date,
                         "$lt": end_date
                     },
-                    "status": "delivery_success"
+                    "payment_status": "PAID"
                 }
             },
             { "$unwind": "$product" },
