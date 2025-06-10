@@ -78,14 +78,11 @@ export default function Header() {
   const saveToSearchHistory = (term: string) => {
     if (!term.trim()) return;
 
-    // Create new history with the new term at the beginning and remove duplicates
     setSearchHistory((prevHistory) => {
       const newHistory = [term, ...prevHistory.filter((item) => item !== term)];
 
-      // Limit to 10 most recent searches
       const limitedHistory = newHistory.slice(0, 10);
 
-      // Save to localStorage
       localStorage.setItem("searchHistory", JSON.stringify(limitedHistory));
 
       return limitedHistory;
@@ -105,7 +102,6 @@ export default function Header() {
   function handleSearch() {
     if (search.trim() === "") return;
 
-    // Save search term to history
     saveToSearchHistory(search);
 
     setIsLoading(true);
@@ -125,14 +121,10 @@ export default function Header() {
     );
   }
   useEffect(() => {
-    // Kiểm tra nếu không còn ở trang tìm kiếm nữa
     if (!pathname.startsWith("/tim-kiem") && search !== "") {
-      // Xóa từ khóa tìm kiếm khi rời khỏi trang tìm kiếm
       setSearch("");
-      // Đồng thời xóa kết quả tìm kiếm và đề xuất
       setSearchResultProduct(false);
       setShowSuggestions(false);
-      // Xóa kết quả tìm kiếm nếu cần
       if (searchResult && searchResult.length > 0) {
         fetchClearSearch();
       }
