@@ -150,10 +150,6 @@ const MedicineCensorshipList = () => {
           Danh sách kiểm duyệt thuốc
         </h2>
         <div className="my-4 text-sm">
-          <Link href="/dashboard" className="hover:underline text-blue-600">
-            Dashboard
-          </Link>
-          <span> / </span>
           <Link href="/kiem-duyet-thuoc" className="text-gray-800">
             Danh sách kiểm duyệt thuốc
           </Link>

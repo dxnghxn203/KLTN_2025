@@ -70,10 +70,6 @@ const ConsultingList = () => {
                     Danh sách yêu cầu tư vấn thuốc
                 </h2>
                 <div className="my-4 text-sm">
-                    <Link href="/dashboard" className="hover:underline text-blue-600">
-                        Dashboard
-                    </Link>
-                    <span> / </span>
                     <Link href="/kiem-duyet-yeu-cau-tu-van-thuoc" className="text-gray-800">
                         Danh sách yêu cầu tư vấn thuốc
                     </Link>

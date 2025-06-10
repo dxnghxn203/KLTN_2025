@@ -35,7 +35,7 @@ func (e *CreateOrderQueue) process(msg []byte, ch *amqp.Channel, ctx context.Con
 	}
 
 	var ghnResp models.CreateOrderGHNResponse
-	ghnPayload := models.ConvertOrderToGHNPayload(orderRaw, ctx)
+	ghnPayload := models.ConvertOrderToGHNPayload(&orderRaw, ctx)
 	responseBody, err := database.CreateOrderGHN(ghnPayload)
 	if err != nil {
 		slog.Error("Lỗi tạo đơn hàng GHN", "err", err)

@@ -744,7 +744,7 @@ async def cancel_order(order_id: str):
                 status_code=status.HTTP_404_NOT_FOUND,
                 message="Không tìm thấy đơn hàng"
             )
-        if order.status != "created":
+        if order.status not in ["created", "waiting_to_pick"]:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 message="Không thể hủy đơn hàng"

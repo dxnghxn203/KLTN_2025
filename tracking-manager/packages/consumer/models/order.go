@@ -646,19 +646,21 @@ func searchES(ctx context.Context, client *opensearch.Client, index string, cond
 	return source, nil
 }
 
-func GetWardDistrict(ctx context.Context, client *opensearch.Client, ward int) (int, string, error) {
+func GetWardDistrict(ctx context.Context, client *opensearch.Client, ward int) (int, int, string, error) {
 	conditions := map[string]interface{}{"code": ward}
 	source, err := searchES(ctx, client, statics.WardIndex, conditions)
 	if err != nil {
 		slog.Warn("No results found", "ward", ward)
-		return 0, "", fmt.Errorf("data location not found for ward: %d", ward)
+		return 0, 0, "", fmt.Errorf("data location not found for ward: %d", ward)
 	}
 	if wardData, ok := source["ghn_code"].(string); ok {
 		if districtData, ok := source["ghn_district_code"].(float64); ok {
-			return int(districtData), wardData, nil
+			if provinceData, ok := source["ghn_province_code"].(float64); ok {
+				return int(provinceData), int(districtData), wardData, nil
+			}
 		}
 	}
-	return 0, "", fmt.Errorf("domestic_name not found for ward: %d", ward)
+	return 0, 0, "", fmt.Errorf("domestic_name not found for ward: %d", ward)
 }
 
 type ShiftData struct {
@@ -692,20 +694,27 @@ func GetFirstShiftID() (int, error) {
 	return shiftResp.Data[0].ID, nil
 }
 
-func ConvertOrderToGHNPayload(order Orders, ctx context.Context) map[string]interface{} {
+func ConvertOrderToGHNPayload(order *Orders, ctx context.Context) map[string]interface{} {
 	client := database.GetESClient()
-	fromDistrict, fromWard, err := GetWardDistrict(ctx, client, order.SenderCommuneCode)
+	fromProvince, fromDistrict, fromWard, err := GetWardDistrict(ctx, client, order.SenderCommuneCode)
 	if err != nil {
-		slog.Error("Cannot get from district and ward", "ward", order.SenderCommuneCode, "err", err)
+		slog.Error("Cannot get from province and district and ward", "ward", order.SenderCommuneCode, "err", err)
 		return nil
 	}
-	slog.Info("Get from district and ward", "fromDistrict", fromDistrict, "fromWard", fromWard)
-	toDistrict, toWard, err := GetWardDistrict(ctx, client, order.SenderCommuneCode)
+	slog.Info("Get from province and district and ward", "fromProvince", fromProvince, "fromDistrict", fromDistrict, "fromWard", fromWard)
+	toProvince, toDistrict, toWard, err := GetWardDistrict(ctx, client, order.ReceiverCommuneCode)
 	if err != nil {
-		slog.Error("Cannot get to district and ward", "ward", order.SenderCommuneCode, "err", err)
+		slog.Error("Cannot get to province and district and ward", "ward", order.ReceiverCommuneCode, "err", err)
 		return nil
 	}
-	slog.Info("Get to district and ward", "toDistrict", toDistrict, "toWard", toWard)
+	slog.Info("Get to province and district and ward", "toProvince", toProvince, "toDistrict", toDistrict, "toWard", toWard)
+
+	order.GHNSenderProvinceCode = fromProvince
+	order.GHNSenderDistrictCode = fromDistrict
+	order.GHNSenderCommuneCode = fromWard
+	order.GHNReceiverProvinceCode = toProvince
+	order.GHNReceiverDistrictCode = toDistrict
+	order.GHNReceiverCommuneCode = toWard
 
 	totalQuantity := 0
 	for _, p := range order.Product {
