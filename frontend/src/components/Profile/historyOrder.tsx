@@ -162,13 +162,11 @@ const HistoryOrder: React.FC = () => {
       returned: Archive,
     };
 
-    // Thay đổi trong hàm renderOrderDetail
     const processedTrackingHistory = (trackingHistory || [])
       .sort(
         (a: any, b: any) =>
-          // Đảo thứ tự sắp xếp từ cũ đến mới (tăng dần theo thời gian)
-          new Date(a.created_date).getTime() -
-          new Date(b.created_date).getTime()
+          new Date(b.created_date).getTime() -
+          new Date(a.created_date).getTime()
       )
       .map((event: any) => {
         const statusKey = event.status as keyof typeof ORDER_STATUS_NAMES;
@@ -185,54 +183,6 @@ const HistoryOrder: React.FC = () => {
         };
       });
 
-    // Sau đó, cập nhật phần hiển thị lịch sử để bôi đậm và làm nổi bật mục mới nhất (cuối cùng)
-    <div className="p-4 border rounded-lg min-h-[150px]">
-      <h4 className="font-semibold mb-3 text-gray-800">Lịch sử vận đơn</h4>
-      {loadingTracking ? (
-        <div className="flex items-center justify-center text-gray-500 py-4">
-          <Loader2 className="animate-spin mr-2 h-5 w-5" />
-          <span>Đang tải lịch sử...</span>
-        </div>
-      ) : processedTrackingHistory.length > 0 ? (
-        <div className="relative pl-6">
-          <div className="absolute left-5.5 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-          <ul className="space-y-6">
-            {processedTrackingHistory.map((item: any, index: number) => (
-              <li key={index} className="relative flex items-start">
-                <div
-                  className={`absolute left-0 transform -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center ${
-                    index === processedTrackingHistory.length - 1
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-300"
-                  }`}
-                >
-                  <item.icon size={16} />
-                </div>
-                <div className="ml-6 pl-4">
-                  <p
-                    className={`font-medium ${
-                      index === processedTrackingHistory.length - 1
-                        ? "text-green-700"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {item.status}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {formatDate(item.time)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
-        <p className="text-gray-500 text-center py-4">
-          Chưa có thông tin vận đơn.
-        </p>
-      )}
-    </div>;
-
     return (
       <div className="mt-2">
         <button
@@ -241,22 +191,26 @@ const HistoryOrder: React.FC = () => {
         >
           <ArrowLeft size={18} className="mr-1" /> Quay lại danh sách
         </button>
+
         <h3 className="leading-6 font-semibold text-gray-900 mb-4">
           Chi tiết đơn hàng: {order.order_id}
         </h3>
+
         <div className="space-y-4 text-gray-700 text-sm">
+          {/* Thông tin chung và thanh toán */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Thông tin chung */}
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2 text-gray-800">
                 Thông tin chung
               </h4>
               <div className="space-y-1">
                 <p>
-                  <span className="font-medium ">Mã theo dõi:</span>{" "}
+                  <span className="font-medium">Mã theo dõi:</span>{" "}
                   {order.tracking_id}
                 </p>
                 <p>
-                  <span className="font-medium ">Trạng thái:</span>
+                  <span className="font-medium">Trạng thái:</span>
                   <span
                     className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${statusInfo.colors.bg} ${statusInfo.colors.text}`}
                   >
@@ -264,33 +218,34 @@ const HistoryOrder: React.FC = () => {
                   </span>
                 </p>
                 <p>
-                  <span className="font-medium ">Ngày tạo:</span>{" "}
+                  <span className="font-medium">Ngày tạo:</span>{" "}
                   {formatDate(order.created_date)}
                 </p>
                 {order.shipper_name && (
                   <p>
-                    <span className="font-medium ">Shipper:</span>{" "}
+                    <span className="font-medium">Shipper:</span>{" "}
                     {order.shipper_name} ({order.shipper_id})
                   </p>
                 )}
-
                 <p>
-                  <span className="font-medium ">Hướng dẫn giao hàng:</span>
+                  <span className="font-medium">Hướng dẫn giao hàng:</span>{" "}
                   {order.delivery_instruction || "Không có"}
                 </p>
               </div>
             </div>
+
+            {/* Thông tin thanh toán */}
             <div className="p-4 border rounded-lg">
               <h4 className="font-semibold mb-2 text-gray-800">
                 Thông tin thanh toán
               </h4>
               <div className="space-y-1">
                 <p>
-                  <span className="font-medium ">Hình thức:</span>{" "}
+                  <span className="font-medium">Hình thức:</span>{" "}
                   {order.payment_type}
                 </p>
                 <p className="flex items-center">
-                  <span className="font-medium  mr-2">Trạng thái TT:</span>
+                  <span className="font-medium mr-2">Trạng thái TT:</span>
                   <span
                     className={`px-2 py-0.5 rounded text-sm font-medium ${
                       order.payment_status === "PAID"
@@ -304,49 +259,51 @@ const HistoryOrder: React.FC = () => {
                   </span>
                 </p>
                 <p>
-                  <span className="font-medium ">Tiền hàng:</span>{" "}
+                  <span className="font-medium">Tiền hàng:</span>{" "}
                   {order.product_fee?.toLocaleString("vi-VN")}đ
                 </p>
                 <p>
-                  <span className="font-medium ">Phí ship:</span>{" "}
+                  <span className="font-medium">Phí ship:</span>{" "}
                   {order.shipping_fee?.toLocaleString("vi-VN")}đ
                 </p>
                 <p className="font-semibold text-blue-700">
-                  <span className="font-medium ">Tổng tiền:</span>{" "}
+                  <span className="font-medium">Tổng tiền:</span>{" "}
                   {order.estimated_total_fee?.toLocaleString("vi-VN")}đ
                 </p>
                 <p>
-                  <span className="font-medium ">Cân nặng:</span> {order.weight}{" "}
+                  <span className="font-medium">Cân nặng:</span> {order.weight}{" "}
                   kg
                 </p>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            <div className="p-4 border rounded-lg">
-              <h4 className="font-semibold mb-2 text-gray-800">
-                Thông tin người nhận
-              </h4>
-              <p>
-                <span className="font-medium ">Tên:</span> {order.pick_to.name}
-              </p>
-              <p>
-                <span className="font-medium">Số điện thoại:</span>{" "}
-                {order.pick_to.phone_number}
-              </p>
-              <p>
-                <span className="font-medium ">Địa chỉ:</span>{" "}
-                {`${order.pick_to.address.address}, ${order.pick_to.address.ward}, ${order.pick_to.address.district}, ${order.pick_to.address.province}`}
-              </p>
-            </div>
+
+          {/* Người nhận */}
+          <div className="p-4 border rounded-lg">
+            <h4 className="font-semibold mb-2 text-gray-800">
+              Thông tin người nhận
+            </h4>
+            <p>
+              <span className="font-medium">Tên:</span> {order.pick_to.name}
+            </p>
+            <p>
+              <span className="font-medium">Số điện thoại:</span>{" "}
+              {order.pick_to.phone_number}
+            </p>
+            <p>
+              <span className="font-medium">Địa chỉ:</span>{" "}
+              {`${order.pick_to.address.address}, ${order.pick_to.address.ward}, ${order.pick_to.address.district}, ${order.pick_to.address.province}`}
+            </p>
           </div>
+
+          {/* Sản phẩm */}
           <div className="p-4 border rounded-lg">
             <h4 className="font-semibold mb-2 text-black">Sản phẩm</h4>
             <ul className="space-y-4">
               {order.product.map((product: any) => (
                 <li
                   key={product.product_id}
-                  className="flex items-center border-b pb-4 last:border-b-0  text-black"
+                  className="flex items-center border-b pb-4 last:border-b-0 text-black"
                 >
                   <div className="flex-shrink-0 mr-4">
                     <Image
@@ -370,6 +327,8 @@ const HistoryOrder: React.FC = () => {
               ))}
             </ul>
           </div>
+
+          {/* Lịch sử vận đơn */}
           <div className="p-4 border rounded-lg min-h-[150px]">
             <h4 className="font-semibold mb-3 text-gray-800">
               Lịch sử vận đơn
@@ -419,23 +378,11 @@ const HistoryOrder: React.FC = () => {
               </p>
             )}
           </div>
-
-          <div className="flex justify-end">
-            {canCancelOrder(order.status) && (
-              <div className="mt-4">
-                <button
-                  onClick={() => openCancelDialog(order.order_id)}
-                  className="bg-red-500 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg"
-                >
-                  Hủy đơn hàng
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     );
   };
+
   // Replace the filteredOrders implementation with this:
 
   const filteredOrders = ordersUser.filter((order: any) => {
@@ -544,7 +491,7 @@ const HistoryOrder: React.FC = () => {
 
                   {activeTab === "all" && (
                     <span
-                      className={`text-sm font-semibold px-2 py-1 rounded-full ${
+                      className={`text-sm px-2 py-1 rounded-full ${
                         getOrderStatusInfo(order.status).colors.bg
                       } ${getOrderStatusInfo(order.status).colors.text}`}
                     >
