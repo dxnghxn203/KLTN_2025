@@ -482,6 +482,7 @@ const CreateSingleProduct = () => {
         amount: p.amount,
         weight: p.weight,
         inventory: p.inventory,
+        expired_date: p.expired_date,
       })),
 
       ingredients: {

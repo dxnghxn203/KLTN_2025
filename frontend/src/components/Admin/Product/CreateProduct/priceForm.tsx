@@ -2,12 +2,18 @@
 
 import { PriceItem, ErrorMessage } from "./types";
 
-function formatDateToInput(dateStr: string) {
-  const date = new Date(dateStr);
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+function formatDateToInput(date: Date | string | null | undefined): string {
+  let d = typeof date === "string" ? new Date(date) : date instanceof Date ? date : null;
+
+  if (!d || isNaN(d.getTime())) {
+    d = new Date();
+  }
+
+  const offset = d.getTimezoneOffset();
+  const localDate = new Date(d.getTime() - offset * 60 * 1000);
   return localDate.toISOString().split("T")[0];
 }
+
 
 interface PriceFormProps {
   prices: PriceItem[];
