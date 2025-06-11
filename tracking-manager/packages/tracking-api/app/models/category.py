@@ -16,7 +16,7 @@ from app.models.review import count_reviews, average_rating
 
 collection_name = "categories"
 product_collection_name = "products"
-default_image_url = "https://kltn2025.s3.ap-southeast-2.amazonaws.com/default/1742882469"
+default_image_url = "https://medicaretechs3.s3.ap-southeast-2.amazonaws.com/default/1749615889081809800"
 
 async def get_all_categories_admin():
     try:
