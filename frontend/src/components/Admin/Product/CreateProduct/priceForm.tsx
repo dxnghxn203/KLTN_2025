@@ -2,6 +2,13 @@
 
 import { PriceItem, ErrorMessage } from "./types";
 
+function formatDateToInput(dateStr: string) {
+  const date = new Date(dateStr);
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().split("T")[0];
+}
+
 interface PriceFormProps {
   prices: PriceItem[];
   updatePrices: (prices: PriceItem[]) => void;
@@ -99,20 +106,20 @@ export const PriceForm = ({
                   className="border rounded-lg p-2 w-full"
                 />
               </div>
-              <div>
+                <div>
                 <label className="block text-sm font-medium mb-1">
                   Ngày hết hạn
                 </label>
                 <input
                   type="date"
-                  value={price.expired_date}
+                  value={formatDateToInput(price.expired_date)}
                   onChange={(e) =>
-                    updatePriceItem(index, "expired_date", e.target.value)
+                  updatePriceItem(index, "expired_date", e.target.value)
                   }
                   disabled={isViewOnly}
                   className="border rounded-lg p-2 w-full"
                 />
-              </div>
+                </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Số lượng tương ứng
