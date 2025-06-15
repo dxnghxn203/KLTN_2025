@@ -830,9 +830,9 @@ async def request_order_prescription(item: ItemOrderForPTInReq, user_id: str, im
             for img in images:
                 try:
                     await img.seek(0)
-                    json_image = await create_image_json_payload(img)
+                    json_image = create_image_json_payload(img)
                     await img.seek(0)
-                    file_url = await upload_file(img, "images_orders")
+                    file_url = upload_file(img, "images_orders")
 
                     data_queue = json.dumps({
                         "request_id": request_sku,
