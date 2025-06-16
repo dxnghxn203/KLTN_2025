@@ -433,7 +433,7 @@ async def update_child_category(child_category_id: str, child_category_name: str
 
 async def update_sub_category_image(sub_category_id: str, image: str, email):
     try:
-        image_url = upload_file(image, "sub_category")
+        image_url = await upload_file(image, "sub_category")
         if not image_url:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -456,7 +456,7 @@ async def update_sub_category_image(sub_category_id: str, image: str, email):
 
 async def update_child_category_image(child_category_id: str, image: str, email):
     try:
-        image_url = upload_file(image, "child_category")
+        image_url = await upload_file(image, "child_category")
 
         if not image_url:
             raise response.JsonException(
@@ -481,7 +481,7 @@ async def update_child_category_image(child_category_id: str, image: str, email)
 
 async def update_all_categories_image(image_url):
     try:
-        image_url = upload_file(image_url, "default")
+        image_url = await upload_file(image_url, "default")
         if not image_url:
             raise response.JsonException(
                 status_code=status.HTTP_400_BAD_REQUEST,

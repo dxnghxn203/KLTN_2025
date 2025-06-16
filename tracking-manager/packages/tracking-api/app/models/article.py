@@ -13,7 +13,7 @@ async def create_article(article_data: ItemArticleRequestCreate, image= None):
         article_id = generate_id(ID_ARTICLE_DEFAULT)
         image_url = ""
         if image:
-            image_url = upload_file(image, ARICLE_FOLDER)
+            image_url = await upload_file(image, ARICLE_FOLDER)
 
         n_article = ItemArticle(
             article_id=article_id,
@@ -80,7 +80,7 @@ async def update_article_image(article_id: str, image):
     try:
         image_url = None
         if image:
-            image_url = upload_file(image, ARICLE_FOLDER)
+            image_url = await upload_file(image, ARICLE_FOLDER)
         updated_article = ARTICLE_COLLECTION.update_one({"article_id": article_id}, {
             "$set": {
                "image_thumbnail": image_url

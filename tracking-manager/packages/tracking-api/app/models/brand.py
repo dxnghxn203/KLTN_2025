@@ -13,7 +13,7 @@ async def create_brand(brand_data: ItemBrandRequestCreate, logo):
         logo_url = None
         if logo:
             try:
-                logo_url = upload_file(logo, brand_id)
+                logo_url = await upload_file(logo, brand_id)
             except Exception as e:
                 return None
 
@@ -79,7 +79,7 @@ async def update_brand_logo(brand_id: str, logo):
         logo_url = None
         if logo:
             try:
-                logo_url = upload_file(logo, brand_id)
+                logo_url = await upload_file(logo, brand_id)
             except Exception as e:
                 return None
 

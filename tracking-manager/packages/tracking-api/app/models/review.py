@@ -23,7 +23,7 @@ async def create_review(item: ItemReviewReq, token, images):
         item_dict["user_name"] = user_info.user_name
         image_urls = []
         if images:
-            image_urls = [upload_file(img, "reviews") for img in images if img]
+            image_urls = [await upload_file(img, "reviews") for img in images if img]
 
         item_dict["images"] = image_urls
         item_dict["created_at"] = get_current_time()
@@ -72,7 +72,7 @@ async def reply_to_review(item: ItemReplyReq, token, images):
             )
         image_urls = []
         if images:
-            image_urls = [upload_file(img, "reviews") for img in images if img]
+            image_urls = [await upload_file(img, "reviews") for img in images if img]
 
         reply = {
             "reply_id": generate_id("REPLY"),

@@ -477,7 +477,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, email
                 ItemImageDBReq(
                     images_id=generate_id("IMAGE"),
                     images_url=file_url,
-                ) for idx, img in enumerate(images or []) if (file_url := upload_file(img, "images"))
+                ) for idx, img in enumerate(images or []) if (file_url := await upload_file(img, "images"))
             ]
         logger.info(f"{image_list}")
 
@@ -511,7 +511,7 @@ async def add_product_db(item: ItemProductDBInReq, images_primary, images, email
                 inventory_docs.append(inventory_obj.dict())
 
         ingredients_list = item.ingredients.ingredients if item.ingredients and item.ingredients.ingredients else []
-        images_primary_url = (upload_file(images_primary, "images_primary") or "") if images_primary else ""
+        images_primary_url = (await upload_file(images_primary, "images_primary") or "") if images_primary else ""
 
         main_category = category_collection.find_one({"main_category_id": item.category.main_category_id})
         if not main_category:
@@ -930,7 +930,7 @@ async def update_product_images_primary(product_id: str, file, email: str):
         if not product:
             raise response.JsonException(status_code=status.HTTP_400_BAD_REQUEST, message="Không tìm thấy sản phẩm")
 
-        url = upload_file(file, "images_primary")
+        url = await upload_file(file, "images_primary")
         collection.update_one(
             {"product_id": product_id},
             {"$set": {"images_primary": url, "updated_by": email, "updated_at": get_current_time()}},
@@ -972,7 +972,7 @@ async def update_product_images(product_id: str, files, email: str):
 
         new_images = []
         for file in files:
-            url = upload_file(file, "images")
+            url = await upload_file(file, "images")
             if url:
                 new_images.append({
                     "images_id": generate_id("IMAGE"),
@@ -1250,7 +1250,7 @@ async def extract_images_direct(sheet, df, row_idx, image_columns, is_primary=Fa
                 wrapped_file = SimpleNamespace(file=image.ref)
 
                 try:
-                    file_url = upload_file(wrapped_file, "images" if not is_primary else "images_primary")
+                    file_url = await upload_file(wrapped_file, "images" if not is_primary else "images_primary")
                     logger.info(f"[Image Upload] Upload kết quả tại {header_value}: {file_url}")
 
                     if file_url:
