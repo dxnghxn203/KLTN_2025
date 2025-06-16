@@ -135,7 +135,7 @@ export default function RequestDetailPage() {
         checkIfRequestItemExists();
     }, [requestId, allRequestOrderApprove, requestItem, totalRequestOrderApprove]);
 
-    if (!requestItem) return <div>Loading...</div>;
+    if (!requestItem) return <div>Đang xử lý...</div>;
 
     const updateQuantity = (productId: string, delta: number) => {
         setSelectedProduct((prev) =>

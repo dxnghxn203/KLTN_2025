@@ -42,13 +42,15 @@ const ProductList: React.FC<ProductListProps> = ({ products }) => {
             </div>
             <div className="w-[15%] text-center flex flex-col items-center">
               <div className="flex items-center justify-center space-x-2">
-                <span className="text-gray-500 line-through font-semibold text-base">
-                  {calculateTotalOriginalPrice(
-                    product?.original_price,
-                    product?.quantity
-                  ).toLocaleString("vi-VN")}
-                  đ
-                </span>
+                {product?.original_price !== product?.price && (
+                  <span className="text-gray-500 line-through font-semibold text-base">
+                    {calculateTotalOriginalPrice(
+                      product?.original_price,
+                      product?.quantity
+                    ).toLocaleString("vi-VN")}
+                    đ
+                  </span>
+                )}
 
                 <span className="text-lg font-semibold text-[#0053E2]">
                   {calculateTotalPrice(

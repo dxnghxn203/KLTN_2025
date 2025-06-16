@@ -87,9 +87,7 @@ export default function SearchProductDialog({
       dataToSend,
       () => {
         toast.showToast("Thêm giảm giá thành công", "success");
-        fetchGetProductDiscountAdmin(
-          isApproved,
-        );
+        fetchGetProductDiscountAdmin(isApproved);
         setIsOpen(false);
       },
       (error: any) => {
@@ -327,6 +325,8 @@ export default function SearchProductDialog({
                 onClick={() => {
                   console.log("Selected Product Data:", selectedProductData);
                   handleAddProduct(selectedProductData);
+                  setShowDiscountForm(false);
+                  setSelectedProductData(null);
                 }}
               >
                 Lưu
