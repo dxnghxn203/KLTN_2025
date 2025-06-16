@@ -210,6 +210,10 @@ const HistoryOrder: React.FC = () => {
                   {order.tracking_id}
                 </p>
                 <p>
+                  <span className="font-medium">Mã vận đơn:</span>{" "}
+                  {order.order_3pl_code}
+                </p>
+                <p>
                   <span className="font-medium">Trạng thái:</span>
                   <span
                     className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${statusInfo.colors.bg} ${statusInfo.colors.text}`}

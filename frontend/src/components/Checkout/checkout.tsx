@@ -21,7 +21,7 @@ const CheckOut = ({
         <div className="pt-14">
           <a
             onClick={back}
-            className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors"
+            className="inline-flex items-center text-[#0053E2] hover:text-[#002E99] transition-colors cursor-pointer"
           >
             <ChevronLeft size={20} />
             <span>Quay lại giỏ hàng</span>
